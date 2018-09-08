@@ -1,0 +1,15 @@
+.classpath
+.DS_Store
+.DS_Store?
+.project
+.settings
+.Spotlight-V100
+.Trashes
+
+*.class
+*.iml
+*.jar
+*.log
+
+.idea/
+target/
