@@ -1,0 +1,307 @@
+{
+  "trackedEntityAttributes": [
+    {
+      "code": "COUNTRY",
+      "id": "Xr7YIVGLB1K",
+      "name": "Country",
+      "shortName": "Country",
+      "aggregationType": "NONE",
+      "programScope": false,
+      "displayInListNoProgram": false,
+      "publicAccess": "rw------",
+      "pattern": "",
+      "generated": false,
+      "displayOnVisitSchedule": false,
+      "valueType": "TEXT",
+      "orgunitScope": false,
+      "confidential": false,
+      "unique": false,
+      "inherit": false,
+      "translations": [ ],
+      "userGroupAccesses": [ ],
+      "attributeValues": [ ],
+      "userAccesses": [ ],
+      "legendSets": [ ]
+    },
+    {
+      "code": "STREET",
+      "id": "bqMtaUqlFtz",
+      "name": "Street",
+      "shortName": "Street",
+      "aggregationType": "NONE",
+      "programScope": false,
+      "displayInListNoProgram": false,
+      "publicAccess": "rw------",
+      "pattern": "",
+      "generated": false,
+      "displayOnVisitSchedule": false,
+      "valueType": "TEXT",
+      "orgunitScope": false,
+      "confidential": false,
+      "unique": false,
+      "inherit": false,
+      "translations": [ ],
+      "userGroupAccesses": [ ],
+      "attributeValues": [ ],
+      "userAccesses": [ ],
+      "legendSets": [ ]
+    }
+  ],
+  "trackedEntityTypes": [
+    {
+      "name": "Patient",
+      "id": "ljFomOKOCYd",
+      "publicAccess": "rw------",
+      "description": "Patient",
+      "maxTeiCountToReturn": 0,
+      "minAttributesRequiredToSearch": 1,
+      "userGroupAccesses": [ ],
+      "attributeValues": [ ],
+      "trackedEntityTypeAttributes": [
+        {
+          "id": "XJPsuHcVlpQ",
+          "name": "Patient National identifier",
+          "displayName": "Patient National identifier",
+          "mandatory": true,
+          "displayShortName": "null National identifier",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "AuPLng5hLbE"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "q18msv6pdz9",
+          "name": "Patient First name",
+          "displayName": "Patient First name",
+          "displayShortName": "null First name",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": true,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "w75KJ2mc4zz"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "QnDmj6ub8JD",
+          "name": "Patient Last name",
+          "displayName": "Patient Last name",
+          "displayShortName": "null Last name",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": true,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "zDhUuAYrxNC"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "vkhkYydokSN",
+          "name": "Patient Gender",
+          "displayName": "Patient Gender",
+          "displayShortName": "null Gender",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "cejWyOfXge6"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "Pt5plT3N8q1",
+          "name": "Patient Street",
+          "displayName": "Patient Street",
+          "displayShortName": "null Street",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "bqMtaUqlFtz"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "xmdo05keFPW",
+          "name": "Patient State",
+          "displayName": "Patient State",
+          "displayShortName": "null State",
+          "externalAccess": false,
+          "valueType": "NUMBER",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "GUOBQt5K2WI"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "iyasStuLEiW",
+          "name": "Patient City",
+          "displayName": "Patient City",
+          "displayShortName": "null City",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "FO4sWYJ64LQ"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
+          "id": "g02hn4JYIMR",
+          "name": "Patient Country",
+          "displayName": "Patient Country",
+          "displayShortName": "null Country",
+          "externalAccess": false,
+          "valueType": "TEXT",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "Xr7YIVGLB1K"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        }
+      ],
+      "translations": [ ],
+      "userAccesses": [ ]
+    }
+  ]
+}

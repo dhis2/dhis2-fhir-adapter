@@ -3,12 +3,15 @@
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
+LICENSE text
 *.MF text
+*.csv text
 *.java text
 *.json text
 *.md text
 *.properties text
 *.sql text
+*.script text
 *.txt text
 *.xml text
 *.xsd text

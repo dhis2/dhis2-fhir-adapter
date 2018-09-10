@@ -1,0 +1,39 @@
+server:
+  port: 8081
+
+spring:
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  datasource:
+    url: jdbc:hsqldb:res:db/dhis_fhir;hsqldb.sqllog=0
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbcDriver
+    initialization-mode: always
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+management:
+  security:
+    enabled: false
+logging:
+  level:
+    ca.uhn.fhir.jaxrs: debug
+
+dhis2:
+  endpoint:
+    username: @dhis2.username@
+    password: @dhis2.password@
+    url: @dhis2.url@
+    apiVersion: @dhis2.apiVersion@
+    wwwAuthenticates:
+    - type: Basic
+      realm: DHIS2
+    - type: Bearer
+      realm: dhis2/oauth2
+  transformation:
+    scriptEngineName: nashorn

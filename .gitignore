@@ -12,4 +12,5 @@
 *.log
 
 .idea/
+/db/
 target/
