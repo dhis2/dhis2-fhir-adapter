@@ -6,7 +6,7 @@ FHIR structures may contain multiple values for one field (e.g. multiple names o
 The organization resource is only included in the transaction bundle to include a reference to the national identifier of the organization (must be the organization code). Since the organization will not include the parent organization (FHIR Organization.partOf) it cannot be used to create or update an organization unit on DHIS2. This would also require that the complete hierarchy up to the root organization is included and updated in the transaction bundle (due to required references of national identifiers). The prototype adapter will therefore ignore the update request of the organization and return a status of 200.
 ### FHIR Patient
 | FHIR Structure           | DHIS2 Tracked Entity Name | Tracked Entity Attribute Name | Required | Unique |
-------------------------------------------------------------------------------------------------------------
+|--------------------------|---------------------------|-------------------------------|----------|--------|
 | Patient.name.family      | Patient                   | First name                    | No       | No     |
 | Patient.name.given       | Patient                   | Last name                     | No       | No     |
 | Patient.birthDate        | Patient                   | Birth date                    | No       | No     |
@@ -21,6 +21,7 @@ The geo coordinates of the address of the Patient will be assigned to an interna
 ### FHIR Immunization
 _The mapping needs to be defined when the DHIS2 program and program stages are available._
 ## Implementation Notes
+- The prototype may contain a read-only metadata database that contains the mappings.
 - The prototype may not be optimized (e.g. may not use caching).
 - The prototype may not be 
 - The prototype may not be unit tested.
