@@ -28,24 +28,57 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serializable;
 
-public interface TrackedEntityType
+public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, Serializable
 {
-    String getId();
+    private static final long serialVersionUID = -6135628541438060211L;
 
-    String getName();
+    private String id;
 
-    List<? extends TrackedEntityTypeAttribute> getAttributes();
+    private String name;
 
-    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code );
+    private String code;
 
-    @Nullable TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code );
+    public WritableTrackedEntityAttribute()
+    {
+        super();
+    }
 
-    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
+    public WritableTrackedEntityAttribute( String id, String name, String code )
+    {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+    }
 
-    @Nullable TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name );
+    @Override public String getId()
+    {
+        return id;
+    }
+
+    public void setId( String id )
+    {
+        this.id = id;
+    }
+
+    @Override public String getName()
+    {
+        return name;
+    }
+
+    public void setName( String name )
+    {
+        this.name = name;
+    }
+
+    @Override public String getCode()
+    {
+        return code;
+    }
+
+    public void setCode( String code )
+    {
+        this.code = code;
+    }
 }

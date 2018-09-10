@@ -51,7 +51,7 @@
     {
       "name": "Patient",
       "id": "ljFomOKOCYd",
-      "publicAccess": "rw------",
+      "publicAccess": "rwrw----",
       "description": "Patient",
       "maxTeiCountToReturn": 0,
       "minAttributesRequiredToSearch": 1,

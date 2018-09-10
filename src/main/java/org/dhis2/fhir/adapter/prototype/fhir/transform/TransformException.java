@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class TransformException extends RuntimeException
+public abstract class TransformException extends RuntimeException
 {
     private static final long serialVersionUID = -5917476763384064647L;
 

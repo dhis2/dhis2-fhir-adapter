@@ -28,14 +28,14 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public interface FhirToDhisTransformerContext
 {
-    @Nonnull FhirResourceType getFhirResourceType();
+    @Nonnull FhirRequest getFhirRequest();
 
-    @Nonnull FhirVersion getFhirVersion();
+    @Nonnull <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException;
 }

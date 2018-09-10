@@ -28,12 +28,13 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.model.api.IResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 
 public interface FhirToDhisTransformer<R extends DhisResource, M extends AbstractFhirToDhisMapping>
 {
@@ -43,6 +44,13 @@ public interface FhirToDhisTransformer<R extends DhisResource, M extends Abstrac
 
     @Nonnull Class<M> getMappingClass();
 
-    @Nullable R transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IResource input, @Nonnull M mapping )
-        throws TransformException;
+    void addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull M mapping ) throws TransformException;
+
+    void addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
+
+    @Nullable FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+
+    @Nullable FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 }

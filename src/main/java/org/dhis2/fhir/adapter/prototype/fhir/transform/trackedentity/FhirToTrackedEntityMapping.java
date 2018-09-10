@@ -44,16 +44,16 @@ public class FhirToTrackedEntityMapping extends AbstractFhirToDhisMapping
 {
     private static final long serialVersionUID = -5937978792972640057L;
 
-    @Column( name = "tracked_entity_name", nullable = false )
-    private String trackedEntityName;
+    @Column( name = "tracked_entity_type_name", nullable = false )
+    private String trackedEntityTypeName;
 
-    public String getTrackedEntityName()
+    public String getTrackedEntityTypeName()
     {
-        return trackedEntityName;
+        return trackedEntityTypeName;
     }
 
-    public void setTrackedEntityName( String trackedEntityName )
+    public void setTrackedEntityTypeName( String trackedEntityTypeName )
     {
-        this.trackedEntityName = trackedEntityName;
+        this.trackedEntityTypeName = trackedEntityTypeName;
     }
 }

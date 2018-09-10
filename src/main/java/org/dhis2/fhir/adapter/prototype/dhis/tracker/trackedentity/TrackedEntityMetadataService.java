@@ -28,9 +28,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public interface TrackedEntityMetadataService
 {
-    Optional<TrackedEntityType> getTypeById( String id );
+    Optional<TrackedEntityType> getTypeByName( @Nonnull String name );
 }

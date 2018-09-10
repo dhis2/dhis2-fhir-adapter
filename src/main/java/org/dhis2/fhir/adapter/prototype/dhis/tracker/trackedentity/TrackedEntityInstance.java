@@ -36,7 +36,9 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public class TrackedEntityInstance implements DhisResource, Serializable
 {
@@ -59,11 +61,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         super();
     }
 
+    public TrackedEntityInstance( @Nonnull String typeId )
+    {
+        this.typeId = typeId;
+    }
+
     public TrackedEntityInstance( String typeId, String orgUnitId, Collection<TrackedEntityAttributeValue> attributes )
     {
         this.typeId = typeId;
         this.orgUnitId = orgUnitId;
-        this.attributes = attributes;
+        this.attributes = (attributes == null) ? new ArrayList<>() : new ArrayList<>( attributes );
     }
 
     @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
@@ -109,5 +116,25 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     public void setAttributes( Collection<TrackedEntityAttributeValue> attributes )
     {
         this.attributes = attributes;
+    }
+
+    public boolean containsAttribute( @Nonnull String attributeId )
+    {
+        return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
+    }
+
+    public @Nonnull TrackedEntityAttributeValue getAttribute( @Nonnull String attributeId )
+    {
+        if ( getAttributes() == null )
+        {
+            setAttributes( new ArrayList<>() );
+        }
+        TrackedEntityAttributeValue attributeValue = getAttributes().stream().filter( a -> Objects.equals( attributeId, a.getAttributeId() ) ).findFirst().orElse( null );
+        if ( attributeValue == null )
+        {
+            attributeValue = new TrackedEntityAttributeValue( attributeId );
+            getAttributes().add( attributeValue );
+        }
+        return attributeValue;
     }
 }

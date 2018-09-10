@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.prototype.dhis.model.AttributeValue;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.WritableTrackedEntityType;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -98,8 +98,8 @@ public class DhisTrackedEntityType implements Serializable
         return Optional.ofNullable( attributeValues ).orElse( Collections.emptyList() ).stream().filter( av -> Objects.equals( code, av.getAttribute().getCode() ) ).min( ( av1, av2 ) -> av2.getLastUpdated().compareTo( av1.getLastUpdated() ) );
     }
 
-    public TrackedEntityType toModel()
+    public WritableTrackedEntityType toModel()
     {
-        return new TrackedEntityType( getId(), getName(), Optional.ofNullable( typeAttributes ).orElse( Collections.emptyList() ).stream().map( DhisTrackedEntityTypeAttribute::toModel ).collect( toList() ) );
+        return new WritableTrackedEntityType( getId(), getName(), Optional.ofNullable( typeAttributes ).orElse( Collections.emptyList() ).stream().map( DhisTrackedEntityTypeAttribute::toModel ).collect( toList() ) );
     }
 }

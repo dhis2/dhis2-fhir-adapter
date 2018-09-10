@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ import java.util.Optional;
 public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataService
 {
     protected static final String TRACKED_ENTITY_TYPE_URI = "/trackedEntityTypes.json?paging=false&" +
-        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,trackedEntityAttribute[id,name,code]]," +
+        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code]]," +
         "attributeValues[lastUpdated,value,attribute[id,name,code]]";
 
     private final RestTemplate restTemplate;
@@ -55,9 +56,10 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<TrackedEntityType> getTypeById( String id )
+    @Override public Optional<TrackedEntityType> getTypeByName( @Nonnull String name )
     {
-        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), id ) ).findFirst();
+        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), name ) )
+            .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 
     public List<TrackedEntityType> getTrackedEntityTypes()

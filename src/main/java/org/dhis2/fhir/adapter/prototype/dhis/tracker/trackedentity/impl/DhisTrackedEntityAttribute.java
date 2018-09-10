@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityAttribute;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.WritableTrackedEntityAttribute;
 
 import java.io.Serializable;
 
@@ -77,8 +77,8 @@ public class DhisTrackedEntityAttribute implements Serializable
         this.code = code;
     }
 
-    public TrackedEntityAttribute toModel()
+    public WritableTrackedEntityAttribute toModel()
     {
-        return new TrackedEntityAttribute( getId(), getName(), getCode() );
+        return new WritableTrackedEntityAttribute( getId(), getName(), getCode() );
     }
 }

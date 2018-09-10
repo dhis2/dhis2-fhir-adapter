@@ -28,8 +28,12 @@ package org.dhis2.fhir.adapter.prototype.fhir.config;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scripting.ScriptEvaluator;
+import org.springframework.scripting.support.StandardScriptEvaluator;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
@@ -53,5 +57,19 @@ public class TransformationConfig implements Serializable
     public void setScriptEngineName( String scriptEngineName )
     {
         this.scriptEngineName = scriptEngineName;
+    }
+
+    @Bean
+    protected ScriptEvaluator scriptEvaluator()
+    {
+        final StandardScriptEvaluator scriptEvaluator = new StandardScriptEvaluator();
+        scriptEvaluator.setEngineName( getScriptEngineName() );
+        return scriptEvaluator;
+    }
+
+    @Bean
+    protected DhisValueConverter dhisValueConverter()
+    {
+        return new DhisValueConverter();
     }
 }

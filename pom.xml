@@ -19,7 +19,7 @@
   <properties>
     <dhis2.username>admin</dhis2.username>
     <dhis2.password>district</dhis2.password>
-    <dhis2.url>https://localhost:8080</dhis2.url>
+    <dhis2.url>http://localhost:8080</dhis2.url>
     <dhis2.apiVersion>29</dhis2.apiVersion>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

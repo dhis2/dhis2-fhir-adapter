@@ -32,37 +32,35 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum FhirResourceType
+public enum FhirRequestMethod
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    PUT( "PUT" );
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private static final Map<String, FhirRequestMethod> requestMethodsByCode;
 
     static
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
+        requestMethodsByCode = new HashMap<>();
+        for ( final FhirRequestMethod requestMethod : values() )
         {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
+            requestMethodsByCode.put( requestMethod.getCode(), requestMethod );
         }
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    public static @Nullable FhirRequestMethod getByCode( @Nullable String code )
     {
-        return resourceTypesByPath.get( path );
+        return requestMethodsByCode.get( code );
     }
 
-    private final String path;
+    private final String code;
 
-    FhirResourceType( String path )
+    FhirRequestMethod( String code )
     {
-        this.path = path;
+        this.code = code;
     }
 
-    public String getPath()
+    public String getCode()
     {
-        return path;
+        return code;
     }
 }

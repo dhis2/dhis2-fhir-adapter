@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.model;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,32 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.Nonnull;
+import java.io.Serializable;
 
-public enum FhirResourceType
+public class ImmutableTrackedEntityAttribute implements TrackedEntityAttribute, Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = -6135628541438060211L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private final TrackedEntityAttribute delegate;
 
-    static
+    public ImmutableTrackedEntityAttribute( @Nonnull TrackedEntityAttribute delegate )
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
+        this.delegate = delegate;
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    @Override public String getId()
     {
-        return resourceTypesByPath.get( path );
+        return delegate.getId();
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    @Override public String getName()
     {
-        this.path = path;
+        return delegate.getName();
     }
 
-    public String getPath()
+    @Override public String getCode()
     {
-        return path;
+        return delegate.getCode();
     }
 }

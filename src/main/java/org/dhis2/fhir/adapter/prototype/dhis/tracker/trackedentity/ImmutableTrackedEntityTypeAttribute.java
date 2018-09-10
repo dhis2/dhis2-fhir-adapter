@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.model;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,44 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 
-public enum FhirResourceType
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+
+public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAttribute, Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = -6094500152005916960L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private final TrackedEntityTypeAttribute delegate;
 
-    static
+    public ImmutableTrackedEntityTypeAttribute( @Nonnull TrackedEntityTypeAttribute delegate )
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
+        this.delegate = delegate;
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    @Override public String getId()
     {
-        return resourceTypesByPath.get( path );
+        return delegate.getId();
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    @Override public String getName()
     {
-        this.path = path;
+        return delegate.getName();
     }
 
-    public String getPath()
+    @Override public ValueType getValueType()
     {
-        return path;
+        return delegate.getValueType();
+    }
+
+    @Override public boolean isMandatory()
+    {
+        return delegate.isMandatory();
+    }
+
+    @Override public TrackedEntityAttribute getAttribute()
+    {
+        return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
     }
 }

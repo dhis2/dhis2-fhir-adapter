@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 public class TrackedEntityAttributeValue implements Serializable
@@ -39,14 +40,19 @@ public class TrackedEntityAttributeValue implements Serializable
     @JsonProperty( "attribute" )
     private String attributeId;
 
-    private String value;
+    private Object value;
 
     public TrackedEntityAttributeValue()
     {
         super();
     }
 
-    public TrackedEntityAttributeValue( String attributeId, String value )
+    public TrackedEntityAttributeValue( @Nonnull String attributeId )
+    {
+        this.attributeId = attributeId;
+    }
+
+    public TrackedEntityAttributeValue( @Nonnull String attributeId, Object value )
     {
         this.attributeId = attributeId;
         this.value = value;
@@ -62,12 +68,12 @@ public class TrackedEntityAttributeValue implements Serializable
         this.attributeId = attributeId;
     }
 
-    public String getValue()
+    public Object getValue()
     {
         return value;
     }
 
-    public void setValue( String value )
+    public void setValue( Object value )
     {
         this.value = value;
     }

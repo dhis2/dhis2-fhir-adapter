@@ -184,4 +184,9 @@ public abstract class AbstractFhirToDhisMapping implements Serializable
     {
         this.transformScript = transformScript;
     }
+
+    @Override public String toString()
+    {
+        return "[id=" + getId() + ", version=" + getVersion() + "]";
+    }
 }

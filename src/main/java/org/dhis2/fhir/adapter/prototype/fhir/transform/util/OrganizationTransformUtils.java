@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,51 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.model.ImmutableFhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.prototype.dhis.model.Id;
+import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnit;
+import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
+import java.util.Optional;
 
-public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
+@Component
+public class OrganizationTransformUtils implements TransformUtils
 {
-    private final FhirRequest fhirRequest;
+    private static final String SCRIPT_ATTR_NAME = "organizationUtils";
 
-    public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest )
+    private final OrganisationUnitService organisationUnitService;
+
+    private final IdentifierTransformUtils identifierTransformUtils;
+
+    public OrganizationTransformUtils( @Nonnull OrganisationUnitService organisationUnitService, @Nonnull IdentifierTransformUtils identifierTransformUtils )
     {
-        this.fhirRequest = new ImmutableFhirRequest( fhirRequest );
+        this.organisationUnitService = organisationUnitService;
+        this.identifierTransformUtils = identifierTransformUtils;
     }
 
-    @Nonnull @Override public FhirRequest getFhirRequest()
+    @Nonnull @Override public String getScriptAttrName()
     {
-        return fhirRequest;
+        return SCRIPT_ATTR_NAME;
     }
 
-    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
+    @Nullable public String getOrganizationUnitId( @Nullable IBaseReference reference, @Nullable String system ) throws TransformException
     {
-        if ( value == null )
+        if ( reference == null )
         {
-            throw new TransformMappingException( message );
+            return null;
         }
-        return value;
+        final Id id = identifierTransformUtils.getReferenceId( reference, FhirResourceType.ORGANIZATION, system );
+        if ( id == null )
+        {
+            return null;
+        }
+        final Optional<OrganisationUnit> organisationUnit = organisationUnitService.get( id );
+        return organisationUnit.orElseThrow( () -> new TransformMappingException( "Could not find organization unit: " + id ) ).getId();
     }
-
-
 }

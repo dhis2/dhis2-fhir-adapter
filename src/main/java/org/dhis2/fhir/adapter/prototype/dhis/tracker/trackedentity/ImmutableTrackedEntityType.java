@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,56 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.model.ImmutableFhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
+public class ImmutableTrackedEntityType implements TrackedEntityType, Serializable
 {
-    private final FhirRequest fhirRequest;
+    private static final long serialVersionUID = 797154293863611491L;
 
-    public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest )
+    private final TrackedEntityType delegate;
+
+    public ImmutableTrackedEntityType( @Nonnull TrackedEntityType delegate )
     {
-        this.fhirRequest = new ImmutableFhirRequest( fhirRequest );
+        this.delegate = delegate;
     }
 
-    @Nonnull @Override public FhirRequest getFhirRequest()
+    @Override public String getId()
     {
-        return fhirRequest;
+        return delegate.getId();
     }
 
-    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
+    @Override public String getName()
     {
-        if ( value == null )
-        {
-            throw new TransformMappingException( message );
-        }
-        return value;
+        return delegate.getName();
     }
 
+    @Override public List<TrackedEntityTypeAttribute> getAttributes()
+    {
+        return (delegate.getAttributes() == null) ? null : delegate.getAttributes().stream().map( ImmutableTrackedEntityTypeAttribute::new ).collect( Collectors.toList() );
+    }
 
+    @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
+    {
+        return delegate.getOptionalTypeAttributeByCode( code ).map( ImmutableTrackedEntityTypeAttribute::new );
+    }
+
+    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code )
+    {
+        return getOptionalTypeAttributeByCode( code ).orElse( null );
+    }
+
+    @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
+    {
+        return delegate.getOptionalTypeAttributeByName( name ).map( ImmutableTrackedEntityTypeAttribute::new );
+    }
+
+    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )
+    {
+        return getOptionalTypeAttributeByName( name ).orElse( null );
+    }
 }

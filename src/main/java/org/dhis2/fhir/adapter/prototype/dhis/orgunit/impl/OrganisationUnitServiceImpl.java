@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.model.Id;
 import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnitService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +37,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Optional;
 
 @Service
 public class OrganisationUnitServiceImpl implements OrganisationUnitService
 {
+    protected static final String ORGANISATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json?fields=id,code";
+
     protected static final String ORGANISATION_UNIT_BY_CODE_URI = "/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:{code}";
 
     private final RestTemplate restTemplate;
@@ -51,9 +55,18 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<OrganisationUnit> getByCode( String code )
+    @Override public Optional<OrganisationUnit> get( @Nonnull Id id )
     {
-        final ResponseEntity<DhisOrganisationUnits> result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_CODE_URI, DhisOrganisationUnits.class, code );
-        return Optional.ofNullable( Optional.ofNullable( result.getBody() ).orElse( new DhisOrganisationUnits() ).getOrganisationUnits() ).orElse( Collections.emptyList() ).stream().findFirst();
+        switch ( id.getType() )
+        {
+            case ID:
+                final ResponseEntity<OrganisationUnit> idResult = restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, OrganisationUnit.class, id.getId() );
+                return Optional.ofNullable( idResult.getBody() );
+            case CODE:
+                final ResponseEntity<DhisOrganisationUnits> codeResult = restTemplate.getForEntity( ORGANISATION_UNIT_BY_CODE_URI, DhisOrganisationUnits.class, id.getId() );
+                return Optional.ofNullable( Optional.ofNullable( codeResult.getBody() ).orElse( new DhisOrganisationUnits() ).getOrganisationUnits() ).orElse( Collections.emptyList() ).stream().findFirst();
+            default:
+                throw new AssertionError( "Unhandled ID type: " + id.getType() );
+        }
     }
 }

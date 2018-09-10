@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,13 +29,12 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
  */
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.WritableTrackedEntityTypeAttribute;
 
 import java.io.Serializable;
 
-public class DhisTrackedEntityTypeAttribute implements Serializable
+public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttribute, Serializable
 {
-    private static final long serialVersionUID = -3598526638634032772L;
+    private static final long serialVersionUID = 9074338111048865188L;
 
     private String id;
 
@@ -45,9 +44,23 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
 
     private boolean mandatory;
 
-    private DhisTrackedEntityAttribute trackedEntityAttribute;
+    private WritableTrackedEntityAttribute attribute;
 
-    public String getId()
+    public WritableTrackedEntityTypeAttribute()
+    {
+        super();
+    }
+
+    public WritableTrackedEntityTypeAttribute( String id, String name, ValueType valueType, boolean mandatory, WritableTrackedEntityAttribute attribute )
+    {
+        this.id = id;
+        this.name = name;
+        this.valueType = valueType;
+        this.mandatory = mandatory;
+        this.attribute = attribute;
+    }
+
+    @Override public String getId()
     {
         return id;
     }
@@ -57,7 +70,7 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
         this.id = id;
     }
 
-    public String getName()
+    @Override public String getName()
     {
         return name;
     }
@@ -67,7 +80,7 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
         this.name = name;
     }
 
-    public ValueType getValueType()
+    @Override public ValueType getValueType()
     {
         return valueType;
     }
@@ -77,7 +90,7 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
         this.valueType = valueType;
     }
 
-    public boolean isMandatory()
+    @Override public boolean isMandatory()
     {
         return mandatory;
     }
@@ -87,18 +100,13 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
         this.mandatory = mandatory;
     }
 
-    public DhisTrackedEntityAttribute getTrackedEntityAttribute()
+    @Override public WritableTrackedEntityAttribute getAttribute()
     {
-        return trackedEntityAttribute;
+        return attribute;
     }
 
-    public void setTrackedEntityAttribute( DhisTrackedEntityAttribute trackedEntityAttribute )
+    public void setAttribute( WritableTrackedEntityAttribute attribute )
     {
-        this.trackedEntityAttribute = trackedEntityAttribute;
-    }
-
-    public WritableTrackedEntityTypeAttribute toModel()
-    {
-        return new WritableTrackedEntityTypeAttribute( getId(), getName(), getValueType(), isMandatory(), getTrackedEntityAttribute().toModel() );
+        this.attribute = attribute;
     }
 }

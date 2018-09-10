@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.model;
+package org.dhis2.fhir.adapter.prototype.fhir.transform;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,38 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 
-public enum FhirResourceType
+public class FhirToDhisTransformOutcome<R extends DhisResource> implements Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = -1022009827965716982L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private final String id;
 
-    static
+    private final R resource;
+
+    public FhirToDhisTransformOutcome( @Nonnull R resource )
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
+        this( null, resource );
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    public FhirToDhisTransformOutcome( @Nullable String id, @Nonnull R resource )
     {
-        return resourceTypesByPath.get( path );
+        this.id = id;
+        this.resource = resource;
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    public String getId()
     {
-        this.path = path;
+        return id;
     }
 
-    public String getPath()
+    public R getResource()
     {
-        return path;
+        return resource;
     }
 }

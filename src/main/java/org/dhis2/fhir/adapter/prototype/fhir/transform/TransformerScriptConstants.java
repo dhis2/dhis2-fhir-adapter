@@ -30,5 +30,11 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
 
 public interface TransformerScriptConstants
 {
-    String INPUT_ATTRIBUTE_NAME = "input";
+    String CONTEXT_ATTR_NAME = "context";
+
+    String INPUT_ATTR_NAME = "input";
+
+    String OUTPUT_ATTR_NAME = "output";
+
+    String TRACKED_ENTITY_TYPE_ATTR_NAME = "trackedEntityType";
 }

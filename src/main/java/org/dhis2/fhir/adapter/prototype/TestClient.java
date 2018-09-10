@@ -42,6 +42,8 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 
+import java.util.Random;
+
 public class TestClient
 {
     private static final String SERVER_BASE = "http://localhost:8081/fhir";
@@ -57,20 +59,22 @@ public class TestClient
         client.registerInterceptor( new LoggingInterceptor( true ) );
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
+        final String patientNationalId = String.valueOf( Math.abs( new Random().nextInt() ) );
+
         // Organization
         Organization org = new Organization();
         org.setId( IdType.newRandomUuid() );
         org.setName( "District Hospital" );
         org.addIdentifier()
             .setSystem( "http://example.ph/organizations" )
-            .setValue( "123-4" );
+            .setValue( "OU_559" );
 
         // Create Patient
         Patient patient = new Patient();
         patient.setIdElement( IdType.newRandomUuid() );
         patient.addIdentifier()
             .setSystem( "http://example.ph/national-patient-id" )
-            .setValue( "9937454-33" );
+            .setValue( "9937454" + patientNationalId );
 
         patient.addName()
             .setFamily( "Cruz" )
@@ -126,13 +130,13 @@ public class TestClient
             .setFullUrl( patient.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|9937454-33" );
+            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|9937454-" + patientNationalId );
         bundle.addEntry()
             .setResource( org )
             .setFullUrl( org.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Organization?identifier=http://example.ph/organizations|123-4" );
+            .setUrl( "Organization?identifier=http://example.ph/organizations|OU_559" );
         bundle.addEntry()
             .setResource( imm )
             .setFullUrl( imm.getId() )

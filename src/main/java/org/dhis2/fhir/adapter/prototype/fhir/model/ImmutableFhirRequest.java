@@ -28,41 +28,52 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-public enum FhirResourceType
+public class ImmutableFhirRequest implements FhirRequest, Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = 8079249171843824509L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private final FhirRequest delegate;
 
-    static
+    public ImmutableFhirRequest( @Nonnull FhirRequest delegate )
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
+        this.delegate = delegate;
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    @Override public FhirRequestMethod getRequestMethod()
     {
-        return resourceTypesByPath.get( path );
+        return delegate.getRequestMethod();
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    @Override public FhirResourceType getResourceType()
     {
-        this.path = path;
+        return delegate.getResourceType();
     }
 
-    public String getPath()
+    @Override public boolean containsRequestParameter( @Nonnull String name )
     {
-        return path;
+        return delegate.containsRequestParameter( name );
+    }
+
+    @Nonnull @Override public Set<String> getParameterNames()
+    {
+        return Collections.unmodifiableSet( delegate.getParameterNames() );
+    }
+
+    @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
+    {
+        final List<String> values = delegate.getParameterValues( name );
+        return (values == null) ? null : Collections.unmodifiableList( values );
+    }
+
+    @Override public FhirVersion getVersion()
+    {
+        return delegate.getVersion();
     }
 }

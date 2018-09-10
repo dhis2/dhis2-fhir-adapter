@@ -28,41 +28,22 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
-public enum FhirResourceType
+public interface FhirRequest
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    FhirRequestMethod getRequestMethod();
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    FhirResourceType getResourceType();
 
-    static
-    {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
-    }
+    boolean containsRequestParameter( @Nonnull String name );
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
-    {
-        return resourceTypesByPath.get( path );
-    }
+    @Nonnull Set<String> getParameterNames();
 
-    private final String path;
+    @Nullable List<String> getParameterValues( @Nonnull String name );
 
-    FhirResourceType( String path )
-    {
-        this.path = path;
-    }
-
-    public String getPath()
-    {
-        return path;
-    }
+    FhirVersion getVersion();
 }

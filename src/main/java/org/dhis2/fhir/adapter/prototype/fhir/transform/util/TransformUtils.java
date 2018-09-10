@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.model;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,9 @@ package org.dhis2.fhir.adapter.prototype.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.Nonnull;
 
-public enum FhirResourceType
+public interface TransformUtils
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
-
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
-
-    static
-    {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
-    }
-
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
-    {
-        return resourceTypesByPath.get( path );
-    }
-
-    private final String path;
-
-    FhirResourceType( String path )
-    {
-        this.path = path;
-    }
-
-    public String getPath()
-    {
-        return path;
-    }
+    @Nonnull String getScriptAttrName();
 }

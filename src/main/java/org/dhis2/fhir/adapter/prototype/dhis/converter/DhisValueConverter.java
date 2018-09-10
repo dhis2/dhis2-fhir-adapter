@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.prototype.dhis.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.converter.IsoStringToLocalDateConverter;
 import org.dhis2.fhir.adapter.prototype.converter.LocalDateToIsoStringConverter;
 import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
@@ -35,14 +38,13 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class DhisValueConverter
 {
-    private final Map<ValueType, TypedConverter<?, ?>> toDhisConverters = new HashMap<>();
+    private final ListMultimap<ValueType, TypedConverter<?, ?>> toDhisConverters = ArrayListMultimap.create();
 
-    private final Map<ValueType, TypedConverter<?, ?>> fromDhisConverters = new HashMap<>();
+    private final ListMultimap<ValueType, TypedConverter<?, ?>> fromDhisConverters = ArrayListMultimap.create();
 
     public DhisValueConverter()
     {
@@ -53,32 +55,24 @@ public class DhisValueConverter
 
     public @Nullable Object convertToDhis( @Nullable Object value, @Nonnull ValueType valueType )
     {
-        if ( (value == null) || (value instanceof String) || (value instanceof Number) || (value instanceof Boolean) )
+        if ( (value == null) || isUnconvertedPrimitive( value, valueType ) )
         {
             return value;
         }
 
-        final TypedConverter<?, ?> converter = toDhisConverters.get( valueType );
-        if ( converter == null )
+        final List<TypedConverter<?, ?>> converters = toDhisConverters.get( valueType );
+        for ( final TypedConverter<?, ?> converter : converters )
         {
-            throw new RuntimeException( "No converter for value type: " + valueType );
+            if ( converter.getFromClass().isInstance( value ) )
+            {
+                return converter.convertCasted( value );
+            }
         }
-        return converter.convertCasted( value );
+        throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName()) );
     }
 
-    public @Nullable <T> T convertFromDhis( @Nullable Object value, @Nonnull ValueType valueType )
+    private static boolean isUnconvertedPrimitive( @Nonnull Object value, @Nonnull ValueType valueType )
     {
-        if ( value == null )
-        {
-            return null;
-        }
-
-        final TypedConverter<?, ?> converter = toDhisConverters.get( valueType );
-        if ( converter == null )
-        {
-            throw new RuntimeException( "No converter for value type: " + valueType );
-        }
-        @SuppressWarnings( "unchecked" ) final T result = (T) converter.convertCasted( value );
-        return result;
+        return valueType.getJavaClass().equals( value.getClass() ) && ((value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
     }
 }

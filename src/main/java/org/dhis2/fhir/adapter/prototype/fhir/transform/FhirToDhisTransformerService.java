@@ -29,8 +29,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  */
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.model.WritableFhirRequest;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 
 import javax.annotation.Nonnull;
@@ -38,8 +37,8 @@ import javax.annotation.Nullable;
 
 public interface FhirToDhisTransformerService
 {
-    @Nonnull FhirToDhisTransformerContext createContext( @Nonnull FhirResourceType fhirResourceType, @Nonnull FhirVersion fhirVersion );
+    @Nonnull FhirToDhisTransformerContext createContext( @Nonnull WritableFhirRequest fhirRequest );
 
-    @Nullable DhisResource transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input )
+    @Nullable FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input )
         throws TransformException;
 }

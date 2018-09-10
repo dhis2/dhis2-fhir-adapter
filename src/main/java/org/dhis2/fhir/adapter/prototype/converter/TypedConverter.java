@@ -45,6 +45,16 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
         this.toClass = toClass;
     }
 
+    public Class<A> getFromClass()
+    {
+        return this.fromClass;
+    }
+
+    public Class<B> getToClass()
+    {
+        return this.toClass;
+    }
+
     public abstract @Nullable B doConvert( @Nonnull A source ) throws ConversionException;
 
     public final @Nullable B convertCasted( @Nullable Object source ) throws ConversionException

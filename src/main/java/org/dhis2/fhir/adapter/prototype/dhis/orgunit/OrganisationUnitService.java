@@ -28,9 +28,12 @@ package org.dhis2.fhir.adapter.prototype.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.model.Id;
+
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public interface OrganisationUnitService
 {
-    Optional<OrganisationUnit> getByCode( String code );
+    Optional<OrganisationUnit> get( @Nonnull Id id );
 }

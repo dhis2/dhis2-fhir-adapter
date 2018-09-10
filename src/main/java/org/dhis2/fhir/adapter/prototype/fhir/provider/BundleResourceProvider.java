@@ -32,26 +32,48 @@ import ca.uhn.fhir.rest.annotation.Transaction;
 import ca.uhn.fhir.rest.annotation.TransactionParam;
 import ca.uhn.fhir.rest.api.Constants;
 import ca.uhn.fhir.rest.server.IResourceProvider;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.model.WritableFhirRequest;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerService;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformRequestException;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.dstu3.model.Bundle.BundleEntryResponseComponent;
 import org.hl7.fhir.dstu3.model.Bundle.BundleType;
+import org.hl7.fhir.dstu3.model.Bundle.HTTPVerb;
+import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class BundleResourceProvider implements IResourceProvider
 {
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
 
-    public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService )
+    private final TrackedEntityService trackedEntityService;
+
+    public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService, @Nonnull TrackedEntityService trackedEntityService )
     {
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
+        this.trackedEntityService = trackedEntityService;
     }
 
     @Override public Class<Bundle> getResourceType()
@@ -63,12 +85,69 @@ public class BundleResourceProvider implements IResourceProvider
     public Bundle transaction( @TransactionParam Bundle bundle )
     {
         final Bundle resultBundle = new Bundle().setType( BundleType.TRANSACTIONRESPONSE );
-        for ( BundleEntryComponent entry : bundle.getEntry() )
+        for ( final BundleEntryComponent entry : bundle.getEntry() )
         {
-            fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( FhirResourceType.PATIENT, FhirVersion.DSTU3 ), entry.getResource() );
+            final WritableFhirRequest fhirRequest = new WritableFhirRequest();
+            fhirRequest.setRequestMethod( getFhirRequestMethod( entry ) );
+            fhirRequest.setResourceType( getFhirResourceType( entry ) );
+            fhirRequest.setParameters( getFhirRequestParameters( entry ) );
+            fhirRequest.setVersion( FhirVersion.DSTU3 );
+
+            final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), entry.getResource() );
+            // saving the tracked entity at this location is just for testing purpose (transaction may contain data that must be combined to one payload)
+            if ( (outcome != null) && (outcome.getResource().getResourceType() == DhisResourceType.TRACKED_ENTITY) )
+            {
+                trackedEntityService.create( (TrackedEntityInstance) outcome.getResource() );
+            }
 
             resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
         }
         return resultBundle;
+    }
+
+    private static @Nullable FhirRequestMethod getFhirRequestMethod( @Nonnull BundleEntryComponent entry )
+    {
+        final HTTPVerb method = entry.getRequest().getMethod();
+        return (method == null) ? null : FhirRequestMethod.getByCode( method.toCode() );
+    }
+
+    private static @Nullable FhirResourceType getFhirResourceType( @Nonnull BundleEntryComponent entry )
+    {
+        final Resource resource = entry.getResource();
+        return (resource == null) ? null : FhirResourceType.getByPath( resource.getResourceType().getPath() );
+    }
+
+    private static @Nonnull ListMultimap<String, String> getFhirRequestParameters( @Nonnull BundleEntryComponent entry )
+    {
+        final ListMultimap<String, String> parameters = ArrayListMultimap.create();
+        final String url = entry.getRequest().getUrl();
+        if ( StringUtils.isNotBlank( url ) )
+        {
+            try
+            {
+                final String encodedUrl = url.replace( "|", "%7C" );
+                final String rawQuery = new URI( encodedUrl ).getRawQuery();
+                if ( StringUtils.isNotBlank( rawQuery ) )
+                {
+                    for ( final String parameter : rawQuery.split( "&" ) )
+                    {
+                        if ( StringUtils.isNotBlank( parameter ) )
+                        {
+                            final int index = parameter.indexOf( '=' );
+                            if ( index >= 0 )
+                            {
+                                parameters.put( URLDecoder.decode( parameter.substring( 0, index ), StandardCharsets.UTF_8.name() ),
+                                    URLDecoder.decode( parameter.substring( index + 1 ), StandardCharsets.UTF_8.name() ) );
+                            }
+                        }
+                    }
+                }
+            }
+            catch ( URISyntaxException | UnsupportedEncodingException e )
+            {
+                throw new TransformRequestException( "Could not parse request URI in order to extract parameters: " + url, e );
+            }
+        }
+        return parameters;
     }
 }

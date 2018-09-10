@@ -1,5 +1,7 @@
 # DHIS2 FHIR Adapter Prototype for Demo
-The adapter prototype handles for a demo the data as described by https://github.com/jamesagnew/aehin2018-demo-data. __The source code is still under development.__
+The adapter prototype handles for a demo the data as described by https://github.com/jamesagnew/aehin2018-demo-data. 
+
+__The source code is still under development and must still be extended to support all features that are required for the demo!__
 ## Mappings to DHIS2
 FHIR structures may contain multiple values for one field (e.g. multiple names or addresses). This will not be displayed by the following sections. The resulting mapping configuration reduces multiple values to a single value.
 ### FHIR Organization
@@ -21,8 +23,8 @@ The geo coordinates of the address of the Patient will be assigned to an interna
 ### FHIR Immunization
 _The mapping needs to be defined when the DHIS2 program and program stages are available._
 ## Implementation Notes
+- The prototype may only contain technical and functional implementations that are absolutely required for the demo.
 - The prototype may contain a read-only metadata database that contains the mappings.
 - The prototype may not be optimized (e.g. may not use caching).
-- The prototype may not be 
 - The prototype may not be unit tested.
 - The prototype may not be able to handle multiple FHIR versions at the same time.
