@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,14 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
+import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public interface TransformUtils
+public class FhirDhisValueConverter extends DhisValueConverter
 {
-    @Nullable FhirVersion getFhirVersion();
+    public FhirDhisValueConverter()
+    {
+        addToDhisConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
 
-    @Nonnull String getScriptAttrName();
+    }
 }

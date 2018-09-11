@@ -16,7 +16,7 @@ The organization resource is only included in the transaction bundle to include 
 | Patient.gender           | Patient                   | Gender                        | No       | No     |
 | Patient.address.line     | Patient                   | Street                        | No       | No     |
 | Patient.address.city     | Patient                   | City                          | No       | No     |
-| Patient.address.state    | Patient                   | State                         | No       | No     |
+| Patient.address.state    | Patient                   | State of country              | No       | No     |
 | Patient.address.country  | Patient                   | Country                       | No       | No     |
 
 The geo coordinates of the address of the Patient will be assigned to an internal field when mapping. 

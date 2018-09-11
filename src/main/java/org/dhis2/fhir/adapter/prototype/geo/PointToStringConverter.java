@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,21 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface TransformUtils
+public class PointToStringConverter extends TypedConverter<Location, String>
 {
-    @Nullable FhirVersion getFhirVersion();
+    public PointToStringConverter()
+    {
+        super( Location.class, String.class );
+    }
 
-    @Nonnull String getScriptAttrName();
+    @Nullable @Override public String doConvert( @Nonnull Location source ) throws ConversionException
+    {
+        return "[" + String.valueOf( source.getLongitude() ) + "," + String.valueOf( source.getLatitude() ) + "]";
+    }
 }

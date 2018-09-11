@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,25 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
-public interface TransformUtils
+public class DateToIsoDateStringConverter extends TypedConverter<Date, String>
 {
-    @Nullable FhirVersion getFhirVersion();
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
-    @Nonnull String getScriptAttrName();
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone( zoneId );
+
+    public DateToIsoDateStringConverter()
+    {
+        super( Date.class, String.class );
+    }
+
+    @Override public @Nullable String doConvert( @Nonnull Date source )
+    {
+        return formatter.format( source.toInstant().atZone( zoneId ) );
+    }
 }

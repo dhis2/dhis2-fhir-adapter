@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,44 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import java.io.Serializable;
+import java.util.Objects;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public interface TransformUtils
+public class Location implements Geometry, Serializable
 {
-    @Nullable FhirVersion getFhirVersion();
+    private static final long serialVersionUID = 7916805545140123930L;
 
-    @Nonnull String getScriptAttrName();
+    private final double longitude;
+
+    private final double latitude;
+
+    public Location( double longitude, double latitude )
+    {
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
+    public double getLongitude()
+    {
+        return longitude;
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
+    }
+
+    @Override public boolean equals( Object o )
+    {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        Location geoLocation = (Location) o;
+        return Double.compare( geoLocation.longitude, longitude ) == 0 &&
+            Double.compare( geoLocation.latitude, latitude ) == 0;
+    }
+
+    @Override public int hashCode()
+    {
+        return Objects.hash( longitude, latitude );
+    }
 }

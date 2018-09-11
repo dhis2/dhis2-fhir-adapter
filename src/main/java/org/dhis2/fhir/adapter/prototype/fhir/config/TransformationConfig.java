@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.config;
  */
 
 import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
+import org.dhis2.fhir.adapter.prototype.fhir.converter.FhirDhisValueConverter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,6 +71,6 @@ public class TransformationConfig implements Serializable
     @Bean
     protected DhisValueConverter dhisValueConverter()
     {
-        return new DhisValueConverter();
+        return new FhirDhisValueConverter();
     }
 }

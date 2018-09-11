@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public interface TransformUtils
+public interface Geometry
 {
-    @Nullable FhirVersion getFhirVersion();
-
-    @Nonnull String getScriptAttrName();
+    /* nothing to declare */
 }

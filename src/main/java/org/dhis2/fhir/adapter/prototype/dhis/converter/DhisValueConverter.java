@@ -31,10 +31,11 @@ package org.dhis2.fhir.adapter.prototype.dhis.converter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.DateToIsoDateStringConverter;
 import org.dhis2.fhir.adapter.prototype.converter.IsoStringToLocalDateConverter;
-import org.dhis2.fhir.adapter.prototype.converter.LocalDateToIsoStringConverter;
 import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.geo.PointToStringConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,31 +49,58 @@ public class DhisValueConverter
 
     public DhisValueConverter()
     {
-        toDhisConverters.put( ValueType.DATE, new LocalDateToIsoStringConverter() );
+        addToDhisConverter( ValueType.DATE, new DateToIsoDateStringConverter() );
+        addToDhisConverter( ValueType.COORDINATE, new PointToStringConverter() );
 
-        fromDhisConverters.put( ValueType.DATE, new IsoStringToLocalDateConverter() );
+        addFromDhisConverter( ValueType.DATE, new IsoStringToLocalDateConverter() );
     }
 
-    public @Nullable Object convertToDhis( @Nullable Object value, @Nonnull ValueType valueType )
+    protected void addToDhisConverter( @Nonnull ValueType valueType, @Nonnull TypedConverter<?, ?> converter )
     {
-        if ( (value == null) || isUnconvertedPrimitive( value, valueType ) )
+        toDhisConverters.put( valueType, converter );
+    }
+
+    protected void addFromDhisConverter( @Nonnull ValueType valueType, @Nonnull TypedConverter<?, ?> converter )
+    {
+        fromDhisConverters.put( valueType, converter );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    public @Nullable <R> R convertToDhis( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
+    {
+        if ( (value == null) || (isResultValueType( value, resultClass ) && isUnconvertedPrimitive( value, valueType )) )
         {
-            return value;
+            return (R) value;
         }
 
         final List<TypedConverter<?, ?>> converters = toDhisConverters.get( valueType );
         for ( final TypedConverter<?, ?> converter : converters )
         {
-            if ( converter.getFromClass().isInstance( value ) )
+            if ( converter.getFromClass().isInstance( value ) && isResultClassType( resultClass, converter ) )
             {
-                return converter.convertCasted( value );
+                return (R) converter.convertCasted( value );
             }
         }
         throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName()) );
     }
 
+    public @Nullable Object convertToDhis( @Nullable Object value, @Nonnull ValueType valueType )
+    {
+        return convertToDhis( value, valueType, Object.class );
+    }
+
     private static boolean isUnconvertedPrimitive( @Nonnull Object value, @Nonnull ValueType valueType )
     {
         return valueType.getJavaClass().equals( value.getClass() ) && ((value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
+    }
+
+    private <R> boolean isResultValueType( @Nonnull Object value, @Nullable Class<R> resultClass )
+    {
+        return (resultClass == Object.class) || resultClass.isInstance( value );
+    }
+
+    private <R> boolean isResultClassType( @Nonnull Class<R> resultClass, @Nonnull TypedConverter<?, ?> converter )
+    {
+        return (resultClass == Object.class) || resultClass.isAssignableFrom( converter.getToClass() );
     }
 }

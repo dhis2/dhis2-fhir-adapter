@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
 
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface TransformUtils
+public abstract class AbstractTransformUtils implements TransformUtils
 {
-    @Nullable FhirVersion getFhirVersion();
-
-    @Nonnull String getScriptAttrName();
+    @Nullable @Override public FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
 }

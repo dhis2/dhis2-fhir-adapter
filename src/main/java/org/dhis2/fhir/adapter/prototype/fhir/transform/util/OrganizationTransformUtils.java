@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Component
-public class OrganizationTransformUtils implements TransformUtils
+public class OrganizationTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "organizationUtils";
 

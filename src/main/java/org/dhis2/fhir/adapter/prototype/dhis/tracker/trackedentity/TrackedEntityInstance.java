@@ -54,6 +54,8 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     @JsonProperty( "orgUnit" )
     private String orgUnitId;
 
+    private String coordinates;
+
     private Collection<TrackedEntityAttributeValue> attributes;
 
     public TrackedEntityInstance()
@@ -106,6 +108,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     public void setOrgUnitId( String orgUnitId )
     {
         this.orgUnitId = orgUnitId;
+    }
+
+    public String getCoordinates()
+    {
+        return coordinates;
+    }
+
+    public void setCoordinates( String coordinates )
+    {
+        this.coordinates = coordinates;
     }
 
     public Collection<TrackedEntityAttributeValue> getAttributes()

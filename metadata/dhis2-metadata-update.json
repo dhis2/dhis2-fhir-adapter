@@ -8,7 +8,7 @@
       "aggregationType": "NONE",
       "programScope": false,
       "displayInListNoProgram": false,
-      "publicAccess": "rw------",
+      "publicAccess": "rwrw----",
       "pattern": "",
       "generated": false,
       "displayOnVisitSchedule": false,
@@ -31,7 +31,30 @@
       "aggregationType": "NONE",
       "programScope": false,
       "displayInListNoProgram": false,
-      "publicAccess": "rw------",
+      "publicAccess": "rwrw----",
+      "pattern": "",
+      "generated": false,
+      "displayOnVisitSchedule": false,
+      "valueType": "TEXT",
+      "orgunitScope": false,
+      "confidential": false,
+      "unique": false,
+      "inherit": false,
+      "translations": [ ],
+      "userGroupAccesses": [ ],
+      "attributeValues": [ ],
+      "userAccesses": [ ],
+      "legendSets": [ ]
+    },
+    {
+      "code": "STATE_OF_COUNTRY",
+      "id": "a0IZx78ekbj",
+      "name": "State of country",
+      "shortName": "State of country",
+      "aggregationType": "NONE",
+      "programScope": false,
+      "displayInListNoProgram": false,
+      "publicAccess": "rwrw----",
       "pattern": "",
       "generated": false,
       "displayOnVisitSchedule": false,
@@ -150,6 +173,36 @@
           "userAccesses": [ ]
         },
         {
+          "id": "m49v112mS5s",
+          "name": "Patient Birth date",
+          "displayName": "Patient Birth date",
+          "displayShortName": "null Birth date",
+          "externalAccess": false,
+          "valueType": "DATE",
+          "searchable": false,
+          "displayInList": true,
+          "favorite": false,
+          "access": {
+            "read": true,
+            "update": true,
+            "externalize": true,
+            "delete": true,
+            "write": true,
+            "manage": true
+          },
+          "trackedEntityAttribute": {
+            "id": "gHGyrwKPzej"
+          },
+          "trackedEntityType": {
+            "id": "ljFomOKOCYd"
+          },
+          "favorites": [ ],
+          "translations": [ ],
+          "userGroupAccesses": [ ],
+          "attributeValues": [ ],
+          "userAccesses": [ ]
+        },
+        {
           "id": "vkhkYydokSN",
           "name": "Patient Gender",
           "displayName": "Patient Gender",
@@ -210,12 +263,12 @@
           "userAccesses": [ ]
         },
         {
-          "id": "xmdo05keFPW",
-          "name": "Patient State",
-          "displayName": "Patient State",
-          "displayShortName": "null State",
+          "id": "DepXBWKOfMU",
+          "name": "Patient State of country",
+          "displayName": "Patient State of country",
+          "displayShortName": "null State of country",
           "externalAccess": false,
-          "valueType": "NUMBER",
+          "valueType": "TEXT",
           "searchable": false,
           "displayInList": true,
           "favorite": false,
@@ -228,7 +281,7 @@
             "manage": true
           },
           "trackedEntityAttribute": {
-            "id": "GUOBQt5K2WI"
+            "id": "a0IZx78ekbj"
           },
           "trackedEntityType": {
             "id": "ljFomOKOCYd"

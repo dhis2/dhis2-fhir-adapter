@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-public class IdentifierTransformUtils implements TransformUtils
+public class IdentifierTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "identifierUtils";
 
@@ -79,6 +79,10 @@ public class IdentifierTransformUtils implements TransformUtils
             }
         }
         final String idPart = reference.getReferenceElement().getIdPart();
+        if ( (idPart == null) && (reference.getResource() != null) )
+        {
+            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
+        }
         return (idPart == null) ? null : new Id( idPart, IdType.ID );
     }
 
@@ -110,31 +114,39 @@ public class IdentifierTransformUtils implements TransformUtils
             throw new TransformMappingException( "Cannot get identifier of undefined domain resource." );
         }
 
-        final Class<? extends DomainResource> domainResourceClass = domainResource.getClass();
-        Method method = identifierMethods.get( domainResourceClass );
-        if ( method == null )
-        {
-            method = ReflectionUtils.findMethod( domainResource.getClass(), "getIdentifier" );
-            if ( method != null )
-            {
-                final Map<Class<? extends DomainResource>, Method> copiedIdentifierMethods = new HashMap<>( identifierMethods );
-                copiedIdentifierMethods.put( domainResourceClass, method );
-                identifierMethods = copiedIdentifierMethods;
-            }
-        }
-
+        final Method method = getIdentifierMethod( domainResource );
         if ( method != null )
         {
             @SuppressWarnings( "unchecked" ) final List<Identifier> identifiers = (List<Identifier>) ReflectionUtils.invokeMethod( method, domainResource );
-            for ( final Identifier identifier : identifiers )
+            if ( identifiers != null )
             {
-                if ( Objects.equals( system, identifier.getSystem() ) )
+                for ( final Identifier identifier : identifiers )
                 {
-                    return identifier.getValue();
+                    if ( Objects.equals( system, identifier.getSystem() ) )
+                    {
+                        return identifier.getValue();
+                    }
                 }
             }
         }
 
         return null;
+    }
+
+    private @Nullable Method getIdentifierMethod( @Nonnull DomainResource domainResource )
+    {
+        final Class<? extends DomainResource> domainResourceClass = domainResource.getClass();
+        final Map<Class<? extends DomainResource>, Method> identifierMethods = this.identifierMethods;
+        if ( identifierMethods.containsKey( domainResourceClass ) )
+        {
+            return identifierMethods.get( domainResourceClass );
+        }
+
+        final Method method = ReflectionUtils.findMethod( domainResource.getClass(), "getIdentifier" );
+        final Map<Class<? extends DomainResource>, Method> copiedIdentifierMethods = new HashMap<>( identifierMethods );
+        copiedIdentifierMethods.put( domainResourceClass, method );
+        this.identifierMethods = copiedIdentifierMethods;
+
+        return method;
     }
 }

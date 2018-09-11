@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.opengis.geometry.primitive.Point;
+import org.dhis2.fhir.adapter.prototype.geo.Location;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -56,7 +56,7 @@ public enum ValueType
     TRACKER_ASSOCIATE( Id.class ),
     USERNAME( String.class ),
     FILE_RESOURCE( String.class ),
-    COORDINATE( Point.class ),
+    COORDINATE( Location.class ),
     ORGANISATION_UNIT( Id.class ),
     AGE( ZonedDateTime.class ),
     URL( String.class ),

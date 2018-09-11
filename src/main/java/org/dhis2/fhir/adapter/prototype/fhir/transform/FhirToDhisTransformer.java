@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 
 import javax.annotation.Nonnull;
@@ -38,6 +39,8 @@ import java.util.Map;
 
 public interface FhirToDhisTransformer<R extends DhisResource, M extends AbstractFhirToDhisMapping>
 {
+    @Nullable FhirVersion getFhirVersion();
+
     @Nonnull DhisResourceType getDhisResourceType();
 
     @Nonnull Class<R> getDhisResourceClass();

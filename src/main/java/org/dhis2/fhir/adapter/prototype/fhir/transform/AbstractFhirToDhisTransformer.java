@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  */
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.springframework.scripting.ScriptCompilationException;
 import org.springframework.scripting.ScriptEvaluator;
@@ -52,6 +53,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         @Nonnull AbstractFhirToDhisMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         return transform( context, input, getMappingClass().cast( mapping ), scriptArguments );
+    }
+
+    @Nullable @Override public FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
     }
 
     @Override public void addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull AbstractFhirToDhisMapping mapping )

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,27 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface TransformUtils
+public class AdministrativeGenderToStringConverter extends TypedConverter<AdministrativeGender, String>
 {
-    @Nullable FhirVersion getFhirVersion();
+    public AdministrativeGenderToStringConverter()
+    {
+        super( AdministrativeGender.class, String.class );
+    }
 
-    @Nonnull String getScriptAttrName();
+    @Nullable @Override public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
+    {
+        if ( (source != AdministrativeGender.MALE) && (source != AdministrativeGender.FEMALE) )
+        {
+            throw new ConversionException( "Unsupported gender: " + source.name() );
+        }
+        return StringUtils.capitalize( source.name().toLowerCase() );
+    }
 }
