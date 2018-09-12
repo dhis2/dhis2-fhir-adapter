@@ -105,7 +105,7 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         Map<String, WritableTrackedEntityTypeAttribute> attributesByCode = this.attributesByCode;
         if ( attributesByCode == null )
         {
-            this.attributesByCode = attributesByCode = attributes.stream().filter( a -> StringUtils.isNotBlank( a.getAttribute().getCode() ) ).collect( Collectors.toMap( a -> a.getAttribute().getCode(), a -> a ) );
+            this.attributesByCode = attributesByCode = attributes.stream().filter( a -> (a.getAttribute() != null) && StringUtils.isNotBlank( a.getAttribute().getCode() ) ).collect( Collectors.toMap( a -> a.getAttribute().getCode(), a -> a ) );
         }
         return Optional.ofNullable( attributesByCode.get( code ) );
     }
@@ -124,7 +124,7 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         Map<String, WritableTrackedEntityTypeAttribute> attributesByName = this.attributesByName;
         if ( attributesByName == null )
         {
-            this.attributesByName = attributesByName = attributes.stream().collect( Collectors.toMap( a -> a.getAttribute().getName(), a -> a ) );
+            this.attributesByName = attributesByName = attributes.stream().filter( a -> (a.getAttribute() != null) ).collect( Collectors.toMap( a -> a.getAttribute().getName(), a -> a ) );
         }
         return Optional.ofNullable( attributesByName.get( name ) );
     }

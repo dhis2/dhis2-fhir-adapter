@@ -62,10 +62,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class BundleResourceProvider implements IResourceProvider
 {
+    private final Pattern RESOURCE_ID_PATTERN = Pattern.compile( "/?[^/]*/([^/]+).*" );
+
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
 
     private final TrackedEntityService trackedEntityService;
@@ -90,8 +94,8 @@ public class BundleResourceProvider implements IResourceProvider
             final WritableFhirRequest fhirRequest = new WritableFhirRequest();
             fhirRequest.setRequestMethod( getFhirRequestMethod( entry ) );
             fhirRequest.setResourceType( getFhirResourceType( entry ) );
-            fhirRequest.setParameters( getFhirRequestParameters( entry ) );
             fhirRequest.setVersion( FhirVersion.DSTU3 );
+            updateWithUrl( entry, fhirRequest );
 
             final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), entry.getResource() );
             // saving the tracked entity at this location is just for testing purpose (transaction may contain data that must be combined to one payload)
@@ -105,19 +109,19 @@ public class BundleResourceProvider implements IResourceProvider
         return resultBundle;
     }
 
-    private static @Nullable FhirRequestMethod getFhirRequestMethod( @Nonnull BundleEntryComponent entry )
+    private @Nullable FhirRequestMethod getFhirRequestMethod( @Nonnull BundleEntryComponent entry )
     {
         final HTTPVerb method = entry.getRequest().getMethod();
         return (method == null) ? null : FhirRequestMethod.getByCode( method.toCode() );
     }
 
-    private static @Nullable FhirResourceType getFhirResourceType( @Nonnull BundleEntryComponent entry )
+    private @Nullable FhirResourceType getFhirResourceType( @Nonnull BundleEntryComponent entry )
     {
         final Resource resource = entry.getResource();
         return (resource == null) ? null : FhirResourceType.getByPath( resource.getResourceType().getPath() );
     }
 
-    private static @Nonnull ListMultimap<String, String> getFhirRequestParameters( @Nonnull BundleEntryComponent entry )
+    private void updateWithUrl( @Nonnull BundleEntryComponent entry, @Nonnull WritableFhirRequest request )
     {
         final ListMultimap<String, String> parameters = ArrayListMultimap.create();
         final String url = entry.getRequest().getUrl();
@@ -126,27 +130,54 @@ public class BundleResourceProvider implements IResourceProvider
             try
             {
                 final String encodedUrl = url.replace( "|", "%7C" );
-                final String rawQuery = new URI( encodedUrl ).getRawQuery();
-                if ( StringUtils.isNotBlank( rawQuery ) )
+                final URI uri = new URI( encodedUrl );
+
+                request.setResourceId( getFhirResourceId( uri ) );
+                request.setParameters( getFhirRequestParameters( uri ) );
+            }
+            catch ( URISyntaxException e )
+            {
+                throw new TransformRequestException( "Could not parse request URI in order to extract parameters: " + url, e );
+            }
+        }
+    }
+
+    private @Nullable String getFhirResourceId( @Nonnull URI uri )
+    {
+        final String path = uri.getPath();
+        if ( path == null )
+        {
+            return null;
+        }
+        final Matcher matcher = RESOURCE_ID_PATTERN.matcher( path );
+        return matcher.matches() ? matcher.group( 1 ) : null;
+    }
+
+    private static @Nonnull ListMultimap<String, String> getFhirRequestParameters( @Nonnull URI uri )
+    {
+        final ListMultimap<String, String> parameters = ArrayListMultimap.create();
+        try
+        {
+            final String rawQuery = uri.getRawQuery();
+            if ( StringUtils.isNotBlank( rawQuery ) )
+            {
+                for ( final String parameter : rawQuery.split( "&" ) )
                 {
-                    for ( final String parameter : rawQuery.split( "&" ) )
+                    if ( StringUtils.isNotBlank( parameter ) )
                     {
-                        if ( StringUtils.isNotBlank( parameter ) )
+                        final int index = parameter.indexOf( '=' );
+                        if ( index >= 0 )
                         {
-                            final int index = parameter.indexOf( '=' );
-                            if ( index >= 0 )
-                            {
-                                parameters.put( URLDecoder.decode( parameter.substring( 0, index ), StandardCharsets.UTF_8.name() ),
-                                    URLDecoder.decode( parameter.substring( index + 1 ), StandardCharsets.UTF_8.name() ) );
-                            }
+                            parameters.put( URLDecoder.decode( parameter.substring( 0, index ), StandardCharsets.UTF_8.name() ),
+                                URLDecoder.decode( parameter.substring( index + 1 ), StandardCharsets.UTF_8.name() ) );
                         }
                     }
                 }
             }
-            catch ( URISyntaxException | UnsupportedEncodingException e )
-            {
-                throw new TransformRequestException( "Could not parse request URI in order to extract parameters: " + url, e );
-            }
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new TransformRequestException( "Could not parse request URI in order to extract parameters: " + uri, e );
         }
         return parameters;
     }

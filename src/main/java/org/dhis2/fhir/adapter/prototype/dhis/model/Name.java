@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.prototype.dhis.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,49 +28,64 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.io.Serializable;
 
-public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAttribute, Serializable
+@Embeddable
+public class Name implements Serializable
 {
-    private static final long serialVersionUID = -6094500152005916960L;
+    private static final long serialVersionUID = 6049184293580457755L;
 
-    private final TrackedEntityTypeAttribute delegate;
+    private String name;
 
-    public ImmutableTrackedEntityTypeAttribute( @Nonnull TrackedEntityTypeAttribute delegate )
+    @JsonIgnore
+    @Enumerated( EnumType.STRING )
+    private NameType type = NameType.NAME;
+
+    public Name()
     {
-        this.delegate = delegate;
+        super();
     }
 
-    @Override public String getId()
+    public Name( @Nullable String name )
     {
-        return delegate.getId();
+        this.name = name;
     }
 
-    @Override public String getName()
+    public Name( @Nullable String name, @Nonnull NameType type )
     {
-        return delegate.getName();
+        this.name = name;
+        this.type = type;
     }
 
-    @Override public ValueType getValueType()
+    public String getName()
     {
-        return delegate.getValueType();
+        return name;
     }
 
-    @Override public boolean isMandatory()
+    public void setName( String name )
     {
-        return delegate.isMandatory();
+        this.name = name;
     }
 
-    @Override public boolean isGenerated()
+    public NameType getType()
     {
-        return delegate.isGenerated();
+        return type;
     }
 
-    @Override public TrackedEntityAttribute getAttribute()
+    public void setType( NameType type )
     {
-        return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
+        this.type = type;
+    }
+
+    @Override public String toString()
+    {
+        return "[type=" + getType() + ", name=" + getName() + "]";
     }
 }

@@ -45,10 +45,16 @@ public class AdministrativeGenderToStringConverter extends TypedConverter<Admini
 
     @Nullable @Override public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
     {
-        if ( (source != AdministrativeGender.MALE) && (source != AdministrativeGender.FEMALE) )
+        switch ( source )
         {
-            throw new ConversionException( "Unsupported gender: " + source.name() );
+            case MALE:
+            case FEMALE:
+                return StringUtils.capitalize( source.name().toLowerCase() );
+            case NULL:
+            case OTHER:
+                return null;
+            default:
+                throw new ConversionException( "Unsupported gender: " + source.name() );
         }
-        return StringUtils.capitalize( source.name().toLowerCase() );
     }
 }

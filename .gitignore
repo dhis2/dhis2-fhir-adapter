@@ -9,6 +9,7 @@
 *.class
 *.iml
 *.jar
+*.lck
 *.log
 
 .idea/

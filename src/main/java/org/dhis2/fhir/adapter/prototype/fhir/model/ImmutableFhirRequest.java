@@ -46,14 +46,19 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
         this.delegate = delegate;
     }
 
-    @Override public FhirRequestMethod getRequestMethod()
+    @Nullable @Override public FhirRequestMethod getRequestMethod()
     {
         return delegate.getRequestMethod();
     }
 
-    @Override public FhirResourceType getResourceType()
+    @Nullable @Override public FhirResourceType getResourceType()
     {
         return delegate.getResourceType();
+    }
+
+    @Nullable @Override public String getResourceId()
+    {
+        return delegate.getResourceId();
     }
 
     @Override public boolean containsRequestParameter( @Nonnull String name )
@@ -72,7 +77,7 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
         return (values == null) ? null : Collections.unmodifiableList( values );
     }
 
-    @Override public FhirVersion getVersion()
+    @Nonnull @Override public FhirVersion getVersion()
     {
         return delegate.getVersion();
     }

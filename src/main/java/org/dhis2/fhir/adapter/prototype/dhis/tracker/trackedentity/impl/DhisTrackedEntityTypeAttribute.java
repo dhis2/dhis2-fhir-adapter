@@ -45,6 +45,8 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
 
     private boolean mandatory;
 
+    private boolean generated;
+
     private DhisTrackedEntityAttribute trackedEntityAttribute;
 
     public String getId()
@@ -87,6 +89,16 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
         this.mandatory = mandatory;
     }
 
+    public boolean isGenerated()
+    {
+        return generated;
+    }
+
+    public void setGenerated( boolean generated )
+    {
+        this.generated = generated;
+    }
+
     public DhisTrackedEntityAttribute getTrackedEntityAttribute()
     {
         return trackedEntityAttribute;
@@ -99,6 +111,7 @@ public class DhisTrackedEntityTypeAttribute implements Serializable
 
     public WritableTrackedEntityTypeAttribute toModel()
     {
-        return new WritableTrackedEntityTypeAttribute( getId(), getName(), getValueType(), isMandatory(), getTrackedEntityAttribute().toModel() );
+        return new WritableTrackedEntityTypeAttribute( getId(), getName(), getValueType(), isMandatory(), isGenerated(),
+            (getTrackedEntityAttribute() == null) ? null : getTrackedEntityAttribute().toModel() );
     }
 }

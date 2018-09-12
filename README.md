@@ -9,17 +9,31 @@ The organization resource is only included in the transaction bundle to include 
 ### FHIR Patient
 | FHIR Structure           | DHIS2 Tracked Entity Name | Tracked Entity Attribute Name | Required | Unique |
 |--------------------------|---------------------------|-------------------------------|----------|--------|
-| Patient.name.family      | Patient                   | First name                    | No       | No     |
-| Patient.name.given       | Patient                   | Last name                     | No       | No     |
-| Patient.birthDate        | Patient                   | Birth date                    | No       | No     |
-| Patient.identifier.value | Patient                   | National identifier           | Yes      | Yes    |
-| Patient.gender           | Patient                   | Gender                        | No       | No     |
-| Patient.address.line     | Patient                   | Street                        | No       | No     |
-| Patient.address.city     | Patient                   | City                          | No       | No     |
-| Patient.address.state    | Patient                   | State of country              | No       | No     |
-| Patient.address.country  | Patient                   | Country                       | No       | No     |
+| Patient.name.family      | Person                    | First name                    | No       | No     |
+| Patient.name.given       | Person                    | Last name                     | No       | No     |
+| Patient.birthDate        | Person                    | Birth date                    | No       | No     |
+| Patient.identifier.value | Person                    | National identifier           | Yes      | Yes    |
+| Patient.gender           | Person                    | Gender                        | No       | No     |
+| Patient.address.line     | Person                    | Address line                  | No       | No     |
+| Patient.address.city     | Person                    | City                          | No       | No     |
+| Patient.address.state    | Person                    | State of country              | No       | No     |
+| Patient.address.country  | Person                    | Country                       | No       | No     |
 
-The geo coordinates of the address of the Patient will be assigned to an internal field when mapping. 
+For mapping the following mapping script is used. Data type conversions are made by the transformation engine that is included in the adapter.
+
+    output.organizationUnitId = organizationUtils.getOrganizationUnitId( input.managingOrganization, 'http://example.ph/organizations' );
+    output.setValueByName( 'National identifier', identifierUtils.getIdentifier( input, 'http://example.ph/national-patient-id' ) );
+    output.setValueByName( 'Last name', humanNameUtils.getPrimaryName( input.name ).family );
+    output.setValueByName( 'First name', humanNameUtils.getSingleGiven( humanNameUtils.getPrimaryName( input.name ) ) );
+    output.setValueByName( 'Birth date', input.birthDate );
+    output.setValueByName( 'Gender', input.gender );
+    output.setValueByName( 'Address line', addressUtils.getSingleLine( addressUtils.getPrimaryAddress( input.address ) ) );
+    output.setValueByName( 'City', addressUtils.getPrimaryAddress( input.address ).city );
+    output.setValueByName( 'State of country', addressUtils.getPrimaryAddress( input.address ).state );
+    output.setValueByName( 'Country', addressUtils.getPrimaryAddress( input.address ).country );
+    output.coordinates = geoUtils.getLocation( addressUtils.getPrimaryAddress( input.address ) );
+    true;
+
 ### FHIR Immunization
 _The mapping needs to be defined when the DHIS2 program and program stages are available._
 ## Implementation Notes

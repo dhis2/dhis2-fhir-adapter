@@ -45,28 +45,40 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private FhirResourceType resourceType;
 
+    private String resourceId;
+
     private ListMultimap<String, String> parameters;
 
     private FhirVersion version;
 
-    @Override public FhirRequestMethod getRequestMethod()
+    @Nullable @Override public FhirRequestMethod getRequestMethod()
     {
         return requestMethod;
     }
 
-    public void setRequestMethod( FhirRequestMethod requestMethod )
+    public void setRequestMethod( @Nullable FhirRequestMethod requestMethod )
     {
         this.requestMethod = requestMethod;
     }
 
-    @Override public FhirResourceType getResourceType()
+    @Nullable @Override public FhirResourceType getResourceType()
     {
         return resourceType;
     }
 
-    public void setResourceType( FhirResourceType resourceType )
+    public void setResourceType( @Nullable FhirResourceType resourceType )
     {
         this.resourceType = resourceType;
+    }
+
+    @Nullable @Override public String getResourceId()
+    {
+        return resourceId;
+    }
+
+    public void setResourceId( @Nullable String resourceId )
+    {
+        this.resourceId = resourceId;
     }
 
     public ListMultimap<String, String> getParameters()
@@ -74,7 +86,7 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         return parameters;
     }
 
-    public void setParameters( ListMultimap<String, String> parameters )
+    public void setParameters( @Nonnull ListMultimap<String, String> parameters )
     {
         this.parameters = parameters;
     }
@@ -98,12 +110,12 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         return getParameters().get( name );
     }
 
-    @Override public FhirVersion getVersion()
+    @Nonnull @Override public FhirVersion getVersion()
     {
         return version;
     }
 
-    public void setVersion( FhirVersion version )
+    public void setVersion( @Nonnull FhirVersion version )
     {
         this.version = version;
     }

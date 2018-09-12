@@ -40,5 +40,7 @@ public interface TrackedEntityTypeAttribute
 
     boolean isMandatory();
 
+    boolean isGenerated();
+
     TrackedEntityAttribute getAttribute();
 }

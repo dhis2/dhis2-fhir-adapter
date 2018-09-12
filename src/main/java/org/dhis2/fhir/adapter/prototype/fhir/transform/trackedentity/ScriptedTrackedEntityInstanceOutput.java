@@ -42,7 +42,7 @@ import org.dhis2.fhir.adapter.prototype.geo.Location;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ScriptedTrackedEntityInstance implements ScriptedDhisResource
+public class ScriptedTrackedEntityInstanceOutput implements ScriptedDhisResource
 {
     private final TrackedEntityType trackedEntityType;
 
@@ -50,7 +50,7 @@ public class ScriptedTrackedEntityInstance implements ScriptedDhisResource
 
     private final DhisValueConverter dhisValueConverter;
 
-    public ScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull DhisValueConverter dhisValueConverter )
+    public ScriptedTrackedEntityInstanceOutput( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull DhisValueConverter dhisValueConverter )
     {
         this.trackedEntityType = trackedEntityType;
         this.trackedEntityInstance = trackedEntityInstance;
@@ -95,6 +95,10 @@ public class ScriptedTrackedEntityInstance implements ScriptedDhisResource
         if ( (value == null) && typeAttribute.isMandatory() )
         {
             throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is mandatory and cannot be null." );
+        }
+        if ( typeAttribute.isGenerated() )
+        {
+            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is generated and cannot be set." );
         }
 
         final Object convertedValue;

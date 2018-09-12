@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.prototype.fhir.transform;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,49 +28,56 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.dhis.model.Name;
 
-import javax.annotation.Nonnull;
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import java.io.Serializable;
 
-public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAttribute, Serializable
+@Embeddable
+public class FhirToDhisIdentifierMapping implements Serializable
 {
-    private static final long serialVersionUID = -6094500152005916960L;
+    private static final long serialVersionUID = 5087459241592082154L;
 
-    private final TrackedEntityTypeAttribute delegate;
+    @Embedded @AttributeOverrides( { @AttributeOverride( name = "name", column = @Column( name = "identifier_attr_name" ) ), @AttributeOverride( name = "type", column = @Column( name = "identifier_attr_name_type" ) ) } )
+    private Name identifierAttributeName;
 
-    public ImmutableTrackedEntityTypeAttribute( @Nonnull TrackedEntityTypeAttribute delegate )
+    @Column( name = "identifier_system" )
+    private String identifierSystem;
+
+    @Column( name = "identifier_unqualified" )
+    private boolean identifierUnqualified;
+
+    public Name getIdentifierAttributeName()
     {
-        this.delegate = delegate;
+        return identifierAttributeName;
     }
 
-    @Override public String getId()
+    public void setIdentifierAttributeName( Name identifierAttributeName )
     {
-        return delegate.getId();
+        this.identifierAttributeName = identifierAttributeName;
     }
 
-    @Override public String getName()
+    public String getIdentifierSystem()
     {
-        return delegate.getName();
+        return identifierSystem;
     }
 
-    @Override public ValueType getValueType()
+    public void setIdentifierSystem( String identifierSystem )
     {
-        return delegate.getValueType();
+        this.identifierSystem = identifierSystem;
     }
 
-    @Override public boolean isMandatory()
+    public boolean isIdentifierUnqualified()
     {
-        return delegate.isMandatory();
+        return identifierUnqualified;
     }
 
-    @Override public boolean isGenerated()
+    public void setIdentifierUnqualified( boolean identifierUnqualified )
     {
-        return delegate.isGenerated();
-    }
-
-    @Override public TrackedEntityAttribute getAttribute()
-    {
-        return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
+        this.identifierUnqualified = identifierUnqualified;
     }
 }

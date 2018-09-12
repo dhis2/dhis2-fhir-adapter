@@ -35,9 +35,11 @@ import java.util.Set;
 
 public interface FhirRequest
 {
-    FhirRequestMethod getRequestMethod();
+    @Nullable FhirRequestMethod getRequestMethod();
 
-    FhirResourceType getResourceType();
+    @Nullable FhirResourceType getResourceType();
+
+    @Nullable String getResourceId();
 
     boolean containsRequestParameter( @Nonnull String name );
 
@@ -45,5 +47,5 @@ public interface FhirRequest
 
     @Nullable List<String> getParameterValues( @Nonnull String name );
 
-    FhirVersion getVersion();
+    @Nonnull FhirVersion getVersion();
 }

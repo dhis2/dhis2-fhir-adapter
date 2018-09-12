@@ -97,7 +97,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
 
         final TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance( trackedEntityType.getId() );
-        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new ScriptedTrackedEntityInstance( trackedEntityType, trackedEntityInstance, dhisValueConverter );
+        final ScriptedTrackedEntityInstanceOutput scriptedTrackedEntityInstance = new ScriptedTrackedEntityInstanceOutput( trackedEntityType, trackedEntityInstance, dhisValueConverter );
         arguments.put( TransformerScriptConstants.OUTPUT_ATTR_NAME, scriptedTrackedEntityInstance );
 
         if ( !transform( mapping, arguments ) )

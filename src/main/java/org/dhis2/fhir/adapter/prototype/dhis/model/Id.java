@@ -31,8 +31,11 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
+@Embeddable
 public class Id implements Serializable
 {
     private static final long serialVersionUID = -7860335236215947653L;
@@ -47,12 +50,12 @@ public class Id implements Serializable
         super();
     }
 
-    public Id( String id )
+    public Id( @Nullable String id )
     {
         this.id = id;
     }
 
-    public Id( String id, @Nonnull IdType type )
+    public Id( @Nullable String id, @Nonnull IdType type )
     {
         this.id = id;
         this.type = type;
@@ -73,7 +76,7 @@ public class Id implements Serializable
         return type;
     }
 
-    public void setType( @Nonnull IdType type )
+    public void setType( IdType type )
     {
         this.type = type;
     }

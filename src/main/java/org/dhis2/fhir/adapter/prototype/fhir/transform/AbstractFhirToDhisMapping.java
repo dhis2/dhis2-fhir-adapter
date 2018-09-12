@@ -35,6 +35,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -94,6 +95,9 @@ public abstract class AbstractFhirToDhisMapping implements Serializable
 
     @Lob @Column( name = "transform_script", nullable = false )
     private String transformScript;
+
+    @Embedded
+    private FhirToDhisIdentifierMapping identifierMapping;
 
     public UUID getId()
     {
@@ -183,6 +187,16 @@ public abstract class AbstractFhirToDhisMapping implements Serializable
     public void setTransformScript( String transformScript )
     {
         this.transformScript = transformScript;
+    }
+
+    public FhirToDhisIdentifierMapping getIdentifierMapping()
+    {
+        return identifierMapping;
+    }
+
+    public void setIdentifierMapping( FhirToDhisIdentifierMapping identifierMapping )
+    {
+        this.identifierMapping = identifierMapping;
     }
 
     @Override public String toString()

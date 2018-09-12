@@ -67,7 +67,7 @@ public class TestClient
         org.setName( "District Hospital" );
         org.addIdentifier()
             .setSystem( "http://example.ph/organizations" )
-            .setValue( "OU_559" );
+            .setValue( "PHL-D-1" );
 
         // Create Patient
         Patient patient = new Patient();
@@ -136,7 +136,7 @@ public class TestClient
             .setFullUrl( org.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Organization?identifier=http://example.ph/organizations|OU_559" );
+            .setUrl( "Organization?identifier=http://example.ph/organizations|PHL-D-1" );
         bundle.addEntry()
             .setResource( imm )
             .setFullUrl( imm.getId() )
