@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,17 +28,32 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class TransformScriptException extends TransformException
-{
-    private static final long serialVersionUID = -1296515465059154893L;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 
-    public TransformScriptException( String message )
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
+{
+    private final ScriptedTrackedEntityInstance delegate;
+
+    public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
     {
-        super( message );
+        this.delegate = delegate;
     }
 
-    public TransformScriptException( String message, Throwable cause )
+    @Override public boolean isNewResource()
     {
-        super( message, cause );
+        return delegate.isNewResource();
+    }
+
+    @Nullable @Override public String getOrganizationUnitId()
+    {
+        return delegate.getOrganizationUnitId();
+    }
+
+    @Override public void validate() throws TransformException
+    {
+        delegate.validate();
     }
 }

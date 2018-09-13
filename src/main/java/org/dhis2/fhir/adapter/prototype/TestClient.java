@@ -52,6 +52,8 @@ public class TestClient
 
     private static final String PASSWORD = "district";
 
+    private static final boolean STATIC_PATIENT_NATIONAL_ID = false;
+
     public static void main( String[] args )
     {
         final FhirContext ctx = FhirContext.forDstu3();
@@ -59,7 +61,8 @@ public class TestClient
         client.registerInterceptor( new LoggingInterceptor( true ) );
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
-        final String patientNationalId = String.valueOf( Math.abs( new Random().nextInt() ) );
+        final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
+            "4711" : String.valueOf( Math.abs( new Random().nextInt() ) );
 
         // Organization
         Organization org = new Organization();
@@ -74,7 +77,7 @@ public class TestClient
         patient.setIdElement( IdType.newRandomUuid() );
         patient.addIdentifier()
             .setSystem( "http://example.ph/national-patient-id" )
-            .setValue( "9937454" + patientNationalId );
+            .setValue( patientNationalId );
 
         patient.addName()
             .setFamily( "Cruz" )
@@ -130,7 +133,7 @@ public class TestClient
             .setFullUrl( patient.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|9937454-" + patientNationalId );
+            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + patientNationalId );
         bundle.addEntry()
             .setResource( org )
             .setFullUrl( org.getId() )

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,11 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public interface TransformUtils
+public interface ScriptedDhisResource
 {
-    @Nullable FhirVersion getFhirVersion();
+    boolean isNewResource();
 
-    @Nonnull String getScriptAttrName();
+    void validate() throws TransformException;
 }

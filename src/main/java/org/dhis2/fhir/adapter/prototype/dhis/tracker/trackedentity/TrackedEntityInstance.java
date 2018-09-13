@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,9 @@ import java.util.Objects;
 public class TrackedEntityInstance implements DhisResource, Serializable
 {
     private static final long serialVersionUID = -1707916238115298513L;
+
+    @JsonIgnore
+    private boolean newResource;
 
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -63,21 +67,26 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         super();
     }
 
-    public TrackedEntityInstance( @Nonnull String typeId )
+    public TrackedEntityInstance( @Nonnull String typeId, @Nullable String id, boolean newResource )
     {
         this.typeId = typeId;
-    }
-
-    public TrackedEntityInstance( String typeId, String orgUnitId, Collection<TrackedEntityAttributeValue> attributes )
-    {
-        this.typeId = typeId;
-        this.orgUnitId = orgUnitId;
-        this.attributes = (attributes == null) ? new ArrayList<>() : new ArrayList<>( attributes );
+        this.id = id;
+        this.newResource = newResource;
     }
 
     @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
     {
         return DhisResourceType.TRACKED_ENTITY;
+    }
+
+    @Override public boolean isNewResource()
+    {
+        return newResource;
+    }
+
+    public void setNewResource( boolean newResource )
+    {
+        this.newResource = newResource;
     }
 
     public String getId()

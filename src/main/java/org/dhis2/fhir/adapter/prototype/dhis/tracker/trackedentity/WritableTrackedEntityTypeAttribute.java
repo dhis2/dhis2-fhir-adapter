@@ -122,4 +122,9 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
     {
         this.attribute = attribute;
     }
+
+    @Override public String getAttributeId()
+    {
+        return (getAttribute() == null) ? null : getAttribute().getId();
+    }
 }

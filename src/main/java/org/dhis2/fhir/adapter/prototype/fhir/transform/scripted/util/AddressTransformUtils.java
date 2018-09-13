@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,54 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
-import org.hl7.fhir.instance.model.api.IAnyResource;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.PrimitiveType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public interface FhirToDhisTransformer<R extends DhisResource, M extends AbstractFhirToDhisMapping>
+@Component
+public class AddressTransformUtils extends AbstractTransformUtils
 {
-    @Nullable FhirVersion getFhirVersion();
+    private static final String SCRIPT_ATTR_NAME = "addressUtils";
 
-    @Nonnull DhisResourceType getDhisResourceType();
+    private static final String DEFAULT_LINE_DELIMITER = " ";
 
-    @Nonnull Class<R> getDhisResourceClass();
+    @Nonnull @Override public String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
 
-    @Nonnull Class<M> getMappingClass();
+    public boolean hasPrimaryAddress( @Nonnull List<Address> addresses )
+    {
+        return getOptionalPrimaryAddress( addresses ).isPresent();
+    }
 
-    void addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull M mapping ) throws TransformException;
+    @Nullable public Address getPrimaryAddress( @Nonnull List<Address> addresses )
+    {
+        return getOptionalPrimaryAddress( addresses ).orElse( new Address() );
+    }
 
-    void addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
+    @Nullable public String getSingleLine( @Nullable Address address, @Nonnull String delimiter )
+    {
+        if ( (address == null) || address.getLine().isEmpty() )
+        {
+            return null;
+        }
+        return String.join( delimiter, address.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
+    }
 
-    @Nullable FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+    @Nullable public String getSingleLine( @Nullable Address address )
+    {
+        return getSingleLine( address, DEFAULT_LINE_DELIMITER );
+    }
 
-    @Nullable FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+    @Nonnull protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<Address> addresses )
+    {
+        return addresses.stream().findFirst();
+    }
 }

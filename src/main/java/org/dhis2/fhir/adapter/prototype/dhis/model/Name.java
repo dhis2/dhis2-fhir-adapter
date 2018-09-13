@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 @Embeddable
@@ -82,6 +83,12 @@ public class Name implements Serializable
     public void setType( NameType type )
     {
         this.type = type;
+    }
+
+    @JsonIgnore @Transient
+    public boolean isAvailable()
+    {
+        return (name != null) && (type != null);
     }
 
     @Override public String toString()

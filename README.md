@@ -12,7 +12,7 @@ The organization resource is only included in the transaction bundle to include 
 | Patient.name.family      | Person                    | First name                    | No       | No     |
 | Patient.name.given       | Person                    | Last name                     | No       | No     |
 | Patient.birthDate        | Person                    | Birth date                    | No       | No     |
-| Patient.identifier.value | Person                    | National identifier           | Yes      | Yes    |
+| Patient.identifier.value | Person                    | National identifier           | No       | Yes    |
 | Patient.gender           | Person                    | Gender                        | No       | No     |
 | Patient.address.line     | Person                    | Address line                  | No       | No     |
 | Patient.address.city     | Person                    | City                          | No       | No     |
@@ -34,6 +34,9 @@ For mapping the following mapping script is used. Data type conversions are made
     output.coordinates = geoUtils.getLocation( addressUtils.getPrimaryAddress( input.address ) );
     true;
 
+In order to increase the readability of the mapping, attribute names are used to map values. DHIS2 also allows to define codes for attributes optionally. If a code has been setup for an attribute, this code can be used by the mapping as well. Using codes for mappings increases the readability of the mapping, too. 
+
+The mapping still contains custom system identifiers. The adapter may support in the future a central system identifier configuration that allows more reusable mappings. In such a case the system 'http://example.ph/organizations' could be replaced by a reference to a code (e.g. ORGANIZATION).
 ### FHIR Immunization
 _The mapping needs to be defined when the DHIS2 program and program stages are available._
 ## Implementation Notes

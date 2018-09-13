@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.trackedentity;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,14 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.transform.AbstractFhirToDhisMapping;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-@Entity
-@Table( name = "fhir_tracked_entity_map" )
-@DiscriminatorValue( "TRACKED_ENTITY" )
-@PrimaryKeyJoinColumn( name = "id" )
-public class FhirToTrackedEntityMapping extends AbstractFhirToDhisMapping
+public interface TransformUtils
 {
-    private static final long serialVersionUID = -5937978792972640057L;
+    @Nullable FhirVersion getFhirVersion();
 
-    @Column( name = "tracked_entity_type_name", nullable = false )
-    private String trackedEntityTypeName;
-
-    public String getTrackedEntityTypeName()
-    {
-        return trackedEntityTypeName;
-    }
-
-    public void setTrackedEntityTypeName( String trackedEntityTypeName )
-    {
-        this.trackedEntityTypeName = trackedEntityTypeName;
-    }
+    @Nonnull String getScriptAttrName();
 }

@@ -101,7 +101,7 @@ public class BundleResourceProvider implements IResourceProvider
             // saving the tracked entity at this location is just for testing purpose (transaction may contain data that must be combined to one payload)
             if ( (outcome != null) && (outcome.getResource().getResourceType() == DhisResourceType.TRACKED_ENTITY) )
             {
-                trackedEntityService.create( (TrackedEntityInstance) outcome.getResource() );
+                trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
             }
 
             resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
@@ -129,6 +129,7 @@ public class BundleResourceProvider implements IResourceProvider
         {
             try
             {
+                // unsafe characters may not be encoded properly in received request
                 final String encodedUrl = url.replace( "|", "%7C" );
                 final URI uri = new URI( encodedUrl );
 

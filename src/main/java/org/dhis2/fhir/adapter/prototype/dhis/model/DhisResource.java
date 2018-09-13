@@ -33,4 +33,6 @@ import javax.annotation.Nonnull;
 public interface DhisResource
 {
     @Nonnull DhisResourceType getResourceType();
+
+    boolean isNewResource();
 }

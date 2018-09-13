@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,14 +28,38 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
+import org.dhis2.fhir.adapter.prototype.fhir.model.ImmutableFhirRequest;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 
-public abstract class AbstractTransformUtils implements TransformUtils
+public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
-    @Nullable @Override public FhirVersion getFhirVersion()
+    private final FhirRequest fhirRequest;
+
+    public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest )
     {
-        return FhirVersion.DSTU3;
+        this.fhirRequest = new ImmutableFhirRequest( fhirRequest );
     }
+
+    @Nonnull @Override public FhirRequest getFhirRequest()
+    {
+        return fhirRequest;
+    }
+
+    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
+    {
+        if ( value == null )
+        {
+            throw new TransformMappingException( message );
+        }
+        return value;
+    }
+
+
 }

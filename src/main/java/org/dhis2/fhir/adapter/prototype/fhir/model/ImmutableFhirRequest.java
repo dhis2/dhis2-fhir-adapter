@@ -61,6 +61,11 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
         return delegate.getResourceId();
     }
 
+    @Override public boolean containsRequestParameters()
+    {
+        return delegate.containsRequestParameters();
+    }
+
     @Override public boolean containsRequestParameter( @Nonnull String name )
     {
         return delegate.containsRequestParameter( name );

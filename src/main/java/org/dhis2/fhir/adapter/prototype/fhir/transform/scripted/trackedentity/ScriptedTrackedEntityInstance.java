@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,49 +28,11 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hl7.fhir.dstu3.model.HumanName;
-import org.hl7.fhir.dstu3.model.PrimitiveType;
-import org.springframework.stereotype.Component;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.ScriptedDhisResource;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Component
-public class HumanNameTransformUtils extends AbstractTransformUtils
+public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 {
-    private static final String SCRIPT_ATTR_NAME = "humanNameUtils";
-
-    private static final String DEFAULT_GIVEN_DELIMITER = " ";
-
-    @Nonnull @Override public String getScriptAttrName()
-    {
-        return SCRIPT_ATTR_NAME;
-    }
-
-    @Nullable public String getSingleGiven( @Nullable HumanName humanName )
-    {
-        if ( (humanName == null) || humanName.getGiven().isEmpty() )
-        {
-            return null;
-        }
-        return String.join( DEFAULT_GIVEN_DELIMITER, humanName.getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
-    }
-
-    public boolean hasPrimaryName( @Nonnull List<HumanName> names )
-    {
-        return getOptionalPrimaryName( names ).isPresent();
-    }
-
-    @Nullable public HumanName getPrimaryName( @Nonnull List<HumanName> names )
-    {
-        return getOptionalPrimaryName( names ).orElse( new HumanName() );
-    }
-
-    @Nonnull protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<HumanName> names )
-    {
-        return names.stream().findFirst();
-    }
+    @Nullable String getOrganizationUnitId();
 }

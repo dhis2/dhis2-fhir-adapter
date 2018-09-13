@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.model.Name;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
@@ -61,7 +63,12 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
         return (delegate.getAttributes() == null) ? null : delegate.getAttributes().stream().map( ImmutableTrackedEntityTypeAttribute::new ).collect( Collectors.toList() );
     }
 
-    @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
+    @Nonnull @Override public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Name name )
+    {
+        return delegate.getOptionalTypeAttribute( name );
+    }
+
+    @Nonnull @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
     {
         return delegate.getOptionalTypeAttributeByCode( code ).map( ImmutableTrackedEntityTypeAttribute::new );
     }
@@ -71,7 +78,7 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
         return getOptionalTypeAttributeByCode( code ).orElse( null );
     }
 
-    @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
+    @Nonnull @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
     {
         return delegate.getOptionalTypeAttributeByName( name ).map( ImmutableTrackedEntityTypeAttribute::new );
     }

@@ -81,7 +81,7 @@ public class DhisValueConverter
                 return (R) converter.convertCasted( value );
             }
         }
-        throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName()) );
+        throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName() + ".") );
     }
 
     public @Nullable Object convertToDhis( @Nullable Object value, @Nonnull ValueType valueType )

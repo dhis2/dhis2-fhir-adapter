@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,54 +28,49 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.PrimitiveType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAttribute, Serializable
+@Component
+public class HumanNameTransformUtils extends AbstractTransformUtils
 {
-    private static final long serialVersionUID = -6094500152005916960L;
+    private static final String SCRIPT_ATTR_NAME = "humanNameUtils";
 
-    private final TrackedEntityTypeAttribute delegate;
+    private static final String DEFAULT_GIVEN_DELIMITER = " ";
 
-    public ImmutableTrackedEntityTypeAttribute( @Nonnull TrackedEntityTypeAttribute delegate )
+    @Nonnull @Override public String getScriptAttrName()
     {
-        this.delegate = delegate;
+        return SCRIPT_ATTR_NAME;
     }
 
-    @Override public String getId()
+    @Nullable public String getSingleGiven( @Nullable HumanName humanName )
     {
-        return delegate.getId();
+        if ( (humanName == null) || humanName.getGiven().isEmpty() )
+        {
+            return null;
+        }
+        return String.join( DEFAULT_GIVEN_DELIMITER, humanName.getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
     }
 
-    @Override public String getName()
+    public boolean hasPrimaryName( @Nonnull List<HumanName> names )
     {
-        return delegate.getName();
+        return getOptionalPrimaryName( names ).isPresent();
     }
 
-    @Override public ValueType getValueType()
+    @Nullable public HumanName getPrimaryName( @Nonnull List<HumanName> names )
     {
-        return delegate.getValueType();
+        return getOptionalPrimaryName( names ).orElse( new HumanName() );
     }
 
-    @Override public boolean isMandatory()
+    @Nonnull protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<HumanName> names )
     {
-        return delegate.isMandatory();
-    }
-
-    @Override public boolean isGenerated()
-    {
-        return delegate.isGenerated();
-    }
-
-    @Override public String getAttributeId()
-    {
-        return delegate.getAttributeId();
-    }
-
-    @Override public TrackedEntityAttribute getAttribute()
-    {
-        return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
+        return names.stream().findFirst();
     }
 }

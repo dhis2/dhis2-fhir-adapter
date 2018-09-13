@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,54 +28,14 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hl7.fhir.dstu3.model.Address;
-import org.hl7.fhir.dstu3.model.PrimitiveType;
-import org.springframework.stereotype.Component;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Component
-public class AddressTransformUtils extends AbstractTransformUtils
+public abstract class AbstractTransformUtils implements TransformUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "addressUtils";
-
-    private static final String DEFAULT_LINE_DELIMITER = " ";
-
-    @Nonnull @Override public String getScriptAttrName()
+    @Nullable @Override public FhirVersion getFhirVersion()
     {
-        return SCRIPT_ATTR_NAME;
-    }
-
-    public boolean hasPrimaryAddress( @Nonnull List<Address> addresses )
-    {
-        return getOptionalPrimaryAddress( addresses ).isPresent();
-    }
-
-    @Nullable public Address getPrimaryAddress( @Nonnull List<Address> addresses )
-    {
-        return getOptionalPrimaryAddress( addresses ).orElse( new Address() );
-    }
-
-    @Nullable public String getSingleLine( @Nullable Address address, @Nonnull String delimiter )
-    {
-        if ( (address == null) || address.getLine().isEmpty() )
-        {
-            return null;
-        }
-        return String.join( delimiter, address.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
-    }
-
-    @Nullable public String getSingleLine( @Nullable Address address )
-    {
-        return getSingleLine( address, DEFAULT_LINE_DELIMITER );
-    }
-
-    @Nonnull protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<Address> addresses )
-    {
-        return addresses.stream().findFirst();
+        return FhirVersion.DSTU3;
     }
 }

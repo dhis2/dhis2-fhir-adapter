@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -31,16 +31,12 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.impl;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.WritableFhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.AbstractFhirToDhisMapping;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformer;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformScriptException;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformerScriptConstants;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.util.TransformUtils;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util.TransformUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scripting.ScriptCompilationException;

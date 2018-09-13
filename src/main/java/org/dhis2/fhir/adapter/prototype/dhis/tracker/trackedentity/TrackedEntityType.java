@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.dhis.model.Name;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
@@ -41,11 +43,13 @@ public interface TrackedEntityType
 
     List<? extends TrackedEntityTypeAttribute> getAttributes();
 
-    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code );
+    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Name name );
+
+    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code );
 
     @Nullable TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code );
 
-    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
+    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
 
     @Nullable TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name );
 }

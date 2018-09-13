@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 @Embeddable
@@ -79,6 +80,12 @@ public class Id implements Serializable
     public void setType( IdType type )
     {
         this.type = type;
+    }
+
+    @JsonIgnore @Transient
+    public boolean isAvailable()
+    {
+        return (id != null) && (type != null);
     }
 
     @Override

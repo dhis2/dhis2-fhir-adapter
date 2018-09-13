@@ -35,16 +35,29 @@ import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntity
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
-    protected static final String TRACKED_ENTITY_INSTANCES_URI = "/trackedEntityInstances.json";
+    protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
+
+    protected static final String ID_URI = "/trackedEntityInstances/{id}.json";
+
+    protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
+
+    protected static final String FIND_BY_ATTR_VALUE_URI = "/trackedEntityInstances.json?" +
+        "trackedEntityType={typeId}&ouMode=ACCESSIBLE&filter={attrId}:EQ:{attrValue}&pageSize={maxResult}";
 
     private final RestTemplate restTemplate;
 
@@ -53,19 +66,62 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         this.restTemplate = restTemplate;
     }
 
-    @Override public TrackedEntityInstance create( TrackedEntityInstance trackedEntityInstance )
+    @Nonnull @Override public Optional<TrackedEntityInstance> getById( @Nonnull String id )
+    {
+        TrackedEntityInstance instance = null;
+        try
+        {
+            instance = restTemplate.getForObject( ID_URI, TrackedEntityInstance.class, id );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() != HttpStatus.NOT_FOUND )
+            {
+                throw e;
+            }
+        }
+        return Optional.ofNullable( instance );
+    }
+
+    @Nonnull @Override public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
+    {
+        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
+            .getBody().getTrackedEntityInstances();
+    }
+
+    @Nonnull @Override public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    {
+        return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
+    }
+
+    @Nonnull protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( TRACKED_ENTITY_INSTANCES_URI, trackedEntityInstance, ImportSummaryWebMessage.class );
+            restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
+                trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
         final ImportSummaryWebMessage result = response.getBody();
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
             (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
             (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
         {
-            throw new RuntimeException( "Tracked trackedentity instance could not be created" );
+            throw new RuntimeException( "Tracked tracked entity instance could not be created." );
         }
+        trackedEntityInstance.setNewResource( false );
         trackedEntityInstance.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
+        return trackedEntityInstance;
+    }
+
+    @Nonnull protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    {
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
+                ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+        final ImportSummaryWebMessage result = response.getBody();
+        if ( result.getStatus() != Status.OK )
+        {
+            throw new RuntimeException( "Tracked tracked entity instance could not be created." );
+        }
         return trackedEntityInstance;
     }
 }

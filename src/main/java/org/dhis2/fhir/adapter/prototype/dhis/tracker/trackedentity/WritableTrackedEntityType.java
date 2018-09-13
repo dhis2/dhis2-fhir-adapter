@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.prototype.dhis.model.Name;
+import org.dhis2.fhir.adapter.prototype.dhis.model.NameType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,7 +98,12 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.attributesByCode = null;
     }
 
-    @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
+    @Nonnull @Override public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Name name )
+    {
+        return (name.getType() == NameType.NAME) ? getOptionalTypeAttributeByName( name.getName() ) : getOptionalTypeAttributeByCode( name.getName() );
+    }
+
+    @Nonnull @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
     {
         if ( attributes == null )
         {
@@ -115,7 +122,7 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         return getOptionalTypeAttributeByCode( code ).orElse( null );
     }
 
-    @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
+    @Nonnull @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
     {
         if ( attributes == null )
         {

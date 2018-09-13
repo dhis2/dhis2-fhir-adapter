@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform;
+package org.dhis2.fhir.adapter.prototype.fhir.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,7 +28,9 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public interface ScriptedDhisResource
+public interface FhirRequestParameters
 {
-    void validate() throws TransformException;
+    String FULL_QUALIFIED_IDENTIFIER_SEPARATOR = "|";
+
+    String IDENTIFIER_PARAM_NAME = "identifier";
 }

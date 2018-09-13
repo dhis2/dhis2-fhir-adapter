@@ -28,7 +28,16 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Optional;
+
 public interface TrackedEntityService
 {
-    TrackedEntityInstance create( TrackedEntityInstance trackedEntityInstance );
+    @Nonnull Optional<TrackedEntityInstance> getById( @Nonnull String id );
+
+    @Nonnull Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
+        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+
+    @Nonnull TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
 }

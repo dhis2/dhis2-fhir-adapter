@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,56 +28,32 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.model.Name;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.AbstractFhirToDhisMapping;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
-import java.io.Serializable;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
-@Embeddable
-public class FhirToDhisIdentifierMapping implements Serializable
+@Entity
+@Table( name = "fhir_tracked_entity_map" )
+@DiscriminatorValue( "TRACKED_ENTITY" )
+@PrimaryKeyJoinColumn( name = "id" )
+public class FhirToTrackedEntityMapping extends AbstractFhirToDhisMapping
 {
-    private static final long serialVersionUID = 5087459241592082154L;
+    private static final long serialVersionUID = -5937978792972640057L;
 
-    @Embedded @AttributeOverrides( { @AttributeOverride( name = "name", column = @Column( name = "identifier_attr_name" ) ), @AttributeOverride( name = "type", column = @Column( name = "identifier_attr_name_type" ) ) } )
-    private Name identifierAttributeName;
+    @Column( name = "tracked_entity_type_name", nullable = false )
+    private String trackedEntityTypeName;
 
-    @Column( name = "identifier_system" )
-    private String identifierSystem;
-
-    @Column( name = "identifier_unqualified" )
-    private boolean identifierUnqualified;
-
-    public Name getIdentifierAttributeName()
+    public String getTrackedEntityTypeName()
     {
-        return identifierAttributeName;
+        return trackedEntityTypeName;
     }
 
-    public void setIdentifierAttributeName( Name identifierAttributeName )
+    public void setTrackedEntityTypeName( String trackedEntityTypeName )
     {
-        this.identifierAttributeName = identifierAttributeName;
-    }
-
-    public String getIdentifierSystem()
-    {
-        return identifierSystem;
-    }
-
-    public void setIdentifierSystem( String identifierSystem )
-    {
-        this.identifierSystem = identifierSystem;
-    }
-
-    public boolean isIdentifierUnqualified()
-    {
-        return identifierUnqualified;
-    }
-
-    public void setIdentifierUnqualified( boolean identifierUnqualified )
-    {
-        this.identifierUnqualified = identifierUnqualified;
+        this.trackedEntityTypeName = trackedEntityTypeName;
     }
 }

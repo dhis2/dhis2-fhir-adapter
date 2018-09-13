@@ -43,4 +43,6 @@ public interface TrackedEntityTypeAttribute
     boolean isGenerated();
 
     TrackedEntityAttribute getAttribute();
+
+    String getAttributeId();
 }

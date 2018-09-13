@@ -81,6 +81,11 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.resourceId = resourceId;
     }
 
+    @Override public boolean containsRequestParameters()
+    {
+        return (getParameters() != null) && !getParameters().isEmpty();
+    }
+
     public ListMultimap<String, String> getParameters()
     {
         return parameters;

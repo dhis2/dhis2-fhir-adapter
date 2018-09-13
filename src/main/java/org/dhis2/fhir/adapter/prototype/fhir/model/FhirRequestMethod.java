@@ -34,7 +34,7 @@ import java.util.Map;
 
 public enum FhirRequestMethod
 {
-    PUT( "PUT" );
+    POST( "POST" ), PUT( "PUT" );
 
     private static final Map<String, FhirRequestMethod> requestMethodsByCode;
 

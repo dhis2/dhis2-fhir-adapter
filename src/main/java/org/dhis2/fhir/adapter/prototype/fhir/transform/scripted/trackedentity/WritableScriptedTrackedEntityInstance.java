@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.trackedentity;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
 import org.dhis2.fhir.adapter.prototype.geo.Location;
@@ -42,7 +41,7 @@ import org.dhis2.fhir.adapter.prototype.geo.Location;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ScriptedTrackedEntityInstanceOutput implements ScriptedDhisResource
+public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
 {
     private final TrackedEntityType trackedEntityType;
 
@@ -50,14 +49,19 @@ public class ScriptedTrackedEntityInstanceOutput implements ScriptedDhisResource
 
     private final DhisValueConverter dhisValueConverter;
 
-    public ScriptedTrackedEntityInstanceOutput( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull DhisValueConverter dhisValueConverter )
+    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull DhisValueConverter dhisValueConverter )
     {
         this.trackedEntityType = trackedEntityType;
         this.trackedEntityInstance = trackedEntityInstance;
         this.dhisValueConverter = dhisValueConverter;
     }
 
-    public @Nullable String getOrganizationUnitId()
+    @Override public boolean isNewResource()
+    {
+        return trackedEntityInstance.isNewResource();
+    }
+
+    @Override public @Nullable String getOrganizationUnitId()
     {
         return trackedEntityInstance.getOrgUnitId();
     }
@@ -110,7 +114,7 @@ public class ScriptedTrackedEntityInstanceOutput implements ScriptedDhisResource
         {
             throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
-        trackedEntityInstance.getAttribute( typeAttribute.getAttribute().getId() ).setValue( convertedValue );
+        trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() ).setValue( convertedValue );
     }
 
     @Override
@@ -122,7 +126,7 @@ public class ScriptedTrackedEntityInstanceOutput implements ScriptedDhisResource
         }
 
         trackedEntityType.getAttributes().stream().filter( TrackedEntityTypeAttribute::isMandatory ).forEach( ta -> {
-            if ( !trackedEntityInstance.containsAttribute( ta.getAttribute().getId() ) )
+            if ( !trackedEntityInstance.containsAttribute( ta.getAttributeId() ) )
             {
                 throw new TransformMappingException( "Value of tracked entity type attribute \"" + ta.getName() + "\" is mandatory and must be set." );
             }
