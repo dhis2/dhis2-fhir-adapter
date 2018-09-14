@@ -37,6 +37,13 @@ For mapping the following mapping script is used. Data type conversions are made
 In order to increase the readability of the mapping, attribute names are used to map values. DHIS2 also allows to define codes for attributes optionally. If a code has been setup for an attribute, this code can be used by the mapping as well. Using codes for mappings increases the readability of the mapping, too. 
 
 The mapping still contains custom system identifiers. The adapter may support in the future a central system identifier configuration that allows more reusable mappings. In such a case the system 'http://example.ph/organizations' could be replaced by a reference to a code (e.g. ORGANIZATION).
+
+The birth data that is included in the FHIR resource Patient has a maximum precision of the exact day and a minimum precision of a year. The following listing contains only some examples how to deal with the variable precision (also a combination of them may be viable). How this must be handled depends on the use case.
+- It is known that the connected systems and applications only provide a birth date with the precision of a day. In this case the mapping provides the exact birth date of a Patient in DHIS2.
+- That the birth date has a variable precision and may not be accurate is not relevant for the use case.
+- The birth date is not set in DHIS2 if the precision is less than a day (can be checked and handled by the mapping). Such a behavior could also be configured as a general behavior of the adapter.
+- The precision (day, month or year) of the birth date is stored in an additional attribute in DHIS2.
+- The birth date (regardless of its precision) is stored as it is in an additional text attribute in DHIS2.
 ### FHIR Immunization
 _The mapping needs to be defined when the DHIS2 program and program stages are available._
 ## Implementation Notes
