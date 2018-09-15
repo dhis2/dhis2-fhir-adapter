@@ -28,8 +28,13 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import java.util.Optional;
+
 public interface EnrollmentService
 {
+    @Nonnull Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+
     Enrollment create( Enrollment enrollment );
 
     void update( String id, EnrollmentStatus status );

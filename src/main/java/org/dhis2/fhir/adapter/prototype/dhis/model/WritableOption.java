@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
+package org.dhis2.fhir.adapter.prototype.dhis.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,33 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
-
 import java.io.Serializable;
-import java.util.List;
 
-public class TrackedEntityInstances implements Serializable
+public class WritableOption implements Option, Serializable
 {
-    private static final long serialVersionUID = -129293730256216700L;
+    private static final long serialVersionUID = 8156313545024110741L;
 
-    private List<TrackedEntityInstance> trackedEntityInstances;
+    private String code;
 
-    public List<TrackedEntityInstance> getTrackedEntityInstances()
+    private String name;
+
+    @Override public String getCode()
     {
-        return trackedEntityInstances;
+        return code;
     }
 
-    public void setTrackedEntityInstances( List<TrackedEntityInstance> trackedEntityInstances )
+    public void setCode( String code )
     {
-        this.trackedEntityInstances = trackedEntityInstances;
+        this.code = code;
+    }
+
+    @Override public String getName()
+    {
+        return name;
+    }
+
+    public void setName( String name )
+    {
+        this.name = name;
     }
 }

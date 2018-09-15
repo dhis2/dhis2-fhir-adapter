@@ -40,11 +40,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService
 {
     protected static final String ENROLLMENTS_URI = "/enrollments.json";
+
+    protected static final String LATEST_ACTIVE_URI = "/enrollments.json?" +
+        "program={programId}&programStatus=ACTIVE&trackedEntityInstance={trackedEntityInstanceId}&" +
+        "ouMode=ACCESSIBLE&fields=:all&order=lastUpdated:desc&pageSize=1";
 
     protected static final String ENROLLMENT_STATUS_URI = "/enrollments/{enrollmentId}/{enrollmentStatus}";
 
@@ -54,6 +59,12 @@ public class EnrollmentServiceImpl implements EnrollmentService
     public EnrollmentServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
+    }
+
+    @Nonnull @Override public Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
+    {
+        final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity( LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
+        return result.getBody().getEnrollments().stream().findFirst();
     }
 
     @Override public Enrollment create( Enrollment enrollment )

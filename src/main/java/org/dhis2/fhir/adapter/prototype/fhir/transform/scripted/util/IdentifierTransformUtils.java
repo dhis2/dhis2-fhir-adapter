@@ -59,7 +59,7 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return SCRIPT_ATTR_NAME;
     }
 
-    public @Nullable Id getReferenceId( @Nullable IBaseReference reference, @Nonnull FhirResourceType fhirResourceType, @Nullable String system ) throws TransformException
+    public @Nullable String getResourceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformException
     {
         if ( reference == null )
         {
@@ -68,7 +68,34 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         if ( reference.getResource() instanceof DomainResource )
         {
             final DomainResource domainResource = (DomainResource) reference.getResource();
-            if ( fhirResourceType != FhirResourceType.getByPath( domainResource.getResourceType().getPath() ) )
+            if ( !Objects.equals( String.valueOf( FhirResourceType.getByPath( domainResource.getResourceType().getPath() ) ), String.valueOf( fhirResourceType ) ) )
+            {
+                return null;
+            }
+            final String idPart = domainResource.getIdElement().getIdPart();
+            if ( idPart != null )
+            {
+                return idPart;
+            }
+        }
+        final String idPart = reference.getReferenceElement().getIdPart();
+        if ( (idPart == null) && (reference.getResource() != null) )
+        {
+            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
+        }
+        return idPart;
+    }
+
+    public @Nullable Id getReferenceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformException
+    {
+        if ( reference == null )
+        {
+            return null;
+        }
+        if ( reference.getResource() instanceof DomainResource )
+        {
+            final DomainResource domainResource = (DomainResource) reference.getResource();
+            if ( !Objects.equals( String.valueOf( FhirResourceType.getByPath( domainResource.getResourceType().getPath() ) ), String.valueOf( fhirResourceType ) ) )
             {
                 return null;
             }

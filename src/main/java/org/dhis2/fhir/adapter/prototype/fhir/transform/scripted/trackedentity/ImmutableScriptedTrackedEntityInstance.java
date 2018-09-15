@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
+import org.dhis2.fhir.adapter.prototype.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,9 +48,29 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
         return delegate.isNewResource();
     }
 
+    @Override @Nullable public String getId()
+    {
+        return delegate.getId();
+    }
+
+    @Override @Nonnull public String getTypeId()
+    {
+        return delegate.getTypeId();
+    }
+
     @Nullable @Override public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
+    }
+
+    @Nullable @Override public Location getCoordinates()
+    {
+        return delegate.getCoordinates();
+    }
+
+    @Override @Nullable public Object getValueByName( @Nonnull String typeAttrName )
+    {
+        return delegate.getValueByName( typeAttrName );
     }
 
     @Override public void validate() throws TransformException

@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
 
 import javax.annotation.Nonnull;
 
-public interface DhisResource
+public interface DhisResource extends Identifiable
 {
     @Nonnull DhisResourceType getResourceType();
 

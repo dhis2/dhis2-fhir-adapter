@@ -32,16 +32,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataValue;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Event implements Serializable
+public class Event implements DhisResource, Serializable, Comparable<Event>
 {
     private static final long serialVersionUID = 4966183580394235575L;
 
     @JsonIgnore
+    private boolean newResource;
+
+    @JsonProperty( "event" )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
     @JsonProperty( "orgUnit" )
@@ -54,6 +64,9 @@ public class Event implements Serializable
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String enrollmentId;
 
+    @JsonIgnore
+    private Enrollment enrollment;
+
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String trackedEntityInstanceId;
@@ -64,11 +77,35 @@ public class Event implements Serializable
 
     private EventStatus status;
 
-    private LocalDate dueDate;
+    private ZonedDateTime eventDate;
 
-    private LocalDate eventDate;
+    private ZonedDateTime dueDate;
 
-    private List<DataValue> dataValues;
+    private List<WritableDataValue> dataValues;
+
+    @JsonIgnore
+    private boolean modified;
+
+    public Event()
+    {
+        super();
+    }
+
+    public Event( boolean newResource )
+    {
+        this.newResource = newResource;
+        this.modified = newResource;
+    }
+
+    @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
+    {
+        return DhisResourceType.EVENT;
+    }
+
+    @Override public boolean isNewResource()
+    {
+        return newResource;
+    }
 
     public String getId()
     {
@@ -110,6 +147,16 @@ public class Event implements Serializable
         this.enrollmentId = enrollmentId;
     }
 
+    public Enrollment getEnrollment()
+    {
+        return enrollment;
+    }
+
+    public void setEnrollment( Enrollment enrollment )
+    {
+        this.enrollment = enrollment;
+    }
+
     public String getTrackedEntityInstanceId()
     {
         return trackedEntityInstanceId;
@@ -140,33 +187,70 @@ public class Event implements Serializable
         this.status = status;
     }
 
-    public LocalDate getDueDate()
-    {
-        return dueDate;
-    }
-
-    public void setDueDate( LocalDate dueDate )
-    {
-        this.dueDate = dueDate;
-    }
-
-    public LocalDate getEventDate()
+    public ZonedDateTime getEventDate()
     {
         return eventDate;
     }
 
-    public void setEventDate( LocalDate eventDate )
+    public void setEventDate( ZonedDateTime eventDate )
     {
         this.eventDate = eventDate;
     }
 
-    public List<DataValue> getDataValues()
+    public ZonedDateTime getDueDate()
+    {
+        return dueDate;
+    }
+
+    public void setDueDate( ZonedDateTime dueDate )
+    {
+        this.dueDate = dueDate;
+    }
+
+    public List<? extends DataValue> getDataValues()
     {
         return dataValues;
     }
 
-    public void setDataValues( List<DataValue> dataValues )
+    public void setDataValues( List<WritableDataValue> dataValues )
     {
         this.dataValues = dataValues;
+    }
+
+    public boolean isModified()
+    {
+        return modified;
+    }
+
+    public void setModified( boolean modified )
+    {
+        this.modified = modified;
+    }
+
+    public @Nonnull WritableDataValue getDataValue( @Nonnull String dataElementId )
+    {
+        if ( dataValues == null )
+        {
+            dataValues = new ArrayList<>();
+        }
+        WritableDataValue dataValue = dataValues.stream().filter(
+            dv -> Objects.equals( dataElementId, dv.getDataElementId() ) ).findFirst().orElse( null );
+        if ( dataValue == null )
+        {
+            dataValue = new WritableDataValue( dataElementId, true );
+            dataValues.add( dataValue );
+        }
+        return dataValue;
+    }
+
+
+    @Override public int compareTo( @Nonnull Event o )
+    {
+        int v = getStatus().ordinal() - o.getStatus().ordinal();
+        if ( v != 0 )
+        {
+            return v;
+        }
+        return o.getEventDate().compareTo( getEventDate() );
     }
 }

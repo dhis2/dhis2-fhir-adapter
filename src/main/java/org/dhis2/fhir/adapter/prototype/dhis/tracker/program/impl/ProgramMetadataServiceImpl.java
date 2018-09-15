@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.WritableProgram;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +46,8 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
 {
     protected static final String PROGRAM_URI = "/programs.json?paging=false&" +
         "fields=id,name,code,trackedEntityType[id]," +
-        "programStages[id,name,programStageDataElements[id,dataElement[id,name,code,valueType]]]";
+        "programStages[id,name,programStageDataElements[id,compulsory,allowProvidedElsewhere," +
+        "dataElement[id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
 
     private final RestTemplate restTemplate;
 
@@ -55,13 +56,13 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
         this.restTemplate = restTemplate;
     }
 
-    @Override
-    public Optional<Program> getProgramByCode( String code )
+    @Nonnull @Override
+    public Optional<WritableProgram> getProgramByName( @Nonnull String name )
     {
-        return getPrograms().stream().filter( p -> Objects.equals( p.getCode(), code ) ).findFirst();
+        return getPrograms().stream().filter( p -> Objects.equals( p.getName(), name ) ).findFirst();
     }
 
-    public List<Program> getPrograms()
+    public List<WritableProgram> getPrograms()
     {
         final ResponseEntity<DhisPrograms> result = restTemplate.getForEntity( PROGRAM_URI, DhisPrograms.class );
         return Optional.ofNullable( result.getBody() ).orElse( new DhisPrograms() ).toModel();

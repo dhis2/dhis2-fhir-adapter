@@ -28,47 +28,15 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.io.Serializable;
-
-public class DataValue implements Serializable
+public interface DataValue
 {
-    private static final long serialVersionUID = 1337075669483267688L;
+    String getDataElementId();
 
-    @JsonProperty( "dataElement" )
-    private String dataElementId;
+    Object getValue();
 
-    private Object value;
+    boolean isProvidedElsewhere();
 
-    public DataValue()
-    {
-        super();
-    }
+    boolean isModified();
 
-    public DataValue( String dataElementId, Object value )
-    {
-        this.dataElementId = dataElementId;
-        this.value = value;
-    }
-
-    public String getDataElementId()
-    {
-        return dataElementId;
-    }
-
-    public void setDataElementId( String dataElementId )
-    {
-        this.dataElementId = dataElementId;
-    }
-
-    public Object getValue()
-    {
-        return value;
-    }
-
-    public void setValue( Object value )
-    {
-        this.value = value;
-    }
+    boolean isNewResource();
 }

@@ -50,9 +50,9 @@ public interface FhirToDhisTransformer<R extends DhisResource, M extends Abstrac
 
     @Nonnull Class<M> getMappingClass();
 
-    void addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull M mapping ) throws TransformException;
+    boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException;
 
-    void addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
+    boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
 
     @Nullable FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
         @Nonnull Map<String, Object> scriptArguments ) throws TransformException;

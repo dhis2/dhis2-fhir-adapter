@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.WritableProgram;
 
 import java.io.Serializable;
 import java.util.List;
@@ -37,19 +37,19 @@ public class DhisPrograms implements Serializable
 {
     private static final long serialVersionUID = 1084527285362478422L;
 
-    private List<Program> programs;
+    private List<WritableProgram> programs;
 
-    public List<Program> getPrograms()
+    public List<WritableProgram> getPrograms()
     {
         return programs;
     }
 
-    public void setPrograms( List<Program> programs )
+    public void setPrograms( List<WritableProgram> programs )
     {
         this.programs = programs;
     }
 
-    public List<Program> toModel()
+    public List<WritableProgram> toModel()
     {
         return programs;
     }

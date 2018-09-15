@@ -30,5 +30,5 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
 
 public enum DhisResourceType
 {
-    TRACKED_ENTITY
+    TRACKED_ENTITY, ENROLLMENT, EVENT
 }

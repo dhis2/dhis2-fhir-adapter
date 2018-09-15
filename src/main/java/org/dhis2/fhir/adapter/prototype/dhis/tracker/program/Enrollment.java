@@ -31,16 +31,23 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public class Enrollment implements Serializable
+public class Enrollment implements DhisResource, Serializable
 {
     private static final long serialVersionUID = 6528591138270821481L;
 
     @JsonIgnore
+    private boolean newResource;
+
+    @JsonProperty( "enrollment" )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
     @JsonProperty( "orgUnit" )
@@ -60,6 +67,16 @@ public class Enrollment implements Serializable
     private ZonedDateTime incidentDate;
 
     private List<Event> events;
+
+    @Override public boolean isNewResource()
+    {
+        return newResource;
+    }
+
+    @Nonnull @JsonIgnore @Override public DhisResourceType getResourceType()
+    {
+        return DhisResourceType.ENROLLMENT;
+    }
 
     public String getId()
     {

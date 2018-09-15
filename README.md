@@ -4,8 +4,6 @@ The adapter prototype handles for a demo the data as described by https://github
 __The source code is still under development and must still be extended to support all features that are required for the demo!__
 ## Mappings to DHIS2
 FHIR structures may contain multiple values for one field (e.g. multiple names or addresses). This will not be displayed by the following sections. The resulting mapping configuration reduces multiple values to a single value.
-### FHIR Organization
-The organization resource is only included in the transaction bundle to include a reference to the national identifier of the organization (must be the organization code). Since the organization will not include the parent organization (FHIR Organization.partOf) it cannot be used to create or update an organization unit on DHIS2. This would also require that the complete hierarchy up to the root organization is included and updated in the transaction bundle (due to required references of national identifiers). The prototype adapter will therefore ignore the update request of the organization and return a status of 200.
 ### FHIR Patient
 | FHIR Structure           | DHIS2 Tracked Entity Name | Tracked Entity Attribute Name | Required | Unique |
 |--------------------------|---------------------------|-------------------------------|----------|--------|
@@ -45,7 +43,9 @@ The birth data that is included in the FHIR resource Patient has a maximum preci
 - The precision (day, month or year) of the birth date is stored in an additional attribute in DHIS2.
 - The birth date (regardless of its precision) is stored as it is in an additional text attribute in DHIS2.
 ### FHIR Immunization
-_The mapping needs to be defined when the DHIS2 program and program stages are available._
+_Feature has been implemented already for demo purpose and will be documented asap._
+### FHIR Organization
+The organization resource is only included in the transaction bundle to include a reference to the national identifier of the organization (must be the organization code). Since the organization will not include the parent organization (FHIR Organization.partOf) it cannot be used to create or update an organization unit on DHIS2. This would also require that the complete hierarchy up to the root organization is included and updated in the transaction bundle (due to required references of national identifiers). The prototype adapter will therefore ignore the update request of the organization and return a status of 200.
 ## Implementation Notes
 - The prototype may only contain technical and functional implementations that are absolutely required for the demo.
 - The prototype may contain a read-only metadata database that contains the mappings.

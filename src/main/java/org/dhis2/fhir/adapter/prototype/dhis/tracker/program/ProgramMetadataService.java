@@ -28,9 +28,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public interface ProgramMetadataService
 {
-    Optional<Program> getProgramByCode( String code );
+    @Nonnull Optional<WritableProgram> getProgramByName( @Nonnull String name );
 }

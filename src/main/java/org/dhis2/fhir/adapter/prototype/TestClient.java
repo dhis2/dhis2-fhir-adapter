@@ -52,7 +52,7 @@ public class TestClient
 
     private static final String PASSWORD = "district";
 
-    private static final boolean STATIC_PATIENT_NATIONAL_ID = false;
+    private static final boolean STATIC_PATIENT_NATIONAL_ID = true;
 
     public static void main( String[] args )
     {
@@ -62,7 +62,7 @@ public class TestClient
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
         final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4711" : String.valueOf( Math.abs( new Random().nextInt() ) );
+            "4714" : String.valueOf( Math.abs( new Random().nextInt() ) );
 
         // Organization
         Organization org = new Organization();
@@ -102,21 +102,46 @@ public class TestClient
         patient.setManagingOrganization( new Reference( org.getId() ) );
 
         // Create Vaccination
-        Immunization imm = new Immunization();
-        imm.addIdentifier()
-            .setSystem( "http://example.ph/vaccinations" )
-            .setValue( "376-2877" );
-        imm.getPatient().setReference( patient.getId() );
-        imm.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
-        imm.setNotGiven( false );
-        imm.setPrimarySource( true );
-        imm.getVaccineCode()
+        Immunization imm1 = new Immunization();
+        imm1.getPatient().setReference( patient.getId() );
+        imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm1.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm1.setNotGiven( false );
+        imm1.setPrimarySource( true );
+        imm1.getVaccineCode()
             .addCoding()
             .setSystem( "http://example.ph/vaccine-codes" )
             .setCode( "OPV" )
             .setDisplay( "Oral Polio Vaccine" );
-        imm.addVaccinationProtocol()
+        imm1.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
+
+        Immunization imm2 = new Immunization();
+        imm2.getPatient().setReference( patient.getId() );
+        imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm2.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm2.setNotGiven( false );
+        imm2.setPrimarySource( true );
+        imm2.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://example.ph/vaccine-codes" )
+            .setCode( "MMR" )
+            .setDisplay( "MMR" );
+        imm2.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
+
+        Immunization imm3 = new Immunization();
+        imm3.getPatient().setReference( patient.getId() );
+        imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm3.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm3.setNotGiven( false );
+        imm3.setPrimarySource( true );
+        imm3.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://example.ph/vaccine-codes" )
+            .setCode( "BCG" )
+            .setDisplay( "BCG" );
+        imm3.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
         /*
@@ -141,11 +166,23 @@ public class TestClient
             .setMethod( Bundle.HTTPVerb.PUT )
             .setUrl( "Organization?identifier=http://example.ph/organizations|PHL-D-1" );
         bundle.addEntry()
-            .setResource( imm )
-            .setFullUrl( imm.getId() )
+            .setResource( imm1 )
+            .setFullUrl( imm1.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
             .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2877" );
+        bundle.addEntry()
+            .setResource( imm2 )
+            .setFullUrl( imm2.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2878" );
+        bundle.addEntry()
+            .setResource( imm3 )
+            .setFullUrl( imm3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2879" );
 
         client.transaction().withBundle( bundle ).execute();
     }

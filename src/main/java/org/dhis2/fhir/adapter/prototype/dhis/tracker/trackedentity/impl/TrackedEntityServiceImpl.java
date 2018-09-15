@@ -45,6 +45,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -85,7 +86,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     @Nonnull @Override public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
     {
-        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
+        // filtering by values with a colon inside is not supported by DHIS2 Web API
+        if ( value.contains( ":" ) )
+        {
+            return Collections.emptyList();
+        }
+        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, DhisTrackedEntityInstances.class, typeId, attributeId, value, maxResult )
             .getBody().getTrackedEntityInstances();
     }
 

@@ -29,10 +29,20 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.prototype.geo.Location;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 {
+    @Nullable String getId();
+
+    @Nonnull String getTypeId();
+
     @Nullable String getOrganizationUnitId();
+
+    @Nullable Location getCoordinates();
+
+    @Nullable Object getValueByName( @Nonnull String typeAttrName );
 }

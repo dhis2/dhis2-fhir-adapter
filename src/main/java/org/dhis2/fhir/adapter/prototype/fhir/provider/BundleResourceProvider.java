@@ -36,7 +36,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequestMethod;
@@ -74,10 +75,14 @@ public class BundleResourceProvider implements IResourceProvider
 
     private final TrackedEntityService trackedEntityService;
 
-    public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService, @Nonnull TrackedEntityService trackedEntityService )
+    private final EventService eventService;
+
+    public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
+        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EventService eventService )
     {
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.trackedEntityService = trackedEntityService;
+        this.eventService = eventService;
     }
 
     @Override public Class<Bundle> getResourceType()
@@ -88,7 +93,19 @@ public class BundleResourceProvider implements IResourceProvider
     @Transaction
     public Bundle transaction( @TransactionParam Bundle bundle )
     {
+        // for purpose of the demo the service will return status 200 for all entries
         final Bundle resultBundle = new Bundle().setType( BundleType.TRANSACTIONRESPONSE );
+        for ( final BundleEntryComponent entry : bundle.getEntry() )
+        {
+            resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
+        }
+
+        // The demo will not handle transactions. In a transactional case only
+        // FHIR resources could be accepted in one transaction that can also
+        // be handled by the DHIS2 Web API transactional by one request. For
+        // this purpose the DHIS must be assembled (depends on the data
+        // received). The amount of support of FHIR transactions (if any) has
+        // not yet been decided.
         for ( final BundleEntryComponent entry : bundle.getEntry() )
         {
             final WritableFhirRequest fhirRequest = new WritableFhirRequest();
@@ -97,15 +114,27 @@ public class BundleResourceProvider implements IResourceProvider
             fhirRequest.setVersion( FhirVersion.DSTU3 );
             updateWithUrl( entry, fhirRequest );
 
-            final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), entry.getResource() );
-            // saving the tracked entity at this location is just for testing purpose (transaction may contain data that must be combined to one payload)
-            if ( (outcome != null) && (outcome.getResource().getResourceType() == DhisResourceType.TRACKED_ENTITY) )
+            final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(
+                fhirToDhisTransformerService.createContext( fhirRequest ), entry.getResource() );
+            if ( outcome != null )
             {
-                trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
+                final DhisResource resource;
+                switch ( outcome.getResource().getResourceType() )
+                {
+                    case TRACKED_ENTITY:
+                        resource = trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
+                        break;
+                    case EVENT:
+                        resource = eventService.createOrMinimalUpdate( (Event) outcome.getResource() );
+                        break;
+                    default:
+                        throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
+                }
+                entry.getResource().setIdBase( resource.getId() );
+                resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
             }
-
-            resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
         }
+
         return resultBundle;
     }
 

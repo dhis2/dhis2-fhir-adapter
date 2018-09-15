@@ -37,4 +37,12 @@ public interface TransformerScriptConstants
     String OUTPUT_ATTR_NAME = "output";
 
     String TRACKED_ENTITY_TYPE_ATTR_NAME = "trackedEntityType";
+
+    String TRACKED_ENTITY_INSTANCE_ATTR_NAME = "trackedEntityInstance";
+
+    String PROGRAM_ATTR_NAME = "program";
+
+    String PROGRAM_STAGE_ATTR_NAME = "programStage";
+
+    String ENROLLMENT_ATTR_NAME = "enrollment";
 }

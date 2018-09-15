@@ -112,9 +112,8 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             final Map<String, Object> scriptArguments = new HashMap<>( transformUtils );
             scriptArguments.put( TransformerScriptConstants.CONTEXT_ATTR_NAME, context );
             scriptArguments.put( TransformerScriptConstants.INPUT_ATTR_NAME, input );
-            transformer.addScriptArgumentsCasted( scriptArguments, mapping );
 
-            if ( isApplicable( context, input, mapping, scriptArguments ) )
+            if ( isApplicable( context, input, mapping, scriptArguments ) && transformer.addScriptArgumentsCasted( scriptArguments, context, mapping ) )
             {
                 final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( context, input, mapping, scriptArguments );
                 if ( outcome != null )

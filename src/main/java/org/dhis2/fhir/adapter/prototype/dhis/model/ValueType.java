@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
 
 import org.dhis2.fhir.adapter.prototype.geo.Location;
 
+import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -60,11 +61,11 @@ public enum ValueType
     ORGANISATION_UNIT( Id.class ),
     AGE( ZonedDateTime.class ),
     URL( String.class ),
-    IMAGE( String.class );;
+    IMAGE( String.class );
 
     private final Class<?> javaClass;
 
-    ValueType( Class<?> javaClass )
+    ValueType( @Nonnull Class<?> javaClass )
     {
         this.javaClass = javaClass;
     }

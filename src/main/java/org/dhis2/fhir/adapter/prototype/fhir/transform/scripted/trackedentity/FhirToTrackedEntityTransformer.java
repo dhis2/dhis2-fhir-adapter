@@ -52,6 +52,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -88,11 +89,14 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         return FhirToTrackedEntityMapping.class;
     }
 
-    @Override public void addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToTrackedEntityMapping mapping ) throws TransformException
+    @Override public boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToTrackedEntityMapping mapping ) throws TransformException
     {
         final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getTypeByName( mapping.getTrackedEntityTypeName() )
             .orElseThrow( () -> new TransformMappingException( "Tracked entity type in mapping " + mapping + " could not be found: " + mapping.getTrackedEntityTypeName() ) );
         arguments.put( TransformerScriptConstants.TRACKED_ENTITY_TYPE_ATTR_NAME, trackedEntityType );
+
+        // is applicable for further processing
+        return true;
     }
 
     @Nullable @Override public FhirToDhisTransformOutcome<TrackedEntityInstance> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
@@ -105,7 +109,8 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             throw new TransformFatalException( "Tracked entity type is not included as script argument." );
         }
 
-        final TrackedEntityInstance trackedEntityInstance = getResource( context, mapping, arguments );
+        final TrackedEntityInstance trackedEntityInstance = getResource( context, mapping, arguments )
+            .orElseThrow( () -> new TransformFatalException( "Tracked entity instance could neither be retrieved nor created." ) );
         final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
             trackedEntityType, trackedEntityInstance, dhisValueConverter );
         arguments.put( TransformerScriptConstants.OUTPUT_ATTR_NAME, scriptedTrackedEntityInstance );
@@ -129,7 +134,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     {
         if ( identifier == null )
         {
-            return null;
+            return Optional.empty();
         }
 
         final TrackedEntityType trackedEntityType = getTrackedEntityType( scriptArguments );
@@ -139,7 +144,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         final String identifierValue;
         try
         {
-            identifierValue = dhisValueConverter.convertToDhis( identifier, identifierAttribute.getValueType(), String.class );
+            identifierValue = dhisValueConverter.convert( identifier, identifierAttribute.getValueType(), String.class );
         }
         catch ( ConversionException e )
         {
@@ -147,7 +152,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
 
         final Collection<TrackedEntityInstance> result = trackedEntityService.findByAttrValue(
-            trackedEntityType.getId(), identifierAttribute.getAttributeId(), identifierValue, 2 );
+            trackedEntityType.getId(), identifierAttribute.getAttributeId(), Objects.requireNonNull( identifierValue ), 2 );
         if ( result.size() > 1 )
         {
             throw new TransformMappingException( "Filtering with identifier of mapping " + mapping +
@@ -156,8 +161,15 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         return result.stream().findFirst();
     }
 
+    @Nonnull @Override protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
+        @Nonnull FhirToTrackedEntityMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    {
+        return Optional.empty();
+    }
+
     @Nonnull @Override protected TrackedEntityInstance createResource(
-        @Nonnull FhirToDhisTransformerContext context, @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+        @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToTrackedEntityMapping mapping,
+        @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         return new TrackedEntityInstance( getTrackedEntityType( scriptArguments ).getId(), id, true );
     }

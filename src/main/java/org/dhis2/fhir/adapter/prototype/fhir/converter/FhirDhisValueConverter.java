@@ -35,7 +35,7 @@ public class FhirDhisValueConverter extends DhisValueConverter
 {
     public FhirDhisValueConverter()
     {
-        addToDhisConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
+        addConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
 
     }
 }

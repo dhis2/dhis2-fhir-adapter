@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
 import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
@@ -61,6 +62,16 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return trackedEntityInstance.isNewResource();
     }
 
+    @Nullable @Override public String getId()
+    {
+        return trackedEntityInstance.getId();
+    }
+
+    @Nonnull @Override public String getTypeId()
+    {
+        return trackedEntityType.getId();
+    }
+
     @Override public @Nullable String getOrganizationUnitId()
     {
         return trackedEntityInstance.getOrgUnitId();
@@ -75,15 +86,19 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         trackedEntityInstance.setOrgUnitId( id );
     }
 
+    @Nullable public Location getCoordinates()
+    {
+        return dhisValueConverter.convert( trackedEntityInstance.getCoordinates(), ValueType.COORDINATE, Location.class );
+    }
+
     public void setCoordinates( @Nullable Location location )
     {
-        trackedEntityInstance.setCoordinates( dhisValueConverter.convertToDhis( location, ValueType.COORDINATE, String.class ) );
+        trackedEntityInstance.setCoordinates( dhisValueConverter.convert( location, ValueType.COORDINATE, String.class ) );
     }
 
     public void setValueByName( @Nonnull String typeAttrName, Object value ) throws TransformException
     {
-        final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttributeByName( typeAttrName ).orElseThrow( () ->
-            new TransformMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with name \"" + typeAttrName + "\"" ) );
+        final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
         setValue( typeAttribute, value );
     }
 
@@ -92,6 +107,12 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttributeByCode( typeAttrCode ).orElseThrow( () ->
             new TransformMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with code \"" + typeAttrCode + "\"" ) );
         setValue( typeAttribute, value );
+    }
+
+    @Nullable @Override public Object getValueByName( @Nonnull String typeAttrName )
+    {
+        final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
+        return getValue( typeAttribute );
     }
 
     protected void setValue( @Nonnull TrackedEntityTypeAttribute typeAttribute, Object value ) throws TransformException
@@ -108,13 +129,28 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         final Object convertedValue;
         try
         {
-            convertedValue = dhisValueConverter.convertToDhis( value, typeAttribute.getValueType() );
+            convertedValue = dhisValueConverter.convert( value, typeAttribute.getValueType(), String.class );
         }
         catch ( ConversionException e )
         {
             throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
         trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() ).setValue( convertedValue );
+    }
+
+    protected Object getValue( @Nonnull TrackedEntityTypeAttribute typeAttribute ) throws TransformException
+    {
+        final TrackedEntityAttributeValue attributeValue = trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() );
+        final Object convertedValue;
+        try
+        {
+            convertedValue = dhisValueConverter.convert( attributeValue.getValue(), typeAttribute.getValueType(), typeAttribute.getValueType().getJavaClass() );
+        }
+        catch ( ConversionException e )
+        {
+            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
+        }
+        return convertedValue;
     }
 
     @Override
@@ -131,5 +167,11 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
                 throw new TransformMappingException( "Value of tracked entity type attribute \"" + ta.getName() + "\" is mandatory and must be set." );
             }
         } );
+    }
+
+    private TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String typeAttrName )
+    {
+        return trackedEntityType.getOptionalTypeAttributeByName( typeAttrName ).orElseThrow( () ->
+            new TransformMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with name \"" + typeAttrName + "\"" ) );
     }
 }

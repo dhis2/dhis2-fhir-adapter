@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.geo;
+package org.dhis2.fhir.adapter.prototype.dhis.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -34,15 +34,15 @@ import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PointToStringConverter extends TypedConverter<Location, String>
+public class BooleanToStringConverter extends TypedConverter<Boolean, String>
 {
-    public PointToStringConverter()
+    public BooleanToStringConverter()
     {
-        super( Location.class, String.class );
+        super( Boolean.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Location source ) throws ConversionException
+    @Nullable @Override public String doConvert( @Nonnull Boolean source ) throws ConversionException
     {
-        return "[" + String.valueOf( source.getLongitude() ) + "," + String.valueOf( source.getLatitude() ) + "]";
+        return source.toString();
     }
 }

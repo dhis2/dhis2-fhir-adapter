@@ -32,10 +32,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.converter.DateToIsoDateStringConverter;
-import org.dhis2.fhir.adapter.prototype.converter.IsoStringToLocalDateConverter;
+import org.dhis2.fhir.adapter.prototype.converter.DateToZonedDateTimeConverter;
+import org.dhis2.fhir.adapter.prototype.converter.DoubleToTextStringConverter;
 import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
-import org.dhis2.fhir.adapter.prototype.geo.PointToStringConverter;
+import org.dhis2.fhir.adapter.prototype.geo.LocationToStringConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,37 +44,31 @@ import java.util.List;
 
 public class DhisValueConverter
 {
-    private final ListMultimap<ValueType, TypedConverter<?, ?>> toDhisConverters = ArrayListMultimap.create();
-
-    private final ListMultimap<ValueType, TypedConverter<?, ?>> fromDhisConverters = ArrayListMultimap.create();
+    private final ListMultimap<ValueType, TypedConverter<?, ?>> converters = ArrayListMultimap.create();
 
     public DhisValueConverter()
     {
-        addToDhisConverter( ValueType.DATE, new DateToIsoDateStringConverter() );
-        addToDhisConverter( ValueType.COORDINATE, new PointToStringConverter() );
-
-        addFromDhisConverter( ValueType.DATE, new IsoStringToLocalDateConverter() );
+        addConverter( ValueType.BOOLEAN, new BooleanToStringConverter() );
+        addConverter( ValueType.DATETIME, new DateToZonedDateTimeConverter() );
+        addConverter( ValueType.DATE, new DateToIsoDateStringConverter() );
+        addConverter( ValueType.COORDINATE, new LocationToStringConverter() );
+        addConverter( ValueType.TEXT, new DoubleToTextStringConverter() );
     }
 
-    protected void addToDhisConverter( @Nonnull ValueType valueType, @Nonnull TypedConverter<?, ?> converter )
+    protected void addConverter( @Nonnull ValueType valueType, @Nonnull TypedConverter<?, ?> converter )
     {
-        toDhisConverters.put( valueType, converter );
-    }
-
-    protected void addFromDhisConverter( @Nonnull ValueType valueType, @Nonnull TypedConverter<?, ?> converter )
-    {
-        fromDhisConverters.put( valueType, converter );
+        converters.put( valueType, converter );
     }
 
     @SuppressWarnings( "unchecked" )
-    public @Nullable <R> R convertToDhis( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
+    public @Nullable <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
     {
         if ( (value == null) || (isResultValueType( value, resultClass ) && isUnconvertedPrimitive( value, valueType )) )
         {
             return (R) value;
         }
 
-        final List<TypedConverter<?, ?>> converters = toDhisConverters.get( valueType );
+        final List<TypedConverter<?, ?>> converters = this.converters.get( valueType );
         for ( final TypedConverter<?, ?> converter : converters )
         {
             if ( converter.getFromClass().isInstance( value ) && isResultClassType( resultClass, converter ) )
@@ -84,9 +79,9 @@ public class DhisValueConverter
         throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName() + ".") );
     }
 
-    public @Nullable Object convertToDhis( @Nullable Object value, @Nonnull ValueType valueType )
+    public @Nullable Object convert( @Nullable Object value, @Nonnull ValueType valueType )
     {
-        return convertToDhis( value, valueType, Object.class );
+        return convert( value, valueType, Object.class );
     }
 
     private static boolean isUnconvertedPrimitive( @Nonnull Object value, @Nonnull ValueType valueType )
@@ -94,7 +89,7 @@ public class DhisValueConverter
         return valueType.getJavaClass().equals( value.getClass() ) && ((value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
     }
 
-    private <R> boolean isResultValueType( @Nonnull Object value, @Nullable Class<R> resultClass )
+    private <R> boolean isResultValueType( @Nonnull Object value, @Nonnull Class<R> resultClass )
     {
         return (resultClass == Object.class) || resultClass.isInstance( value );
     }

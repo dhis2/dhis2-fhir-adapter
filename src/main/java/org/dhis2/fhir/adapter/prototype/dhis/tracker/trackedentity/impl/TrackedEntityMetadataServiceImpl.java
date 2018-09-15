@@ -56,6 +56,12 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
         this.restTemplate = restTemplate;
     }
 
+    @Override public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
+    {
+        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), id ) )
+            .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
+    }
+
     @Override public Optional<TrackedEntityType> getTypeByName( @Nonnull String name )
     {
         return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), name ) )
