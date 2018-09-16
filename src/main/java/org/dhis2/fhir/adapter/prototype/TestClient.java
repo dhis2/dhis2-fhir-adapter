@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.prototype;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
@@ -42,6 +43,9 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Random;
 
 public class TestClient
@@ -62,7 +66,7 @@ public class TestClient
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
         final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4714" : String.valueOf( Math.abs( new Random().nextInt() ) );
+            "4719" : String.valueOf( Math.abs( new Random().nextInt() ) );
 
         // Organization
         Organization org = new Organization();
@@ -82,8 +86,9 @@ public class TestClient
         patient.addName()
             .setFamily( "Cruz" )
             .addGiven( "Angelica" )
-            .addGiven( "Cecelia" );
-        patient.getBirthDateElement().setValueAsString( "2011-05-22" );
+            .addGiven( "Cecelia" ).addGiven( "Kristin" );
+        patient.getBirthDateElement().setValue( Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY );
         patient.setGender( Enumerations.AdministrativeGender.FEMALE );
         patient.addAddress()
             .addLine( "Unit 607, Tower 1 Marco Polo Residences" )
