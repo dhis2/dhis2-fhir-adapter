@@ -7,6 +7,8 @@ The adapter provides the following functions:
 - Creating and updating (based on a national identifier, not on the resource ID) Tracked Entity Type "Person" from FHIR resource "Patient".
 - Creating and updating events with vaccination information of the enrolled "Person".
 
+The mapping process uses a flexible and configurable rule based data transformation. 
+
 ## Mappings to DHIS2
 FHIR structures may contain multiple values for one field (e.g. multiple names or addresses). This will not be displayed by the following sections. The resulting mapping configuration reduces multiple values to a single value.
 
@@ -25,7 +27,12 @@ Furthermore, a single country may use different coding schemas for coding the sa
 
     !input.notGiven && codeUtils.containsCode(input.vaccineCode, 'VACCINE_BCG')
     
-The script above could check multiple vaccine codes at the same time.
+The script above could check multiple vaccine codes at the same time with the table below.
+
+| CODE_CATEGORY | ADAPTER_CODE  | SCHEMA                            | CODE  |
+|---------------|---------------|-----------------------------------|-------|
+| VACCINE       | VACCINE_BCG   | http://example.ph/vaccine-codes   | BCG   |
+| VACCINE       | VACCINE_BCG   | http://hospital.org/vaccine-codes | T-BCG | 
 
 To make scripts even more reusable, passing arguments to scripts would increase the reusability immensely. It has not yet been implemented and it has not been decided if and when such a feature will be integrated.
 
@@ -78,13 +85,18 @@ For the mapping of the value of "CP - MCH BCG dose" (included in Program Stage "
     output.setValueByName( 'CP - MCH BCG dose', true ); 
     true;
 
-In order to increase the readability of the mapping, names are used to map values. 
+In order to increase the readability of the mapping, names are used to map values.
+
+    output.setValue( args['dataElement'], true ); 
+    true;
+
+The script above could use arguments. This would make the the script more reusable. The script could be name to "Set Data Element Yes" and could have one arguments that refers to a the code and name of a data element. This argument could be set when defining the concrete rule.
 
 ### FHIR Organization
 The organization resource is only included in the transaction bundle to include a reference to the national identifier of the organization (must be the organization code). Since the organization will not include the parent organization (FHIR Organization.partOf) it cannot be used to create or update an organization unit on DHIS2. This would also require that the complete hierarchy up to the root organization is included and updated in the transaction bundle (due to required references of national identifiers). The prototype adapter will therefore ignore the update request of the organization and return a status of 200.
 
 ## Resource ID Handling
-The implementation for the demo does not generate resource IDs when it receives requests. For the purpose of the demo it is not relevant. In general the adapter must generate an identifier that contains the rule that processed the input data and the identifier of the affected DHIS2 resource. This is absolutely required when enabling FHIR read access. 
+The implementation for the demo does not generate resource IDs when it receives requests. For the purpose of the demo it is not relevant. In general the adapter must generate an identifier that contains the rule that processed the input data and the identifier of the affected DHIS2 resource. This is absolutely required when enabling FHIR read access. To handle read access was not in the scope of the demo. But there must still be a possibility to provide it.  
 
     8ab213cfa023bcd4-EVa3kGcGDCuk6
     
