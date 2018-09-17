@@ -28,12 +28,14 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.prototype.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@Scriptable
 public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 {
     @Nullable String getId();

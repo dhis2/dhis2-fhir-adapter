@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 
+@Scriptable
 public interface ScriptedDhisResource
 {
     boolean isNewResource();

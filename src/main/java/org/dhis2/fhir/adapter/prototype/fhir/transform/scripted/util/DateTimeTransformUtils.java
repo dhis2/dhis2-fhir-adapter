@@ -29,14 +29,20 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  */
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.dhis2.fhir.adapter.prototype.util.CastUtils;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.Temporal;
 import java.util.Date;
 
 @Component
+@Scriptable
 public class DateTimeTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "dateTimeUtils";
@@ -56,13 +62,44 @@ public class DateTimeTransformUtils extends AbstractTransformUtils
         return (dateTime.getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
     }
 
-    public @Nullable Date getPrecisePastDate( @Nullable BaseDateTimeType dateTime )
+    public @Nullable Date getPreciseDate( @Nullable BaseDateTimeType dateTime )
     {
-        if ( (dateTime == null) || (dateTime.getValue() == null) || !hasDayPrecision( dateTime ) ||
-            new Date().before( dateTime.getValue() ) )
+        if ( (dateTime == null) || (dateTime.getValue() == null) || !hasDayPrecision( dateTime ) )
         {
             return null;
         }
         return dateTime.getValue();
     }
+
+
+    public @Nullable Date getPrecisePastDate( @Nullable BaseDateTimeType dateTime )
+    {
+        final Date date = getPreciseDate( dateTime );
+        if ( (date != null) && new Date().before( date ) )
+        {
+            return null;
+        }
+        return date;
+    }
+
+    public @Nullable Integer getAge( @Nullable Object dateTime )
+    {
+        return CastUtils.cast( dateTime, BaseDateTimeType.class, this::getAge, Date.class, this::getAge, Temporal.class, this::getAge );
+    }
+
+    protected @Nullable Integer getAge( @Nullable BaseDateTimeType dateTime )
+    {
+        return getAge( getPreciseDate( dateTime ) );
+    }
+
+    protected @Nullable Integer getAge( @Nullable Date date )
+    {
+        return (date == null) ? null : getAge( date.toInstant() );
+    }
+
+    protected @Nullable Integer getAge( @Nullable Temporal temporal )
+    {
+        return (temporal == null) ? null : Period.between( LocalDate.from( temporal ), LocalDate.now() ).getYears();
+    }
+
 }

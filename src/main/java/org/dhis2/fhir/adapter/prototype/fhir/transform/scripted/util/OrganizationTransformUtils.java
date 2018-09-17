@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.dhis.model.Id;
 import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.prototype.dhis.orgunit.OrganisationUnitService;
@@ -42,6 +43,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Component
+@Scriptable
 public class OrganizationTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "organizationUtils";

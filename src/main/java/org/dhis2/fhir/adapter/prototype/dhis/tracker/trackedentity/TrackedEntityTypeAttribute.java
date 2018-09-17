@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 
+@Scriptable
 public interface TrackedEntityTypeAttribute
 {
     String getId();

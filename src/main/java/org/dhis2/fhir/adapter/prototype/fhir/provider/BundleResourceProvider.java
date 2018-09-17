@@ -36,6 +36,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -75,13 +76,16 @@ public class BundleResourceProvider implements IResourceProvider
 
     private final TrackedEntityService trackedEntityService;
 
+    private final EnrollmentService enrollmentService;
+
     private final EventService eventService;
 
     public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
-        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EventService eventService )
+        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
     {
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.trackedEntityService = trackedEntityService;
+        this.enrollmentService = enrollmentService;
         this.eventService = eventService;
     }
 
@@ -125,7 +129,16 @@ public class BundleResourceProvider implements IResourceProvider
                         resource = trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
                         break;
                     case EVENT:
-                        resource = eventService.createOrMinimalUpdate( (Event) outcome.getResource() );
+                        final Event event = (Event) outcome.getResource();
+                        // Creation of enrollment and event can be made at the
+                        // same time, for demo purpose the simplified approach
+                        // is used since for further focus this use case seems
+                        // not to be in the primary scope.
+                        if ( event.getEnrollment().isNewResource() )
+                        {
+                            event.setEnrollment( enrollmentService.create( event.getEnrollment() ) );
+                        }
+                        resource = eventService.createOrMinimalUpdate( event );
                         break;
                     default:
                         throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );

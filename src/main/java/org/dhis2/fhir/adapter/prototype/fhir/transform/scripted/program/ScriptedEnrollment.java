@@ -28,13 +28,20 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
+@Scriptable
 public interface ScriptedEnrollment extends ScriptedDhisResource
 {
     @Nullable String getId();
 
     @Nullable String getOrganizationUnitId();
+
+    @Nullable ZonedDateTime getEnrollmentDate();
+
+    @Nullable ZonedDateTime getIncidentDate();
 }

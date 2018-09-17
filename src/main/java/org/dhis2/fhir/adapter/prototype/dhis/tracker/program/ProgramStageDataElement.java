@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataElement;
 
+@Scriptable
 public interface ProgramStageDataElement
 {
     String getId();

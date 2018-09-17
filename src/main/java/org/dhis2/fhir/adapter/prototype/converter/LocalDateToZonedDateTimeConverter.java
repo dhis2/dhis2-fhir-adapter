@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.model;
+package org.dhis2.fhir.adapter.prototype.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,23 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-import java.util.List;
-
-@Scriptable
-public interface OptionSet
+public class LocalDateToZonedDateTimeConverter extends TypedConverter<LocalDate, ZonedDateTime>
 {
-    String getId();
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
-    String getName();
+    public LocalDateToZonedDateTimeConverter()
+    {
+        super( LocalDate.class, ZonedDateTime.class );
+    }
 
-    List<? extends Option> getOptions();
+    @Override public @Nullable ZonedDateTime doConvert( @Nonnull LocalDate source )
+    {
+        return source.atStartOfDay( zoneId );
+    }
 }

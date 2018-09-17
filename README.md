@@ -5,6 +5,7 @@ The adapter provides the following functions:
 
 - Importing data from systems that uses different FHIR resource IDs than the adapter itself (creation and updates based on filters).
 - Creating and updating (based on a national identifier, not on the resource ID) Tracked Entity Type "Person" from FHIR resource "Patient".
+- Enrolling a "Person" into the child immunization program when it is younger than one year and receives one of the vaccines that is handled by the program. 
 - Creating and updating events with vaccination information of the enrolled "Person".
 
 The mapping process uses a flexible and configurable rule based data transformation. 

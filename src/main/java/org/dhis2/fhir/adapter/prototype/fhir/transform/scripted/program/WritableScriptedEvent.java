@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
@@ -44,6 +45,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+@Scriptable
 public class WritableScriptedEvent implements ScriptedEvent, Serializable
 {
     private static final long serialVersionUID = 3407593545422372222L;

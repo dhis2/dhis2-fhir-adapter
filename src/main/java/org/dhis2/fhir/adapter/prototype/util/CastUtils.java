@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.prototype.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,49 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
-import org.hl7.fhir.dstu3.model.Immunization;
-import org.springframework.stereotype.Component;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Comparator;
+import java.util.function.Function;
 
-@Component
-@Scriptable
-public class ImmunizationTransformUtils extends AbstractTransformUtils
+/**
+ * The cast utils provide helper methods to avoid that overloaded methods that receive a <code>null</code> value in JavaScript executions cannot be selected.
+ *
+ * @author volsch
+ */
+public abstract class CastUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "immunizationUtils";
-
-    @Nonnull @Override public String getScriptAttrName()
+    public static @Nullable <T, V1, V2> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2 )
     {
-        return SCRIPT_ATTR_NAME;
+        if ( (value == null) || c1.isInstance( value ) )
+        {
+            return f1.apply( c1.cast( value ) );
+        }
+        if ( c2.isInstance( value ) )
+        {
+            return f2.apply( c2.cast( value ) );
+        }
+        throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
     }
 
-    public int getMaxDoseSequence( @Nullable Immunization immunization ) throws TransformException
+    public static @Nullable <T, V1, V2, V3> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3 )
     {
-        if ( immunization == null )
+        if ( (value == null) || c1.isInstance( value ) )
         {
-            return 0;
+            return f1.apply( c1.cast( value ) );
         }
-        return immunization.getVaccinationProtocol().stream().map( Immunization.ImmunizationVaccinationProtocolComponent::getDoseSequence ).max( Comparator.naturalOrder() ).orElse( 0 );
+        if ( c2.isInstance( value ) )
+        {
+            return f2.apply( c2.cast( value ) );
+        }
+        if ( c3.isInstance( value ) )
+        {
+            return f3.apply( c3.cast( value ) );
+        }
+        throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
+    }
+
+    private CastUtils()
+    {
+        super();
     }
 }

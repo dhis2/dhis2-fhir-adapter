@@ -56,7 +56,10 @@ public class AutomatedEnrollment implements Serializable
     private Long version;
 
     @Lob @Column( name = "applicable_script", nullable = false )
-    private String applicable;
+    private String applicableScript;
+
+    @Lob @Column( name = "transform_script", nullable = false )
+    private String transformScript;
 
     public UUID getId()
     {
@@ -78,13 +81,23 @@ public class AutomatedEnrollment implements Serializable
         this.version = version;
     }
 
-    public String getApplicable()
+    public String getApplicableScript()
     {
-        return applicable;
+        return applicableScript;
     }
 
-    public void setApplicable( String applicable )
+    public void setApplicableScript( String applicable )
     {
-        this.applicable = applicable;
+        this.applicableScript = applicable;
+    }
+
+    public String getTransformScript()
+    {
+        return transformScript;
+    }
+
+    public void setTransformScript( String transformScript )
+    {
+        this.transformScript = transformScript;
     }
 }

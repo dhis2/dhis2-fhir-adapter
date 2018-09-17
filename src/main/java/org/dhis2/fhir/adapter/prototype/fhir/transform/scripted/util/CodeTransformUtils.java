@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Component
+@Scriptable
 public class CodeTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "codeUtils";

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.model;
+package org.dhis2.fhir.adapter.prototype.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,43 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import java.util.List;
-
-@Scriptable
-public interface OptionSet
+public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>
 {
-    String getId();
+    private final Pattern dateTimePattern = Pattern.compile( ".*(\\d{4}-\\d{2}-\\d{2}T.*Z).*" );
 
-    String getName();
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
-    List<? extends Option> getOptions();
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone( zoneId );
+
+    public ObjectToZonedDateTimeConverter()
+    {
+        super( Object.class, ZonedDateTime.class );
+    }
+
+    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Object source )
+    {
+        final Matcher matcher = dateTimePattern.matcher( source.toString() );
+        if ( !matcher.matches() )
+        {
+            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source );
+        }
+        final String value = matcher.group( 1 );
+        try
+        {
+            return ZonedDateTime.from( formatter.parse( value ) );
+        }
+        catch ( DateTimeParseException e )
+        {
+            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source, e );
+        }
+    }
 }

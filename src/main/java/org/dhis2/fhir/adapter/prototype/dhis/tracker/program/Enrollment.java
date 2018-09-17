@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Enrollment implements DhisResource, Serializable
@@ -45,6 +46,9 @@ public class Enrollment implements DhisResource, Serializable
 
     @JsonIgnore
     private boolean newResource;
+
+    @JsonIgnore
+    private boolean modified;
 
     @JsonProperty( "enrollment" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -67,6 +71,18 @@ public class Enrollment implements DhisResource, Serializable
     private ZonedDateTime incidentDate;
 
     private List<Event> events;
+
+    public Enrollment()
+    {
+        super();
+    }
+
+    public Enrollment( boolean newResource )
+    {
+        this.newResource = newResource;
+        this.modified = newResource;
+        this.events = new ArrayList<>();
+    }
 
     @Override public boolean isNewResource()
     {
@@ -156,5 +172,20 @@ public class Enrollment implements DhisResource, Serializable
     public void setEvents( List<Event> events )
     {
         this.events = events;
+    }
+
+    public boolean isModified()
+    {
+        return modified;
+    }
+
+    public void setModified()
+    {
+        this.modified = true;
+    }
+
+    public void resetModified()
+    {
+        this.modified = false;
     }
 }

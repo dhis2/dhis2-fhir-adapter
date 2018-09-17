@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.model;
+package org.dhis2.fhir.adapter.prototype;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,16 @@ package org.dhis2.fhir.adapter.prototype.dhis.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-
-@Scriptable
-public interface OptionSet
+@Target( { ElementType.TYPE } )
+@Retention( RetentionPolicy.CLASS )
+@Documented
+public @interface Scriptable
 {
-    String getId();
-
-    String getName();
-
-    List<? extends Option> getOptions();
+    // nothing to declare
 }

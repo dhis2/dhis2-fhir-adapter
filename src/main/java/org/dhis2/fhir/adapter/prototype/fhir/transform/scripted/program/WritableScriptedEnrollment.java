@@ -28,23 +28,32 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
+import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.prototype.util.CastUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
+@Scriptable
 public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializable
 {
     private static final long serialVersionUID = -9043373621936561310L;
 
     private final Enrollment enrollment;
 
-    public WritableScriptedEnrollment( @Nonnull Enrollment enrollment )
+    private final DhisValueConverter dhisValueConverter;
+
+    public WritableScriptedEnrollment( @Nonnull Enrollment enrollment, @Nonnull DhisValueConverter dhisValueConverter )
     {
         this.enrollment = enrollment;
+        this.dhisValueConverter = dhisValueConverter;
     }
 
     @Override public boolean isNewResource()
@@ -62,11 +71,49 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         return enrollment.getOrgUnitId();
     }
 
+    public void setOrganizationUnitId( String organizationUnitId )
+    {
+        enrollment.setOrgUnitId( organizationUnitId );
+    }
+
+    @Nullable @Override public ZonedDateTime getEnrollmentDate()
+    {
+        return enrollment.getEnrollmentDate();
+    }
+
+    public void setEnrollmentDate( ZonedDateTime enrollmentDate )
+    {
+        enrollment.setEnrollmentDate( enrollmentDate );
+    }
+
+    public void setEnrollmentDate( Object enrollmentDate )
+    {
+        enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> dhisValueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
+    }
+
+    @Nullable @Override public ZonedDateTime getIncidentDate()
+    {
+        return enrollment.getIncidentDate();
+    }
+
+    public void setIncidentDate( Object incidentDate )
+    {
+        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
+    }
+
     @Override public void validate() throws TransformException
     {
         if ( enrollment.getOrgUnitId() == null )
         {
             throw new TransformMappingException( "Organization unit ID of enrollment has not been specified." );
+        }
+        if ( enrollment.getEnrollmentDate() == null )
+        {
+            throw new TransformMappingException( "Enrollment date of enrollment has not been specified." );
+        }
+        if ( enrollment.getIncidentDate() == null )
+        {
+            throw new TransformMappingException( "Incident date of enrollment has not been specified." );
         }
     }
 }

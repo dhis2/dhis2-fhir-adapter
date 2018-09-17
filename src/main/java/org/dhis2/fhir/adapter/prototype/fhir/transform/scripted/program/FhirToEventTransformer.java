@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EnrollmentService;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EventStatus;
@@ -69,7 +70,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +175,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         }
 
         final ProgramStage programStage = getProgramStage( scriptArguments );
-        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME, new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( event.get().getEnrollment() ) ) );
+        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME,
+            new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( event.get().getEnrollment(), dhisValueConverter ) ) );
 
         final WritableScriptedEvent scriptedEvent = new WritableScriptedEvent( programStage, event.get(), dhisValueConverter );
         arguments.put( TransformerScriptConstants.OUTPUT_ATTR_NAME, scriptedEvent );
@@ -226,23 +227,43 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
             return null;
         }
 
-        // automatic enrollments are not supported currently
-        if ( !eventInfo.getEnrollment().isPresent() )
+        final FhirResourceMapping fhirResourceMapping = getFhirResourceMapping( mapping );
+        Enrollment enrollment = eventInfo.getEnrollment().orElse( null );
+        if ( enrollment == null )
         {
-            return null;
+            if ( mapping.getAutomatedEnrollment() == null )
+            {
+                return null;
+            }
+
+            if ( !transform( mapping.getAutomatedEnrollment().getApplicableScript(), scriptArguments ) )
+            {
+                return null;
+            }
+
+            enrollment = new Enrollment( true );
+            enrollment.setProgramId( eventInfo.getProgram().getId() );
+            enrollment.setTrackedEntityInstanceId( eventInfo.getTrackedEntityInstance().getId() );
+            enrollment.setStatus( EnrollmentStatus.ACTIVE );
+
+            final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( enrollment, dhisValueConverter );
+            final Map<String, Object> arguments = new HashMap<>( scriptArguments );
+            arguments.put( TransformerScriptConstants.OUTPUT_ATTR_NAME, scriptedEnrollment );
+            if ( !transform( mapping.getAutomatedEnrollment().getTransformScript(), arguments ) )
+            {
+                return null;
+            }
+            scriptedEnrollment.validate();
         }
 
-        final FhirResourceMapping fhirResourceMapping = getFhirResourceMapping( mapping );
         final Event event = new Event( true );
-        event.setEnrollmentId( eventInfo.getEnrollment().get().getId() );
-        event.setEnrollment( eventInfo.getEnrollment().get() );
-        event.setOrgUnitId( getEnrolledOrgUnitId( fhirResourceMapping, eventInfo.getEnrollment().get(), scriptArguments ) );
+        event.setEnrollment( enrollment );
+        event.setOrgUnitId( getEnrolledOrgUnitId( fhirResourceMapping, enrollment, scriptArguments ) );
         event.setProgramId( eventInfo.getProgram().getId() );
         event.setProgramStageId( eventInfo.getProgramStage().getId() );
         event.setTrackedEntityInstanceId( eventInfo.getTrackedEntityInstance().getId() );
         event.setStatus( EventStatus.ACTIVE );
-        event.setEventDate( getEventDate( fhirResourceMapping, eventInfo.getEnrollment().get(), scriptArguments ) );
-        event.setDataValues( new ArrayList<>() );
+        event.setEventDate( getEventDate( fhirResourceMapping, enrollment, scriptArguments ) );
         return event;
     }
 
@@ -299,7 +320,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
     protected @Nullable String getEnrolledOrgUnitId( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final Map<String, Object> arguments = new HashMap<>( scriptArguments );
-        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME, new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( enrollment ) ) );
+        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME,
+            new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( enrollment, dhisValueConverter ) ) );
 
         try
         {
@@ -317,7 +339,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
     protected @Nonnull ZonedDateTime getEventDate( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final Map<String, Object> arguments = new HashMap<>( scriptArguments );
-        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME, new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( enrollment ) ) );
+        arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME,
+            new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( enrollment, dhisValueConverter ) ) );
 
         try
         {
@@ -372,6 +395,23 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
             completedEvents = events.stream().anyMatch( e -> e.getStatus() == EventStatus.COMPLETED );
         }
         return new EventInfo( program, programStage, trackedEntityType, trackedEntityInstance, enrollment, event, completedEvents );
+    }
+
+    protected boolean transform( @Nonnull String script, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    {
+        try
+        {
+            final Object result = getScriptEvaluator().evaluate( new StaticScriptSource( script ), new HashMap<>( scriptArguments ) );
+            if ( !(result instanceof Boolean) )
+            {
+                throw new TransformScriptException( "Script did not return a boolean value." );
+            }
+            return (boolean) result;
+        }
+        catch ( ScriptCompilationException e )
+        {
+            throw new TransformScriptException( "Script caused an error: " + e.getMessage(), e );
+        }
     }
 
     private static @Nonnull ProgramStage getProgramStage( @Nonnull Map<String, Object> scriptArguments ) throws TransformException

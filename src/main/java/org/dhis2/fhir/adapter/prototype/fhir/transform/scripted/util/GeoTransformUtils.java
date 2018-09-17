@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
 import org.dhis2.fhir.adapter.prototype.geo.Location;
@@ -41,6 +42,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Component
+@Scriptable
 public class GeoTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "geoUtils";

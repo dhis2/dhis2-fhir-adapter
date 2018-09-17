@@ -28,12 +28,15 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
+@Scriptable
 public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializable
 {
     private static final long serialVersionUID = 3106142635120155470L;
@@ -58,6 +61,16 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializ
     @Override @Nullable public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
+    }
+
+    @Override @Nullable public ZonedDateTime getEnrollmentDate()
+    {
+        return delegate.getEnrollmentDate();
+    }
+
+    @Override @Nullable public ZonedDateTime getIncidentDate()
+    {
+        return delegate.getIncidentDate();
     }
 
     @Override public void validate() throws TransformException

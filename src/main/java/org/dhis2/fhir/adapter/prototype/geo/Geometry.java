@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.prototype.geo;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+
+@Scriptable
 public interface Geometry
 {
     /* nothing to declare */

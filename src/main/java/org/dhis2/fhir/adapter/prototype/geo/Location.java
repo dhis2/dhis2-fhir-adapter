@@ -28,9 +28,12 @@ package org.dhis2.fhir.adapter.prototype.geo;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@Scriptable
 public class Location implements Geometry, Serializable
 {
     private static final long serialVersionUID = 7916805545140123930L;

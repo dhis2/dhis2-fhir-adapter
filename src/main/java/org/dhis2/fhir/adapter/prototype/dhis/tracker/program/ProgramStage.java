@@ -28,11 +28,14 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
+@Scriptable
 public interface ProgramStage
 {
     String getId();

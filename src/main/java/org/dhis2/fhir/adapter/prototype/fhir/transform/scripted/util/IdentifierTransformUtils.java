@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.dhis.model.Id;
 import org.dhis2.fhir.adapter.prototype.dhis.model.IdType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
@@ -48,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
+@Scriptable
 public class IdentifierTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "identifierUtils";

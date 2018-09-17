@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@Scriptable
 public class HumanNameTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "humanNameUtils";

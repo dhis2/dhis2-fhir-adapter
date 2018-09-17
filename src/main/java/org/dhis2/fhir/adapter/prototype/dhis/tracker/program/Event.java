@@ -95,6 +95,7 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     {
         this.newResource = newResource;
         this.modified = newResource;
+        this.dataValues = new ArrayList<>();
     }
 
     @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
@@ -155,6 +156,7 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setEnrollment( Enrollment enrollment )
     {
         this.enrollment = enrollment;
+        setEnrollmentId( (enrollment == null) ? null : enrollment.getId() );
     }
 
     public String getTrackedEntityInstanceId()

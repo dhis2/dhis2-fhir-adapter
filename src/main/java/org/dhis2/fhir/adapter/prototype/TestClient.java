@@ -66,7 +66,7 @@ public class TestClient
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
         final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4719" : String.valueOf( Math.abs( new Random().nextInt() ) );
+            "4727" : String.valueOf( Math.abs( new Random().nextInt() ) );
 
         // Organization
         Organization org = new Organization();

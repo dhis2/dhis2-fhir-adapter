@@ -34,6 +34,9 @@ import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.converter.DateToIsoDateStringConverter;
 import org.dhis2.fhir.adapter.prototype.converter.DateToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.prototype.converter.DoubleToTextStringConverter;
+import org.dhis2.fhir.adapter.prototype.converter.IsoStringToLocalDateConverter;
+import org.dhis2.fhir.adapter.prototype.converter.LocalDateToZonedDateTimeConverter;
+import org.dhis2.fhir.adapter.prototype.converter.ObjectToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.geo.LocationToStringConverter;
@@ -51,6 +54,9 @@ public class DhisValueConverter
         addConverter( ValueType.BOOLEAN, new BooleanToStringConverter() );
         addConverter( ValueType.DATETIME, new DateToZonedDateTimeConverter() );
         addConverter( ValueType.DATE, new DateToIsoDateStringConverter() );
+        addConverter( ValueType.DATE, new IsoStringToLocalDateConverter() );
+        addConverter( ValueType.DATETIME, new LocalDateToZonedDateTimeConverter() );
+        addConverter( ValueType.DATETIME, new ObjectToZonedDateTimeConverter() );
         addConverter( ValueType.COORDINATE, new LocationToStringConverter() );
         addConverter( ValueType.TEXT, new DoubleToTextStringConverter() );
     }

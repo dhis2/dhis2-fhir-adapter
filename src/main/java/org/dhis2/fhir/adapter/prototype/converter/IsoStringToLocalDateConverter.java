@@ -39,7 +39,7 @@ public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalD
 {
     private final ZoneId zoneId = ZoneId.systemDefault();
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE.withZone( zoneId );
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE.withZone( zoneId );
 
     public IsoStringToLocalDateConverter()
     {
