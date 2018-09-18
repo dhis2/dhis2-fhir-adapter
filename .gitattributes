@@ -23,3 +23,6 @@ LICENSE text
 
 # Denote all files that must use UNIX style line endings.
 *.sh text eol=lf
+
+# Line endings of SQL files must not change. Otherwise Flyway complains about non-matching checksum.
+*.sql text eol=lf
