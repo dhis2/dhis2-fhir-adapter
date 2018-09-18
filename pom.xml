@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.dhis2.fhir.adapter</groupId>
-  <artifactId>aehin2018-dhis2-fhir-adapter-prototype</artifactId>
+  <artifactId>dhis2-fhir-adapter</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
@@ -14,7 +14,7 @@
     <version>2.0.4.RELEASE</version>
   </parent>
 
-  <name>dhis2-fhir-adapter-prototype</name>
+  <name>dhis2-fhir-adapter</name>
 
   <properties>
     <dhis2.username>admin</dhis2.username>
@@ -122,6 +122,6 @@
   </dependencies>
 
   <build>
-    <finalName>aehin2018-dhis2-fhir-adapter-prototype</finalName>
+    <finalName>dhis2-fhir-adapter</finalName>
   </build>
 </project>
