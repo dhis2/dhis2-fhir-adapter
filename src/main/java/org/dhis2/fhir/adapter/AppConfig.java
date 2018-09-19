@@ -56,7 +56,7 @@ public class AppConfig
                     new ZonedDateTimeSerializer(),
                     new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
                 .deserializers( new ZonedDateTimeDeserializer(),
-                    new LocalDateDeserializer( DateTimeFormatter.ISO_OFFSET_DATE.withZone( zoneId ) ) );
+                    new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
         };
     }
 }
