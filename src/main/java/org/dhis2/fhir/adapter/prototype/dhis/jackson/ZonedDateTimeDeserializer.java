@@ -29,12 +29,13 @@ package org.dhis2.fhir.adapter.prototype.dhis.jackson;
  */
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.dhis2.fhir.adapter.util.DateTimeUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,14 +45,14 @@ public class ZonedDateTimeDeserializer extends StdDeserializer<ZonedDateTime>
 {
     private static final long serialVersionUID = -7804311923431170580L;
 
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone( ZoneId.systemDefault() );
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     public ZonedDateTimeDeserializer()
     {
         super( ZonedDateTime.class );
     }
 
-    @Override public ZonedDateTime deserialize( JsonParser jsonParser, DeserializationContext deserializationContext ) throws IOException, JsonProcessingException
+    @Override public ZonedDateTime deserialize( JsonParser jsonParser, DeserializationContext deserializationContext ) throws IOException
     {
         final String string = jsonParser.getText().trim();
         if ( string.isEmpty() )
@@ -60,7 +61,14 @@ public class ZonedDateTimeDeserializer extends StdDeserializer<ZonedDateTime>
         }
         try
         {
-            return ZonedDateTime.parse( string, dateTimeFormatter );
+            if ( DateTimeUtils.containsDateTimeOffset( string ) )
+            {
+                return ZonedDateTime.parse( string, DateTimeFormatter.ISO_DATE_TIME );
+            }
+            else
+            {
+                return ZonedDateTime.of( LocalDateTime.parse( string, DateTimeFormatter.ISO_LOCAL_DATE_TIME ), zoneId );
+            }
         }
         catch ( DateTimeParseException e )
         {

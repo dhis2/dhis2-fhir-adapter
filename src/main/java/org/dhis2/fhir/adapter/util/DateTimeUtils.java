@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.converter;
+package org.dhis2.fhir.adapter.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -29,39 +29,30 @@ package org.dhis2.fhir.adapter.prototype.converter;
  */
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>
+/**
+ * Utility class for handling date and times.
+ *
+ * @author volsch
+ */
+public abstract class DateTimeUtils
 {
-    private final Pattern dateTimePattern = Pattern.compile( ".*(\\d{4}-\\d{2}-\\d{2}T.*Z).*" );
+    private static final Pattern DATE_TIME_OFFSET_PATTERN = Pattern.compile( ".+T.+[Z+-].*" );
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-
-    public ObjectToZonedDateTimeConverter()
+    /**
+     * Checks if an ISO formatted date and time contains a zone offset.
+     *
+     * @param dateTime the date and time that should be checked.
+     * @return <code>true</code> if the ISO formatted date and time contains an offset, <code>false</code> otherwise.
+     */
+    public static boolean containsDateTimeOffset( @Nonnull String dateTime )
     {
-        super( Object.class, ZonedDateTime.class );
+        return DATE_TIME_OFFSET_PATTERN.matcher( dateTime ).matches();
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Object source )
+    public DateTimeUtils()
     {
-        final Matcher matcher = dateTimePattern.matcher( source.toString() );
-        if ( !matcher.matches() )
-        {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source );
-        }
-        final String value = matcher.group( 1 );
-        try
-        {
-            return ZonedDateTime.from( formatter.parse( value ) );
-        }
-        catch ( DateTimeParseException e )
-        {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source, e );
-        }
+        super();
     }
 }

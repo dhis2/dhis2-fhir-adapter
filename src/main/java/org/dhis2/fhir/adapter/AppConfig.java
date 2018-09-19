@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.converter;
+package org.dhis2.fhir.adapter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,40 +28,35 @@ package org.dhis2.fhir.adapter.prototype.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import org.dhis2.fhir.adapter.prototype.dhis.jackson.ZonedDateTimeDeserializer;
+import org.dhis2.fhir.adapter.prototype.dhis.jackson.ZonedDateTimeSerializer;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.validation.annotation.Validated;
+
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>
+@Configuration
+@Validated
+public class AppConfig
 {
-    private final Pattern dateTimePattern = Pattern.compile( ".*(\\d{4}-\\d{2}-\\d{2}T.*Z).*" );
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-
-    public ObjectToZonedDateTimeConverter()
+    @Bean
+    @Order( 1 )
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer()
     {
-        super( Object.class, ZonedDateTime.class );
-    }
-
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Object source )
-    {
-        final Matcher matcher = dateTimePattern.matcher( source.toString() );
-        if ( !matcher.matches() )
-        {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source );
-        }
-        final String value = matcher.group( 1 );
-        try
-        {
-            return ZonedDateTime.from( formatter.parse( value ) );
-        }
-        catch ( DateTimeParseException e )
-        {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source, e );
-        }
+        return jacksonObjectMapperBuilder -> {
+            final ZoneId zoneId = ZoneId.systemDefault();
+            jacksonObjectMapperBuilder
+                .serializers(
+                    new ZonedDateTimeSerializer(),
+                    new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
+                .deserializers( new ZonedDateTimeDeserializer(),
+                    new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+        };
     }
 }
