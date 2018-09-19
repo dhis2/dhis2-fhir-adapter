@@ -95,7 +95,7 @@ public class ExecutableScriptArgument implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -115,7 +115,7 @@ public class ExecutableScriptArgument implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "override_value", nullable = true, length = 230 ) public String getOverrideValue()
+    @Basic @Column( name = "override_value", length = 230 ) public String getOverrideValue()
     {
         return overrideValue;
     }

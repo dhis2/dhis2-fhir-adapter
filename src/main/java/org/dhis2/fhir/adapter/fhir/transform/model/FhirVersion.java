@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,9 +28,7 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public interface FhirRequestParameters
+public enum FhirVersion
 {
-    String FULL_QUALIFIED_IDENTIFIER_SEPARATOR = "|";
-
-    String IDENTIFIER_PARAM_NAME = "identifier";
+    DSTU3
 }

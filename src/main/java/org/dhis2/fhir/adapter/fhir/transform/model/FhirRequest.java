@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,19 +28,26 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
-public class TransformScriptException extends TransformException
+public interface FhirRequest
 {
-    private static final long serialVersionUID = -1296515465059154893L;
+    @Nullable FhirRequestMethod getRequestMethod();
 
-    public TransformScriptException( String message )
-    {
-        super( message );
-    }
+    @Nullable FhirResourceType getResourceType();
 
-    public TransformScriptException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    @Nullable String getResourceId();
+
+    boolean containsRequestParameters();
+
+    boolean containsRequestParameter( @Nonnull String name );
+
+    @Nonnull Set<String> getParameterNames();
+
+    @Nullable List<String> getParameterValues( @Nonnull String name );
+
+    @Nonnull FhirVersion getVersion();
 }

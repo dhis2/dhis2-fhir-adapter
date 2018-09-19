@@ -36,8 +36,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeV
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
@@ -79,11 +79,11 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return trackedEntityInstance.getOrgUnitId();
     }
 
-    public void setOrganizationUnitId( @Nullable String id ) throws TransformException
+    public void setOrganizationUnitId( @Nullable String id ) throws TransformerException
     {
         if ( id == null )
         {
-            throw new TransformMappingException( "Organization unit ID of tracked entity instance must not be null." );
+            throw new TransformerMappingException( "Organization unit ID of tracked entity instance must not be null." );
         }
         trackedEntityInstance.setOrgUnitId( id );
     }
@@ -98,16 +98,16 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         trackedEntityInstance.setCoordinates( dhisValueConverter.convert( location, ValueType.COORDINATE, String.class ) );
     }
 
-    public void setValueByName( @Nonnull String typeAttrName, Object value ) throws TransformException
+    public void setValueByName( @Nonnull String typeAttrName, Object value ) throws TransformerException
     {
         final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
         setValue( typeAttribute, value );
     }
 
-    public void setValueByCode( @Nonnull String typeAttrCode, Object value ) throws TransformException
+    public void setValueByCode( @Nonnull String typeAttrCode, Object value ) throws TransformerException
     {
         final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttributeByCode( typeAttrCode ).orElseThrow( () ->
-            new TransformMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with code \"" + typeAttrCode + "\"" ) );
+            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with code \"" + typeAttrCode + "\"" ) );
         setValue( typeAttribute, value );
     }
 
@@ -117,15 +117,15 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return getValue( typeAttribute );
     }
 
-    protected void setValue( @Nonnull TrackedEntityTypeAttribute typeAttribute, Object value ) throws TransformException
+    protected void setValue( @Nonnull TrackedEntityTypeAttribute typeAttribute, Object value ) throws TransformerException
     {
         if ( (value == null) && typeAttribute.isMandatory() )
         {
-            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is mandatory and cannot be null." );
+            throw new TransformerMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is mandatory and cannot be null." );
         }
         if ( typeAttribute.isGenerated() )
         {
-            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is generated and cannot be set." );
+            throw new TransformerMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is generated and cannot be set." );
         }
 
         final Object convertedValue;
@@ -135,12 +135,12 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         }
         catch ( ConversionException e )
         {
-            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
+            throw new TransformerMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
         trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() ).setValue( convertedValue );
     }
 
-    protected Object getValue( @Nonnull TrackedEntityTypeAttribute typeAttribute ) throws TransformException
+    protected Object getValue( @Nonnull TrackedEntityTypeAttribute typeAttribute ) throws TransformerException
     {
         final TrackedEntityAttributeValue attributeValue = trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() );
         final Object convertedValue;
@@ -150,23 +150,23 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         }
         catch ( ConversionException e )
         {
-            throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
+            throw new TransformerMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
         return convertedValue;
     }
 
     @Override
-    public void validate() throws TransformException
+    public void validate() throws TransformerException
     {
         if ( trackedEntityInstance.getOrgUnitId() == null )
         {
-            throw new TransformMappingException( "Organization unit ID of tracked entity instance has not been specified." );
+            throw new TransformerMappingException( "Organization unit ID of tracked entity instance has not been specified." );
         }
 
         trackedEntityType.getAttributes().stream().filter( TrackedEntityTypeAttribute::isMandatory ).forEach( ta -> {
             if ( !trackedEntityInstance.containsAttribute( ta.getAttributeId() ) )
             {
-                throw new TransformMappingException( "Value of tracked entity type attribute \"" + ta.getName() + "\" is mandatory and must be set." );
+                throw new TransformerMappingException( "Value of tracked entity type attribute \"" + ta.getName() + "\" is mandatory and must be set." );
             }
         } );
     }
@@ -174,6 +174,6 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     private TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String typeAttrName )
     {
         return trackedEntityType.getOptionalTypeAttributeByName( typeAttrName ).orElseThrow( () ->
-            new TransformMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with name \"" + typeAttrName + "\"" ) );
+            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with name \"" + typeAttrName + "\"" ) );
     }
 }

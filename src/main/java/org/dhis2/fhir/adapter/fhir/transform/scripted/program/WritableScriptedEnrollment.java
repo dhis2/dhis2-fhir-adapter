@@ -32,8 +32,8 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.converter.DhisValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.util.CastUtils;
 
 import javax.annotation.Nonnull;
@@ -101,19 +101,19 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
-    @Override public void validate() throws TransformException
+    @Override public void validate() throws TransformerException
     {
         if ( enrollment.getOrgUnitId() == null )
         {
-            throw new TransformMappingException( "Organization unit ID of enrollment has not been specified." );
+            throw new TransformerMappingException( "Organization unit ID of enrollment has not been specified." );
         }
         if ( enrollment.getEnrollmentDate() == null )
         {
-            throw new TransformMappingException( "MappedEnrollment date of enrollment has not been specified." );
+            throw new TransformerMappingException( "MappedEnrollment date of enrollment has not been specified." );
         }
         if ( enrollment.getIncidentDate() == null )
         {
-            throw new TransformMappingException( "Incident date of enrollment has not been specified." );
+            throw new TransformerMappingException( "Incident date of enrollment has not been specified." );
         }
     }
 }

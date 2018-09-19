@@ -100,7 +100,7 @@ public class Code implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -140,7 +140,7 @@ public class Code implements Serializable
         this.code = code;
     }
 
-    @Basic @Column( name = "description", nullable = true, length = -1 ) public String getDescription()
+    @Basic @Column( name = "description", length = -1 ) public String getDescription()
     {
         return description;
     }

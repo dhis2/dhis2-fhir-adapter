@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
@@ -112,7 +112,7 @@ public abstract class Rule implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -142,7 +142,7 @@ public abstract class Rule implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "description", nullable = true, length = -1 ) public String getDescription()
+    @Basic @Column( name = "description", length = -1 ) public String getDescription()
     {
         return description;
     }

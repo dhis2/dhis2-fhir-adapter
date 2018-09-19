@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,7 +28,17 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public enum FhirVersion
+public abstract class TransformerException extends RuntimeException
 {
-    DSTU3
+    private static final long serialVersionUID = -5917476763384064647L;
+
+    public TransformerException( String message )
+    {
+        super( message );
+    }
+
+    public TransformerException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

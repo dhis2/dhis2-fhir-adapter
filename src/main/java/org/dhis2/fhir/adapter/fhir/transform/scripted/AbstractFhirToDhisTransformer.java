@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.model.FhirRequestMethod;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformRequestException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestMethod;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.springframework.scripting.ScriptCompilationException;
 import org.springframework.scripting.ScriptEvaluator;
@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.dhis2.fhir.adapter.fhir.model.FhirRequestParameters.FULL_QUALIFIED_IDENTIFIER_SEPARATOR;
-import static org.dhis2.fhir.adapter.fhir.model.FhirRequestParameters.IDENTIFIER_PARAM_NAME;
+import static org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestParameters.FULL_QUALIFIED_IDENTIFIER_SEPARATOR;
+import static org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestParameters.IDENTIFIER_PARAM_NAME;
 
 public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M extends AbstractFhirToDhisMapping> implements FhirToDhisTransformer<R, M>
 {
@@ -61,7 +61,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
     }
 
     @Nullable @Override public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
-        @Nonnull AbstractFhirToDhisMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+        @Nonnull AbstractFhirToDhisMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformerException
     {
         return transform( context, input, getMappingClass().cast( mapping ), scriptArguments );
     }
@@ -82,7 +82,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
     }
 
     protected @Nonnull Optional<R> getResource( @Nonnull FhirToDhisTransformerContext context,
-        @Nonnull M mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+        @Nonnull M mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformerException
     {
         final String id = getDhisId( context, mapping );
         if ( context.getFhirRequest().getRequestMethod() == FhirRequestMethod.POST )
@@ -93,32 +93,32 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
             .orElseGet( () -> getActiveResource( context, mapping, scriptArguments ).orElseGet( () -> createResource( context, mapping, id, scriptArguments ) ) ) ) );
     }
 
-    protected abstract @Nonnull Optional<R> getResourceById( @Nullable String id ) throws TransformException;
+    protected abstract @Nonnull Optional<R> getResourceById( @Nullable String id ) throws TransformerException;
 
     protected abstract @Nonnull Optional<R> getResourceByIdentifier(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
-        @Nullable String identifier, @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+        @Nullable String identifier, @Nonnull Map<String, Object> scriptArguments ) throws TransformerException;
 
     protected abstract @Nonnull Optional<R> getActiveResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformerException;
 
     protected abstract @Nullable R createResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
-        @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+        @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformerException;
 
     protected @Nullable String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping )
     {
         final String resourceId = context.getFhirRequest().getResourceId();
         if ( (resourceId != null) && context.getFhirRequest().containsRequestParameters() )
         {
-            throw new TransformRequestException( "Requests that contain a resource ID " +
+            throw new TransformerRequestException( "Requests that contain a resource ID " +
                 "with additional parameters are not supported." );
         }
         return resourceId;
     }
 
-    protected @Nullable String getDhisIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException
+    protected @Nullable String getDhisIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformerException
     {
         if ( !mapping.getIdentifierMapping().isAvailable() )
         {
@@ -132,7 +132,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         }
         if ( fqIdentifiers.size() > 1 )
         {
-            throw new TransformRequestException( "Multiple identifier filter request parameters are not supported." );
+            throw new TransformerRequestException( "Multiple identifier filter request parameters are not supported." );
         }
         final String fqIdentifier = fqIdentifiers.get( 0 );
         if ( mapping.getIdentifierMapping().isQualified() )
@@ -149,31 +149,31 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         final String system = fqIdentifier.substring( 0, index );
         if ( !system.equals( mapping.getIdentifierMapping().getSystem() ) )
         {
-            throw new TransformRequestException( "Mapping requires system \"" + mapping.getIdentifierMapping().getSystem() +
+            throw new TransformerRequestException( "Mapping requires system \"" + mapping.getIdentifierMapping().getSystem() +
                 "\" but identifier request parameter includes system \"" + system + "\"" );
         }
         final String identifier = fqIdentifier.substring( index + 1 );
         if ( StringUtils.isBlank( identifier ) )
         {
-            throw new TransformRequestException( "Unqualified identifier request parameter is invalid." );
+            throw new TransformerRequestException( "Unqualified identifier request parameter is invalid." );
         }
         return identifier;
     }
 
-    protected boolean transform( @Nonnull M mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    protected boolean transform( @Nonnull M mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformerException
     {
         try
         {
             final Object result = scriptEvaluator.evaluate( new StaticScriptSource( mapping.getTransformScript() ), new HashMap<>( scriptArguments ) );
             if ( !(result instanceof Boolean) )
             {
-                throw new TransformScriptException( "Transform script of mapping " + mapping + " did not return a boolean value." );
+                throw new TransformerScriptException( "Transform script of mapping " + mapping + " did not return a boolean value." );
             }
             return (boolean) result;
         }
         catch ( ScriptCompilationException e )
         {
-            throw new TransformScriptException( "Transform script of mapping " + mapping + " caused an error: " + e.getMessage(), e );
+            throw new TransformerScriptException( "Transform script of mapping " + mapping + " caused an error: " + e.getMessage(), e );
         }
     }
 }

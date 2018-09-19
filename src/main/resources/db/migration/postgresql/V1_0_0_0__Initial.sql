@@ -304,7 +304,19 @@ CREATE TABLE fhir_resource_mapping (
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('7090561e-f45b-411e-99c0-65fa1d145018', 0, 'Vaccine', 'VACCINE', 'Available vaccines.');
 
+-- Gender Constants (Adapter Gender Code to DHIS2 code as value)
 INSERT INTO fhir_constant (id, version, category, name, code, data_type, value)
 VALUES ('fa4a3a0e-ca46-40e4-b832-3aec96bed55e', 0, 'GENDER', 'Gender Female', 'GENDER_FEMALE', 'STRING', 'Female');
 INSERT INTO fhir_constant (id, version, category, name, code, data_type, value)
 VALUES ('1ded2081-8836-43dd-a5e1-7cb9562c93ef', 0, 'GENDER', 'Gender Male', 'GENDER_MALE', 'STRING', 'Male');
+
+-- System Constants (the value is the system URI)
+INSERT INTO fhir_constant (id, version, category, name, code, data_type, value, description)
+VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378',
+        0,
+        'SYSTEM',
+        'CVX (Vaccine Administered)',
+        'SYSTEM_CVX',
+        'STRING',
+        'http://hl7.org/fhir/sid/cvx',
+        'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');

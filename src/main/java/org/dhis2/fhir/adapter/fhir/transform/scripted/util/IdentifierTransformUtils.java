@@ -31,9 +31,9 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.Id;
 import org.dhis2.fhir.adapter.dhis.model.IdType;
-import org.dhis2.fhir.adapter.fhir.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.hl7.fhir.dstu3.model.DomainResource;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.instance.model.api.IBaseReference;
@@ -61,7 +61,7 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return SCRIPT_ATTR_NAME;
     }
 
-    public @Nullable String getResourceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformException
+    public @Nullable String getResourceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformerException
     {
         if ( reference == null )
         {
@@ -83,12 +83,12 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         final String idPart = reference.getReferenceElement().getIdPart();
         if ( (idPart == null) && (reference.getResource() != null) )
         {
-            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
+            throw new TransformerMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
         }
         return idPart;
     }
 
-    public @Nullable Id getReferenceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformException
+    public @Nullable Id getReferenceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformerException
     {
         if ( reference == null )
         {
@@ -110,16 +110,16 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         final String idPart = reference.getReferenceElement().getIdPart();
         if ( (idPart == null) && (reference.getResource() != null) )
         {
-            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
+            throw new TransformerMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
         }
         return (idPart == null) ? null : new Id( idPart, IdType.ID );
     }
 
-    public @Nullable Id getId( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
+    public @Nullable Id getId( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformerException
     {
         if ( domainResource == null )
         {
-            throw new TransformMappingException( "Cannot get identifier of undefined domain resource." );
+            throw new TransformerMappingException( "Cannot get identifier of undefined domain resource." );
         }
 
         final String identifier = getIdentifier( domainResource, system );
@@ -131,16 +131,16 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return (idPart == null) ? null : new Id( idPart, IdType.ID );
     }
 
-    public boolean containsIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
+    public boolean containsIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformerException
     {
         return (getIdentifier( domainResource, system ) != null);
     }
 
-    public @Nullable String getIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
+    public @Nullable String getIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformerException
     {
         if ( domainResource == null )
         {
-            throw new TransformMappingException( "Cannot get identifier of undefined domain resource." );
+            throw new TransformerMappingException( "Cannot get identifier of undefined domain resource." );
         }
 
         final Method method = getIdentifierMethod( domainResource );

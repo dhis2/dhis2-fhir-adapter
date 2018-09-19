@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirVersion;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;

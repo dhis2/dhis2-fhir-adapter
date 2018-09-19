@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Element;
@@ -58,7 +58,7 @@ public class GeoTransformUtils extends AbstractTransformUtils
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable public Location getLocation( @Nonnull Element element ) throws TransformException
+    @Nullable public Location getLocation( @Nonnull Element element ) throws TransformerException
     {
         final List<Extension> locationExtensions = element.getExtensionsByUrl( GEO_LOCATION_URL );
         if ( locationExtensions.isEmpty() )
@@ -67,7 +67,7 @@ public class GeoTransformUtils extends AbstractTransformUtils
         }
         if ( locationExtensions.size() > 1 )
         {
-            throw new TransformMappingException( "Element " + element.fhirType() + " contains " + locationExtensions.size() + " GEO locations." );
+            throw new TransformerMappingException( "Element " + element.fhirType() + " contains " + locationExtensions.size() + " GEO locations." );
         }
         final Extension locationExtension = locationExtensions.get( 0 );
 
@@ -80,13 +80,13 @@ public class GeoTransformUtils extends AbstractTransformUtils
         final List<Extension> extensions = locationExtension.getExtensionsByUrl( componentUrl );
         if ( extensions.size() != 1 )
         {
-            throw new TransformMappingException( "GEO location of element " + element.fhirType() + " does not include a valid " + componentUrl + " extension." );
+            throw new TransformerMappingException( "GEO location of element " + element.fhirType() + " does not include a valid " + componentUrl + " extension." );
         }
 
         final Extension valueExtension = extensions.get( 0 );
         if ( !(valueExtension.getValue() instanceof DecimalType) )
         {
-            throw new TransformMappingException( "GEO location of element " + element.fhirType() + " does not include a valid " + componentUrl + " extension value." );
+            throw new TransformerMappingException( "GEO location of element " + element.fhirType() + " does not include a valid " + componentUrl + " extension value." );
         }
 
         return ((DecimalType) valueExtension.getValue()).getValueAsNumber().doubleValue();

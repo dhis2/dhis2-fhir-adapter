@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,26 +28,31 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public interface FhirRequest
+public enum FhirRequestMethod
 {
-    @Nullable FhirRequestMethod getRequestMethod();
+    POST( "POST" ), PUT( "PUT" );
 
-    @Nullable FhirResourceType getResourceType();
+    private static final Map<String, FhirRequestMethod> requestMethodsByCode = Arrays.stream( values() ).collect( Collectors.toMap( FhirRequestMethod::getCode, v -> v ) );
 
-    @Nullable String getResourceId();
+    public static @Nullable FhirRequestMethod getByCode( @Nullable String code )
+    {
+        return requestMethodsByCode.get( code );
+    }
 
-    boolean containsRequestParameters();
+    private final String code;
 
-    boolean containsRequestParameter( @Nonnull String name );
+    FhirRequestMethod( String code )
+    {
+        this.code = code;
+    }
 
-    @Nonnull Set<String> getParameterNames();
-
-    @Nullable List<String> getParameterValues( @Nonnull String name );
-
-    @Nonnull FhirVersion getVersion();
+    public String getCode()
+    {
+        return code;
+    }
 }

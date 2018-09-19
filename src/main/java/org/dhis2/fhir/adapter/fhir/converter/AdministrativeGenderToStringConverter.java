@@ -38,6 +38,10 @@ import javax.annotation.Nullable;
 
 public class AdministrativeGenderToStringConverter extends TypedConverter<AdministrativeGender, String>
 {
+    public static final String GENDER_FEMALE_CONSTANT_CODE = "GENDER_FEMALE";
+
+    public static final String GENDER_MALE_CONSTANT_CODE = "GENDER_MALE";
+
     public AdministrativeGenderToStringConverter()
     {
         super( AdministrativeGender.class, String.class );

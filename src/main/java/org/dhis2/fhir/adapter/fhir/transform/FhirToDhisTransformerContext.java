@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,5 +37,5 @@ public interface FhirToDhisTransformerContext
 {
     @Nonnull FhirRequest getFhirRequest();
 
-    @Nonnull <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException;
+    @Nonnull <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException;
 }

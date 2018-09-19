@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,17 +28,33 @@ package org.dhis2.fhir.adapter.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class TransformMappingException extends TransformException
-{
-    private static final long serialVersionUID = -4985217184598251167L;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-    public TransformMappingException( String message )
+public enum FhirResourceType
+{
+    IMMUNIZATION( "immunization" ),
+    ORGANIZATION( "organization" ),
+    PATIENT( "patient" );
+
+    private static final Map<String, FhirResourceType> resourceTypesByPath = Arrays.stream( values() ).collect( Collectors.toMap( FhirResourceType::getPath, v -> v ) );
+
+    public static @Nullable FhirResourceType getByPath( @Nullable String path )
     {
-        super( message );
+        return resourceTypesByPath.get( path );
     }
 
-    public TransformMappingException( String message, Throwable cause )
+    private final String path;
+
+    FhirResourceType( String path )
     {
-        super( message, cause );
+        this.path = path;
+    }
+
+    public String getPath()
+    {
+        return path;
     }
 }

@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.hl7.fhir.dstu3.model.Immunization;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +48,7 @@ public class ImmunizationTransformUtils extends AbstractTransformUtils
         return SCRIPT_ATTR_NAME;
     }
 
-    public int getMaxDoseSequence( @Nullable Immunization immunization ) throws TransformException
+    public int getMaxDoseSequence( @Nullable Immunization immunization ) throws TransformerException
     {
         if ( immunization == null )
         {

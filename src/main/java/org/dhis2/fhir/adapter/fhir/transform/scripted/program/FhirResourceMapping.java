@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;

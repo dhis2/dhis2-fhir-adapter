@@ -29,12 +29,12 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 
 @Scriptable
 public interface ScriptedDhisResource
 {
     boolean isNewResource();
 
-    void validate() throws TransformException;
+    void validate() throws TransformerException;
 }

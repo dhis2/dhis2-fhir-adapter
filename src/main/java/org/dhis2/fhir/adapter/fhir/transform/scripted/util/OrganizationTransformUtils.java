@@ -32,9 +32,9 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.Id;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
-import org.dhis2.fhir.adapter.fhir.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +63,7 @@ public class OrganizationTransformUtils extends AbstractTransformUtils
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable public String getOrganizationUnitId( @Nullable IBaseReference reference, @Nullable String system ) throws TransformException
+    @Nullable public String getOrganizationUnitId( @Nullable IBaseReference reference, @Nullable String system ) throws TransformerException
     {
         if ( reference == null )
         {
@@ -75,6 +75,6 @@ public class OrganizationTransformUtils extends AbstractTransformUtils
             return null;
         }
         final Optional<OrganisationUnit> organisationUnit = organisationUnitService.get( id );
-        return organisationUnit.orElseThrow( () -> new TransformMappingException( "Could not find organization unit: " + id ) ).getId();
+        return organisationUnit.orElseThrow( () -> new TransformerMappingException( "Could not find organization unit: " + id ) ).getId();
     }
 }

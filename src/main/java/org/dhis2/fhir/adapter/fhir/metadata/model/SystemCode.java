@@ -99,7 +99,7 @@ public class SystemCode implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }

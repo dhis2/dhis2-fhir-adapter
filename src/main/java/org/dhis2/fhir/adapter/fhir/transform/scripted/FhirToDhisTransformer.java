@@ -30,10 +30,10 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 
 import javax.annotation.Nonnull;
@@ -50,13 +50,13 @@ public interface FhirToDhisTransformer<R extends DhisResource, M extends Abstrac
 
     @Nonnull Class<M> getMappingClass();
 
-    boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException;
+    boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformerException;
 
-    boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
+    boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformerException;
 
     @Nullable FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformerException;
 
     @Nullable FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformerException;
 }

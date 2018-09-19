@@ -34,6 +34,12 @@ import org.dhis2.fhir.adapter.converter.TypedConverter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Converts a {@link Location} to a string. The format of the string <code>[10.92,-24.212]</code> where the first
+ * value is the longitude and the second value is the latitude.
+ *
+ * @author volsch
+ */
 public class LocationToStringConverter extends TypedConverter<Location, String>
 {
     public LocationToStringConverter()
@@ -43,6 +49,6 @@ public class LocationToStringConverter extends TypedConverter<Location, String>
 
     @Nullable @Override public String doConvert( @Nonnull Location source ) throws ConversionException
     {
-        return "[" + String.valueOf( source.getLongitude() ) + "," + String.valueOf( source.getLatitude() ) + "]";
+        return "[" + source.getLongitude() + "," + source.getLatitude() + "]";
     }
 }

@@ -28,6 +28,11 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Thrown if the conversion cannot be performed.
+ *
+ * @author volsch
+ */
 public class ConversionException extends RuntimeException
 {
     private static final long serialVersionUID = -2773953811659124090L;

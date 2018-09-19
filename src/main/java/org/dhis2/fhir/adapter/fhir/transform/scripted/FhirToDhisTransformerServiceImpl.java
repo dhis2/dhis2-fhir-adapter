@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.TransformUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.springframework.beans.factory.ObjectProvider;
@@ -96,7 +96,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         return new FhirToDhisTransformerContextImpl( fhirRequest );
     }
 
-    @Nullable @Override public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformException
+    @Nullable @Override public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformerException
     {
         final List<AbstractFhirToDhisMapping> mappings = entityManager.createNamedQuery( AbstractFhirToDhisMapping.BY_INPUT_DATA_QUERY_NAME, AbstractFhirToDhisMapping.class )
             .setParameter( "fhirResourceType", context.getFhirRequest().getResourceType() ).setParameter( "fhirVersion", context.getFhirRequest().getVersion() ).getResultList();
@@ -106,7 +106,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             final FhirToDhisTransformer<?, ?> transformer = transformers.get( mapping.getDhisResourceType() );
             if ( transformer == null )
             {
-                throw new TransformMappingException( "No transformer can be found for mapping of DHIS resource type " + mapping.getDhisResourceType() );
+                throw new TransformerMappingException( "No transformer can be found for mapping of DHIS resource type " + mapping.getDhisResourceType() );
             }
 
             final Map<String, Object> scriptArguments = new HashMap<>( transformUtils );
@@ -127,20 +127,20 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     }
 
     private boolean isApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+        @Nonnull Map<String, Object> scriptArguments ) throws TransformerException
     {
         try
         {
             final Object result = scriptEvaluator.evaluate( new StaticScriptSource( mapping.getApplicableScript() ), new HashMap<>( scriptArguments ) );
             if ( !(result instanceof Boolean) )
             {
-                throw new TransformScriptException( "Applicable evaluation script of mapping " + mapping + " did not return a boolean value." );
+                throw new TransformerScriptException( "Applicable evaluation script of mapping " + mapping + " did not return a boolean value." );
             }
             return (boolean) result;
         }
         catch ( ScriptCompilationException e )
         {
-            throw new TransformScriptException( "Applicable evaluation script of mapping " + mapping + " caused an error: " + e.getMessage(), e );
+            throw new TransformerScriptException( "Applicable evaluation script of mapping " + mapping + " caused an error: " + e.getMessage(), e );
         }
     }
 }

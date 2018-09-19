@@ -36,8 +36,8 @@ import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,24 +83,24 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return event.getEventDate();
     }
 
-    public void setValueByName( @Nonnull String dataElementName, Object value ) throws TransformException
+    public void setValueByName( @Nonnull String dataElementName, Object value ) throws TransformerException
     {
         setValueByName( dataElementName, value, null );
     }
 
-    public void setValueByName( @Nonnull String dataElementName, Object value, Boolean providedElsewhere ) throws TransformException
+    public void setValueByName( @Nonnull String dataElementName, Object value, Boolean providedElsewhere ) throws TransformerException
     {
         final ProgramStageDataElement dataElement = programStage.getOptionalDataElementByName( dataElementName ).orElseThrow( () ->
-            new TransformMappingException( "MappedProgram stage \"" + programStage.getName() +
+            new TransformerMappingException( "MappedProgram stage \"" + programStage.getName() +
                 "\" does not include data element with name \"" + dataElementName + "\"" ) );
         setValue( dataElement, value, providedElsewhere );
     }
 
-    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere ) throws TransformException
+    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere ) throws TransformerException
     {
         if ( Boolean.TRUE.equals( providedElsewhere ) && !dataElement.isAllowProvidedElsewhere() )
         {
-            throw new TransformMappingException( "MappedProgram stage \"" + programStage.getName() +
+            throw new TransformerMappingException( "MappedProgram stage \"" + programStage.getName() +
                 "\" does not allow that data is provided elsewhere for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
@@ -111,14 +111,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         }
         catch ( ConversionException e )
         {
-            throw new TransformMappingException( "Value of data element \"" + dataElement.getElement().getName() +
+            throw new TransformerMappingException( "Value of data element \"" + dataElement.getElement().getName() +
                 "\" could not be converted: " + e.getMessage(), e );
         }
 
         if ( (convertedValue != null) && dataElement.getElement().isOptionSetValue() &&
             dataElement.getElement().getOptionSet().getOptions().stream().noneMatch( o -> Objects.equals( convertedValue, o.getCode() ) ) )
         {
-            throw new TransformMappingException( "Code \"" + value + "\" is not a valid option of \"" +
+            throw new TransformerMappingException( "Code \"" + value + "\" is not a valid option of \"" +
                 dataElement.getElement().getOptionSet().getName() + "\" for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
@@ -144,11 +144,11 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return (event.getDataValues() != null) && event.getDataValues().stream().anyMatch( DataValue::isModified );
     }
 
-    @Override public void validate() throws TransformException
+    @Override public void validate() throws TransformerException
     {
         if ( event.getOrgUnitId() == null )
         {
-            throw new TransformMappingException( "Organization unit ID of event has not been specified." );
+            throw new TransformerMappingException( "Organization unit ID of event has not been specified." );
         }
     }
 }

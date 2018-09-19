@@ -34,6 +34,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Classes or an interfaces that are marked with this annotation belong to the API that is provided to executed
+ * evaluation and transformation scripts.
+ *
+ * @author volsch
+ */
 @Target( { ElementType.TYPE } )
 @Retention( RetentionPolicy.CLASS )
 @Documented

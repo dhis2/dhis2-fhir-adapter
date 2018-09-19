@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,62 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-public enum FhirResourceType
+public class ImmutableFhirRequest implements FhirRequest, Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = 8079249171843824509L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath;
+    private final FhirRequest delegate;
 
-    static
+    public ImmutableFhirRequest( @Nonnull FhirRequest delegate )
     {
-        resourceTypesByPath = new HashMap<>();
-        for ( final FhirResourceType resourceType : values() )
-        {
-            resourceTypesByPath.put( resourceType.getPath(), resourceType );
-        }
+        this.delegate = delegate;
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    @Nullable @Override public FhirRequestMethod getRequestMethod()
     {
-        return resourceTypesByPath.get( path );
+        return delegate.getRequestMethod();
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    @Nullable @Override public FhirResourceType getResourceType()
     {
-        this.path = path;
+        return delegate.getResourceType();
     }
 
-    public String getPath()
+    @Nullable @Override public String getResourceId()
     {
-        return path;
+        return delegate.getResourceId();
+    }
+
+    @Override public boolean containsRequestParameters()
+    {
+        return delegate.containsRequestParameters();
+    }
+
+    @Override public boolean containsRequestParameter( @Nonnull String name )
+    {
+        return delegate.containsRequestParameter( name );
+    }
+
+    @Nonnull @Override public Set<String> getParameterNames()
+    {
+        return Collections.unmodifiableSet( delegate.getParameterNames() );
+    }
+
+    @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
+    {
+        final List<String> values = delegate.getParameterValues( name );
+        return (values == null) ? null : Collections.unmodifiableList( values );
+    }
+
+    @Nonnull @Override public FhirVersion getVersion()
+    {
+        return delegate.getVersion();
     }
 }

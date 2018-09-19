@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
+package org.dhis2.fhir.adapter.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,53 +28,19 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
+/**
+ * Unit tests for {@link LocationToStringConverter}.
+ */
+public class LocationToStringConverterTest
 {
-    private final ScriptedTrackedEntityInstance delegate;
+    private final LocationToStringConverter converter = new LocationToStringConverter();
 
-    public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
+    @Test
+    public void doConvert()
     {
-        this.delegate = delegate;
-    }
-
-    @Override public boolean isNewResource()
-    {
-        return delegate.isNewResource();
-    }
-
-    @Override @Nullable public String getId()
-    {
-        return delegate.getId();
-    }
-
-    @Override @Nonnull public String getTypeId()
-    {
-        return delegate.getTypeId();
-    }
-
-    @Nullable @Override public String getOrganizationUnitId()
-    {
-        return delegate.getOrganizationUnitId();
-    }
-
-    @Nullable @Override public Location getCoordinates()
-    {
-        return delegate.getCoordinates();
-    }
-
-    @Override @Nullable public Object getValueByName( @Nonnull String typeAttrName )
-    {
-        return delegate.getValueByName( typeAttrName );
-    }
-
-    @Override public void validate() throws TransformerException
-    {
-        delegate.validate();
+        Assert.assertEquals( "[10.91,-67.124]", converter.convert( new Location( 10.91, -67.124 ) ) );
     }
 }

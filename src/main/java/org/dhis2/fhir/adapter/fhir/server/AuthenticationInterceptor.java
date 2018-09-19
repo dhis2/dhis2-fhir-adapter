@@ -61,6 +61,4 @@ public class AuthenticationInterceptor extends InterceptorAdapter
         authorizationContext.setAuthorization( requestedAuthorization );
         return true;
     }
-
-
 }

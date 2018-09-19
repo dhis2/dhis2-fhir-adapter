@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirVersion;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
@@ -101,7 +101,7 @@ public class ScriptSource implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }

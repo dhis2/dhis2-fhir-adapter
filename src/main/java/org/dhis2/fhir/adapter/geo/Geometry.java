@@ -30,8 +30,12 @@ package org.dhis2.fhir.adapter.geo;
 
 import org.dhis2.fhir.adapter.Scriptable;
 
+/**
+ * Base interface for geometry objects.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface Geometry
 {
-    /* nothing to declare */
 }

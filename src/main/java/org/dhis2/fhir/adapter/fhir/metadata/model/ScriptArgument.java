@@ -100,7 +100,7 @@ public class ScriptArgument implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -150,7 +150,7 @@ public class ScriptArgument implements Serializable
         this.mandatory = mandatory;
     }
 
-    @Basic @Column( name = "default_value", nullable = true, length = 230 ) public String getDefaultValue()
+    @Basic @Column( name = "default_value", length = 230 ) public String getDefaultValue()
     {
         return defaultValue;
     }
@@ -160,7 +160,7 @@ public class ScriptArgument implements Serializable
         this.defaultValue = defaultValue;
     }
 
-    @Basic @Column( name = "description", nullable = true, length = -1 ) public String getDescription()
+    @Basic @Column( name = "description", length = -1 ) public String getDescription()
     {
         return description;
     }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.ListMultimap;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
@@ -35,55 +37,91 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class ImmutableFhirRequest implements FhirRequest, Serializable
+public class WritableFhirRequest implements FhirRequest, Serializable
 {
-    private static final long serialVersionUID = 8079249171843824509L;
+    private static final long serialVersionUID = 6482108680860344148L;
 
-    private final FhirRequest delegate;
+    private FhirRequestMethod requestMethod;
 
-    public ImmutableFhirRequest( @Nonnull FhirRequest delegate )
-    {
-        this.delegate = delegate;
-    }
+    private FhirResourceType resourceType;
+
+    private String resourceId;
+
+    private ListMultimap<String, String> parameters;
+
+    private FhirVersion version;
 
     @Nullable @Override public FhirRequestMethod getRequestMethod()
     {
-        return delegate.getRequestMethod();
+        return requestMethod;
+    }
+
+    public void setRequestMethod( @Nullable FhirRequestMethod requestMethod )
+    {
+        this.requestMethod = requestMethod;
     }
 
     @Nullable @Override public FhirResourceType getResourceType()
     {
-        return delegate.getResourceType();
+        return resourceType;
+    }
+
+    public void setResourceType( @Nullable FhirResourceType resourceType )
+    {
+        this.resourceType = resourceType;
     }
 
     @Nullable @Override public String getResourceId()
     {
-        return delegate.getResourceId();
+        return resourceId;
+    }
+
+    public void setResourceId( @Nullable String resourceId )
+    {
+        this.resourceId = resourceId;
     }
 
     @Override public boolean containsRequestParameters()
     {
-        return delegate.containsRequestParameters();
+        return (getParameters() != null) && !getParameters().isEmpty();
+    }
+
+    public ListMultimap<String, String> getParameters()
+    {
+        return parameters;
+    }
+
+    public void setParameters( @Nonnull ListMultimap<String, String> parameters )
+    {
+        this.parameters = parameters;
     }
 
     @Override public boolean containsRequestParameter( @Nonnull String name )
     {
-        return delegate.containsRequestParameter( name );
+        return (getParameters() != null) && getParameters().containsKey( name );
     }
 
     @Nonnull @Override public Set<String> getParameterNames()
     {
-        return Collections.unmodifiableSet( delegate.getParameterNames() );
+        return (getParameters() == null) ? Collections.emptySet() : getParameters().keys().elementSet();
     }
 
     @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
     {
-        final List<String> values = delegate.getParameterValues( name );
-        return (values == null) ? null : Collections.unmodifiableList( values );
+        if ( (getParameters() == null) || !getParameters().containsKey( name ) )
+        {
+            return null;
+        }
+        return getParameters().get( name );
     }
 
     @Nonnull @Override public FhirVersion getVersion()
     {
-        return delegate.getVersion();
+        return version;
+    }
+
+    public void setVersion( @Nonnull FhirVersion version )
+    {
+        this.version = version;
     }
 }

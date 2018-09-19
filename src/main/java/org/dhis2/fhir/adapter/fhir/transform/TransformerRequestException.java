@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.fhir.transform;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,39 +28,17 @@ package org.dhis2.fhir.adapter.fhir.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
-
-public enum FhirRequestMethod
+public class TransformerRequestException extends RuntimeException
 {
-    POST( "POST" ), PUT( "PUT" );
+    private static final long serialVersionUID = -4458405534860488254L;
 
-    private static final Map<String, FhirRequestMethod> requestMethodsByCode;
-
-    static
+    public TransformerRequestException( String message )
     {
-        requestMethodsByCode = new HashMap<>();
-        for ( final FhirRequestMethod requestMethod : values() )
-        {
-            requestMethodsByCode.put( requestMethod.getCode(), requestMethod );
-        }
+        super( message );
     }
 
-    public static @Nullable FhirRequestMethod getByCode( @Nullable String code )
+    public TransformerRequestException( String message, Throwable cause )
     {
-        return requestMethodsByCode.get( code );
-    }
-
-    private final String code;
-
-    FhirRequestMethod( String code )
-    {
-        this.code = code;
-    }
-
-    public String getCode()
-    {
-        return code;
+        super( message, cause );
     }
 }

@@ -96,7 +96,7 @@ public class Constant implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", nullable = true, length = 11 ) public String getLastUpdatedBy()
+    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -126,7 +126,7 @@ public class Constant implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "description", nullable = true, length = -1 ) public String getDescription()
+    @Basic @Column( name = "description", length = -1 ) public String getDescription()
     {
         return description;
     }
@@ -136,7 +136,7 @@ public class Constant implements Serializable
         this.description = description;
     }
 
-    @Basic @Column( name = "category", nullable = true, length = 30 ) public ConstantCategory getCategory()
+    @Basic @Column( name = "category", length = 30 ) public ConstantCategory getCategory()
     {
         return category;
     }
@@ -166,7 +166,7 @@ public class Constant implements Serializable
         this.dataType = dataType;
     }
 
-    @Basic @Column( name = "value", nullable = true, length = 250 ) public String getValue()
+    @Basic @Column( name = "value", length = 250 ) public String getValue()
     {
         return value;
     }

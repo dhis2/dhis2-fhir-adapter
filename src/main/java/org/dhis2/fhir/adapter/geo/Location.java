@@ -33,6 +33,11 @@ import org.dhis2.fhir.adapter.Scriptable;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Contains the longitude and latitude of a location.
+ *
+ * @author volsch
+ */
 @Scriptable
 public class Location implements Geometry, Serializable
 {

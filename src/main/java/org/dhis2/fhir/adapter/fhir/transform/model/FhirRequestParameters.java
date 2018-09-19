@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
+package org.dhis2.fhir.adapter.fhir.transform.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,53 +28,9 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
+public interface FhirRequestParameters
 {
-    private final ScriptedTrackedEntityInstance delegate;
+    String FULL_QUALIFIED_IDENTIFIER_SEPARATOR = "|";
 
-    public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
-    {
-        this.delegate = delegate;
-    }
-
-    @Override public boolean isNewResource()
-    {
-        return delegate.isNewResource();
-    }
-
-    @Override @Nullable public String getId()
-    {
-        return delegate.getId();
-    }
-
-    @Override @Nonnull public String getTypeId()
-    {
-        return delegate.getTypeId();
-    }
-
-    @Nullable @Override public String getOrganizationUnitId()
-    {
-        return delegate.getOrganizationUnitId();
-    }
-
-    @Nullable @Override public Location getCoordinates()
-    {
-        return delegate.getCoordinates();
-    }
-
-    @Override @Nullable public Object getValueByName( @Nonnull String typeAttrName )
-    {
-        return delegate.getValueByName( typeAttrName );
-    }
-
-    @Override public void validate() throws TransformerException
-    {
-        delegate.validate();
-    }
+    String IDENTIFIER_PARAM_NAME = "identifier";
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,18 @@ package org.dhis2.fhir.adapter.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class TransformRequestException extends RuntimeException
-{
-    private static final long serialVersionUID = -4458405534860488254L;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 
-    public TransformRequestException( String message )
+public class TransformerScriptException extends TransformerException
+{
+    private static final long serialVersionUID = -1296515465059154893L;
+
+    public TransformerScriptException( String message )
     {
         super( message );
     }
 
-    public TransformRequestException( String message, Throwable cause )
+    public TransformerScriptException( String message, Throwable cause )
     {
         super( message, cause );
     }

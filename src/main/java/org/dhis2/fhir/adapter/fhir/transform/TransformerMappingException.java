@@ -28,16 +28,16 @@ package org.dhis2.fhir.adapter.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class TransformFatalException extends TransformException
+public class TransformerMappingException extends TransformerException
 {
-    private static final long serialVersionUID = -907325260007203797L;
+    private static final long serialVersionUID = -4985217184598251167L;
 
-    public TransformFatalException( String message )
+    public TransformerMappingException( String message )
     {
         super( message );
     }
 
-    public TransformFatalException( String message, Throwable cause )
+    public TransformerMappingException( String message, Throwable cause )
     {
         super( message, cause );
     }

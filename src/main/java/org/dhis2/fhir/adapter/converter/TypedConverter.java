@@ -33,6 +33,14 @@ import org.springframework.core.convert.converter.Converter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Implementation of {@linkplain Converter converter} interface that handles <code>null</code> values
+ * automatically. It is ensured that the conversion method gets never a <code>null</code> argument value.
+ *
+ * @param <A> the concrete class from which the value should be converted.
+ * @param <B> the concrete class to which the value should be converted.
+ * @author volsch
+ */
 public abstract class TypedConverter<A, B> implements Converter<A, B>
 {
     private final Class<A> fromClass;
@@ -57,11 +65,25 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
 
     public abstract @Nullable B doConvert( @Nonnull A source ) throws ConversionException;
 
+    /**
+     * Converts the specified object value, which is casted to the required from class type before doing the conversion.
+     *
+     * @param source the value that should be converted.
+     * @return the converted value.
+     * @throws ConversionException thrown if the conversion could not be performed.
+     */
     public final @Nullable B convertCasted( @Nullable Object source ) throws ConversionException
     {
         return convert( fromClass.cast( source ) );
     }
 
+    /**
+     * Converts the specified value to the target type. The specified value will never be <code>null</code>.
+     *
+     * @param source the value that should be converted.
+     * @return the converted value.
+     * @throws ConversionException thrown if the conversion could not be performed.
+     */
     public final @Nullable B convert( @Nullable A source ) throws ConversionException
     {
         return (source == null) ? null : doConvert( source );

@@ -28,11 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirRequest;
-import org.dhis2.fhir.adapter.fhir.model.ImmutableFhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.model.ImmutableFhirRequest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,6 +40,8 @@ import java.io.Serializable;
 
 public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
+    private static final long serialVersionUID = -3205126998737677714L;
+
     private final FhirRequest fhirRequest;
 
     public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest )
@@ -52,11 +54,11 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
         return fhirRequest;
     }
 
-    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
+    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException
     {
         if ( value == null )
         {
-            throw new TransformMappingException( message );
+            throw new TransformerMappingException( message );
         }
         return value;
     }
