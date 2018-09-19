@@ -35,7 +35,9 @@ import javax.annotation.Nullable;
 
 public interface FhirToDhisTransformerContext
 {
-    @Nonnull FhirRequest getFhirRequest();
+    @Nonnull
+    FhirRequest getFhirRequest();
 
-    @Nonnull <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException;
+    @Nonnull
+    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException;
 }

@@ -44,27 +44,32 @@ public class ImmutableProgramStageDataElement implements ProgramStageDataElement
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public WritableDataElement getElement()
+    @Override
+    public WritableDataElement getElement()
     {
         return delegate.getElement();
     }
 
-    @Override public String getElementId()
+    @Override
+    public String getElementId()
     {
         return delegate.getElementId();
     }
 
-    @Override public boolean isCompulsory()
+    @Override
+    public boolean isCompulsory()
     {
         return delegate.isCompulsory();
     }
 
-    @Override public boolean isAllowProvidedElsewhere()
+    @Override
+    public boolean isAllowProvidedElsewhere()
     {
         return delegate.isAllowProvidedElsewhere();
     }

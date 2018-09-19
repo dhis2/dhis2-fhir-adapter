@@ -35,19 +35,25 @@ import java.util.Set;
 
 public interface FhirRequest
 {
-    @Nullable FhirRequestMethod getRequestMethod();
+    @Nullable
+    FhirRequestMethod getRequestMethod();
 
-    @Nullable FhirResourceType getResourceType();
+    @Nullable
+    FhirResourceType getResourceType();
 
-    @Nullable String getResourceId();
+    @Nullable
+    String getResourceId();
 
     boolean containsRequestParameters();
 
     boolean containsRequestParameter( @Nonnull String name );
 
-    @Nonnull Set<String> getParameterNames();
+    @Nonnull
+    Set<String> getParameterNames();
 
-    @Nullable List<String> getParameterValues( @Nonnull String name );
+    @Nullable
+    List<String> getParameterValues( @Nonnull String name );
 
-    @Nonnull FhirVersion getVersion();
+    @Nonnull
+    FhirVersion getVersion();
 }

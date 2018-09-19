@@ -38,13 +38,18 @@ import javax.annotation.Nullable;
 @Scriptable
 public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 {
-    @Nullable String getId();
+    @Nullable
+    String getId();
 
-    @Nonnull String getTypeId();
+    @Nonnull
+    String getTypeId();
 
-    @Nullable String getOrganizationUnitId();
+    @Nullable
+    String getOrganizationUnitId();
 
-    @Nullable Location getCoordinates();
+    @Nullable
+    Location getCoordinates();
 
-    @Nullable Object getValueByName( @Nonnull String typeAttrName );
+    @Nullable
+    Object getValueByName( @Nonnull String typeAttrName );
 }

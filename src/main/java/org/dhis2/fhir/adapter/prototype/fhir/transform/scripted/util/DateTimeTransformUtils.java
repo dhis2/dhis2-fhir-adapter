@@ -47,7 +47,9 @@ public class DateTimeTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "dateTimeUtils";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
@@ -62,7 +64,8 @@ public class DateTimeTransformUtils extends AbstractTransformUtils
         return (dateTime.getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
     }
 
-    public @Nullable Date getPreciseDate( @Nullable BaseDateTimeType dateTime )
+    @Nullable
+    public Date getPreciseDate( @Nullable BaseDateTimeType dateTime )
     {
         if ( (dateTime == null) || (dateTime.getValue() == null) || !hasDayPrecision( dateTime ) )
         {
@@ -72,7 +75,8 @@ public class DateTimeTransformUtils extends AbstractTransformUtils
     }
 
 
-    public @Nullable Date getPrecisePastDate( @Nullable BaseDateTimeType dateTime )
+    @Nullable
+    public Date getPrecisePastDate( @Nullable BaseDateTimeType dateTime )
     {
         final Date date = getPreciseDate( dateTime );
         if ( (date != null) && new Date().before( date ) )
@@ -82,22 +86,26 @@ public class DateTimeTransformUtils extends AbstractTransformUtils
         return date;
     }
 
-    public @Nullable Integer getAge( @Nullable Object dateTime )
+    @Nullable
+    public Integer getAge( @Nullable Object dateTime )
     {
         return CastUtils.cast( dateTime, BaseDateTimeType.class, this::getAge, Date.class, this::getAge, Temporal.class, this::getAge );
     }
 
-    protected @Nullable Integer getAge( @Nullable BaseDateTimeType dateTime )
+    @Nullable
+    protected Integer getAge( @Nullable BaseDateTimeType dateTime )
     {
         return getAge( getPreciseDate( dateTime ) );
     }
 
-    protected @Nullable Integer getAge( @Nullable Date date )
+    @Nullable
+    protected Integer getAge( @Nullable Date date )
     {
         return (date == null) ? null : getAge( date.toInstant() );
     }
 
-    protected @Nullable Integer getAge( @Nullable Temporal temporal )
+    @Nullable
+    protected Integer getAge( @Nullable Temporal temporal )
     {
         return (temporal == null) ? null : Period.between( LocalDate.from( temporal ), LocalDate.now() ).getYears();
     }

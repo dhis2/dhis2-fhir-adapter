@@ -47,7 +47,9 @@ public interface Program
 
     List<? extends ProgramStage> getStages();
 
-    @Nonnull Optional<ProgramStage> getOptionalStageByName( @Nonnull String name );
+    @Nonnull
+    Optional<ProgramStage> getOptionalStageByName( @Nonnull String name );
 
-    @Nonnull ProgramStage getStageByName( @Nonnull String name );
+    @Nonnull
+    ProgramStage getStageByName( @Nonnull String name );
 }

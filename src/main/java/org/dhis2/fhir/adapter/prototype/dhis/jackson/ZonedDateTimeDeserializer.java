@@ -32,7 +32,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import org.dhis2.fhir.adapter.util.DateTimeUtils;
+import org.dhis2.fhir.adapter.prototype.util.DateTimeUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -52,7 +52,8 @@ public class ZonedDateTimeDeserializer extends StdDeserializer<ZonedDateTime>
         super( ZonedDateTime.class );
     }
 
-    @Override public ZonedDateTime deserialize( JsonParser jsonParser, DeserializationContext deserializationContext ) throws IOException
+    @Override
+    public ZonedDateTime deserialize( JsonParser jsonParser, DeserializationContext deserializationContext ) throws IOException
     {
         final String string = jsonParser.getText().trim();
         if ( string.isEmpty() )

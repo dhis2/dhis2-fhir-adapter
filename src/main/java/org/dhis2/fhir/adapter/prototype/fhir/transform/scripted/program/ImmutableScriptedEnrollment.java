@@ -48,32 +48,42 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializ
         this.delegate = delegate;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return delegate.isNewResource();
     }
 
-    @Override @Nullable public String getId()
+    @Override
+    @Nullable
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override @Nullable public String getOrganizationUnitId()
+    @Override
+    @Nullable
+    public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
     }
 
-    @Override @Nullable public ZonedDateTime getEnrollmentDate()
+    @Override
+    @Nullable
+    public ZonedDateTime getEnrollmentDate()
     {
         return delegate.getEnrollmentDate();
     }
 
-    @Override @Nullable public ZonedDateTime getIncidentDate()
+    @Override
+    @Nullable
+    public ZonedDateTime getIncidentDate()
     {
         return delegate.getIncidentDate();
     }
 
-    @Override public void validate() throws TransformException
+    @Override
+    public void validate() throws TransformException
     {
         delegate.validate();
     }

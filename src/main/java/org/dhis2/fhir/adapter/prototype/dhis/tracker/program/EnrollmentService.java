@@ -33,7 +33,8 @@ import java.util.Optional;
 
 public interface EnrollmentService
 {
-    @Nonnull Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+    @Nonnull
+    Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
 
     Enrollment create( Enrollment enrollment );
 

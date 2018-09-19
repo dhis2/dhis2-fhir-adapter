@@ -82,7 +82,8 @@ public class Id implements Serializable
         this.type = type;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
+    @Transient
     public boolean isAvailable()
     {
         return (id != null) && (type != null);

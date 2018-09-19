@@ -30,7 +30,8 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.prototype.fhir.model.WritableFhirRequest;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.AbstractFhirToDhisMapping;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerService;
@@ -91,12 +92,16 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         }
     }
 
-    @Nonnull @Override public FhirToDhisTransformerContext createContext( @Nonnull WritableFhirRequest fhirRequest )
+    @Nonnull
+    @Override
+    public FhirToDhisTransformerContext createContext( @Nonnull FhirRequest fhirRequest )
     {
         return new FhirToDhisTransformerContextImpl( fhirRequest );
     }
 
-    @Nullable @Override public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformException
+    @Nullable
+    @Override
+    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformException
     {
         final List<AbstractFhirToDhisMapping> mappings = entityManager.createNamedQuery( AbstractFhirToDhisMapping.BY_INPUT_DATA_QUERY_NAME, AbstractFhirToDhisMapping.class )
             .setParameter( "fhirResourceType", context.getFhirRequest().getResourceType() ).setParameter( "fhirVersion", context.getFhirRequest().getVersion() ).getResultList();

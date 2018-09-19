@@ -42,7 +42,8 @@ public class Authorization implements Serializable
         this.authorization = authentication;
     }
 
-    public @Nullable String getAuthorization()
+    @Nullable
+    public String getAuthorization()
     {
         return authorization;
     }

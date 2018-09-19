@@ -50,7 +50,7 @@ import java.util.Random;
 
 public class TestClient
 {
-    private static final String SERVER_BASE = "http://localhost:8081/fhir";
+    private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
 
     private static final String USERNAME = "admin";
 
@@ -66,15 +66,16 @@ public class TestClient
         client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
         final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4727" : String.valueOf( Math.abs( new Random().nextInt() ) );
+            "4911" : String.valueOf( Math.abs( new Random().nextInt() ) );
 
+        final String orgCode = "PHL-D-2";
         // Organization
         Organization org = new Organization();
         org.setId( IdType.newRandomUuid() );
         org.setName( "District Hospital" );
         org.addIdentifier()
             .setSystem( "http://example.ph/organizations" )
-            .setValue( "PHL-D-1" );
+            .setValue( orgCode );
 
         // Create Patient
         Patient patient = new Patient();
@@ -86,7 +87,7 @@ public class TestClient
         patient.addName()
             .setFamily( "Cruz" )
             .addGiven( "Angelica" )
-            .addGiven( "Cecelia" ).addGiven( "Kristin" );
+            .addGiven( "Cecelia" );
         patient.getBirthDateElement().setValue( Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY );
         patient.setGender( Enumerations.AdministrativeGender.FEMALE );
@@ -116,7 +117,7 @@ public class TestClient
         imm1.getVaccineCode()
             .addCoding()
             .setSystem( "http://example.ph/vaccine-codes" )
-            .setCode( "OPV" )
+            .setCode( "DTaP" )
             .setDisplay( "Oral Polio Vaccine" );
         imm1.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
@@ -169,13 +170,13 @@ public class TestClient
             .setFullUrl( org.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Organization?identifier=http://example.ph/organizations|PHL-D-1" );
+            .setUrl( "Organization?identifier=http://example.ph/organizations|" + orgCode );
         bundle.addEntry()
             .setResource( imm1 )
             .setFullUrl( imm1.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2877" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2897" );
         bundle.addEntry()
             .setResource( imm2 )
             .setFullUrl( imm2.getId() )

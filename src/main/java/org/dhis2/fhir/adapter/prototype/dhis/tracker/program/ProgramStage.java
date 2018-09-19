@@ -44,7 +44,9 @@ public interface ProgramStage
 
     List<? extends ProgramStageDataElement> getDataElements();
 
-    @Nullable ProgramStageDataElement getDataElementByName( @Nonnull String name );
+    @Nullable
+    ProgramStageDataElement getDataElementByName( @Nonnull String name );
 
-    @Nonnull Optional<? extends ProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name );
+    @Nonnull
+    Optional<? extends ProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name );
 }

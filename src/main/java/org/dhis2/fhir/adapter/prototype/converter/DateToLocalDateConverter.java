@@ -43,7 +43,9 @@ public class DateToLocalDateConverter extends TypedConverter<Date, LocalDate>
         super( Date.class, LocalDate.class );
     }
 
-    @Override public @Nullable LocalDate doConvert( @Nonnull Date source )
+    @Override
+    @Nullable
+    public LocalDate doConvert( @Nonnull Date source )
     {
         return source.toInstant().atZone( zoneId ).toLocalDate();
     }

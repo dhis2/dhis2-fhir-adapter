@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.util;
+package org.dhis2.fhir.adapter.prototype.rest;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,31 +28,38 @@ package org.dhis2.fhir.adapter.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.springframework.http.HttpStatus;
+
 import javax.annotation.Nonnull;
-import java.util.regex.Pattern;
 
-/**
- * Utility class for handling date and times.
- *
- * @author volsch
- */
-public abstract class DateTimeUtils
+public class RestResourceNotFoundException extends RestResponseEntityException
 {
-    private static final Pattern DATE_TIME_OFFSET_PATTERN = Pattern.compile( ".+T.+[Z+-].*" );
+    private static final long serialVersionUID = -7487909336857881610L;
 
-    /**
-     * Checks if an ISO formatted date and time contains a zone offset.
-     *
-     * @param dateTime the date and time that should be checked.
-     * @return <code>true</code> if the ISO formatted date and time contains an offset, <code>false</code> otherwise.
-     */
-    public static boolean containsDateTimeOffset( @Nonnull String dateTime )
-    {
-        return DATE_TIME_OFFSET_PATTERN.matcher( dateTime ).matches();
-    }
-
-    public DateTimeUtils()
+    public RestResourceNotFoundException()
     {
         super();
+    }
+
+    public RestResourceNotFoundException( String message )
+    {
+        super( message );
+    }
+
+    public RestResourceNotFoundException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
+
+    public RestResourceNotFoundException( Throwable cause )
+    {
+        super( cause );
+    }
+
+    @Nonnull
+    @Override
+    public HttpStatus getHttpStatus()
+    {
+        return HttpStatus.NOT_FOUND;
     }
 }

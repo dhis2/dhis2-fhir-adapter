@@ -3,6 +3,7 @@ The adapter prototype handles for a demo the data as described by https://github
 
 The adapter provides the following functions:
 
+- Accepting subscription web hook notification from a remote FHIR server.
 - Importing data from systems that uses different FHIR resource IDs than the adapter itself (creation and updates based on filters).
 - Creating and updating (based on a national identifier, not on the resource ID) Tracked Entity Type "Person" from FHIR resource "Patient".
 - Enrolling a "Person" into the child immunization program when it is younger than one year and receives one of the vaccines that is handled by the program. 
@@ -93,9 +94,6 @@ In order to increase the readability of the mapping, names are used to map value
 
 The script above could use arguments. This would make the the script more reusable. The script could be name to "Set Data Element Yes" and could have one arguments that refers to a the code and name of a data element. This argument could be set when defining the concrete rule.
 
-### FHIR Organization
-The organization resource is only included in the transaction bundle to include a reference to the national identifier of the organization (must be the organization code). Since the organization will not include the parent organization (FHIR Organization.partOf) it cannot be used to create or update an organization unit on DHIS2. This would also require that the complete hierarchy up to the root organization is included and updated in the transaction bundle (due to required references of national identifiers). The prototype adapter will therefore ignore the update request of the organization and return a status of 200.
-
 ## Resource ID Handling
 The implementation for the demo does not generate resource IDs when it receives requests. For the purpose of the demo it is not relevant. In general the adapter must generate an identifier that contains the rule that processed the input data and the identifier of the affected DHIS2 resource. This is absolutely required when enabling FHIR read access. To handle read access was not in the scope of the demo. But there must still be a possibility to provide it.  
 
@@ -109,3 +107,5 @@ The above contains an example of such a generated resource ID. It contains the I
 - The prototype may not be optimized (e.g. may not use caching).
 - The prototype may not be unit tested.
 - The prototype may not be able to handle multiple FHIR versions at the same time.
+- The prototype may not support extensible scripts. The concepts to get extensible scripts are outlined in this document.
+- The prototype does not yet support distributed processing of FHIR subscriptions.

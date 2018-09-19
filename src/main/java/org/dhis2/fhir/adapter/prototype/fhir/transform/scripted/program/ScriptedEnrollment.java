@@ -37,11 +37,15 @@ import java.time.ZonedDateTime;
 @Scriptable
 public interface ScriptedEnrollment extends ScriptedDhisResource
 {
-    @Nullable String getId();
+    @Nullable
+    String getId();
 
-    @Nullable String getOrganizationUnitId();
+    @Nullable
+    String getOrganizationUnitId();
 
-    @Nullable ZonedDateTime getEnrollmentDate();
+    @Nullable
+    ZonedDateTime getEnrollmentDate();
 
-    @Nullable ZonedDateTime getIncidentDate();
+    @Nullable
+    ZonedDateTime getIncidentDate();
 }

@@ -33,5 +33,6 @@ import java.util.Optional;
 
 public interface ProgramMetadataService
 {
-    @Nonnull Optional<WritableProgram> getProgramByName( @Nonnull String name );
+    @Nonnull
+    Optional<WritableProgram> getProgramByName( @Nonnull String name );
 }

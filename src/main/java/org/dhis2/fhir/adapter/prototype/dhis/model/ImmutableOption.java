@@ -42,12 +42,14 @@ public class ImmutableOption implements Option, Serializable
         this.delegate = delegate;
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return delegate.getCode();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }

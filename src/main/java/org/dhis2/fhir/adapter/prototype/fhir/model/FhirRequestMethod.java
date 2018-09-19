@@ -47,7 +47,8 @@ public enum FhirRequestMethod
         }
     }
 
-    public static @Nullable FhirRequestMethod getByCode( @Nullable String code )
+    @Nullable
+    public static FhirRequestMethod getByCode( @Nullable String code )
     {
         return requestMethodsByCode.get( code );
     }

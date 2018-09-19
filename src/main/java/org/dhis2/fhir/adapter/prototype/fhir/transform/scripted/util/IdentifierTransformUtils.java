@@ -56,12 +56,15 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
 
     private volatile Map<Class<? extends DomainResource>, Method> identifierMethods = new HashMap<>();
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
 
-    public @Nullable String getResourceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformException
+    @Nullable
+    public String getResourceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformException
     {
         if ( reference == null )
         {
@@ -88,7 +91,8 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return idPart;
     }
 
-    public @Nullable Id getReferenceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformException
+    @Nullable
+    public Id getReferenceId( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformException
     {
         if ( reference == null )
         {
@@ -115,7 +119,24 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return (idPart == null) ? null : new Id( idPart, IdType.ID );
     }
 
-    public @Nullable Id getId( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
+    @Nullable
+    public String getIdentifier( @Nullable IBaseReference reference, @Nullable String system ) throws TransformException
+    {
+        if ( reference == null )
+        {
+            return null;
+        }
+        if ( reference.getResource() instanceof DomainResource )
+        {
+            final DomainResource domainResource = (DomainResource) reference.getResource();
+            final Id id = getId( domainResource, system );
+            return (id == null) ? null : id.getId();
+        }
+        return null;
+    }
+
+    @Nullable
+    public Id getId( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
     {
         if ( domainResource == null )
         {
@@ -136,7 +157,8 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return (getIdentifier( domainResource, system ) != null);
     }
 
-    public @Nullable String getIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
+    @Nullable
+    public String getIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
     {
         if ( domainResource == null )
         {
@@ -162,7 +184,8 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         return null;
     }
 
-    private @Nullable Method getIdentifierMethod( @Nonnull DomainResource domainResource )
+    @Nullable
+    private Method getIdentifierMethod( @Nonnull DomainResource domainResource )
     {
         final Class<? extends DomainResource> domainResourceClass = domainResource.getClass();
         final Map<Class<? extends DomainResource>, Method> identifierMethods = this.identifierMethods;

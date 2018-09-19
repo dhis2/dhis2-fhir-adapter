@@ -43,7 +43,9 @@ public class AdministrativeGenderToStringConverter extends TypedConverter<Admini
         super( AdministrativeGender.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
     {
         switch ( source )
         {

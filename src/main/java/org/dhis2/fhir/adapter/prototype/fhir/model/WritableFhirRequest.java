@@ -51,7 +51,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private FhirVersion version;
 
-    @Nullable @Override public FhirRequestMethod getRequestMethod()
+    @Nullable
+    @Override
+    public FhirRequestMethod getRequestMethod()
     {
         return requestMethod;
     }
@@ -61,7 +63,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.requestMethod = requestMethod;
     }
 
-    @Nullable @Override public FhirResourceType getResourceType()
+    @Nullable
+    @Override
+    public FhirResourceType getResourceType()
     {
         return resourceType;
     }
@@ -71,7 +75,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.resourceType = resourceType;
     }
 
-    @Nullable @Override public String getResourceId()
+    @Nullable
+    @Override
+    public String getResourceId()
     {
         return resourceId;
     }
@@ -81,7 +87,8 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.resourceId = resourceId;
     }
 
-    @Override public boolean containsRequestParameters()
+    @Override
+    public boolean containsRequestParameters()
     {
         return (getParameters() != null) && !getParameters().isEmpty();
     }
@@ -96,17 +103,22 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.parameters = parameters;
     }
 
-    @Override public boolean containsRequestParameter( @Nonnull String name )
+    @Override
+    public boolean containsRequestParameter( @Nonnull String name )
     {
         return (getParameters() != null) && getParameters().containsKey( name );
     }
 
-    @Nonnull @Override public Set<String> getParameterNames()
+    @Nonnull
+    @Override
+    public Set<String> getParameterNames()
     {
         return (getParameters() == null) ? Collections.emptySet() : getParameters().keys().elementSet();
     }
 
-    @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
+    @Nullable
+    @Override
+    public List<String> getParameterValues( @Nonnull String name )
     {
         if ( (getParameters() == null) || !getParameters().containsKey( name ) )
         {
@@ -115,7 +127,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         return getParameters().get( name );
     }
 
-    @Nonnull @Override public FhirVersion getVersion()
+    @Nonnull
+    @Override
+    public FhirVersion getVersion()
     {
         return version;
     }

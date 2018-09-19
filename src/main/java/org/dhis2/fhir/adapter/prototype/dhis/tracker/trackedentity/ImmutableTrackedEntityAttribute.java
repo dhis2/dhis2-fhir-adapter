@@ -42,17 +42,20 @@ public class ImmutableTrackedEntityAttribute implements TrackedEntityAttribute, 
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return delegate.getCode();
     }

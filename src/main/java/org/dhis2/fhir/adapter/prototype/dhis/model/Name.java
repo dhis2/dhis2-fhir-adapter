@@ -85,13 +85,15 @@ public class Name implements Serializable
         this.type = type;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
+    @Transient
     public boolean isAvailable()
     {
         return (name != null) && (type != null);
     }
 
-    @Override public String toString()
+    @Override
+    public String toString()
     {
         return "[type=" + getType() + ", name=" + getName() + "]";
     }

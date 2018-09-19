@@ -35,18 +35,11 @@ import ca.uhn.fhir.rest.server.IResourceProvider;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EnrollmentService;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.EventService;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.prototype.fhir.model.WritableFhirRequest;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerService;
+import org.dhis2.fhir.adapter.prototype.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformRequestException;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
@@ -67,29 +60,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This provider will only be available for demo purpose.
+ */
 @Component
 public class BundleResourceProvider implements IResourceProvider
 {
     private final Pattern RESOURCE_ID_PATTERN = Pattern.compile( "/?[^/]*/([^/]+).*" );
 
-    private final FhirToDhisTransformerService fhirToDhisTransformerService;
+    private FhirRepository fhirRepository;
 
-    private final TrackedEntityService trackedEntityService;
-
-    private final EnrollmentService enrollmentService;
-
-    private final EventService eventService;
-
-    public BundleResourceProvider( @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
-        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
+    public BundleResourceProvider( @Nonnull FhirRepository fhirRepository )
     {
-        this.fhirToDhisTransformerService = fhirToDhisTransformerService;
-        this.trackedEntityService = trackedEntityService;
-        this.enrollmentService = enrollmentService;
-        this.eventService = eventService;
+        this.fhirRepository = fhirRepository;
     }
 
-    @Override public Class<Bundle> getResourceType()
+    @Override
+    public Class<Bundle> getResourceType()
     {
         return Bundle.class;
     }
@@ -118,46 +105,22 @@ public class BundleResourceProvider implements IResourceProvider
             fhirRequest.setVersion( FhirVersion.DSTU3 );
             updateWithUrl( entry, fhirRequest );
 
-            final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(
-                fhirToDhisTransformerService.createContext( fhirRequest ), entry.getResource() );
-            if ( outcome != null )
-            {
-                final DhisResource resource;
-                switch ( outcome.getResource().getResourceType() )
-                {
-                    case TRACKED_ENTITY:
-                        resource = trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
-                        break;
-                    case EVENT:
-                        final Event event = (Event) outcome.getResource();
-                        // Creation of enrollment and event can be made at the
-                        // same time, for demo purpose the simplified approach
-                        // is used since for further focus this use case seems
-                        // not to be in the primary scope.
-                        if ( event.getEnrollment().isNewResource() )
-                        {
-                            event.setEnrollment( enrollmentService.create( event.getEnrollment() ) );
-                        }
-                        resource = eventService.createOrMinimalUpdate( event );
-                        break;
-                    default:
-                        throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
-                }
-                entry.getResource().setIdBase( resource.getId() );
-                resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
-            }
+            fhirRepository.save( entry.getResource(), fhirRequest );
+            resultBundle.addEntry().setResponse( new BundleEntryResponseComponent( new StringType( String.valueOf( Constants.STATUS_HTTP_200_OK ) ) ) );
         }
 
         return resultBundle;
     }
 
-    private @Nullable FhirRequestMethod getFhirRequestMethod( @Nonnull BundleEntryComponent entry )
+    @Nullable
+    private FhirRequestMethod getFhirRequestMethod( @Nonnull BundleEntryComponent entry )
     {
         final HTTPVerb method = entry.getRequest().getMethod();
         return (method == null) ? null : FhirRequestMethod.getByCode( method.toCode() );
     }
 
-    private @Nullable FhirResourceType getFhirResourceType( @Nonnull BundleEntryComponent entry )
+    @Nullable
+    private FhirResourceType getFhirResourceType( @Nonnull BundleEntryComponent entry )
     {
         final Resource resource = entry.getResource();
         return (resource == null) ? null : FhirResourceType.getByPath( resource.getResourceType().getPath() );
@@ -185,7 +148,8 @@ public class BundleResourceProvider implements IResourceProvider
         }
     }
 
-    private @Nullable String getFhirResourceId( @Nonnull URI uri )
+    @Nullable
+    private String getFhirResourceId( @Nonnull URI uri )
     {
         final String path = uri.getPath();
         if ( path == null )
@@ -196,7 +160,8 @@ public class BundleResourceProvider implements IResourceProvider
         return matcher.matches() ? matcher.group( 1 ) : null;
     }
 
-    private static @Nonnull ListMultimap<String, String> getFhirRequestParameters( @Nonnull URI uri )
+    private static @Nonnull
+    ListMultimap<String, String> getFhirRequestParameters( @Nonnull URI uri )
     {
         final ListMultimap<String, String> parameters = ArrayListMultimap.create();
         try

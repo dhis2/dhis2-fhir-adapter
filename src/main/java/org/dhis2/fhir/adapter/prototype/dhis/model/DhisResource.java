@@ -32,7 +32,8 @@ import javax.annotation.Nonnull;
 
 public interface DhisResource extends Identifiable
 {
-    @Nonnull DhisResourceType getResourceType();
+    @Nonnull
+    DhisResourceType getResourceType();
 
     boolean isNewResource();
 }

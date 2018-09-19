@@ -84,12 +84,16 @@ public class Enrollment implements DhisResource, Serializable
         this.events = new ArrayList<>();
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return newResource;
     }
 
-    @Nonnull @JsonIgnore @Override public DhisResourceType getResourceType()
+    @Nonnull
+    @JsonIgnore
+    @Override
+    public DhisResourceType getResourceType()
     {
         return DhisResourceType.ENROLLMENT;
     }

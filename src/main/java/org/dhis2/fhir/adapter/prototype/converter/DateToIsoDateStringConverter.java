@@ -45,7 +45,9 @@ public class DateToIsoDateStringConverter extends TypedConverter<Date, String>
         super( Date.class, String.class );
     }
 
-    @Override public @Nullable String doConvert( @Nonnull Date source )
+    @Override
+    @Nullable
+    public String doConvert( @Nonnull Date source )
     {
         return formatter.format( source.toInstant().atZone( zoneId ) );
     }

@@ -38,7 +38,8 @@ public class WritableOption implements Option, Serializable
 
     private String name;
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return code;
     }
@@ -48,7 +49,8 @@ public class WritableOption implements Option, Serializable
         this.code = code;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }

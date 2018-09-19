@@ -6,7 +6,7 @@ spring:
     serialization:
       write-dates-as-timestamps: false
   datasource:
-    url: jdbc:hsqldb:res:db/dhis_fhir;hsqldb.sqllog=0
+    url: jdbc:hsqldb:mem:dhis_fhir;hsqldb.sqllog=0
     username: sa
     password:
     driver-class-name: org.hsqldb.jdbcDriver
@@ -37,3 +37,8 @@ dhis2:
       realm: dhis2/oauth2
   transformation:
     scriptEngineName: nashorn
+  subscription:
+    remote:
+      baseUrl: @dhis2.subscription.remote.baseUrl@
+      authorizationHeader: @dhis2.subscription.remote.authorizationHeader@
+

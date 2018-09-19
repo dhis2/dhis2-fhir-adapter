@@ -22,6 +22,9 @@
     <dhis2.url>http://localhost:8080</dhis2.url>
     <dhis2.apiVersion>29</dhis2.apiVersion>
 
+    <dhis2.subscription.remote.baseUrl>http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3</dhis2.subscription.remote.baseUrl>
+    <dhis2.subscription.remote.authorizationHeader>Bearer jshru38jsHdsdfy38sh38H3d</dhis2.subscription.remote.authorizationHeader>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -63,7 +63,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.attribute = attribute;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -73,7 +74,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -83,7 +85,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.name = name;
     }
 
-    @Override public ValueType getValueType()
+    @Override
+    public ValueType getValueType()
     {
         return valueType;
     }
@@ -93,7 +96,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.valueType = valueType;
     }
 
-    @Override public boolean isMandatory()
+    @Override
+    public boolean isMandatory()
     {
         return mandatory;
     }
@@ -103,7 +107,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.mandatory = mandatory;
     }
 
-    @Override public boolean isGenerated()
+    @Override
+    public boolean isGenerated()
     {
         return generated;
     }
@@ -113,7 +118,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.generated = generated;
     }
 
-    @Override public WritableTrackedEntityAttribute getAttribute()
+    @Override
+    public WritableTrackedEntityAttribute getAttribute()
     {
         return attribute;
     }
@@ -123,7 +129,8 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.attribute = attribute;
     }
 
-    @Override public String getAttributeId()
+    @Override
+    public String getAttributeId()
     {
         return (getAttribute() == null) ? null : getAttribute().getId();
     }

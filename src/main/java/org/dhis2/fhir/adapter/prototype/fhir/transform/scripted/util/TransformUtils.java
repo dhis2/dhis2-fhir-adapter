@@ -35,7 +35,9 @@ import javax.annotation.Nullable;
 
 public interface TransformUtils
 {
-    @Nullable FhirVersion getFhirVersion();
+    @Nullable
+    FhirVersion getFhirVersion();
 
-    @Nonnull String getScriptAttrName();
+    @Nonnull
+    String getScriptAttrName();
 }

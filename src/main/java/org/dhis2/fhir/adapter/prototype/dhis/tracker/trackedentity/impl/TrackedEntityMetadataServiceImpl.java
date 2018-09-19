@@ -51,18 +51,21 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
 
     private final RestTemplate restTemplate;
 
-    @Autowired public TrackedEntityMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public TrackedEntityMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
+    @Override
+    public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
     {
         return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), id ) )
             .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 
-    @Override public Optional<TrackedEntityType> getTypeByName( @Nonnull String name )
+    @Override
+    public Optional<TrackedEntityType> getTypeByName( @Nonnull String name )
     {
         return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), name ) )
             .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();

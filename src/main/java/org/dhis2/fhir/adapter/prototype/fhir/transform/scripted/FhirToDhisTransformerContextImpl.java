@@ -47,12 +47,16 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
         this.fhirRequest = new ImmutableFhirRequest( fhirRequest );
     }
 
-    @Nonnull @Override public FhirRequest getFhirRequest()
+    @Nonnull
+    @Override
+    public FhirRequest getFhirRequest()
     {
         return fhirRequest;
     }
 
-    @Nonnull @Override public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
+    @Nonnull
+    @Override
+    public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformException
     {
         if ( value == null )
         {

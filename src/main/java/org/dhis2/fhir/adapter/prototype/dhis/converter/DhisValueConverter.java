@@ -67,7 +67,8 @@ public class DhisValueConverter
     }
 
     @SuppressWarnings( "unchecked" )
-    public @Nullable <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
+    @Nullable
+    public <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
     {
         if ( (value == null) || (isResultValueType( value, resultClass ) && isUnconvertedPrimitive( value, valueType )) )
         {
@@ -85,7 +86,8 @@ public class DhisValueConverter
         throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName() + ".") );
     }
 
-    public @Nullable Object convert( @Nullable Object value, @Nonnull ValueType valueType )
+    @Nullable
+    public Object convert( @Nullable Object value, @Nonnull ValueType valueType )
     {
         return convert( value, valueType, Object.class );
     }

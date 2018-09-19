@@ -46,7 +46,9 @@ public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalD
         super( String.class, LocalDate.class );
     }
 
-    @Override public @Nullable LocalDate doConvert( @Nonnull String source )
+    @Override
+    @Nullable
+    public LocalDate doConvert( @Nonnull String source )
     {
         try
         {

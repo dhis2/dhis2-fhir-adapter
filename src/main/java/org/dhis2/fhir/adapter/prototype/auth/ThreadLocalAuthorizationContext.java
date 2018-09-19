@@ -34,7 +34,9 @@ public class ThreadLocalAuthorizationContext implements AuthorizationContext
 {
     private static final ThreadLocal<Authorization> THREAD_LOCAL = new ThreadLocal<>();
 
-    @Nonnull @Override public Authorization getAuthentication()
+    @Nonnull
+    @Override
+    public Authorization getAuthentication()
     {
         Authorization authorization = THREAD_LOCAL.get();
         if ( authorization == null )

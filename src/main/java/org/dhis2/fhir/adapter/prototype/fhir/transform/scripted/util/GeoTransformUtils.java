@@ -53,12 +53,15 @@ public class GeoTransformUtils extends AbstractTransformUtils
 
     private static final String LONGITUDE_URL = "longitude";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable public Location getLocation( @Nonnull Element element ) throws TransformException
+    @Nullable
+    public Location getLocation( @Nonnull Element element ) throws TransformException
     {
         final List<Extension> locationExtensions = element.getExtensionsByUrl( GEO_LOCATION_URL );
         if ( locationExtensions.isEmpty() )

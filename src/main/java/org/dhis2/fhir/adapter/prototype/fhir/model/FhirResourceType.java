@@ -49,7 +49,8 @@ public enum FhirResourceType
         }
     }
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    @Nullable
+    public static FhirResourceType getByPath( @Nullable String path )
     {
         return resourceTypesByPath.get( path );
     }

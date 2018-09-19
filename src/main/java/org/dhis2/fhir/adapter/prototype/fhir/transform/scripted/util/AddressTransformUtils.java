@@ -47,7 +47,9 @@ public class AddressTransformUtils extends AbstractTransformUtils
 
     private static final String DEFAULT_LINE_DELIMITER = " ";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
@@ -57,12 +59,14 @@ public class AddressTransformUtils extends AbstractTransformUtils
         return getOptionalPrimaryAddress( addresses ).isPresent();
     }
 
-    @Nullable public Address getPrimaryAddress( @Nonnull List<Address> addresses )
+    @Nullable
+    public Address getPrimaryAddress( @Nonnull List<Address> addresses )
     {
         return getOptionalPrimaryAddress( addresses ).orElse( new Address() );
     }
 
-    @Nullable public String getSingleLine( @Nullable Address address, @Nonnull String delimiter )
+    @Nullable
+    public String getSingleLine( @Nullable Address address, @Nonnull String delimiter )
     {
         if ( (address == null) || address.getLine().isEmpty() )
         {
@@ -71,12 +75,14 @@ public class AddressTransformUtils extends AbstractTransformUtils
         return String.join( delimiter, address.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
     }
 
-    @Nullable public String getSingleLine( @Nullable Address address )
+    @Nullable
+    public String getSingleLine( @Nullable Address address )
     {
         return getSingleLine( address, DEFAULT_LINE_DELIMITER );
     }
 
-    @Nonnull protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<Address> addresses )
+    @Nonnull
+    protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<Address> addresses )
     {
         return addresses.stream().findFirst();
     }

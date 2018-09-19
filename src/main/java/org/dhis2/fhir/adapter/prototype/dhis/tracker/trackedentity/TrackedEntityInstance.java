@@ -74,12 +74,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.newResource = newResource;
     }
 
-    @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
     {
         return DhisResourceType.TRACKED_ENTITY;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return newResource;
     }
@@ -144,7 +148,8 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
     }
 
-    public @Nonnull TrackedEntityAttributeValue getAttribute( @Nonnull String attributeId )
+    @Nonnull
+    public TrackedEntityAttributeValue getAttribute( @Nonnull String attributeId )
     {
         if ( getAttributes() == null )
         {

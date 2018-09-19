@@ -45,7 +45,8 @@ public class ZonedDateTimeSerializer extends StdSerializer<ZonedDateTime>
         super( ZonedDateTime.class );
     }
 
-    @Override public void serialize( ZonedDateTime zonedDateTime, JsonGenerator jsonGenerator, SerializerProvider serializerProvider ) throws IOException
+    @Override
+    public void serialize( ZonedDateTime zonedDateTime, JsonGenerator jsonGenerator, SerializerProvider serializerProvider ) throws IOException
     {
         if ( zonedDateTime == null )
         {

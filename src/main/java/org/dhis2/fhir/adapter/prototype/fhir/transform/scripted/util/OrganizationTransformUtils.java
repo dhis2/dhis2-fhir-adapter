@@ -58,12 +58,15 @@ public class OrganizationTransformUtils extends AbstractTransformUtils
         this.identifierTransformUtils = identifierTransformUtils;
     }
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable public String getOrganizationUnitId( @Nullable IBaseReference reference, @Nullable String system ) throws TransformException
+    @Nullable
+    public String getOrganizationUnitId( @Nullable IBaseReference reference, @Nullable String system ) throws TransformException
     {
         if ( reference == null )
         {

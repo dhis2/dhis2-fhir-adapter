@@ -40,7 +40,9 @@ public class DoubleToTextStringConverter extends TypedConverter<Double, String>
         super( Double.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Double source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Double source ) throws ConversionException
     {
         final String result = source.toString();
         if ( result.endsWith( SKIPPED_FLOATING_POINT_EXTENSION ) )

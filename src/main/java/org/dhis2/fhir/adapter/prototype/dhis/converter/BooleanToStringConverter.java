@@ -41,7 +41,9 @@ public class BooleanToStringConverter extends TypedConverter<Boolean, String>
         super( Boolean.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Boolean source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Boolean source ) throws ConversionException
     {
         return source.toString();
     }

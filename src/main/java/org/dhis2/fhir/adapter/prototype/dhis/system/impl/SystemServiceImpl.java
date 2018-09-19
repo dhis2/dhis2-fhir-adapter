@@ -45,12 +45,14 @@ public class SystemServiceImpl implements SystemService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public SystemServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public SystemServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Override public List<String> createIds( int limit )
+    @Override
+    public List<String> createIds( int limit )
     {
         final ResponseEntity<DhisCodes> response = restTemplate.getForEntity( IDS_URI, DhisCodes.class, limit );
         return response.getBody().getCodes();

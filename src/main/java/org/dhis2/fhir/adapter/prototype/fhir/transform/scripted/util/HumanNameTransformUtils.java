@@ -47,12 +47,15 @@ public class HumanNameTransformUtils extends AbstractTransformUtils
 
     private static final String DEFAULT_GIVEN_DELIMITER = " ";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable public String getSingleGiven( @Nullable HumanName humanName )
+    @Nullable
+    public String getSingleGiven( @Nullable HumanName humanName )
     {
         if ( (humanName == null) || humanName.getGiven().isEmpty() )
         {
@@ -66,12 +69,14 @@ public class HumanNameTransformUtils extends AbstractTransformUtils
         return getOptionalPrimaryName( names ).isPresent();
     }
 
-    @Nullable public HumanName getPrimaryName( @Nonnull List<HumanName> names )
+    @Nullable
+    public HumanName getPrimaryName( @Nonnull List<HumanName> names )
     {
         return getOptionalPrimaryName( names ).orElse( new HumanName() );
     }
 
-    @Nonnull protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<HumanName> names )
+    @Nonnull
+    protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<HumanName> names )
     {
         return names.stream().findFirst();
     }

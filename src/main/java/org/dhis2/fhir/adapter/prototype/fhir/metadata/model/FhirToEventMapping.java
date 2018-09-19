@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
+package org.dhis2.fhir.adapter.prototype.fhir.metadata.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,72 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.AbstractFhirToDhisMapping;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 @Entity
-@Table( name = "fhir_tracked_entity_map" )
-@DiscriminatorValue( "TRACKED_ENTITY" )
+@Table( name = "fhir_event_map" )
+@DiscriminatorValue( "EVENT" )
 @PrimaryKeyJoinColumn( name = "id" )
-public class FhirToTrackedEntityMapping extends AbstractFhirToDhisMapping
+public class FhirToEventMapping extends AbstractFhirToDhisMapping
 {
-    private static final long serialVersionUID = -5937978792972640057L;
+    private static final long serialVersionUID = -5837113055841601158L;
 
-    @Column( name = "tracked_entity_type_name", nullable = false )
-    private String trackedEntityTypeName;
+    @Column( name = "program_name", nullable = false )
+    private String programName;
 
-    public String getTrackedEntityTypeName()
+    @Column( name = "program_stage_name", nullable = false )
+    private String programStageName;
+
+    @Column( name = "generate_event", nullable = false )
+    private boolean generateEvent;
+
+    @ManyToOne
+    @JoinColumn( name = "automated_enrollment_id" )
+    private AutomatedEnrollment automatedEnrollment;
+
+    public String getProgramName()
     {
-        return trackedEntityTypeName;
+        return programName;
     }
 
-    public void setTrackedEntityTypeName( String trackedEntityTypeName )
+    public void setProgramName( String programName )
     {
-        this.trackedEntityTypeName = trackedEntityTypeName;
+        this.programName = programName;
+    }
+
+    public String getProgramStageName()
+    {
+        return programStageName;
+    }
+
+    public void setProgramStageName( String programStageName )
+    {
+        this.programStageName = programStageName;
+    }
+
+    public boolean isGenerateEvent()
+    {
+        return generateEvent;
+    }
+
+    public void setGenerateEvent( boolean generateEvent )
+    {
+        this.generateEvent = generateEvent;
+    }
+
+    public AutomatedEnrollment getAutomatedEnrollment()
+    {
+        return automatedEnrollment;
+    }
+
+    public void setAutomatedEnrollment( AutomatedEnrollment automatedEnrollment )
+    {
+        this.automatedEnrollment = automatedEnrollment;
     }
 }

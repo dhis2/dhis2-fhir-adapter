@@ -34,7 +34,9 @@ import javax.annotation.Nullable;
 
 public abstract class AbstractTransformUtils implements TransformUtils
 {
-    @Nullable @Override public FhirVersion getFhirVersion()
+    @Nullable
+    @Override
+    public FhirVersion getFhirVersion()
     {
         return FhirVersion.DSTU3;
     }

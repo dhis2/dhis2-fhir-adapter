@@ -43,7 +43,9 @@ public class LocalDateToZonedDateTimeConverter extends TypedConverter<LocalDate,
         super( LocalDate.class, ZonedDateTime.class );
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull LocalDate source )
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull LocalDate source )
     {
         return source.atStartOfDay( zoneId );
     }

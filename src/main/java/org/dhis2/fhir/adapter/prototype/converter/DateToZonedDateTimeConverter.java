@@ -43,7 +43,9 @@ public class DateToZonedDateTimeConverter extends TypedConverter<Date, ZonedDate
         super( Date.class, ZonedDateTime.class );
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Date source )
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull Date source )
     {
         return source.toInstant().atZone( zoneId );
     }

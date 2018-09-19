@@ -47,7 +47,9 @@ public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, Zoned
         super( Object.class, ZonedDateTime.class );
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Object source )
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull Object source )
     {
         final Matcher matcher = dateTimePattern.matcher( source.toString() );
         if ( !matcher.matches() )

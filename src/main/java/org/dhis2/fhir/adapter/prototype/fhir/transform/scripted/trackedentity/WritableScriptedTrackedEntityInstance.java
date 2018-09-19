@@ -59,22 +59,29 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         this.dhisValueConverter = dhisValueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return trackedEntityInstance.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return trackedEntityInstance.getId();
     }
 
-    @Nonnull @Override public String getTypeId()
+    @Nonnull
+    @Override
+    public String getTypeId()
     {
         return trackedEntityType.getId();
     }
 
-    @Override public @Nullable String getOrganizationUnitId()
+    @Override
+    @Nullable
+    public String getOrganizationUnitId()
     {
         return trackedEntityInstance.getOrgUnitId();
     }
@@ -88,7 +95,8 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         trackedEntityInstance.setOrgUnitId( id );
     }
 
-    @Nullable public Location getCoordinates()
+    @Nullable
+    public Location getCoordinates()
     {
         return dhisValueConverter.convert( trackedEntityInstance.getCoordinates(), ValueType.COORDINATE, Location.class );
     }
@@ -111,7 +119,9 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         setValue( typeAttribute, value );
     }
 
-    @Nullable @Override public Object getValueByName( @Nonnull String typeAttrName )
+    @Nullable
+    @Override
+    public Object getValueByName( @Nonnull String typeAttrName )
     {
         final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
         return getValue( typeAttribute );

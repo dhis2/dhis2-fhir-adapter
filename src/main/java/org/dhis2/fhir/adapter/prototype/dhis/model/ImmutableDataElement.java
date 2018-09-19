@@ -42,32 +42,38 @@ public class ImmutableDataElement implements DataElement, Serializable
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return delegate.getCode();
     }
 
-    @Override public ValueType getValueType()
+    @Override
+    public ValueType getValueType()
     {
         return delegate.getValueType();
     }
 
-    @Override public boolean isOptionSetValue()
+    @Override
+    public boolean isOptionSetValue()
     {
         return delegate.isOptionSetValue();
     }
 
-    @Override public OptionSet getOptionSet()
+    @Override
+    public OptionSet getOptionSet()
     {
         return (delegate.getOptionSet() == null) ? null : new ImmutableOptionSet( delegate.getOptionSet() );
     }

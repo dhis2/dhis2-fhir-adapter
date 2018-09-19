@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.prototype.fhir.metadata.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.FhirToDhisIdentifierMapping;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -199,7 +200,8 @@ public abstract class AbstractFhirToDhisMapping implements Serializable
         this.identifierMapping = identifierMapping;
     }
 
-    @Override public String toString()
+    @Override
+    public String toString()
     {
         return "[id=" + getId() + ", version=" + getVersion() + "]";
     }

@@ -42,27 +42,32 @@ public class ImmutableDataValue implements DataValue, Serializable
         this.delegate = delegate;
     }
 
-    @Override public String getDataElementId()
+    @Override
+    public String getDataElementId()
     {
         return delegate.getDataElementId();
     }
 
-    @Override public Object getValue()
+    @Override
+    public Object getValue()
     {
         return delegate.getValue();
     }
 
-    @Override public boolean isProvidedElsewhere()
+    @Override
+    public boolean isProvidedElsewhere()
     {
         return delegate.isProvidedElsewhere();
     }
 
-    @Override public boolean isModified()
+    @Override
+    public boolean isModified()
     {
         return delegate.isModified();
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return delegate.isNewResource();
     }

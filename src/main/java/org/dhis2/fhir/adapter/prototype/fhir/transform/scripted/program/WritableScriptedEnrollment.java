@@ -56,17 +56,22 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         this.dhisValueConverter = dhisValueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return enrollment.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return enrollment.getId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return enrollment.getOrgUnitId();
     }
@@ -76,7 +81,9 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setOrgUnitId( organizationUnitId );
     }
 
-    @Nullable @Override public ZonedDateTime getEnrollmentDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getEnrollmentDate()
     {
         return enrollment.getEnrollmentDate();
     }
@@ -91,7 +98,9 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> dhisValueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
-    @Nullable @Override public ZonedDateTime getIncidentDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getIncidentDate()
     {
         return enrollment.getIncidentDate();
     }
@@ -101,7 +110,8 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
-    @Override public void validate() throws TransformException
+    @Override
+    public void validate() throws TransformException
     {
         if ( enrollment.getOrgUnitId() == null )
         {

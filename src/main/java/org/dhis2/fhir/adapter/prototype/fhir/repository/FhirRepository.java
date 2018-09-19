@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.prototype.fhir.repository;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,35 +28,15 @@ package org.dhis2.fhir.adapter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import org.dhis2.fhir.adapter.prototype.dhis.jackson.ZonedDateTimeDeserializer;
-import org.dhis2.fhir.adapter.prototype.dhis.jackson.ZonedDateTimeSerializer;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.validation.annotation.Validated;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
+import org.hl7.fhir.dstu3.model.Resource;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import javax.annotation.Nonnull;
 
-@Configuration
-@Validated
-public class AppConfig
+public interface FhirRepository
 {
-    @Bean
-    @Order( 1 )
-    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer()
-    {
-        return jacksonObjectMapperBuilder -> {
-            final ZoneId zoneId = ZoneId.systemDefault();
-            jacksonObjectMapperBuilder
-                .serializers(
-                    new ZonedDateTimeSerializer(),
-                    new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
-                .deserializers( new ZonedDateTimeDeserializer(),
-                    new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
-        };
-    }
+    String save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Resource resource );
+
+    String save( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest );
 }

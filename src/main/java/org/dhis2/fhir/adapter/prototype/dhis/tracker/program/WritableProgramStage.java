@@ -53,7 +53,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
     @JsonIgnore
     private transient volatile Map<String, WritableProgramStageDataElement> dataElementsByName;
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -63,7 +64,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -73,7 +75,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
         this.name = name;
     }
 
-    @Override public List<WritableProgramStageDataElement> getDataElements()
+    @Override
+    public List<WritableProgramStageDataElement> getDataElements()
     {
         return dataElements;
     }
@@ -84,7 +87,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
         this.dataElementsByName = null;
     }
 
-    @Nonnull public Optional<? extends WritableProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name )
+    @Nonnull
+    public Optional<? extends WritableProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name )
     {
         if ( dataElements == null )
         {
@@ -98,7 +102,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
         return Optional.ofNullable( dataElementsByName.get( name ) );
     }
 
-    @Nullable public WritableProgramStageDataElement getDataElementByName( @Nonnull String name )
+    @Nullable
+    public WritableProgramStageDataElement getDataElementByName( @Nonnull String name )
     {
         return getOptionalDataElementByName( name ).orElse( null );
     }

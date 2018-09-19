@@ -68,32 +68,38 @@ class EventInfo
         this.completedEvents = completedEvents;
     }
 
-    public @Nonnull Program getProgram()
+    @Nonnull
+    public Program getProgram()
     {
         return program;
     }
 
-    public @Nonnull ProgramStage getProgramStage()
+    @Nonnull
+    public ProgramStage getProgramStage()
     {
         return programStage;
     }
 
-    public @Nonnull TrackedEntityType getTrackedEntityType()
+    @Nonnull
+    public TrackedEntityType getTrackedEntityType()
     {
         return trackedEntityType;
     }
 
-    public @Nonnull ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    @Nonnull
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
         return trackedEntityInstance;
     }
 
-    public @Nonnull Optional<Enrollment> getEnrollment()
+    @Nonnull
+    public Optional<Enrollment> getEnrollment()
     {
         return Optional.ofNullable( enrollment );
     }
 
-    public @Nonnull Optional<Event> getEvent()
+    @Nonnull
+    public Optional<Event> getEvent()
     {
         return Optional.ofNullable( event );
     }

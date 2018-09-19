@@ -50,12 +50,14 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public OrganisationUnitServiceImpl( @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public OrganisationUnitServiceImpl( @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<OrganisationUnit> get( @Nonnull Id id )
+    @Override
+    public Optional<OrganisationUnit> get( @Nonnull Id id )
     {
         switch ( id.getType() )
         {

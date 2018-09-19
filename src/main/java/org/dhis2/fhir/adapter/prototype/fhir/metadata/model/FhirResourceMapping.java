@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
+package org.dhis2.fhir.adapter.prototype.fhir.metadata.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,23 +28,31 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.prototype.fhir.model.FhirResourceType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
-@Table( name = "fhir_automated_enrollment" )
-public class AutomatedEnrollment implements Serializable
+@Table( name = "fhir_resource_map" )
+@NamedQuery( name = FhirResourceMapping.BY_FHIR_RESOURCE_QUERY_NAME, query = "SELECT m FROM FhirResourceMapping m " +
+    "WHERE m.fhirResourceType=:fhirResourceType" )
+public class FhirResourceMapping implements Serializable
 {
-    private static final long serialVersionUID = -5824177880902427297L;
+    private static final long serialVersionUID = -7310651604301840869L;
+
+    public static final String BY_FHIR_RESOURCE_QUERY_NAME = "fhirResourceMappingByFhirResource";
 
     @Id
     @GeneratedValue( generator = "uuid2" )
@@ -55,11 +63,18 @@ public class AutomatedEnrollment implements Serializable
     @Column( name = "version", nullable = false )
     private Long version;
 
-    @Lob @Column( name = "applicable_script", nullable = false )
-    private String applicableScript;
+    @Enumerated( EnumType.STRING )
+    @Column( name = "fhir_resource_type", nullable = false, unique = true )
+    private FhirResourceType fhirResourceType;
 
-    @Lob @Column( name = "transform_script", nullable = false )
-    private String transformScript;
+    @Lob @Column( name = "tei_lookup_script", nullable = false )
+    private String trackedEntityInstanceLookupScript;
+
+    @Lob @Column( name = "event_date_lookup_script", nullable = false )
+    private String eventDateLookupScript;
+
+    @Lob @Column( name = "enrolled_org_unit_id_lookup_script", nullable = false )
+    private String enrolledOrgUnitIdLookupScript;
 
     public UUID getId()
     {
@@ -81,23 +96,43 @@ public class AutomatedEnrollment implements Serializable
         this.version = version;
     }
 
-    public String getApplicableScript()
+    public FhirResourceType getFhirResourceType()
     {
-        return applicableScript;
+        return fhirResourceType;
     }
 
-    public void setApplicableScript( String applicable )
+    public void setFhirResourceType( FhirResourceType fhirResourceType )
     {
-        this.applicableScript = applicable;
+        this.fhirResourceType = fhirResourceType;
     }
 
-    public String getTransformScript()
+    public String getTrackedEntityInstanceLookupScript()
     {
-        return transformScript;
+        return trackedEntityInstanceLookupScript;
     }
 
-    public void setTransformScript( String transformScript )
+    public void setTrackedEntityInstanceLookupScript( String trackedEntityInstanceLookupScript )
     {
-        this.transformScript = transformScript;
+        this.trackedEntityInstanceLookupScript = trackedEntityInstanceLookupScript;
+    }
+
+    public String getEventDateLookupScript()
+    {
+        return eventDateLookupScript;
+    }
+
+    public void setEventDateLookupScript( String eventDateScript )
+    {
+        this.eventDateLookupScript = eventDateScript;
+    }
+
+    public String getEnrolledOrgUnitIdLookupScript()
+    {
+        return enrolledOrgUnitIdLookupScript;
+    }
+
+    public void setEnrolledOrgUnitIdLookupScript( String enrolledOrgUnitIdLookupScript )
+    {
+        this.enrolledOrgUnitIdLookupScript = enrolledOrgUnitIdLookupScript;
     }
 }

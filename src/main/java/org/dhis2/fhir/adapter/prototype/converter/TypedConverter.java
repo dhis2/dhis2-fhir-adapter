@@ -55,14 +55,17 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
         return this.toClass;
     }
 
-    public abstract @Nullable B doConvert( @Nonnull A source ) throws ConversionException;
+    public abstract @Nullable
+    B doConvert( @Nonnull A source ) throws ConversionException;
 
-    public final @Nullable B convertCasted( @Nullable Object source ) throws ConversionException
+    @Nullable
+    public final B convertCasted( @Nullable Object source ) throws ConversionException
     {
         return convert( fromClass.cast( source ) );
     }
 
-    public final @Nullable B convert( @Nullable A source ) throws ConversionException
+    @Nullable
+    public final B convert( @Nullable A source ) throws ConversionException
     {
         return (source == null) ? null : doConvert( source );
     }

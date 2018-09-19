@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.AbstractFhirToDhisMapping;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
@@ -60,7 +61,9 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         this.scriptEvaluator = scriptEvaluator;
     }
 
-    @Nullable @Override public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
+    @Nullable
+    @Override
+    public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
         @Nonnull AbstractFhirToDhisMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         return transform( context, input, getMappingClass().cast( mapping ), scriptArguments );
@@ -71,17 +74,21 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         return scriptEvaluator;
     }
 
-    @Nullable @Override public FhirVersion getFhirVersion()
+    @Nullable
+    @Override
+    public FhirVersion getFhirVersion()
     {
         return FhirVersion.DSTU3;
     }
 
-    @Override public boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping )
+    @Override
+    public boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping )
     {
         return addScriptArguments( arguments, context, getMappingClass().cast( mapping ) );
     }
 
-    protected @Nonnull Optional<R> getResource( @Nonnull FhirToDhisTransformerContext context,
+    @Nonnull
+    protected Optional<R> getResource( @Nonnull FhirToDhisTransformerContext context,
         @Nonnull M mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final String id = getDhisId( context, mapping );
@@ -93,21 +100,26 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
             .orElseGet( () -> getActiveResource( context, mapping, scriptArguments ).orElseGet( () -> createResource( context, mapping, id, scriptArguments ) ) ) ) );
     }
 
-    protected abstract @Nonnull Optional<R> getResourceById( @Nullable String id ) throws TransformException;
+    protected abstract @Nonnull
+    Optional<R> getResourceById( @Nullable String id ) throws TransformException;
 
-    protected abstract @Nonnull Optional<R> getResourceByIdentifier(
+    protected abstract @Nonnull
+    Optional<R> getResourceByIdentifier(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
         @Nullable String identifier, @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 
-    protected abstract @Nonnull Optional<R> getActiveResource(
+    protected abstract @Nonnull
+    Optional<R> getActiveResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
         @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 
-    protected abstract @Nullable R createResource(
+    protected abstract @Nullable
+    R createResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping,
         @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 
-    protected @Nullable String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping )
+    @Nullable
+    protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping )
     {
         final String resourceId = context.getFhirRequest().getResourceId();
         if ( (resourceId != null) && context.getFhirRequest().containsRequestParameters() )
@@ -118,7 +130,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, M ex
         return resourceId;
     }
 
-    protected @Nullable String getDhisIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException
+    @Nullable
+    protected String getDhisIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException
     {
         if ( !mapping.getIdentifierMapping().isAvailable() )
         {

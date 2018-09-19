@@ -56,7 +56,9 @@ public class AuthorizedRestTemplate extends RestTemplate
         this.wwwAuthenticates = wwwAuthenticates;
     }
 
-    @Nonnull @Override protected ClientHttpRequest createRequest( @Nonnull URI url, @Nonnull HttpMethod method ) throws IOException
+    @Nonnull
+    @Override
+    protected ClientHttpRequest createRequest( @Nonnull URI url, @Nonnull HttpMethod method ) throws IOException
     {
         final ClientHttpRequest request = super.createRequest( url, method );
         final Authorization authorization = authorizationContext.getAuthentication();
@@ -69,7 +71,8 @@ public class AuthorizedRestTemplate extends RestTemplate
         return request;
     }
 
-    @Override protected void handleResponse( @Nonnull URI url, @Nonnull HttpMethod method, @Nonnull ClientHttpResponse response ) throws IOException
+    @Override
+    protected void handleResponse( @Nonnull URI url, @Nonnull HttpMethod method, @Nonnull ClientHttpResponse response ) throws IOException
     {
         final HttpStatus httpStatus = response.getStatusCode();
         if ( httpStatus == HttpStatus.UNAUTHORIZED )

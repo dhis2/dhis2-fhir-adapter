@@ -83,7 +83,8 @@ public class FhirToDhisIdentifierMapping implements Serializable
         this.qualified = identifierQualified;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
+    @Transient
     public boolean isAvailable()
     {
         return (attributeName != null) && attributeName.isAvailable() &&

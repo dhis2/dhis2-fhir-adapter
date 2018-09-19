@@ -42,12 +42,15 @@ public class CodeTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "codeUtils";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }
 
-    public @Nullable String getCode( @Nullable CodeableConcept codeableConcept, @Nonnull String system )
+    @Nullable
+    public String getCode( @Nullable CodeableConcept codeableConcept, @Nonnull String system )
     {
         if ( codeableConcept == null )
         {

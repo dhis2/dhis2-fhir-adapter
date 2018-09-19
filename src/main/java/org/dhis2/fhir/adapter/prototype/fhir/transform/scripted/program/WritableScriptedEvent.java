@@ -63,22 +63,29 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         this.dhisValueConverter = dhisValueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return event.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return event.getId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return event.getOrgUnitId();
     }
 
-    @Nullable @Override public ZonedDateTime getEventDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getEventDate()
     {
         return event.getEventDate();
     }
@@ -144,7 +151,8 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return (event.getDataValues() != null) && event.getDataValues().stream().anyMatch( DataValue::isModified );
     }
 
-    @Override public void validate() throws TransformException
+    @Override
+    public void validate() throws TransformException
     {
         if ( event.getOrgUnitId() == null )
         {

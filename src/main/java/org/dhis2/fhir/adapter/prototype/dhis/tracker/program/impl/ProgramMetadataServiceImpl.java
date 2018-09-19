@@ -51,12 +51,14 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull @Override
+    @Nonnull
+    @Override
     public Optional<WritableProgram> getProgramByName( @Nonnull String name )
     {
         return getPrograms().stream().filter( p -> Objects.equals( p.getName(), name ) ).findFirst();

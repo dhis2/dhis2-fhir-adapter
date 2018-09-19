@@ -44,37 +44,44 @@ public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAtt
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public ValueType getValueType()
+    @Override
+    public ValueType getValueType()
     {
         return delegate.getValueType();
     }
 
-    @Override public boolean isMandatory()
+    @Override
+    public boolean isMandatory()
     {
         return delegate.isMandatory();
     }
 
-    @Override public boolean isGenerated()
+    @Override
+    public boolean isGenerated()
     {
         return delegate.isGenerated();
     }
 
-    @Override public String getAttributeId()
+    @Override
+    public String getAttributeId()
     {
         return delegate.getAttributeId();
     }
 
-    @Override public TrackedEntityAttribute getAttribute()
+    @Override
+    public TrackedEntityAttribute getAttribute()
     {
         return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
     }

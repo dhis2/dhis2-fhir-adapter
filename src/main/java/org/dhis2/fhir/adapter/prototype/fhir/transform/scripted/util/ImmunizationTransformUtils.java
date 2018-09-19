@@ -43,7 +43,9 @@ public class ImmunizationTransformUtils extends AbstractTransformUtils
 {
     private static final String SCRIPT_ATTR_NAME = "immunizationUtils";
 
-    @Nonnull @Override public String getScriptAttrName()
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
     }

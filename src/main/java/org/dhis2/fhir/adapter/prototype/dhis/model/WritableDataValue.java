@@ -108,7 +108,8 @@ public class WritableDataValue implements DataValue, Serializable
         this.newResource = newResource;
     }
 
-    @Override public boolean isModified()
+    @Override
+    public boolean isModified()
     {
         return modified;
     }

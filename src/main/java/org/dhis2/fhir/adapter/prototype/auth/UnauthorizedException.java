@@ -43,7 +43,8 @@ public class UnauthorizedException extends RuntimeException
         this.wwwAuthenticates = wwwAuthenticates;
     }
 
-    public @Nonnull List<String> getWwwAuthenticates()
+    @Nonnull
+    public List<String> getWwwAuthenticates()
     {
         return wwwAuthenticates;
     }

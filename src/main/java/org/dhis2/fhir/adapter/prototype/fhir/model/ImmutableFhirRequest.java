@@ -46,43 +46,57 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
         this.delegate = delegate;
     }
 
-    @Nullable @Override public FhirRequestMethod getRequestMethod()
+    @Nullable
+    @Override
+    public FhirRequestMethod getRequestMethod()
     {
         return delegate.getRequestMethod();
     }
 
-    @Nullable @Override public FhirResourceType getResourceType()
+    @Nullable
+    @Override
+    public FhirResourceType getResourceType()
     {
         return delegate.getResourceType();
     }
 
-    @Nullable @Override public String getResourceId()
+    @Nullable
+    @Override
+    public String getResourceId()
     {
         return delegate.getResourceId();
     }
 
-    @Override public boolean containsRequestParameters()
+    @Override
+    public boolean containsRequestParameters()
     {
         return delegate.containsRequestParameters();
     }
 
-    @Override public boolean containsRequestParameter( @Nonnull String name )
+    @Override
+    public boolean containsRequestParameter( @Nonnull String name )
     {
         return delegate.containsRequestParameter( name );
     }
 
-    @Nonnull @Override public Set<String> getParameterNames()
+    @Nonnull
+    @Override
+    public Set<String> getParameterNames()
     {
         return Collections.unmodifiableSet( delegate.getParameterNames() );
     }
 
-    @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
+    @Nullable
+    @Override
+    public List<String> getParameterValues( @Nonnull String name )
     {
         final List<String> values = delegate.getParameterValues( name );
         return (values == null) ? null : Collections.unmodifiableList( values );
     }
 
-    @Nonnull @Override public FhirVersion getVersion()
+    @Nonnull
+    @Override
+    public FhirVersion getVersion()
     {
         return delegate.getVersion();
     }

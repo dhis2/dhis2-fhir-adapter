@@ -59,7 +59,8 @@ public class WritableProgram implements Program, Serializable
 
     private transient volatile Map<String, ProgramStage> stagesByName;
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -69,7 +70,8 @@ public class WritableProgram implements Program, Serializable
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -79,7 +81,8 @@ public class WritableProgram implements Program, Serializable
         this.name = name;
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return code;
     }
@@ -89,7 +92,8 @@ public class WritableProgram implements Program, Serializable
         this.code = code;
     }
 
-    @JsonIgnore @Override
+    @JsonIgnore
+    @Override
     public String getTrackedEntityTypeId()
     {
         return (trackedEntityType == null) ? null : trackedEntityType.getId();
@@ -100,7 +104,8 @@ public class WritableProgram implements Program, Serializable
         this.trackedEntityType = (trackedEntityTypeId == null) ? null : new Id( trackedEntityTypeId );
     }
 
-    @Override public List<WritableProgramStage> getStages()
+    @Override
+    public List<WritableProgramStage> getStages()
     {
         return stages;
     }
@@ -110,7 +115,8 @@ public class WritableProgram implements Program, Serializable
         this.stages = stages;
     }
 
-    @Nonnull public Optional<ProgramStage> getOptionalStageByName( @Nonnull String name )
+    @Nonnull
+    public Optional<ProgramStage> getOptionalStageByName( @Nonnull String name )
     {
         if ( stages == null )
         {
@@ -124,7 +130,8 @@ public class WritableProgram implements Program, Serializable
         return Optional.ofNullable( stagesByName.get( name ) );
     }
 
-    @Nonnull public ProgramStage getStageByName( @Nonnull String code )
+    @Nonnull
+    public ProgramStage getStageByName( @Nonnull String code )
     {
         return getOptionalStageByName( code ).orElse( null );
     }

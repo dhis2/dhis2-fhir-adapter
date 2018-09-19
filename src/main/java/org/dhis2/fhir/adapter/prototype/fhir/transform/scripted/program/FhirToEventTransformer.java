@@ -47,6 +47,8 @@ import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntity
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.FhirResourceMapping;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.FhirToEventMapping;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
@@ -109,24 +111,39 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         this.dhisValueConverter = dhisValueConverter;
     }
 
-    @Nonnull @Override public DhisResourceType getDhisResourceType()
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.EVENT;
     }
 
-    @Nonnull @Override public Class<Event> getDhisResourceClass()
+    @Nonnull
+    @Override
+    public Class<Event> getDhisResourceClass()
     {
         return Event.class;
     }
 
-    @Nonnull @Override public Class<FhirToEventMapping> getMappingClass()
+    @Nonnull
+    @Override
+    public Class<FhirToEventMapping> getMappingClass()
     {
         return FhirToEventMapping.class;
     }
 
-    @Override public boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping ) throws TransformException
+    @Override
+    public boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping ) throws TransformException
     {
         final FhirResourceMapping fhirResourceMapping = getFhirResourceMapping( mapping );
+
+        final Program program = programMetadataService.getProgramByName( mapping.getProgramName() ).map( ImmutableProgram::new )
+            .orElseThrow( () -> new TransformMappingException( "Mapping " + mapping + " requires program \"" + mapping.getProgramName() + "\" that does not exist." ) );
+        arguments.put( TransformerScriptConstants.PROGRAM_ATTR_NAME, program );
+
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getTypeById( program.getTrackedEntityTypeId() )
+            .orElseThrow( () -> new TransformMappingException( "Program " + program.getId() + " references type " + program.getTrackedEntityTypeId() + " that does not exist." ) );
+        arguments.put( TransformerScriptConstants.TRACKED_ENTITY_TYPE_ATTR_NAME, new ImmutableTrackedEntityType( trackedEntityType ) );
 
         final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( fhirResourceMapping, arguments );
         if ( trackedEntityInstance == null )
@@ -134,20 +151,13 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
             // without a tracked entity instance transformation cannot continue
             return false;
         }
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getTypeById( trackedEntityInstance.getTypeId() )
-            .orElseThrow( () -> new TransformMappingException( "Tracked entity instance " + trackedEntityInstance.getId() + " references type " + trackedEntityInstance.getTypeId() + " that does not exist." ) );
-        arguments.put( TransformerScriptConstants.TRACKED_ENTITY_TYPE_ATTR_NAME, new ImmutableTrackedEntityType( trackedEntityType ) );
-        arguments.put( TransformerScriptConstants.TRACKED_ENTITY_INSTANCE_ATTR_NAME,
-            new ImmutableScriptedTrackedEntityInstance( new WritableScriptedTrackedEntityInstance( trackedEntityType, trackedEntityInstance, dhisValueConverter ) ) );
-
-        final Program program = programMetadataService.getProgramByName( mapping.getProgramName() ).map( ImmutableProgram::new )
-            .orElseThrow( () -> new TransformMappingException( "Mapping " + mapping + " requires program \"" + mapping.getProgramName() + "\" that does not exist." ) );
         if ( !trackedEntityInstance.getTypeId().equals( program.getTrackedEntityTypeId() ) )
         {
             // referenced tracked entity instance type must match type that is required by program
             return false;
         }
-        arguments.put( TransformerScriptConstants.PROGRAM_ATTR_NAME, program );
+        arguments.put( TransformerScriptConstants.TRACKED_ENTITY_INSTANCE_ATTR_NAME,
+            new ImmutableScriptedTrackedEntityInstance( new WritableScriptedTrackedEntityInstance( trackedEntityType, trackedEntityInstance, dhisValueConverter ) ) );
 
         final ProgramStage programStage =
             program.getOptionalStageByName( mapping.getProgramStageName() ).orElseThrow( () -> new TransformMappingException( "Mapping " + mapping + " requires program stage \"" +
@@ -158,7 +168,9 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         return true;
     }
 
-    @Nullable @Override public FhirToDhisTransformOutcome<Event> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
+    @Nullable
+    @Override
+    public FhirToDhisTransformOutcome<Event> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
         @Nonnull FhirToEventMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final Map<String, Object> arguments = new HashMap<>( scriptArguments );
@@ -198,25 +210,33 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         return new FhirToDhisTransformOutcome<>( event.get().getId(), event.get() );
     }
 
-    @Nonnull @Override protected Optional<Event> getResourceById( @Nullable String id ) throws TransformException
+    @Nonnull
+    @Override
+    protected Optional<Event> getResourceById( @Nullable String id ) throws TransformException
     {
         // since only immunizations are supported at the moment, resolving resources by ID is not supported
         return Optional.empty();
     }
 
-    @Nonnull @Override protected Optional<Event> getResourceByIdentifier(
+    @Nonnull
+    @Override
+    protected Optional<Event> getResourceByIdentifier(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping, @Nullable String identifier, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         // since only immunizations are supported at the moment, resolving resources by ID is not supported
         return Optional.empty();
     }
 
-    @Nonnull @Override protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    @Nonnull
+    @Override
+    protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         return getEventInfo( FhirToEventTransformer::isEditableEvent, scriptArguments ).getEvent();
     }
 
-    @Nullable @Override protected Event createResource(
+    @Nullable
+    @Override
+    protected Event createResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToEventMapping mapping, @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final EventInfo eventInfo = getEventInfo( e -> e.getStatus() != EventStatus.COMPLETED, scriptArguments );
@@ -282,7 +302,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         return fhirResourceMapping;
     }
 
-    protected @Nonnull TrackedEntityType getTrackedEntityType( @Nonnull Map<String, Object> scriptArguments ) throws TransformFatalException
+    @Nonnull
+    protected TrackedEntityType getTrackedEntityType( @Nonnull Map<String, Object> scriptArguments ) throws TransformFatalException
     {
         final TrackedEntityType trackedEntityType = (TrackedEntityType) scriptArguments.get( TransformerScriptConstants.TRACKED_ENTITY_TYPE_ATTR_NAME );
         if ( trackedEntityType == null )
@@ -292,23 +313,19 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         return trackedEntityType;
     }
 
-    protected @Nullable TrackedEntityInstance getTrackedEntityInstance( @Nonnull FhirResourceMapping fhirResourceMapping, @Nonnull Map<String, Object> arguments )
-    {
-        final String trackedEntityInstanceId = getTrackedEntityInstanceId( fhirResourceMapping, arguments );
-        if ( trackedEntityInstanceId == null )
-        {
-            return null;
-        }
-        return trackedEntityService.getById( trackedEntityInstanceId ).orElse( null );
-    }
-
-    protected @Nullable String getTrackedEntityInstanceId( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    @Nullable
+    protected TrackedEntityInstance getTrackedEntityInstance( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         try
         {
             final Object result = getScriptEvaluator().evaluate( new StaticScriptSource(
                 resourceMapping.getTrackedEntityInstanceLookupScript() ), new HashMap<>( scriptArguments ) );
-            return (result == null) ? null : result.toString();
+            if ( (result != null) && !(result instanceof TrackedEntityInstance) )
+            {
+                throw new TransformScriptException( "Tracked entity lookup script of FHIR resource mapping " +
+                    resourceMapping.getFhirResourceType() + " did not return a tracked entity instance." );
+            }
+            return (result == null) ? null : ((TrackedEntityInstance) result);
         }
         catch ( ScriptCompilationException e )
         {
@@ -317,7 +334,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         }
     }
 
-    protected @Nullable String getEnrolledOrgUnitId( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    @Nullable
+    protected String getEnrolledOrgUnitId( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final Map<String, Object> arguments = new HashMap<>( scriptArguments );
         arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME,
@@ -336,7 +354,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         }
     }
 
-    protected @Nonnull ZonedDateTime getEventDate( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    @Nonnull
+    protected ZonedDateTime getEventDate( @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final Map<String, Object> arguments = new HashMap<>( scriptArguments );
         arguments.put( TransformerScriptConstants.ENROLLMENT_ATTR_NAME,
@@ -360,7 +379,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         }
     }
 
-    private @Nonnull EventInfo getEventInfo( @Nonnull Predicate<Event> predicate, @Nonnull Map<String, Object> scriptArguments )
+    @Nonnull
+    private EventInfo getEventInfo( @Nonnull Predicate<Event> predicate, @Nonnull Map<String, Object> scriptArguments )
     {
         final Program program = (Program) scriptArguments.get( TransformerScriptConstants.PROGRAM_ATTR_NAME );
         if ( program == null )
@@ -414,7 +434,8 @@ public class FhirToEventTransformer extends AbstractFhirToDhisTransformer<Event,
         }
     }
 
-    private static @Nonnull ProgramStage getProgramStage( @Nonnull Map<String, Object> scriptArguments ) throws TransformException
+    private static @Nonnull
+    ProgramStage getProgramStage( @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
         final ProgramStage programStage = (ProgramStage) scriptArguments.get( TransformerScriptConstants.PROGRAM_STAGE_ATTR_NAME );
         if ( programStage == null )

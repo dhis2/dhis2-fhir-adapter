@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.AbstractFhirToDhisMapping;
 import org.dhis2.fhir.adapter.prototype.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerContext;
@@ -42,21 +43,27 @@ import java.util.Map;
 
 public interface FhirToDhisTransformer<R extends DhisResource, M extends AbstractFhirToDhisMapping>
 {
-    @Nullable FhirVersion getFhirVersion();
+    @Nullable
+    FhirVersion getFhirVersion();
 
-    @Nonnull DhisResourceType getDhisResourceType();
+    @Nonnull
+    DhisResourceType getDhisResourceType();
 
-    @Nonnull Class<R> getDhisResourceClass();
+    @Nonnull
+    Class<R> getDhisResourceClass();
 
-    @Nonnull Class<M> getMappingClass();
+    @Nonnull
+    Class<M> getMappingClass();
 
     boolean addScriptArguments( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull M mapping ) throws TransformException;
 
     boolean addScriptArgumentsCasted( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractFhirToDhisMapping mapping ) throws TransformException;
 
-    @Nullable FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
+    @Nullable
+    FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull M mapping,
         @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 
-    @Nullable FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
+    @Nullable
+    FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
         @Nonnull Map<String, Object> scriptArguments ) throws TransformException;
 }

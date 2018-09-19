@@ -41,7 +41,9 @@ public class LocationToStringConverter extends TypedConverter<Location, String>
         super( Location.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Location source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Location source ) throws ConversionException
     {
         return "[" + String.valueOf( source.getLongitude() ) + "," + String.valueOf( source.getLatitude() ) + "]";
     }

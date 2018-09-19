@@ -98,12 +98,16 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         this.dataValues = new ArrayList<>();
     }
 
-    @JsonIgnore @Nonnull @Override public DhisResourceType getResourceType()
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
     {
         return DhisResourceType.EVENT;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return newResource;
     }
@@ -229,7 +233,8 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         this.modified = modified;
     }
 
-    public @Nonnull WritableDataValue getDataValue( @Nonnull String dataElementId )
+    @Nonnull
+    public WritableDataValue getDataValue( @Nonnull String dataElementId )
     {
         if ( dataValues == null )
         {
@@ -246,7 +251,8 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     }
 
 
-    @Override public int compareTo( @Nonnull Event o )
+    @Override
+    public int compareTo( @Nonnull Event o )
     {
         int v = getStatus().ordinal() - o.getStatus().ordinal();
         if ( v != 0 )

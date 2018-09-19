@@ -35,7 +35,8 @@ import java.util.Set;
 
 public abstract class ExceptionUtils
 {
-    public static @Nullable Throwable findCause( @Nonnull Throwable exception, @Nonnull Class<?>... causeClasses )
+    @Nullable
+    public static Throwable findCause( @Nonnull Throwable exception, @Nonnull Class<?>... causeClasses )
     {
         final Set<Throwable> checkedCauses = new HashSet<>();
         Throwable cause = exception;
