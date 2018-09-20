@@ -77,7 +77,8 @@ public class WwwAuthenticate implements Serializable
         this.realm = realm;
     }
 
-    public @Nonnull String toString()
+    @Nonnull
+    public String toString()
     {
         return getType() + " realm=\"" + getRealm() + "\"";
     }

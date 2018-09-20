@@ -39,7 +39,8 @@ import java.util.function.Function;
  */
 public abstract class CastUtils
 {
-    public static @Nullable <T, V1, V2> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2 )
+    public static @Nullable
+    <T, V1, V2> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2 )
     {
         if ( (value == null) || c1.isInstance( value ) )
         {
@@ -52,7 +53,8 @@ public abstract class CastUtils
         throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
     }
 
-    public static @Nullable <T, V1, V2, V3> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3 )
+    public static @Nullable
+    <T, V1, V2, V3> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3 )
     {
         if ( (value == null) || c1.isInstance( value ) )
         {

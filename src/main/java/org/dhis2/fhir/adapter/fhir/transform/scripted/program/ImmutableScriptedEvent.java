@@ -48,27 +48,35 @@ public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
         this.delegate = delegate;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return delegate.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
     }
 
-    @Nullable @Override public ZonedDateTime getEventDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getEventDate()
     {
         return delegate.getEventDate();
     }
 
-    @Override public void validate() throws TransformerException
+    @Override
+    public void validate() throws TransformerException
     {
         delegate.validate();
     }

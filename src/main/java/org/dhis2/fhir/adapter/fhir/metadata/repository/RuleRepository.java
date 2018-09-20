@@ -28,16 +28,24 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.Rule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * Repository for {@link Rule} entities.
+ * Repository for {@link AbstractRule} entities.
  *
  * @author volsch
  */
-public interface RuleRepository extends JpaRepository<Rule, UUID>
+public interface RuleRepository extends JpaRepository<AbstractRule, UUID>
 {
+    @Query( "SELECT r FROM #{#entityName} r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true ORDER BY r.evaluationOrder DESC,r.id" )
+    @Nonnull
+    List<? extends AbstractRule> findRulesByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType );
 }

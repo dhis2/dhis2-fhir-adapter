@@ -71,7 +71,9 @@ public class ScriptSource implements Serializable
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -81,7 +83,9 @@ public class ScriptSource implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -91,7 +95,9 @@ public class ScriptSource implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -101,7 +107,9 @@ public class ScriptSource implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -111,7 +119,9 @@ public class ScriptSource implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -121,7 +131,9 @@ public class ScriptSource implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "source_text", nullable = false, length = -1 ) public String getSourceText()
+    @Basic
+    @Column( name = "source_text", nullable = false, length = -1 )
+    public String getSourceText()
     {
         return sourceText;
     }
@@ -131,7 +143,10 @@ public class ScriptSource implements Serializable
         this.sourceText = sourceText;
     }
 
-    @Basic @Column( name = "source_type", nullable = false, length = 30 ) @Enumerated( EnumType.STRING ) public ScriptSourceType getSourceType()
+    @Basic
+    @Column( name = "source_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public ScriptSourceType getSourceType()
     {
         return sourceType;
     }
@@ -141,7 +156,9 @@ public class ScriptSource implements Serializable
         this.sourceType = language;
     }
 
-    @ManyToOne @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false ) public Script getScript()
+    @ManyToOne
+    @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
+    public Script getScript()
     {
         return script;
     }

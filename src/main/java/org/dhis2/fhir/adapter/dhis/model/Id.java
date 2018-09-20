@@ -28,23 +28,16 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.Embeddable;
-import javax.persistence.Transient;
 import java.io.Serializable;
 
 @Embeddable
-public class Id implements Serializable
+public class Id implements Identifiable, Serializable
 {
     private static final long serialVersionUID = -7860335236215947653L;
 
     private String id;
-
-    @JsonIgnore
-    private IdType type = IdType.ID;
 
     public Id()
     {
@@ -54,12 +47,6 @@ public class Id implements Serializable
     public Id( @Nullable String id )
     {
         this.id = id;
-    }
-
-    public Id( @Nullable String id, @Nonnull IdType type )
-    {
-        this.id = id;
-        this.type = type;
     }
 
     public String getId()
@@ -72,25 +59,9 @@ public class Id implements Serializable
         this.id = id;
     }
 
-    public IdType getType()
-    {
-        return type;
-    }
-
-    public void setType( IdType type )
-    {
-        this.type = type;
-    }
-
-    @JsonIgnore @Transient
-    public boolean isAvailable()
-    {
-        return (id != null) && (type != null);
-    }
-
     @Override
     public String toString()
     {
-        return "[type=" + getType() + ", id=" + getId() + "]";
+        return "[id=" + getId() + "]";
     }
 }

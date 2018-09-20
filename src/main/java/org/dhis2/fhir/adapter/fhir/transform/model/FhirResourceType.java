@@ -41,7 +41,8 @@ public enum FhirResourceType
 
     private static final Map<String, FhirResourceType> resourceTypesByPath = Arrays.stream( values() ).collect( Collectors.toMap( FhirResourceType::getPath, v -> v ) );
 
-    public static @Nullable FhirResourceType getByPath( @Nullable String path )
+    public static @Nullable
+    FhirResourceType getByPath( @Nullable String path )
     {
         return resourceTypesByPath.get( path );
     }

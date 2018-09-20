@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -51,20 +53,28 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
 
     private final RestTemplate restTemplate;
 
-    @Autowired public TrackedEntityMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public TrackedEntityMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
+    @Override
+    public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
     {
         return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), id ) )
             .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 
-    @Override public Optional<TrackedEntityType> getTypeByName( @Nonnull String name )
+    @Override
+    public Optional<TrackedEntityType> getType( @Nonnull Reference reference )
     {
-        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), name ) )
+        // tracked entity type can only be retrieved by name
+        if ( reference.getType() != ReferenceType.NAME )
+        {
+            return Optional.empty();
+        }
+        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), reference.getValue() ) )
             .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 

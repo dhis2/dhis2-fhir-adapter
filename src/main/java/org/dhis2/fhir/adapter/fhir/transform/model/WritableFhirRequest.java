@@ -33,9 +33,9 @@ import com.google.common.collect.ListMultimap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class WritableFhirRequest implements FhirRequest, Serializable
 {
@@ -51,7 +51,13 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private FhirVersion version;
 
-    @Nullable @Override public FhirRequestMethod getRequestMethod()
+    private UUID remoteSubscriptionRequestId;
+
+    private Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
+
+    @Nullable
+    @Override
+    public FhirRequestMethod getRequestMethod()
     {
         return requestMethod;
     }
@@ -61,7 +67,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.requestMethod = requestMethod;
     }
 
-    @Nullable @Override public FhirResourceType getResourceType()
+    @Nullable
+    @Override
+    public FhirResourceType getResourceType()
     {
         return resourceType;
     }
@@ -71,7 +79,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.resourceType = resourceType;
     }
 
-    @Nullable @Override public String getResourceId()
+    @Nullable
+    @Override
+    public String getResourceId()
     {
         return resourceId;
     }
@@ -79,11 +89,6 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setResourceId( @Nullable String resourceId )
     {
         this.resourceId = resourceId;
-    }
-
-    @Override public boolean containsRequestParameters()
-    {
-        return (getParameters() != null) && !getParameters().isEmpty();
     }
 
     public ListMultimap<String, String> getParameters()
@@ -96,26 +101,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.parameters = parameters;
     }
 
-    @Override public boolean containsRequestParameter( @Nonnull String name )
-    {
-        return (getParameters() != null) && getParameters().containsKey( name );
-    }
-
-    @Nonnull @Override public Set<String> getParameterNames()
-    {
-        return (getParameters() == null) ? Collections.emptySet() : getParameters().keys().elementSet();
-    }
-
-    @Nullable @Override public List<String> getParameterValues( @Nonnull String name )
-    {
-        if ( (getParameters() == null) || !getParameters().containsKey( name ) )
-        {
-            return null;
-        }
-        return getParameters().get( name );
-    }
-
-    @Nonnull @Override public FhirVersion getVersion()
+    @Nonnull
+    @Override
+    public FhirVersion getVersion()
     {
         return version;
     }
@@ -123,5 +111,47 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setVersion( @Nonnull FhirVersion version )
     {
         this.version = version;
+    }
+
+    @Override
+    public boolean isRemoteSubscription()
+    {
+        return (getRemoteSubscriptionRequestId() != null);
+    }
+
+    @Nullable
+    @Override
+    public UUID getRemoteSubscriptionRequestId()
+    {
+        return remoteSubscriptionRequestId;
+    }
+
+    public void setRemoteSubscriptionRequestId( UUID remoteSubscriptionRequestId )
+    {
+        this.remoteSubscriptionRequestId = remoteSubscriptionRequestId;
+    }
+
+    public Map<FhirResourceType, ResourceSystem> getResourceSystemsByType()
+    {
+        return resourceSystemsByType;
+    }
+
+    public void setResourceSystemsByType( Map<FhirResourceType, ResourceSystem> resourceSystemsByType )
+    {
+        this.resourceSystemsByType = resourceSystemsByType;
+    }
+
+    @Nullable
+    @Override
+    public ResourceSystem getRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    {
+        return (resourceSystemsByType == null) ? null : resourceSystemsByType.get( resourceType );
+    }
+
+    @Nonnull
+    @Override
+    public Optional<ResourceSystem> getOptionalRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    {
+        return Optional.ofNullable( getRemoteResourceSystem( resourceType ) );
     }
 }

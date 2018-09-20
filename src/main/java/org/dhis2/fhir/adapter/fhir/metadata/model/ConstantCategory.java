@@ -29,12 +29,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 /**
- * The category of a constant that can be defined. Categories are not mandatory when creating constants. Therefore only
- * for categories that affect the adapter, categories exist.
+ * The category of a constant that can be defined.
  *
  * @author volsch
  */
 public enum ConstantCategory
 {
-    GENDER, SYSTEM
+    GENDER, OTHER
 }

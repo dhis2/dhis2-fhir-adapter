@@ -34,6 +34,8 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -60,13 +62,15 @@ public class FhirResourceMapping implements Serializable
     private LocalDateTime createdAt;
     private String lastUpdatedBy;
     private LocalDateTime lastUpdatedAt;
-    private ExecutableScript teiOrgLookupScript;
+    private ExecutableScript teiIdLookupScript;
     private ExecutableScript enrollmentOrgLookupScript;
     private ExecutableScript eventOrgLookupScript;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -76,7 +80,9 @@ public class FhirResourceMapping implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -86,7 +92,10 @@ public class FhirResourceMapping implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "fhir_resource_type", nullable = false, length = 30 ) public FhirResourceType getFhirResourceType()
+    @Basic
+    @Column( name = "fhir_resource_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public FhirResourceType getFhirResourceType()
     {
         return fhirResourceType;
     }
@@ -96,7 +105,9 @@ public class FhirResourceMapping implements Serializable
         this.fhirResourceType = fhirResourceType;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -106,7 +117,9 @@ public class FhirResourceMapping implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -116,7 +129,9 @@ public class FhirResourceMapping implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -126,18 +141,21 @@ public class FhirResourceMapping implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @ManyToOne @JoinColumn( name = "tei_org_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getTeiOrgLookupScript()
+    @ManyToOne
+    @JoinColumn( name = "tei_id_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getTeiIdLookupScript()
     {
-        return teiOrgLookupScript;
+        return teiIdLookupScript;
     }
 
-    public void setTeiOrgLookupScript( ExecutableScript teiOrgLookupScript )
+    public void setTeiIdLookupScript( ExecutableScript teiIdLookupScript )
     {
-        this.teiOrgLookupScript = teiOrgLookupScript;
+        this.teiIdLookupScript = teiIdLookupScript;
     }
 
-    @ManyToOne @JoinColumn( name = "enrollment_org_lookup_script_id", referencedColumnName = "id" ) public ExecutableScript getEnrollmentOrgLookupScript()
+    @ManyToOne
+    @JoinColumn( name = "enrollment_org_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getEnrollmentOrgLookupScript()
     {
         return enrollmentOrgLookupScript;
     }
@@ -147,7 +165,9 @@ public class FhirResourceMapping implements Serializable
         this.enrollmentOrgLookupScript = enrollmentOrgLookupScript;
     }
 
-    @ManyToOne @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id" ) public ExecutableScript getEventOrgLookupScript()
+    @ManyToOne
+    @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getEventOrgLookupScript()
     {
         return eventOrgLookupScript;
     }

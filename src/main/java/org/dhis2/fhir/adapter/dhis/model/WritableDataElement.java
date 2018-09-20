@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+
 import java.io.Serializable;
 
 public class WritableDataElement implements DataElement, Serializable
@@ -46,7 +48,8 @@ public class WritableDataElement implements DataElement, Serializable
 
     private WritableOptionSet optionSet;
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -56,7 +59,8 @@ public class WritableDataElement implements DataElement, Serializable
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -66,7 +70,8 @@ public class WritableDataElement implements DataElement, Serializable
         this.name = name;
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return code;
     }
@@ -76,7 +81,8 @@ public class WritableDataElement implements DataElement, Serializable
         this.code = code;
     }
 
-    @Override public ValueType getValueType()
+    @Override
+    public ValueType getValueType()
     {
         return valueType;
     }
@@ -86,7 +92,8 @@ public class WritableDataElement implements DataElement, Serializable
         this.valueType = valueType;
     }
 
-    @Override public boolean isOptionSetValue()
+    @Override
+    public boolean isOptionSetValue()
     {
         return optionSetValue;
     }
@@ -96,7 +103,8 @@ public class WritableDataElement implements DataElement, Serializable
         this.optionSetValue = optionSetValue;
     }
 
-    @Override public WritableOptionSet getOptionSet()
+    @Override
+    public WritableOptionSet getOptionSet()
     {
         return optionSet;
     }

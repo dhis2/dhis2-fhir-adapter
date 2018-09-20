@@ -46,7 +46,8 @@ public class WritableProgramStageDataElement implements ProgramStageDataElement,
 
     private boolean allowProvidedElsewhere;
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -56,7 +57,8 @@ public class WritableProgramStageDataElement implements ProgramStageDataElement,
         this.id = id;
     }
 
-    @Override public WritableDataElement getElement()
+    @Override
+    public WritableDataElement getElement()
     {
         return element;
     }
@@ -66,12 +68,14 @@ public class WritableProgramStageDataElement implements ProgramStageDataElement,
         this.element = element;
     }
 
-    @Override public String getElementId()
+    @Override
+    public String getElementId()
     {
         return (element == null) ? null : element.getId();
     }
 
-    @Override public boolean isCompulsory()
+    @Override
+    public boolean isCompulsory()
     {
         return compulsory;
     }
@@ -81,7 +85,8 @@ public class WritableProgramStageDataElement implements ProgramStageDataElement,
         this.compulsory = compulsory;
     }
 
-    @Override public boolean isAllowProvidedElsewhere()
+    @Override
+    public boolean isAllowProvidedElsewhere()
     {
         return allowProvidedElsewhere;
     }

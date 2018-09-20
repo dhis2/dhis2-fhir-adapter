@@ -28,32 +28,45 @@ package org.dhis2.fhir.adapter.fhir.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ConstantResolver;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@Component
+@ConvertedValueTypes( types = ValueType.TEXT )
 public class AdministrativeGenderToStringConverter extends TypedConverter<AdministrativeGender, String>
 {
     public static final String GENDER_FEMALE_CONSTANT_CODE = "GENDER_FEMALE";
 
     public static final String GENDER_MALE_CONSTANT_CODE = "GENDER_MALE";
 
-    public AdministrativeGenderToStringConverter()
+    private final ConstantResolver constantResolver;
+
+    public AdministrativeGenderToStringConverter( @Nonnull ConstantResolver constantResolver )
     {
         super( AdministrativeGender.class, String.class );
+        this.constantResolver = constantResolver;
     }
 
-    @Nullable @Override public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull AdministrativeGender source ) throws ConversionException
     {
         switch ( source )
         {
-            case MALE:
             case FEMALE:
-                return StringUtils.capitalize( source.name().toLowerCase() );
+                return constantResolver.getByCode( GENDER_FEMALE_CONSTANT_CODE )
+                    .orElseThrow( () -> new ConversionException( "No constant with code " + GENDER_FEMALE_CONSTANT_CODE + " has been defined." ) ).getValue();
+            case MALE:
+                return constantResolver.getByCode( GENDER_MALE_CONSTANT_CODE )
+                    .orElseThrow( () -> new ConversionException( "No constant with code " + GENDER_MALE_CONSTANT_CODE + " has been defined." ) ).getValue();
             case NULL:
             case OTHER:
                 return null;

@@ -52,7 +52,8 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
         this.code = code;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -62,7 +63,8 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -72,7 +74,8 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
         this.name = name;
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return code;
     }

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.model.ValueType;
 
 @Scriptable
 public interface DataElement

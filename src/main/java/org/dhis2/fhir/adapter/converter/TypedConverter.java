@@ -63,7 +63,8 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
         return this.toClass;
     }
 
-    public abstract @Nullable B doConvert( @Nonnull A source ) throws ConversionException;
+    @Nullable
+    public abstract B doConvert( @Nonnull A source ) throws ConversionException;
 
     /**
      * Converts the specified object value, which is casted to the required from class type before doing the conversion.
@@ -72,7 +73,8 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
      * @return the converted value.
      * @throws ConversionException thrown if the conversion could not be performed.
      */
-    public final @Nullable B convertCasted( @Nullable Object source ) throws ConversionException
+    @Nullable
+    public final B convertCasted( @Nullable Object source ) throws ConversionException
     {
         return convert( fromClass.cast( source ) );
     }
@@ -84,7 +86,8 @@ public abstract class TypedConverter<A, B> implements Converter<A, B>
      * @return the converted value.
      * @throws ConversionException thrown if the conversion could not be performed.
      */
-    public final @Nullable B convert( @Nullable A source ) throws ConversionException
+    @Nullable
+    public final B convert( @Nullable A source ) throws ConversionException
     {
         return (source == null) ? null : doConvert( source );
     }

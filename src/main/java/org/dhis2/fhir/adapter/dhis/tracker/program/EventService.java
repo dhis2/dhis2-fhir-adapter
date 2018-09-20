@@ -33,8 +33,10 @@ import java.util.List;
 
 public interface EventService
 {
-    @Nonnull List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+    @Nonnull
+    List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
 
-    @Nonnull Event createOrMinimalUpdate( @Nonnull Event event );
+    @Nonnull
+    Event createOrMinimalUpdate( @Nonnull Event event );
 }

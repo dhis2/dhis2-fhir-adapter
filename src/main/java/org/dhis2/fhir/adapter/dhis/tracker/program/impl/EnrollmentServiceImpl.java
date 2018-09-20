@@ -61,13 +61,16 @@ public class EnrollmentServiceImpl implements EnrollmentService
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull @Override public Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
+    @Nonnull
+    @Override
+    public Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity( LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
         return result.getBody().getEnrollments().stream().findFirst();
     }
 
-    @Override public Enrollment create( Enrollment enrollment )
+    @Override
+    public Enrollment create( Enrollment enrollment )
     {
         final ResponseEntity<EnrollmentImportSummaryWebMessage> response =
             restTemplate.postForEntity( ENROLLMENTS_URI, enrollment, EnrollmentImportSummaryWebMessage.class );
@@ -83,7 +86,8 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return enrollment;
     }
 
-    @Override public void update( String id, EnrollmentStatus status )
+    @Override
+    public void update( String id, EnrollmentStatus status )
     {
         restTemplate.put( ENROLLMENT_STATUS_URI, null, id, status.name().toLowerCase() );
     }

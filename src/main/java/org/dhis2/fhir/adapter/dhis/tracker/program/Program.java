@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -47,7 +48,9 @@ public interface Program
 
     List<? extends ProgramStage> getStages();
 
-    @Nonnull Optional<ProgramStage> getOptionalStageByName( @Nonnull String name );
+    @Nonnull
+    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
 
-    @Nonnull ProgramStage getStageByName( @Nonnull String name );
+    @Nonnull
+    ProgramStage getStageByName( @Nonnull String name );
 }

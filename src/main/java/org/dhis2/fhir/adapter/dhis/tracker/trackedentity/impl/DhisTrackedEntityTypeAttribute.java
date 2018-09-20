@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityTypeAttribute;
+import org.dhis2.fhir.adapter.model.ValueType;
 
 import java.io.Serializable;
 

@@ -28,8 +28,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -37,45 +41,54 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Rule for program stage that defines also if and how to enroll into a program.
+ * AbstractRule for program stage that defines also if and how to enroll into a program.
  *
  * @author volsch
  */
 @Entity
 @Table( name = "fhir_program_stage_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-public class ProgramStageRule extends Rule
+@DiscriminatorValue( "PROGRAM_STAGE_EVENT" )
+public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;
 
-    private String programStageReference;
-    private MappedProgram program;
+    private Reference programStageReference;
+    private MappedTrackerProgram program;
+    private boolean enrollmentEnabled;
     private MappedEnrollment enrollment;
+    private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationTransformScript;
     private ExecutableScript finalScript;
 
-    @Basic @Column( name = "program_stage_ref", nullable = false, length = 230 ) public String getProgramStageReference()
+    @Basic
+    @Column( name = "program_stage_ref", nullable = false, length = 230 )
+    @Convert( converter = ReferenceAttributeConverter.class )
+    public Reference getProgramStageReference()
     {
         return programStageReference;
     }
 
-    public void setProgramStageReference( String programStageReference )
+    public void setProgramStageReference( Reference programStageReference )
     {
         this.programStageReference = programStageReference;
     }
 
-    @ManyToOne @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false ) public MappedProgram getProgram()
+    @ManyToOne
+    @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false )
+    public MappedTrackerProgram getProgram()
     {
         return program;
     }
 
-    public void setProgram( MappedProgram program )
+    public void setProgram( MappedTrackerProgram program )
     {
         this.program = program;
     }
 
-    @ManyToOne @JoinColumn( name = "enrollment_id", referencedColumnName = "id" ) public MappedEnrollment getEnrollment()
+    @ManyToOne
+    @JoinColumn( name = "enrollment_id", referencedColumnName = "id" )
+    public MappedEnrollment getEnrollment()
     {
         return enrollment;
     }
@@ -85,7 +98,9 @@ public class ProgramStageRule extends Rule
         this.enrollment = enrollment;
     }
 
-    @ManyToOne @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" ) public ExecutableScript getCreationApplicableScript()
+    @ManyToOne
+    @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationApplicableScript()
     {
         return creationApplicableScript;
     }
@@ -95,7 +110,9 @@ public class ProgramStageRule extends Rule
         this.creationApplicableScript = creationApplicableScript;
     }
 
-    @ManyToOne @JoinColumn( name = "creation_transform_script_id", referencedColumnName = "id" ) public ExecutableScript getCreationTransformScript()
+    @ManyToOne
+    @JoinColumn( name = "creation_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationTransformScript()
     {
         return creationTransformScript;
     }
@@ -105,7 +122,9 @@ public class ProgramStageRule extends Rule
         this.creationTransformScript = creationTransformScript;
     }
 
-    @ManyToOne @JoinColumn( name = "final_script_id", referencedColumnName = "id" ) public ExecutableScript getFinalScript()
+    @ManyToOne
+    @JoinColumn( name = "final_script_id", referencedColumnName = "id" )
+    public ExecutableScript getFinalScript()
     {
         return finalScript;
     }
@@ -113,5 +132,29 @@ public class ProgramStageRule extends Rule
     public void setFinalScript( ExecutableScript finalScript )
     {
         this.finalScript = finalScript;
+    }
+
+    @Basic
+    @Column( name = "enrollment_enabled" )
+    public boolean isEnrollmentEnabled()
+    {
+        return enrollmentEnabled;
+    }
+
+    public void setEnrollmentEnabled( boolean enrollmentEnabled )
+    {
+        this.enrollmentEnabled = enrollmentEnabled;
+    }
+
+    @Basic
+    @Column( name = "creation_enabled" )
+    public boolean isCreationEnabled()
+    {
+        return creationEnabled;
+    }
+
+    public void setCreationEnabled( boolean creationEnabled )
+    {
+        this.creationEnabled = creationEnabled;
     }
 }

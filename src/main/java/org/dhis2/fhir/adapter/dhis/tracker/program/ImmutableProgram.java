@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.List;
@@ -45,37 +47,46 @@ public class ImmutableProgram implements Program, Serializable
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return delegate.getCode();
     }
 
-    @Override public String getTrackedEntityTypeId()
+    @Override
+    public String getTrackedEntityTypeId()
     {
         return delegate.getTrackedEntityTypeId();
     }
 
-    @Override public List<? extends ProgramStage> getStages()
+    @Override
+    public List<? extends ProgramStage> getStages()
     {
         return (delegate.getStages() == null) ? null : delegate.getStages().stream().map( ImmutableProgramStage::new ).collect( Collectors.toList() );
     }
 
-    @Override @Nonnull public Optional<ProgramStage> getOptionalStageByName( @Nonnull String name )
+    @Override
+    @Nonnull
+    public Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference )
     {
-        return delegate.getOptionalStageByName( name ).map( ImmutableProgramStage::new );
+        return delegate.getOptionalStage( reference ).map( ImmutableProgramStage::new );
     }
 
-    @Override @Nonnull public ProgramStage getStageByName( @Nonnull String name )
+    @Override
+    @Nonnull
+    public ProgramStage getStageByName( @Nonnull String name )
     {
         return delegate.getStageByName( name );
     }

@@ -60,14 +60,17 @@ public class MappedEnrollment implements Serializable
     private LocalDateTime lastUpdatedAt;
     private String name;
     private String description;
-    private MappedProgram program;
+    private MappedTrackerProgram program;
+    private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationTransformScript;
     private ExecutableScript finalScript;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -87,7 +90,9 @@ public class MappedEnrollment implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -97,7 +102,9 @@ public class MappedEnrollment implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -107,7 +114,9 @@ public class MappedEnrollment implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -117,7 +126,9 @@ public class MappedEnrollment implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "name", nullable = false, length = 230 ) public String getName()
+    @Basic
+    @Column( name = "name", nullable = false, length = 230 )
+    public String getName()
     {
         return name;
     }
@@ -127,7 +138,9 @@ public class MappedEnrollment implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "description", length = -1 ) public String getDescription()
+    @Basic
+    @Column( name = "description", length = -1 )
+    public String getDescription()
     {
         return description;
     }
@@ -137,17 +150,33 @@ public class MappedEnrollment implements Serializable
         this.description = description;
     }
 
-    @ManyToOne @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false ) public MappedProgram getProgram()
+    @ManyToOne
+    @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false )
+    public MappedTrackerProgram getProgram()
     {
         return program;
     }
 
-    public void setProgram( MappedProgram program )
+    public void setProgram( MappedTrackerProgram program )
     {
         this.program = program;
     }
 
-    @ManyToOne @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" ) public ExecutableScript getCreationApplicableScript()
+    @Basic
+    @Column( name = "creation_enabled" )
+    public boolean isCreationEnabled()
+    {
+        return creationEnabled;
+    }
+
+    public void setCreationEnabled( boolean creationEnabled )
+    {
+        this.creationEnabled = creationEnabled;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationApplicableScript()
     {
         return creationApplicableScript;
     }
@@ -157,7 +186,9 @@ public class MappedEnrollment implements Serializable
         this.creationApplicableScript = creationApplicableScript;
     }
 
-    @ManyToOne @JoinColumn( name = "creation_transform_script_id", referencedColumnName = "id" ) public ExecutableScript getCreationTransformScript()
+    @ManyToOne
+    @JoinColumn( name = "creation_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationTransformScript()
     {
         return creationTransformScript;
     }
@@ -167,7 +198,9 @@ public class MappedEnrollment implements Serializable
         this.creationTransformScript = creationTransformScript;
     }
 
-    @ManyToOne @JoinColumn( name = "final_script_id", referencedColumnName = "id" ) public ExecutableScript getFinalScript()
+    @ManyToOne
+    @JoinColumn( name = "final_script_id", referencedColumnName = "id" )
+    public ExecutableScript getFinalScript()
     {
         return finalScript;
     }

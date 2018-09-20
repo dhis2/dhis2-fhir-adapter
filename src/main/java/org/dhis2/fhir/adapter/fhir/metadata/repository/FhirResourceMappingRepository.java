@@ -29,8 +29,13 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -40,4 +45,7 @@ import java.util.UUID;
  */
 public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>
 {
+    @Query( "SELECT m FROM #{#entityName} m WHERE m.fhirResourceType=:fhirResourceType" )
+    @Nonnull
+    Optional<FhirResourceMapping> getByFhirResourceType( @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 }

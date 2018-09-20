@@ -66,7 +66,8 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.attributes = typeAttributes;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -76,7 +77,8 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -86,7 +88,8 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.name = name;
     }
 
-    @Override public List<WritableTrackedEntityTypeAttribute> getAttributes()
+    @Override
+    public List<WritableTrackedEntityTypeAttribute> getAttributes()
     {
         return attributes;
     }
@@ -98,12 +101,16 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.attributesByCode = null;
     }
 
-    @Nonnull @Override public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
+    @Nonnull
+    @Override
+    public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
     {
         return (reference.getType() == ReferenceType.NAME) ? getOptionalTypeAttributeByName( reference.getValue() ) : getOptionalTypeAttributeByCode( reference.getValue() );
     }
 
-    @Nonnull @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
+    @Nonnull
+    @Override
+    public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
     {
         if ( attributes == null )
         {
@@ -117,12 +124,16 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         return Optional.ofNullable( attributesByCode.get( code ) );
     }
 
-    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code )
+    @Nullable
+    @Override
+    public TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code )
     {
         return getOptionalTypeAttributeByCode( code ).orElse( null );
     }
 
-    @Nonnull @Override public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
+    @Nonnull
+    @Override
+    public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
     {
         if ( attributes == null )
         {
@@ -136,7 +147,9 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         return Optional.ofNullable( attributesByName.get( name ) );
     }
 
-    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )
+    @Nullable
+    @Override
+    public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )
     {
         return getOptionalTypeAttributeByName( name ).orElse( null );
     }

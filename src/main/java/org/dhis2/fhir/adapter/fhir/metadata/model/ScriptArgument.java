@@ -70,7 +70,9 @@ public class ScriptArgument implements Serializable
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -80,7 +82,9 @@ public class ScriptArgument implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -90,7 +94,9 @@ public class ScriptArgument implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -100,7 +106,9 @@ public class ScriptArgument implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -110,7 +118,9 @@ public class ScriptArgument implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -120,7 +130,9 @@ public class ScriptArgument implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "name", nullable = false, length = 30 ) public String getName()
+    @Basic
+    @Column( name = "name", nullable = false, length = 30 )
+    public String getName()
     {
         return name;
     }
@@ -130,7 +142,10 @@ public class ScriptArgument implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "data_type", nullable = false, length = 30 ) @Enumerated( EnumType.STRING ) public DataType getDataType()
+    @Basic
+    @Column( name = "data_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public DataType getDataType()
     {
         return dataType;
     }
@@ -140,7 +155,9 @@ public class ScriptArgument implements Serializable
         this.dataType = dataType;
     }
 
-    @Basic @Column( name = "mandatory", nullable = false ) public boolean isMandatory()
+    @Basic
+    @Column( name = "mandatory", nullable = false )
+    public boolean isMandatory()
     {
         return mandatory;
     }
@@ -150,7 +167,9 @@ public class ScriptArgument implements Serializable
         this.mandatory = mandatory;
     }
 
-    @Basic @Column( name = "default_value", length = 230 ) public String getDefaultValue()
+    @Basic
+    @Column( name = "default_value", length = 230 )
+    public String getDefaultValue()
     {
         return defaultValue;
     }
@@ -160,7 +179,9 @@ public class ScriptArgument implements Serializable
         this.defaultValue = defaultValue;
     }
 
-    @Basic @Column( name = "description", length = -1 ) public String getDescription()
+    @Basic
+    @Column( name = "description", length = -1 )
+    public String getDescription()
     {
         return description;
     }
@@ -170,7 +191,9 @@ public class ScriptArgument implements Serializable
         this.description = description;
     }
 
-    @ManyToOne @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false ) public Script getScript()
+    @ManyToOne
+    @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
+    public Script getScript()
     {
         return script;
     }

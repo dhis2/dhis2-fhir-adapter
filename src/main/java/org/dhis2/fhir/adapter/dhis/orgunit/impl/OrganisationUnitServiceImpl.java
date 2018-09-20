@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Id;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,29 +44,33 @@ import java.util.Optional;
 @Service
 public class OrganisationUnitServiceImpl implements OrganisationUnitService
 {
-    protected static final String ORGANISATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json?fields=id,code";
-
     protected static final String ORGANISATION_UNIT_BY_CODE_URI = "/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:{code}";
+
+    protected static final String ORGANISATION_UNIT_BY_NAME_URI = "/organisationUnits.json?paging=false&fields=id,code&filter=name:eq:{name}";
 
     private final RestTemplate restTemplate;
 
-    @Autowired public OrganisationUnitServiceImpl( @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public OrganisationUnitServiceImpl( @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Override public Optional<OrganisationUnit> get( @Nonnull Id id )
+    @Override
+    public Optional<OrganisationUnit> get( @Nonnull Reference reference )
     {
-        switch ( id.getType() )
+        final ResponseEntity<DhisOrganisationUnits> result;
+        switch ( reference.getType() )
         {
-            case ID:
-                final ResponseEntity<OrganisationUnit> idResult = restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, OrganisationUnit.class, id.getId() );
-                return Optional.ofNullable( idResult.getBody() );
             case CODE:
-                final ResponseEntity<DhisOrganisationUnits> codeResult = restTemplate.getForEntity( ORGANISATION_UNIT_BY_CODE_URI, DhisOrganisationUnits.class, id.getId() );
-                return Optional.ofNullable( Optional.ofNullable( codeResult.getBody() ).orElse( new DhisOrganisationUnits() ).getOrganisationUnits() ).orElse( Collections.emptyList() ).stream().findFirst();
+                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_CODE_URI, DhisOrganisationUnits.class, reference.getValue() );
+                break;
+            case NAME:
+                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_NAME_URI, DhisOrganisationUnits.class, reference.getValue() );
+                break;
             default:
-                throw new AssertionError( "Unhandled ID type: " + id.getType() );
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
+        return Optional.ofNullable( Optional.ofNullable( result.getBody() ).orElse( new DhisOrganisationUnits() ).getOrganisationUnits() ).orElse( Collections.emptyList() ).stream().findFirst();
     }
 }

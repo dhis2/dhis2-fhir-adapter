@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,15 +52,31 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull @Override
-    public Optional<WritableProgram> getProgramByName( @Nonnull String name )
+    @Nonnull
+    @Override
+    public Optional<WritableProgram> getProgram( @Nonnull Reference reference )
     {
-        return getPrograms().stream().filter( p -> Objects.equals( p.getName(), name ) ).findFirst();
+        return getPrograms().stream().filter( p -> {
+            final String value;
+            switch ( reference.getType() )
+            {
+                case CODE:
+                    value = p.getCode();
+                    break;
+                case NAME:
+                    value = p.getName();
+                    break;
+                default:
+                    throw new AssertionError( "Unhandled reference type: " + reference.getType() );
+            }
+            return Objects.equals( value, reference.getValue() );
+        } ).findFirst();
     }
 
     public List<WritableProgram> getPrograms()

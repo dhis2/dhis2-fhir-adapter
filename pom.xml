@@ -5,7 +5,7 @@
 
   <groupId>org.dhis2.fhir.adapter</groupId>
   <artifactId>dhis2-fhir-adapter</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <parent>
@@ -22,6 +22,7 @@
     <dhis2.url>http://localhost:8080</dhis2.url>
     <dhis2.apiVersion>29</dhis2.apiVersion>
 
+    <db.flyway.locations>classpath:db/migration/production</db.flyway.locations>
     <db.url>jdbc:postgresql://localhost/dhis2-fhir</db.url>
     <db.username>dhis-fhir</db.username>
     <db.password>dhis-fhir</db.password>
@@ -43,10 +44,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -145,4 +142,13 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>sample</id>
+      <properties>
+        <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/sample</db.flyway.locations>
+      </properties>
+    </profile>
+  </profiles>
 </project>

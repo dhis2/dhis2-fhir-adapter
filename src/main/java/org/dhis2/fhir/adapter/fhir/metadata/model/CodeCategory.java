@@ -62,7 +62,9 @@ public class CodeCategory implements Serializable
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -72,7 +74,9 @@ public class CodeCategory implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -82,7 +86,9 @@ public class CodeCategory implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -92,7 +98,9 @@ public class CodeCategory implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -102,7 +110,9 @@ public class CodeCategory implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -112,7 +122,9 @@ public class CodeCategory implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "name", nullable = false, length = 230 ) public String getName()
+    @Basic
+    @Column( name = "name", nullable = false, length = 230 )
+    public String getName()
     {
         return name;
     }
@@ -122,7 +134,8 @@ public class CodeCategory implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "code", nullable = false, length = 50 )
+    @Basic
+    @Column( name = "code", nullable = false, length = 50 )
     public String getCode()
     {
         return code;
@@ -133,7 +146,9 @@ public class CodeCategory implements Serializable
         this.code = code;
     }
 
-    @Basic @Column( name = "description", length = -1 ) public String getDescription()
+    @Basic
+    @Column( name = "description", length = -1 )
+    public String getDescription()
     {
         return description;
     }

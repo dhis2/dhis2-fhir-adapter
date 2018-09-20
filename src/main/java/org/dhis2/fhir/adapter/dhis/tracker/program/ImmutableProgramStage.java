@@ -46,27 +46,40 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public List<? extends ProgramStageDataElement> getDataElements()
+    @Override
+    public String getCode()
+    {
+        return delegate.getCode();
+    }
+
+    @Override
+    public List<? extends ProgramStageDataElement> getDataElements()
     {
         return (delegate.getDataElements() == null) ? null : delegate.getDataElements().stream().map( ImmutableProgramStageDataElement::new ).collect( Collectors.toList() );
     }
 
-    @Override @Nonnull public Optional<? extends ProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name )
+    @Override
+    @Nonnull
+    public Optional<? extends ProgramStageDataElement> getOptionalDataElementByName( @Nonnull String name )
     {
         return delegate.getOptionalDataElementByName( name ).map( ImmutableProgramStageDataElement::new );
     }
 
-    @Override @Nullable public ProgramStageDataElement getDataElementByName( @Nonnull String name )
+    @Override
+    @Nullable
+    public ProgramStageDataElement getDataElementByName( @Nonnull String name )
     {
         return getOptionalDataElementByName( name ).orElse( null );
     }

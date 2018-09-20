@@ -34,10 +34,13 @@ import java.util.Optional;
 
 public interface TrackedEntityService
 {
-    @Nonnull Optional<TrackedEntityInstance> getById( @Nonnull String id );
+    @Nonnull
+    Optional<TrackedEntityInstance> getById( @Nonnull String id );
 
-    @Nonnull Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
+    @Nonnull
+    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
         @Nonnull String attributeId, @Nonnull String value, int maxResult );
 
-    @Nonnull TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    @Nonnull
+    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
 }

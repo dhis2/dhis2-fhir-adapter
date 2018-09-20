@@ -41,7 +41,8 @@ public class WritableOptionSet implements OptionSet, Serializable
 
     private List<WritableOption> options;
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -51,7 +52,8 @@ public class WritableOptionSet implements OptionSet, Serializable
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -61,7 +63,8 @@ public class WritableOptionSet implements OptionSet, Serializable
         this.name = name;
     }
 
-    @Override public List<WritableOption> getOptions()
+    @Override
+    public List<WritableOption> getOptions()
     {
         return options;
     }

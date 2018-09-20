@@ -46,7 +46,8 @@ public class AuthorizationExceptionInterceptor extends InterceptorAdapter
 {
     protected static final String WWW_AUTHENTICATE_HEADER_NAME = "WWW-Authenticate";
 
-    @Override public BaseServerResponseException preProcessOutgoingException( RequestDetails theRequestDetails, Throwable theException, HttpServletRequest theServletRequest ) throws ServletException
+    @Override
+    public BaseServerResponseException preProcessOutgoingException( RequestDetails theRequestDetails, Throwable theException, HttpServletRequest theServletRequest ) throws ServletException
     {
         final Throwable cause = ExceptionUtils.findCause( theException, UnauthorizedException.class, ForbiddenException.class );
         final BaseServerResponseException result;

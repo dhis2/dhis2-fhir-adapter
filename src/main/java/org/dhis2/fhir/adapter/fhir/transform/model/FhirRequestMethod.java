@@ -39,7 +39,8 @@ public enum FhirRequestMethod
 
     private static final Map<String, FhirRequestMethod> requestMethodsByCode = Arrays.stream( values() ).collect( Collectors.toMap( FhirRequestMethod::getCode, v -> v ) );
 
-    public static @Nullable FhirRequestMethod getByCode( @Nullable String code )
+    public static @Nullable
+    FhirRequestMethod getByCode( @Nullable String code )
     {
         return requestMethodsByCode.get( code );
     }

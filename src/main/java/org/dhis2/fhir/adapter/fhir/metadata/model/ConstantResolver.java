@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Resolves {@linkplain Constant constants}.
@@ -42,7 +42,8 @@ public interface ConstantResolver
      * Resolves constants by code.
      *
      * @param code the code of the constant that should be resolved.
-     * @return the constant with the specified code, or <code>null</code> if no such constant exists.
+     * @return the constant with the specified code.
      */
-    @Nullable Constant getByCode( @Nonnull String code );
+    @Nonnull
+    Optional<Constant> getByCode( @Nonnull String code );
 }

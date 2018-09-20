@@ -28,12 +28,17 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+@Component
+@ConvertedValueTypes( types = ValueType.DATETIME )
 public class LocalDateToZonedDateTimeConverter extends TypedConverter<LocalDate, ZonedDateTime>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();
@@ -43,7 +48,9 @@ public class LocalDateToZonedDateTimeConverter extends TypedConverter<LocalDate,
         super( LocalDate.class, ZonedDateTime.class );
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull LocalDate source )
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull LocalDate source )
     {
         return source.atStartOfDay( zoneId );
     }

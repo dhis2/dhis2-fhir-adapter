@@ -29,7 +29,10 @@ package org.dhis2.fhir.adapter.geo;
  */
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,6 +43,8 @@ import javax.annotation.Nullable;
  *
  * @author volsch
  */
+@Component
+@ConvertedValueTypes( types = ValueType.COORDINATE )
 public class LocationToStringConverter extends TypedConverter<Location, String>
 {
     public LocationToStringConverter()
@@ -47,7 +52,9 @@ public class LocationToStringConverter extends TypedConverter<Location, String>
         super( Location.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Location source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Location source ) throws ConversionException
     {
         return "[" + source.getLongitude() + "," + source.getLatitude() + "]";
     }

@@ -43,37 +43,49 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
         this.delegate = delegate;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return delegate.isNewResource();
     }
 
-    @Override @Nullable public String getId()
+    @Override
+    @Nullable
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override @Nonnull public String getTypeId()
+    @Override
+    @Nonnull
+    public String getTypeId()
     {
         return delegate.getTypeId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
     }
 
-    @Nullable @Override public Location getCoordinates()
+    @Nullable
+    @Override
+    public Location getCoordinates()
     {
         return delegate.getCoordinates();
     }
 
-    @Override @Nullable public Object getValueByName( @Nonnull String typeAttrName )
+    @Override
+    @Nullable
+    public Object getValueByName( @Nonnull String typeAttrName )
     {
         return delegate.getValueByName( typeAttrName );
     }
 
-    @Override public void validate() throws TransformerException
+    @Override
+    public void validate() throws TransformerException
     {
         delegate.validate();
     }

@@ -30,8 +30,8 @@ package org.dhis2.fhir.adapter;
 
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import org.dhis2.fhir.adapter.dhis.jackson.ZonedDateTimeDeserializer;
-import org.dhis2.fhir.adapter.dhis.jackson.ZonedDateTimeSerializer;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -53,7 +53,8 @@ public class FhirServerConfig
 
     public static final String FHIR_AUTHORIZATION_RESET_FILTER_NAME = "DHIS2 FHIR Adapter Authorization Reset Filter";
 
-    @Bean public ThreadLocalAuthorizationContext requestedAuthenticationContext()
+    @Bean
+    public ThreadLocalAuthorizationContext requestedAuthenticationContext()
     {
         return new ThreadLocalAuthorizationContext();
     }

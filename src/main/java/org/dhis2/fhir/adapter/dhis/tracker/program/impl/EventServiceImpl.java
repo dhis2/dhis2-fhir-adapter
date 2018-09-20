@@ -64,17 +64,22 @@ public class EventServiceImpl implements EventService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull @Override public Event createOrMinimalUpdate( @Nonnull Event event )
+    @Nonnull
+    @Override
+    public Event createOrMinimalUpdate( @Nonnull Event event )
     {
         return event.isNewResource() ? create( event ) : minimalUpdate( event );
     }
 
-    @Nonnull @Override public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+    @Nonnull
+    @Override
+    public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_URI, DhisEvents.class, programId, trackedEntityInstanceId );
@@ -82,7 +87,8 @@ public class EventServiceImpl implements EventService
             .collect( Collectors.toList() );
     }
 
-    public @Nonnull Event create( @Nonnull Event event )
+    @Nonnull
+    public Event create( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.postForEntity( CREATE_URI, event, ImportSummaryWebMessage.class );
@@ -98,7 +104,8 @@ public class EventServiceImpl implements EventService
         return event;
     }
 
-    public @Nonnull Event update( @Nonnull Event event )
+    @Nonnull
+    public Event update( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
@@ -123,7 +130,8 @@ public class EventServiceImpl implements EventService
         }
     }
 
-    public @Nonnull Event minimalUpdate( @Nonnull Event event )
+    @Nonnull
+    public Event minimalUpdate( @Nonnull Event event )
     {
         if ( event.isModified() || event.getDataValues().stream().anyMatch( DataValue::isNewResource ) )
         {

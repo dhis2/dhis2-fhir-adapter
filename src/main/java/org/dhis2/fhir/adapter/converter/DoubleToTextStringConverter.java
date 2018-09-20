@@ -28,9 +28,14 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@Component
+@ConvertedValueTypes( types = ValueType.TEXT )
 public class DoubleToTextStringConverter extends TypedConverter<Double, String>
 {
     public static final String SKIPPED_FLOATING_POINT_EXTENSION = ".0";
@@ -40,7 +45,9 @@ public class DoubleToTextStringConverter extends TypedConverter<Double, String>
         super( Double.class, String.class );
     }
 
-    @Nullable @Override public String doConvert( @Nonnull Double source ) throws ConversionException
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Double source ) throws ConversionException
     {
         final String result = source.toString();
         if ( result.endsWith( SKIPPED_FLOATING_POINT_EXTENSION ) )

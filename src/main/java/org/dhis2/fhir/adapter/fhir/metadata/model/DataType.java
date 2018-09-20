@@ -28,7 +28,13 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.converter.ObjectConverter;
+import org.dhis2.fhir.adapter.converter.StringToBooleanConverter;
+import org.dhis2.fhir.adapter.converter.StringToDoubleConverter;
+import org.dhis2.fhir.adapter.converter.StringToIntegerConverter;
+import org.dhis2.fhir.adapter.dhis.converter.StringToReferenceConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.springframework.core.convert.converter.Converter;
 
 /**
  * Data types of constants and script arguments. They are used to perform value conversions and support the validation
@@ -38,28 +44,36 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
  */
 public enum DataType
 {
-    BOOLEAN( Boolean.class ),
-    STRING( String.class ),
-    INTEGER( Integer.class ),
-    DOUBLE( Double.class ),
-    CONSTANT( String.class ),
-    CODE( String.class ),
-    ORG_UNIT_REF( Reference.class ),
-    TRACKED_ENTITY_REF( Reference.class ),
-    TRACKED_ENTITY_ATTRIBUTE_REF( Reference.class ),
-    DATA_ELEMENT_REF( Reference.class ),
-    PROGRAM_REF( Reference.class ),
-    PROGRAM_STAGE_REF( Reference.class );
+    BOOLEAN( Boolean.class, new StringToBooleanConverter() ),
+    STRING( String.class, new ObjectConverter<>( String.class ) ),
+    INTEGER( Integer.class, new StringToIntegerConverter() ),
+    DOUBLE( Double.class, new StringToDoubleConverter() ),
+    CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
+    CODE( String.class, new ObjectConverter<>( String.class ) ),
+    ORG_UNIT_REF( Reference.class, new StringToReferenceConverter() ),
+    TRACKED_ENTITY_REF( Reference.class, new StringToReferenceConverter() ),
+    TRACKED_ENTITY_ATTRIBUTE_REF( Reference.class, new StringToReferenceConverter() ),
+    DATA_ELEMENT_REF( Reference.class, new StringToReferenceConverter() ),
+    PROGRAM_REF( Reference.class, new StringToReferenceConverter() ),
+    PROGRAM_STAGE_REF( Reference.class, new StringToReferenceConverter() );
 
     private final Class<?> javaType;
 
-    DataType( Class<?> javaType )
+    private final Converter<String, ?> fromStringConverter;
+
+    <T> DataType( Class<T> javaType, Converter<String, T> fromStringConverter )
     {
         this.javaType = javaType;
+        this.fromStringConverter = fromStringConverter;
     }
 
     public Class<?> getJavaType()
     {
         return javaType;
+    }
+
+    public Converter<String, ?> getFromStringConverter()
+    {
+        return fromStringConverter;
     }
 }

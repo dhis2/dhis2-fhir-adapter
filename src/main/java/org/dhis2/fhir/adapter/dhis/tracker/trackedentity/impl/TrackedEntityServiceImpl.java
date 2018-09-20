@@ -62,12 +62,15 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     private final RestTemplate restTemplate;
 
-    @Autowired public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    @Autowired
+    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull @Override public Optional<TrackedEntityInstance> getById( @Nonnull String id )
+    @Nonnull
+    @Override
+    public Optional<TrackedEntityInstance> getById( @Nonnull String id )
     {
         TrackedEntityInstance instance = null;
         try
@@ -84,7 +87,9 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return Optional.ofNullable( instance );
     }
 
-    @Nonnull @Override public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
+    @Nonnull
+    @Override
+    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
     {
         // filtering by values with a colon inside is not supported by DHIS2 Web API
         if ( value.contains( ":" ) )
@@ -95,12 +100,15 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             .getBody().getTrackedEntityInstances();
     }
 
-    @Nonnull @Override public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    @Nonnull
+    @Override
+    public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
     }
 
-    @Nonnull protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    @Nonnull
+    protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
@@ -118,7 +126,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return trackedEntityInstance;
     }
 
-    @Nonnull protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    @Nonnull
+    protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),

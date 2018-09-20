@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
-import org.dhis2.fhir.adapter.dhis.converter.DhisValueConverter;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -54,31 +54,38 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     private final Event event;
 
-    private final DhisValueConverter dhisValueConverter;
+    private final ValueConverter valueConverter;
 
-    public WritableScriptedEvent( @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull DhisValueConverter dhisValueConverter )
+    public WritableScriptedEvent( @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull ValueConverter valueConverter )
     {
         this.programStage = programStage;
         this.event = event;
-        this.dhisValueConverter = dhisValueConverter;
+        this.valueConverter = valueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return event.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return event.getId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return event.getOrgUnitId();
     }
 
-    @Nullable @Override public ZonedDateTime getEventDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getEventDate()
     {
         return event.getEventDate();
     }
@@ -91,7 +98,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public void setValueByName( @Nonnull String dataElementName, Object value, Boolean providedElsewhere ) throws TransformerException
     {
         final ProgramStageDataElement dataElement = programStage.getOptionalDataElementByName( dataElementName ).orElseThrow( () ->
-            new TransformerMappingException( "MappedProgram stage \"" + programStage.getName() +
+            new TransformerMappingException( "MappedTrackerProgram stage \"" + programStage.getName() +
                 "\" does not include data element with name \"" + dataElementName + "\"" ) );
         setValue( dataElement, value, providedElsewhere );
     }
@@ -100,14 +107,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     {
         if ( Boolean.TRUE.equals( providedElsewhere ) && !dataElement.isAllowProvidedElsewhere() )
         {
-            throw new TransformerMappingException( "MappedProgram stage \"" + programStage.getName() +
+            throw new TransformerMappingException( "MappedTrackerProgram stage \"" + programStage.getName() +
                 "\" does not allow that data is provided elsewhere for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
         final Object convertedValue;
         try
         {
-            convertedValue = dhisValueConverter.convert( value, dataElement.getElement().getValueType(), String.class );
+            convertedValue = valueConverter.convert( value, dataElement.getElement().getValueType(), String.class );
         }
         catch ( ConversionException e )
         {
@@ -144,7 +151,8 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return (event.getDataValues() != null) && event.getDataValues().stream().anyMatch( DataValue::isModified );
     }
 
-    @Override public void validate() throws TransformerException
+    @Override
+    public void validate() throws TransformerException
     {
         if ( event.getOrgUnitId() == null )
         {

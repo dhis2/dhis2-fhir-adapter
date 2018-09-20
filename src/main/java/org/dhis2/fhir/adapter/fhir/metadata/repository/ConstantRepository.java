@@ -35,7 +35,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -52,5 +52,6 @@ public interface ConstantRepository extends JpaRepository<Constant, UUID>, Const
      * @return the constant with the specified code, or <code>null</code> if no such constant exists.
      */
     @Query( "SELECT c FROM #{#entityName} c WHERE c.code=:code" )
-    @Nullable Constant getByCode( @Param( "code" ) @Nonnull String code );
+    @Nonnull
+    Optional<Constant> getByCode( @Param( "code" ) @Nonnull String code );
 }

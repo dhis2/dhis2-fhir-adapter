@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.Id;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -59,7 +60,10 @@ public class WritableProgram implements Program, Serializable
 
     private transient volatile Map<String, ProgramStage> stagesByName;
 
-    @Override public String getId()
+    private transient volatile Map<String, ProgramStage> stagesByCode;
+
+    @Override
+    public String getId()
     {
         return id;
     }
@@ -69,7 +73,8 @@ public class WritableProgram implements Program, Serializable
         this.id = id;
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return name;
     }
@@ -79,7 +84,8 @@ public class WritableProgram implements Program, Serializable
         this.name = name;
     }
 
-    @Override public String getCode()
+    @Override
+    public String getCode()
     {
         return code;
     }
@@ -89,7 +95,8 @@ public class WritableProgram implements Program, Serializable
         this.code = code;
     }
 
-    @JsonIgnore @Override
+    @JsonIgnore
+    @Override
     public String getTrackedEntityTypeId()
     {
         return (trackedEntityType == null) ? null : trackedEntityType.getId();
@@ -100,7 +107,8 @@ public class WritableProgram implements Program, Serializable
         this.trackedEntityType = (trackedEntityTypeId == null) ? null : new Id( trackedEntityTypeId );
     }
 
-    @Override public List<WritableProgramStage> getStages()
+    @Override
+    public List<WritableProgramStage> getStages()
     {
         return stages;
     }
@@ -110,22 +118,39 @@ public class WritableProgram implements Program, Serializable
         this.stages = stages;
     }
 
-    @Nonnull public Optional<ProgramStage> getOptionalStageByName( @Nonnull String name )
+    @Nonnull
+    public Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference )
     {
-        if ( stages == null )
+        switch ( reference.getType() )
         {
-            return Optional.empty();
+            case NAME:
+                return Optional.ofNullable( getStageByName( reference.getValue() ) );
+            case CODE:
+                return Optional.ofNullable( getStageByCode( reference.getValue() ) );
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
+    }
+
+    @Nonnull
+    public ProgramStage getStageByName( @Nonnull String name )
+    {
         Map<String, ProgramStage> stagesByName = this.stagesByName;
         if ( stagesByName == null )
         {
             this.stagesByName = stagesByName = stages.stream().collect( Collectors.toMap( WritableProgramStage::getName, s -> s ) );
         }
-        return Optional.ofNullable( stagesByName.get( name ) );
+        return stagesByName.get( name );
     }
 
-    @Nonnull public ProgramStage getStageByName( @Nonnull String code )
+    @Nonnull
+    public ProgramStage getStageByCode( @Nonnull String name )
     {
-        return getOptionalStageByName( code ).orElse( null );
+        Map<String, ProgramStage> stagesByCode = this.stagesByCode;
+        if ( stagesByCode == null )
+        {
+            this.stagesByCode = stagesByCode = stages.stream().collect( Collectors.toMap( WritableProgramStage::getCode, s -> s ) );
+        }
+        return stagesByCode.get( name );
     }
 }

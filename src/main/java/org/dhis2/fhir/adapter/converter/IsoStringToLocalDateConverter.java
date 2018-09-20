@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -35,6 +38,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+@Component
+@ConvertedValueTypes( types = ValueType.DATE )
 public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalDate>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();
@@ -46,7 +51,9 @@ public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalD
         super( String.class, LocalDate.class );
     }
 
-    @Override public @Nullable LocalDate doConvert( @Nonnull String source )
+    @Override
+    @Nullable
+    public LocalDate doConvert( @Nonnull String source )
     {
         try
         {

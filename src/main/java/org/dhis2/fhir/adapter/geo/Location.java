@@ -63,7 +63,8 @@ public class Location implements Geometry, Serializable
         return latitude;
     }
 
-    @Override public boolean equals( Object o )
+    @Override
+    public boolean equals( Object o )
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
@@ -72,7 +73,8 @@ public class Location implements Geometry, Serializable
             Double.compare( geoLocation.latitude, latitude ) == 0;
     }
 
-    @Override public int hashCode()
+    @Override
+    public int hashCode()
     {
         return Objects.hash( longitude, latitude );
     }

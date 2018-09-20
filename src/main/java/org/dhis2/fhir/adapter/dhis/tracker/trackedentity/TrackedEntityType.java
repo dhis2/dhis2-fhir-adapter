@@ -45,13 +45,18 @@ public interface TrackedEntityType
 
     List<? extends TrackedEntityTypeAttribute> getAttributes();
 
-    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference );
+    @Nonnull
+    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference );
 
-    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code );
+    @Nonnull
+    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code );
 
-    @Nullable TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code );
+    @Nullable
+    TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code );
 
-    @Nonnull Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
+    @Nonnull
+    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
 
-    @Nullable TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name );
+    @Nullable
+    TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name );
 }

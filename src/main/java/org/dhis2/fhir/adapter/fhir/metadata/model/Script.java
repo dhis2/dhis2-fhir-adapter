@@ -31,12 +31,14 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -75,10 +77,13 @@ public class Script implements Serializable
     private TransformDataType outputType;
     private Collection<ScriptArgument> arguments;
     private Set<ScriptVariable> variables;
+    private Collection<ScriptSource> sources;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -88,7 +93,9 @@ public class Script implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -98,7 +105,9 @@ public class Script implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -108,7 +117,9 @@ public class Script implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -118,7 +129,9 @@ public class Script implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -128,7 +141,9 @@ public class Script implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "name", nullable = false, length = 230 ) public String getName()
+    @Basic
+    @Column( name = "name", nullable = false, length = 230 )
+    public String getName()
     {
         return name;
     }
@@ -138,7 +153,9 @@ public class Script implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "description", length = -1 ) public String getDescription()
+    @Basic
+    @Column( name = "description", length = -1 )
+    public String getDescription()
     {
         return description;
     }
@@ -148,7 +165,9 @@ public class Script implements Serializable
         this.description = description;
     }
 
-    @Basic @Column( name = "code", nullable = false, length = 50 ) public String getCode()
+    @Basic
+    @Column( name = "code", nullable = false, length = 50 )
+    public String getCode()
     {
         return code;
     }
@@ -158,7 +177,10 @@ public class Script implements Serializable
         this.code = code;
     }
 
-    @Basic @Column( name = "script_type", nullable = false, length = 30 ) public ScriptType getScriptType()
+    @Basic
+    @Column( name = "script_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public ScriptType getScriptType()
     {
         return scriptType;
     }
@@ -168,7 +190,10 @@ public class Script implements Serializable
         this.scriptType = scriptType;
     }
 
-    @Basic @Column( name = "return_type", nullable = false, length = 30 ) public DataType getReturnType()
+    @Basic
+    @Column( name = "return_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public DataType getReturnType()
     {
         return returnType;
     }
@@ -178,7 +203,10 @@ public class Script implements Serializable
         this.returnType = returnType;
     }
 
-    @Basic @Column( name = "input_type", length = 30 ) @Enumerated( EnumType.STRING ) public TransformDataType getInputType()
+    @Basic
+    @Column( name = "input_type", length = 30 )
+    @Enumerated( EnumType.STRING )
+    public TransformDataType getInputType()
     {
         return inputType;
     }
@@ -188,7 +216,10 @@ public class Script implements Serializable
         this.inputType = inputType;
     }
 
-    @Basic @Column( name = "output_type", length = 30 ) @Enumerated( EnumType.STRING ) public TransformDataType getOutputType()
+    @Basic
+    @Column( name = "output_type", length = 30 )
+    @Enumerated( EnumType.STRING )
+    public TransformDataType getOutputType()
     {
         return outputType;
     }
@@ -198,14 +229,15 @@ public class Script implements Serializable
         this.outputType = outputType;
     }
 
-    @OneToMany( mappedBy = "script" ) public Collection<ScriptArgument> getArguments()
+    @OneToMany( mappedBy = "script" )
+    public Collection<ScriptArgument> getArguments()
     {
         return arguments;
     }
 
-    public void setArguments( Collection<ScriptArgument> scriptArguments )
+    public void setArguments( Collection<ScriptArgument> scriptVariables )
     {
-        this.arguments = scriptArguments;
+        this.arguments = scriptVariables;
     }
 
     @ElementCollection
@@ -220,5 +252,16 @@ public class Script implements Serializable
     public void setVariables( Set<ScriptVariable> variables )
     {
         this.variables = variables;
+    }
+
+    @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER )
+    public Collection<ScriptSource> getSources()
+    {
+        return sources;
+    }
+
+    public void setSources( Collection<ScriptSource> sources )
+    {
+        this.sources = sources;
     }
 }

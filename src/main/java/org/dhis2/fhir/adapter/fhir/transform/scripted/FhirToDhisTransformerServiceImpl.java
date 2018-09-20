@@ -30,24 +30,24 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.util.TransformUtils;
+import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.FhirToDhisTransformerUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.scripting.ScriptCompilationException;
-import org.springframework.scripting.ScriptEvaluator;
-import org.springframework.scripting.support.StaticScriptSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,22 +55,21 @@ import java.util.Map;
 @Service
 public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerService
 {
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final RuleRepository ruleRepository;
 
     private final Map<DhisResourceType, FhirToDhisTransformer<?, ?>> transformers = new HashMap<>();
 
-    private final Map<String, TransformUtils> transformUtils = new HashMap<>();
+    private final Map<String, FhirToDhisTransformerUtils> transformUtils = new HashMap<>();
 
-    private final ScriptEvaluator scriptEvaluator;
+    private final ScriptExecutor scriptExecutor;
 
-    public FhirToDhisTransformerServiceImpl( @Nonnull EntityManager entityManager,
+    public FhirToDhisTransformerServiceImpl( @Nonnull RuleRepository ruleRepository,
         @Nonnull ObjectProvider<List<FhirToDhisTransformer<?, ?>>> transformersProvider,
-        @Nonnull ObjectProvider<List<TransformUtils>> transformUtilsProvider,
-        @Nonnull ScriptEvaluator scriptEvaluator )
+        @Nonnull ObjectProvider<List<FhirToDhisTransformerUtils>> transformUtilsProvider,
+        @Nonnull ScriptExecutor scriptExecutor )
     {
-        this.entityManager = entityManager;
-        this.scriptEvaluator = scriptEvaluator;
+        this.ruleRepository = ruleRepository;
+        this.scriptExecutor = scriptExecutor;
 
         final List<FhirToDhisTransformer<?, ?>> transformers = transformersProvider.getIfAvailable();
         if ( transformers != null )
@@ -81,66 +80,59 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             }
         }
 
-        final List<TransformUtils> transformUtils = transformUtilsProvider.getIfAvailable();
-        if ( transformUtils != null )
+        final List<FhirToDhisTransformerUtils> fhirToDhisTransformerUtils = transformUtilsProvider.getIfAvailable();
+        if ( fhirToDhisTransformerUtils != null )
         {
-            for ( final TransformUtils tu : transformUtils )
+            for ( final FhirToDhisTransformerUtils tu : fhirToDhisTransformerUtils )
             {
                 this.transformUtils.put( tu.getScriptAttrName(), tu );
             }
         }
     }
 
-    @Nonnull @Override public FhirToDhisTransformerContext createContext( @Nonnull WritableFhirRequest fhirRequest )
+    @Nonnull
+    @Override
+    public FhirToDhisTransformerContext createContext( @Nonnull FhirRequest fhirRequest )
     {
         return new FhirToDhisTransformerContextImpl( fhirRequest );
     }
 
-    @Nullable @Override public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformerException
+    @Nullable
+    @Override
+    @Transactional( readOnly = true )
+    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input ) throws TransformerException
     {
-        final List<AbstractFhirToDhisMapping> mappings = entityManager.createNamedQuery( AbstractFhirToDhisMapping.BY_INPUT_DATA_QUERY_NAME, AbstractFhirToDhisMapping.class )
-            .setParameter( "fhirResourceType", context.getFhirRequest().getResourceType() ).setParameter( "fhirVersion", context.getFhirRequest().getVersion() ).getResultList();
-
-        for ( final AbstractFhirToDhisMapping mapping : mappings )
+        final List<? extends AbstractRule> rules = ruleRepository.findRulesByInputData( context.getFhirRequest().getResourceType() );
+        for ( final AbstractRule rule : rules )
         {
-            final FhirToDhisTransformer<?, ?> transformer = transformers.get( mapping.getDhisResourceType() );
+            final FhirToDhisTransformer<?, ?> transformer = transformers.get( rule.getDhisResourceType() );
             if ( transformer == null )
             {
-                throw new TransformerMappingException( "No transformer can be found for mapping of DHIS resource type " + mapping.getDhisResourceType() );
+                throw new TransformerMappingException( "No transformer can be found for mapping of DHIS resource type " + rule.getDhisResourceType() );
             }
 
-            final Map<String, Object> scriptArguments = new HashMap<>( transformUtils );
-            scriptArguments.put( TransformerScriptConstants.CONTEXT_ATTR_NAME, context );
-            scriptArguments.put( TransformerScriptConstants.INPUT_ATTR_NAME, input );
-
-            if ( isApplicable( context, input, mapping, scriptArguments ) && transformer.addScriptArgumentsCasted( scriptArguments, context, mapping ) )
+            final Map<String, Object> scriptVariables = new HashMap<>( transformUtils );
+            scriptVariables.put( ScriptVariable.CONTEXT.getVariableName(), context );
+            scriptVariables.put( ScriptVariable.INPUT.getVariableName(), input );
+            if ( isApplicable( context, input, rule, scriptVariables ) )
             {
-                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( context, input, mapping, scriptArguments );
+                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( context, input, rule, scriptVariables );
                 if ( outcome != null )
                 {
                     return outcome;
                 }
             }
         }
-
         return null;
     }
 
-    private boolean isApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input, @Nonnull AbstractFhirToDhisMapping mapping,
-        @Nonnull Map<String, Object> scriptArguments ) throws TransformerException
+    private boolean isApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull IAnyResource input,
+        @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        try
+        if ( rule.getApplicableInScript() == null )
         {
-            final Object result = scriptEvaluator.evaluate( new StaticScriptSource( mapping.getApplicableScript() ), new HashMap<>( scriptArguments ) );
-            if ( !(result instanceof Boolean) )
-            {
-                throw new TransformerScriptException( "Applicable evaluation script of mapping " + mapping + " did not return a boolean value." );
-            }
-            return (boolean) result;
+            return true;
         }
-        catch ( ScriptCompilationException e )
-        {
-            throw new TransformerScriptException( "Applicable evaluation script of mapping " + mapping + " caused an error: " + e.getMessage(), e );
-        }
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableInScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
     }
 }

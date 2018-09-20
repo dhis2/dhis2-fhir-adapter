@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.config;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.fhir.converter.FhirDhisValueConverter;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.impl.ThreadLocalScriptExecutionContext;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,16 +61,16 @@ public class TransformationConfig implements Serializable
     }
 
     @Bean
+    protected ScriptExecutionContext scriptExecutionContext()
+    {
+        return new ThreadLocalScriptExecutionContext();
+    }
+
+    @Bean
     protected ScriptEvaluator scriptEvaluator()
     {
         final StandardScriptEvaluator scriptEvaluator = new StandardScriptEvaluator();
         scriptEvaluator.setEngineName( getScriptEngineName() );
         return scriptEvaluator;
-    }
-
-    @Bean
-    protected DhisValueConverter dhisValueConverter()
-    {
-        return new FhirDhisValueConverter();
     }
 }

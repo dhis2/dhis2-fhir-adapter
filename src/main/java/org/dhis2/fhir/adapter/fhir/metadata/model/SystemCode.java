@@ -63,13 +63,15 @@ public class SystemCode implements Serializable
     private LocalDateTime createdAt;
     private String lastUpdatedBy;
     private LocalDateTime lastUpdatedAt;
+    private System system;
     private String systemCode;
     private Code code;
-    private Constant systemId;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -79,7 +81,9 @@ public class SystemCode implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -89,7 +93,9 @@ public class SystemCode implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -99,7 +105,9 @@ public class SystemCode implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -109,7 +117,9 @@ public class SystemCode implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -119,7 +129,9 @@ public class SystemCode implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "system_code", nullable = false, length = 120 ) public String getSystemCode()
+    @Basic
+    @Column( name = "system_code", nullable = false, length = 120 )
+    public String getSystemCode()
     {
         return systemCode;
     }
@@ -129,7 +141,9 @@ public class SystemCode implements Serializable
         this.systemCode = systemCode;
     }
 
-    @ManyToOne @JoinColumn( name = "code_id", referencedColumnName = "id", nullable = false ) public Code getCode()
+    @ManyToOne
+    @JoinColumn( name = "code_id", referencedColumnName = "id", nullable = false )
+    public Code getCode()
     {
         return code;
     }
@@ -139,13 +153,15 @@ public class SystemCode implements Serializable
         this.code = code;
     }
 
-    @ManyToOne @JoinColumn( name = "system_id", referencedColumnName = "id", nullable = false ) public Constant getSystemId()
+    @ManyToOne
+    @JoinColumn( name = "system_id", referencedColumnName = "id", nullable = false )
+    public System getSystem()
     {
-        return systemId;
+        return system;
     }
 
-    public void setSystemId( Constant systemId )
+    public void setSystem( System system )
     {
-        this.systemId = systemId;
+        this.system = system;
     }
 }

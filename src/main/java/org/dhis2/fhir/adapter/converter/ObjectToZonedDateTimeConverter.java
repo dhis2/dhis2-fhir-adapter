@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -36,6 +39,8 @@ import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
+@ConvertedValueTypes( types = ValueType.DATETIME )
 public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>
 {
     private final Pattern dateTimePattern = Pattern.compile( ".*(\\d{4}-\\d{2}-\\d{2}T.*Z).*" );
@@ -47,7 +52,9 @@ public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, Zoned
         super( Object.class, ZonedDateTime.class );
     }
 
-    @Override public @Nullable ZonedDateTime doConvert( @Nonnull Object source )
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull Object source )
     {
         final Matcher matcher = dateTimePattern.matcher( source.toString() );
         if ( !matcher.matches() )

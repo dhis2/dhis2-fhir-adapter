@@ -30,14 +30,18 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -54,10 +58,13 @@ public class ExecutableScript implements Serializable
 
     private UUID id;
     private Script script;
+    private Collection<ExecutableScriptArgument> overrideArguments;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -67,7 +74,9 @@ public class ExecutableScript implements Serializable
         this.id = id;
     }
 
-    @ManyToOne @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false ) public Script getScript()
+    @ManyToOne
+    @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
+    public Script getScript()
     {
         return script;
     }
@@ -75,5 +84,16 @@ public class ExecutableScript implements Serializable
     public void setScript( Script script )
     {
         this.script = script;
+    }
+
+    @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
+    public Collection<ExecutableScriptArgument> getOverrideArguments()
+    {
+        return overrideArguments;
+    }
+
+    public void setOverrideArguments( Collection<ExecutableScriptArgument> overrideArguments )
+    {
+        this.overrideArguments = overrideArguments;
     }
 }

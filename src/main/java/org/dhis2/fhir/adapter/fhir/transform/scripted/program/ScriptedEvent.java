@@ -37,9 +37,12 @@ import java.time.ZonedDateTime;
 @Scriptable
 public interface ScriptedEvent extends ScriptedDhisResource
 {
-    @Nullable String getId();
+    @Nullable
+    String getId();
 
-    @Nullable String getOrganizationUnitId();
+    @Nullable
+    String getOrganizationUnitId();
 
-    @Nullable ZonedDateTime getEventDate();
+    @Nullable
+    ZonedDateTime getEventDate();
 }

@@ -29,9 +29,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -42,13 +44,16 @@ import javax.persistence.Table;
 @Entity
 @Table( name = "fhir_tracked_entity_rule" )
 @DiscriminatorValue( "TRACKED_ENTITY" )
-public class TrackedEntityRule extends Rule
+public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
 
     private Reference trackedEntityReference;
 
-    @Basic @Column( name = "tracked_entity_ref", nullable = false, length = 230 ) public Reference getTrackedEntityReference()
+    @Basic
+    @Column( name = "tracked_entity_ref", nullable = false, length = 230 )
+    @Convert( converter = ReferenceAttributeConverter.class )
+    public Reference getTrackedEntityReference()
     {
         return trackedEntityReference;
     }

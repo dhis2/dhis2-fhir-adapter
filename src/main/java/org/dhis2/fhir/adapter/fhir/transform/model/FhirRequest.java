@@ -28,26 +28,35 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.Scriptable;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+import java.util.UUID;
 
+@Scriptable
 public interface FhirRequest
 {
-    @Nullable FhirRequestMethod getRequestMethod();
+    @Nullable
+    FhirRequestMethod getRequestMethod();
 
-    @Nullable FhirResourceType getResourceType();
+    FhirResourceType getResourceType();
 
-    @Nullable String getResourceId();
+    @Nullable
+    String getResourceId();
 
-    boolean containsRequestParameters();
+    @Nonnull
+    FhirVersion getVersion();
 
-    boolean containsRequestParameter( @Nonnull String name );
+    boolean isRemoteSubscription();
 
-    @Nonnull Set<String> getParameterNames();
+    @Nullable
+    UUID getRemoteSubscriptionRequestId();
 
-    @Nullable List<String> getParameterValues( @Nonnull String name );
+    @Nullable
+    ResourceSystem getRemoteResourceSystem( @Nonnull FhirResourceType resourceType );
 
-    @Nonnull FhirVersion getVersion();
+    @Nonnull
+    Optional<ResourceSystem> getOptionalRemoteResourceSystem( @Nonnull FhirResourceType resourceType );
 }

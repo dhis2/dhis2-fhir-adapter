@@ -48,42 +48,55 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
         this.delegate = delegate;
     }
 
-    @Override public String getId()
+    @Override
+    public String getId()
     {
         return delegate.getId();
     }
 
-    @Override public String getName()
+    @Override
+    public String getName()
     {
         return delegate.getName();
     }
 
-    @Override public List<TrackedEntityTypeAttribute> getAttributes()
+    @Override
+    public List<TrackedEntityTypeAttribute> getAttributes()
     {
         return (delegate.getAttributes() == null) ? null : delegate.getAttributes().stream().map( ImmutableTrackedEntityTypeAttribute::new ).collect( Collectors.toList() );
     }
 
-    @Nonnull @Override public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
+    @Nonnull
+    @Override
+    public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
     {
         return delegate.getOptionalTypeAttribute( reference );
     }
 
-    @Nonnull @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
+    @Nonnull
+    @Override
+    public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByCode( @Nonnull String code )
     {
         return delegate.getOptionalTypeAttributeByCode( code ).map( ImmutableTrackedEntityTypeAttribute::new );
     }
 
-    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code )
+    @Nullable
+    @Override
+    public TrackedEntityTypeAttribute getTypeAttributeByCode( @Nonnull String code )
     {
         return getOptionalTypeAttributeByCode( code ).orElse( null );
     }
 
-    @Nonnull @Override public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
+    @Nonnull
+    @Override
+    public Optional<TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name )
     {
         return delegate.getOptionalTypeAttributeByName( name ).map( ImmutableTrackedEntityTypeAttribute::new );
     }
 
-    @Nullable @Override public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )
+    @Nullable
+    @Override
+    public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )
     {
         return getOptionalTypeAttributeByName( name ).orElse( null );
     }

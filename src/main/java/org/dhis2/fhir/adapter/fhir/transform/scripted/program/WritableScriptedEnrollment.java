@@ -29,11 +29,11 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.util.CastUtils;
 
 import javax.annotation.Nonnull;
@@ -48,25 +48,30 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     private final Enrollment enrollment;
 
-    private final DhisValueConverter dhisValueConverter;
+    private final ValueConverter valueConverter;
 
-    public WritableScriptedEnrollment( @Nonnull Enrollment enrollment, @Nonnull DhisValueConverter dhisValueConverter )
+    public WritableScriptedEnrollment( @Nonnull Enrollment enrollment, @Nonnull ValueConverter valueConverter )
     {
         this.enrollment = enrollment;
-        this.dhisValueConverter = dhisValueConverter;
+        this.valueConverter = valueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return enrollment.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return enrollment.getId();
     }
 
-    @Nullable @Override public String getOrganizationUnitId()
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
     {
         return enrollment.getOrgUnitId();
     }
@@ -76,7 +81,9 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setOrgUnitId( organizationUnitId );
     }
 
-    @Nullable @Override public ZonedDateTime getEnrollmentDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getEnrollmentDate()
     {
         return enrollment.getEnrollmentDate();
     }
@@ -88,20 +95,23 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     public void setEnrollmentDate( Object enrollmentDate )
     {
-        enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> dhisValueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
+        enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
-    @Nullable @Override public ZonedDateTime getIncidentDate()
+    @Nullable
+    @Override
+    public ZonedDateTime getIncidentDate()
     {
         return enrollment.getIncidentDate();
     }
 
     public void setIncidentDate( Object incidentDate )
     {
-        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
+        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> valueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
-    @Override public void validate() throws TransformerException
+    @Override
+    public void validate() throws TransformerException
     {
         if ( enrollment.getOrgUnitId() == null )
         {

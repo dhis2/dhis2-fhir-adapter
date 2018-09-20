@@ -28,12 +28,17 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+@Component
+@ConvertedValueTypes( types = ValueType.DATE )
 public class DateToIsoDateStringConverter extends TypedConverter<Date, String>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();
@@ -45,7 +50,9 @@ public class DateToIsoDateStringConverter extends TypedConverter<Date, String>
         super( Date.class, String.class );
     }
 
-    @Override public @Nullable String doConvert( @Nonnull Date source )
+    @Override
+    @Nullable
+    public String doConvert( @Nonnull Date source )
     {
         return formatter.format( source.toInstant().atZone( zoneId ) );
     }

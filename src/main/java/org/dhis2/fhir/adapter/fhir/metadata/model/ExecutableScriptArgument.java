@@ -65,7 +65,9 @@ public class ExecutableScriptArgument implements Serializable
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -75,7 +77,9 @@ public class ExecutableScriptArgument implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -85,7 +89,9 @@ public class ExecutableScriptArgument implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -95,7 +101,9 @@ public class ExecutableScriptArgument implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -105,7 +113,9 @@ public class ExecutableScriptArgument implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -115,7 +125,9 @@ public class ExecutableScriptArgument implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "override_value", length = 230 ) public String getOverrideValue()
+    @Basic
+    @Column( name = "override_value", length = 230 )
+    public String getOverrideValue()
     {
         return overrideValue;
     }
@@ -125,7 +137,9 @@ public class ExecutableScriptArgument implements Serializable
         this.overrideValue = overrideValue;
     }
 
-    @ManyToOne @JoinColumn( name = "executable_script_id", referencedColumnName = "id", nullable = false ) public ExecutableScript getScript()
+    @ManyToOne
+    @JoinColumn( name = "executable_script_id", referencedColumnName = "id", nullable = false )
+    public ExecutableScript getScript()
     {
         return script;
     }
@@ -135,7 +149,9 @@ public class ExecutableScriptArgument implements Serializable
         this.script = script;
     }
 
-    @ManyToOne @JoinColumn( name = "script_argument_id", referencedColumnName = "id", nullable = false ) public ScriptArgument getArgument()
+    @ManyToOne
+    @JoinColumn( name = "script_argument_id", referencedColumnName = "id", nullable = false )
+    public ScriptArgument getArgument()
     {
         return argument;
     }

@@ -28,12 +28,12 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Id;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public interface OrganisationUnitService
 {
-    Optional<OrganisationUnit> get( @Nonnull Id id );
+    Optional<OrganisationUnit> get( @Nonnull Reference reference );
 }

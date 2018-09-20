@@ -32,7 +32,8 @@ import javax.annotation.Nonnull;
 
 public interface AuthorizationContext
 {
-    @Nonnull Authorization getAuthentication();
+    @Nonnull
+    Authorization getAuthentication();
 
     void setAuthorization( @Nonnull Authorization authorization );
 

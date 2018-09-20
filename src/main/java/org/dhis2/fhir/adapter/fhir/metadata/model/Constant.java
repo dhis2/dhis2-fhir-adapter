@@ -33,6 +33,8 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -66,7 +68,9 @@ public class Constant implements Serializable
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id @Column( name = "id", nullable = false ) public UUID getId()
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
     }
@@ -76,7 +80,9 @@ public class Constant implements Serializable
         this.id = id;
     }
 
-    @Basic @Column( name = "version", nullable = false ) public Long getVersion()
+    @Basic
+    @Column( name = "version", nullable = false )
+    public Long getVersion()
     {
         return version;
     }
@@ -86,7 +92,9 @@ public class Constant implements Serializable
         this.version = version;
     }
 
-    @Basic @Column( name = "created_at", nullable = false ) public LocalDateTime getCreatedAt()
+    @Basic
+    @Column( name = "created_at", nullable = false )
+    public LocalDateTime getCreatedAt()
     {
         return createdAt;
     }
@@ -96,7 +104,9 @@ public class Constant implements Serializable
         this.createdAt = createdAt;
     }
 
-    @Basic @Column( name = "last_updated_by", length = 11 ) public String getLastUpdatedBy()
+    @Basic
+    @Column( name = "last_updated_by", length = 11 )
+    public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
     }
@@ -106,7 +116,9 @@ public class Constant implements Serializable
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    @Basic @Column( name = "last_updated_at", nullable = false ) public LocalDateTime getLastUpdatedAt()
+    @Basic
+    @Column( name = "last_updated_at", nullable = false )
+    public LocalDateTime getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
@@ -116,7 +128,9 @@ public class Constant implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @Basic @Column( name = "name", nullable = false, length = 230 ) public String getName()
+    @Basic
+    @Column( name = "name", nullable = false, length = 230 )
+    public String getName()
     {
         return name;
     }
@@ -126,7 +140,9 @@ public class Constant implements Serializable
         this.name = name;
     }
 
-    @Basic @Column( name = "description", length = -1 ) public String getDescription()
+    @Basic
+    @Column( name = "description", length = -1 )
+    public String getDescription()
     {
         return description;
     }
@@ -136,7 +152,10 @@ public class Constant implements Serializable
         this.description = description;
     }
 
-    @Basic @Column( name = "category", length = 30 ) public ConstantCategory getCategory()
+    @Basic
+    @Column( name = "category", length = 30, nullable = false )
+    @Enumerated( EnumType.STRING )
+    public ConstantCategory getCategory()
     {
         return category;
     }
@@ -146,7 +165,9 @@ public class Constant implements Serializable
         this.category = category;
     }
 
-    @Basic @Column( name = "code", nullable = false, length = 50 ) public String getCode()
+    @Basic
+    @Column( name = "code", nullable = false, length = 50 )
+    public String getCode()
     {
         return code;
     }
@@ -156,7 +177,10 @@ public class Constant implements Serializable
         this.code = code;
     }
 
-    @Basic @Column( name = "data_type", nullable = false, length = 30 ) public DataType getDataType()
+    @Basic
+    @Column( name = "data_type", nullable = false, length = 30 )
+    @Enumerated( EnumType.STRING )
+    public DataType getDataType()
     {
         return dataType;
     }
@@ -166,7 +190,9 @@ public class Constant implements Serializable
         this.dataType = dataType;
     }
 
-    @Basic @Column( name = "value", length = 250 ) public String getValue()
+    @Basic
+    @Column( name = "value", length = 250 )
+    public String getValue()
     {
         return value;
     }

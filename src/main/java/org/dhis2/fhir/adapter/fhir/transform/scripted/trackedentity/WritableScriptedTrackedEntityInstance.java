@@ -30,8 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
-import org.dhis2.fhir.adapter.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -39,6 +38,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttrib
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,31 +50,38 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     private final TrackedEntityInstance trackedEntityInstance;
 
-    private final DhisValueConverter dhisValueConverter;
+    private final ValueConverter valueConverter;
 
-    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull DhisValueConverter dhisValueConverter )
+    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
     {
         this.trackedEntityType = trackedEntityType;
         this.trackedEntityInstance = trackedEntityInstance;
-        this.dhisValueConverter = dhisValueConverter;
+        this.valueConverter = valueConverter;
     }
 
-    @Override public boolean isNewResource()
+    @Override
+    public boolean isNewResource()
     {
         return trackedEntityInstance.isNewResource();
     }
 
-    @Nullable @Override public String getId()
+    @Nullable
+    @Override
+    public String getId()
     {
         return trackedEntityInstance.getId();
     }
 
-    @Nonnull @Override public String getTypeId()
+    @Nonnull
+    @Override
+    public String getTypeId()
     {
         return trackedEntityType.getId();
     }
 
-    @Override public @Nullable String getOrganizationUnitId()
+    @Override
+    @Nullable
+    public String getOrganizationUnitId()
     {
         return trackedEntityInstance.getOrgUnitId();
     }
@@ -88,14 +95,15 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         trackedEntityInstance.setOrgUnitId( id );
     }
 
-    @Nullable public Location getCoordinates()
+    @Nullable
+    public Location getCoordinates()
     {
-        return dhisValueConverter.convert( trackedEntityInstance.getCoordinates(), ValueType.COORDINATE, Location.class );
+        return valueConverter.convert( trackedEntityInstance.getCoordinates(), ValueType.COORDINATE, Location.class );
     }
 
     public void setCoordinates( @Nullable Location location )
     {
-        trackedEntityInstance.setCoordinates( dhisValueConverter.convert( location, ValueType.COORDINATE, String.class ) );
+        trackedEntityInstance.setCoordinates( valueConverter.convert( location, ValueType.COORDINATE, String.class ) );
     }
 
     public void setValueByName( @Nonnull String typeAttrName, Object value ) throws TransformerException
@@ -111,7 +119,9 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         setValue( typeAttribute, value );
     }
 
-    @Nullable @Override public Object getValueByName( @Nonnull String typeAttrName )
+    @Nullable
+    @Override
+    public Object getValueByName( @Nonnull String typeAttrName )
     {
         final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
         return getValue( typeAttribute );
@@ -131,7 +141,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         final Object convertedValue;
         try
         {
-            convertedValue = dhisValueConverter.convert( value, typeAttribute.getValueType(), String.class );
+            convertedValue = valueConverter.convert( value, typeAttribute.getValueType(), String.class );
         }
         catch ( ConversionException e )
         {
@@ -146,7 +156,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         final Object convertedValue;
         try
         {
-            convertedValue = dhisValueConverter.convert( attributeValue.getValue(), typeAttribute.getValueType(), typeAttribute.getValueType().getJavaClass() );
+            convertedValue = valueConverter.convert( attributeValue.getValue(), typeAttribute.getValueType(), typeAttribute.getValueType().getJavaClass() );
         }
         catch ( ConversionException e )
         {

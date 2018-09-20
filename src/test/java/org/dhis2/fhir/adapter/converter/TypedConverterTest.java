@@ -40,7 +40,9 @@ public class TypedConverterTest
 {
     private final TypedConverter<Integer, String> converter = new TypedConverter<Integer, String>( Integer.class, String.class )
     {
-        @Nonnull @Override public String doConvert( @Nonnull Integer source ) throws ConversionException
+        @Nonnull
+        @Override
+        public String doConvert( @Nonnull Integer source ) throws ConversionException
         {
             return source.toString();
         }
