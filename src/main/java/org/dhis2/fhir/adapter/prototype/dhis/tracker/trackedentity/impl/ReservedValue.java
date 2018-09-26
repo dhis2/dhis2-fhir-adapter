@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,21 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 
-public class ImmutableTrackedEntityAttribute implements TrackedEntityAttribute, Serializable
+public class ReservedValue implements Serializable
 {
-    private static final long serialVersionUID = -6135628541438060211L;
+    private static final long serialVersionUID = 5364088079776272121L;
 
-    private final TrackedEntityAttribute delegate;
+    private String value;
 
-    public ImmutableTrackedEntityAttribute( @Nonnull TrackedEntityAttribute delegate )
+    public String getValue()
     {
-        this.delegate = delegate;
+        return value;
     }
 
-    @Override
-    public String getId()
+    public void setValue( String value )
     {
-        return delegate.getId();
-    }
-
-    @Override
-    public String getName()
-    {
-        return delegate.getName();
-    }
-
-    @Override
-    public String getCode()
-    {
-        return delegate.getCode();
-    }
-
-    @Override
-    public boolean isGenerated()
-    {
-        return delegate.isGenerated();
+        this.value = value;
     }
 }

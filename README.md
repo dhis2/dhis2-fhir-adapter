@@ -1,5 +1,5 @@
 # DHIS2 FHIR Adapter Prototype for Demo
-The adapter prototype handles for a demo the data as described by https://github.com/jamesagnew/aehin2018-demo-data. 
+The adapter prototype handles data for a demo. 
 
 The adapter provides the following functions:
 
@@ -35,6 +35,7 @@ The script above could check multiple vaccine codes at the same time with the ta
 |---------------|---------------|-----------------------------------|-------|
 | VACCINE       | VACCINE_BCG   | http://example.ph/vaccine-codes   | BCG   |
 | VACCINE       | VACCINE_BCG   | http://hospital.org/vaccine-codes | T-BCG | 
+| VACCINE       | VACCINE_BCG   | http://hl7.org/fhir/sid/cvx       | CVX   |
 
 To make scripts even more reusable, passing arguments to scripts would increase the reusability immensely. It has not yet been implemented and it has not been decided if and when such a feature will be integrated.
 

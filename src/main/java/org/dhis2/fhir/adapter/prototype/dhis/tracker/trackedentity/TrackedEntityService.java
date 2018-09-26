@@ -34,6 +34,15 @@ import java.util.Optional;
 
 public interface TrackedEntityService
 {
+    /**
+     * Creates a new non-persistent tracked entity instance where all generated values have been set.
+     *
+     * @param type the tracked entity type for which a new instance should be created.
+     * @return the created tracked entity instance .
+     */
+    @Nonnull
+    TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type );
+
     @Nonnull
     Optional<TrackedEntityInstance> getById( @Nonnull String id );
 

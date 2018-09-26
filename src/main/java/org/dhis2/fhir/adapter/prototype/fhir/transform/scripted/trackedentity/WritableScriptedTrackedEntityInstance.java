@@ -133,7 +133,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         {
             throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is mandatory and cannot be null." );
         }
-        if ( typeAttribute.isGenerated() )
+        if ( typeAttribute.getAttribute().isGenerated() )
         {
             throw new TransformMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" is generated and cannot be set." );
         }

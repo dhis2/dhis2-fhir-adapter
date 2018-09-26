@@ -189,7 +189,9 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirToTrackedEntityMapping mapping,
         @Nullable String id, @Nonnull Map<String, Object> scriptArguments ) throws TransformException
     {
-        return new TrackedEntityInstance( getTrackedEntityType( scriptArguments ).getId(), id, true );
+        final TrackedEntityInstance instance = trackedEntityService.createNewInstance( getTrackedEntityType( scriptArguments ) );
+        instance.setId( id );
+        return instance;
     }
 
     @Nonnull

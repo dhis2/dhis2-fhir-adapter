@@ -31,8 +31,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.prototype.dhis.model.Status;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.TrackedEntityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -51,6 +53,8 @@ import java.util.Optional;
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
+    protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
+
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String ID_URI = "/trackedEntityInstances/{id}.json";
@@ -66,6 +70,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type )
+    {
+        final TrackedEntityInstance instance = new TrackedEntityInstance( type.getId(), null, true );
+        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() ).forEach( a -> instance.getAttributes().add(
+            new TrackedEntityAttributeValue( a.getAttributeId(), getReservedValue( a.getAttributeId() ) ) ) );
+        return instance;
     }
 
     @Nonnull
@@ -138,5 +152,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             throw new RuntimeException( "Tracked tracked entity instance could not be created." );
         }
         return trackedEntityInstance;
+    }
+
+    @Nonnull
+    protected String getReservedValue( @Nonnull String attributeId )
+    {
+        final ReservedValue reservedValue = restTemplate.getForObject( GENERATE_URI, ReservedValue.class, attributeId );
+        return reservedValue.getValue();
     }
 }

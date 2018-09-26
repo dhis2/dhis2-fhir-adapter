@@ -71,6 +71,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -95,6 +96,8 @@ public class RemoteWebHookController
     private final Map<UUID, Set<ProcessedResource>> processedResourcesByResourceId = new ConcurrentHashMap<>();
 
     private final FhirContext fhirContext;
+
+    private final AtomicLong receivedRequestCount = new AtomicLong();
 
     @Value( "${dhis2.subscription.remote.baseUrl}" )
     private String remoteBaseUrl;
@@ -136,6 +139,8 @@ public class RemoteWebHookController
     public void receive( @PathVariable UUID subscriptionId, @PathVariable UUID subscriptionResourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
     {
+        logger.info( "Processing subscription web hook request {}", receivedRequestCount.incrementAndGet() );
+
         final RemoteSubscriptionResource subscriptionResource = resourceRepository.getOneForWebHookEvaluation( subscriptionResourceId )
             .orElseThrow( () -> new RestResourceNotFoundException( "Remote subscription data for resource cannot be found: " + subscriptionResourceId ) );
         if ( !subscriptionResource.getRemoteSubscription().getId().equals( subscriptionId ) )

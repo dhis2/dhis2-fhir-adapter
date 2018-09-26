@@ -72,6 +72,7 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.typeId = typeId;
         this.id = id;
         this.newResource = newResource;
+        this.attributes = new ArrayList<>();
     }
 
     @JsonIgnore

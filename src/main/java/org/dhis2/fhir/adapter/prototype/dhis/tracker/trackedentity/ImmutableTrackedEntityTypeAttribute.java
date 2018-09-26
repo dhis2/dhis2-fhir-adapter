@@ -69,12 +69,6 @@ public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAtt
     }
 
     @Override
-    public boolean isGenerated()
-    {
-        return delegate.isGenerated();
-    }
-
-    @Override
     public String getAttributeId()
     {
         return delegate.getAttributeId();

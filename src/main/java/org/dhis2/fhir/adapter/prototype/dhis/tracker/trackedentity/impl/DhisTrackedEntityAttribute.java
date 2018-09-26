@@ -42,6 +42,8 @@ public class DhisTrackedEntityAttribute implements Serializable
 
     private String code;
 
+    private boolean generated;
+
     public DhisTrackedEntityAttribute()
     {
         super();
@@ -77,8 +79,18 @@ public class DhisTrackedEntityAttribute implements Serializable
         this.code = code;
     }
 
+    public boolean isGenerated()
+    {
+        return generated;
+    }
+
+    public void setGenerated( boolean generated )
+    {
+        this.generated = generated;
+    }
+
     public WritableTrackedEntityAttribute toModel()
     {
-        return new WritableTrackedEntityAttribute( getId(), getName(), getCode() );
+        return new WritableTrackedEntityAttribute( getId(), getName(), getCode(), isGenerated() );
     }
 }

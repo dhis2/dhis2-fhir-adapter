@@ -44,8 +44,6 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
 
     private boolean mandatory;
 
-    private boolean generated;
-
     private WritableTrackedEntityAttribute attribute;
 
     public WritableTrackedEntityTypeAttribute()
@@ -53,13 +51,12 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         super();
     }
 
-    public WritableTrackedEntityTypeAttribute( String id, String name, ValueType valueType, boolean mandatory, boolean generated, WritableTrackedEntityAttribute attribute )
+    public WritableTrackedEntityTypeAttribute( String id, String name, ValueType valueType, boolean mandatory, WritableTrackedEntityAttribute attribute )
     {
         this.id = id;
         this.name = name;
         this.valueType = valueType;
         this.mandatory = mandatory;
-        this.generated = generated;
         this.attribute = attribute;
     }
 
@@ -105,17 +102,6 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
     public void setMandatory( boolean mandatory )
     {
         this.mandatory = mandatory;
-    }
-
-    @Override
-    public boolean isGenerated()
-    {
-        return generated;
-    }
-
-    public void setGenerated( boolean generated )
-    {
-        this.generated = generated;
     }
 
     @Override
