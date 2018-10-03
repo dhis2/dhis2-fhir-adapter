@@ -53,7 +53,6 @@ public class FhirConfig
         return new ThreadLocalAuthorizationContext();
     }
 
-    @Bean
     public ServletRegistrationBean<RestfulServer> fhirServerRegistrationBean( RestfulServer restfulServer )
     {
         final ServletRegistrationBean<RestfulServer> registration = new ServletRegistrationBean<>( restfulServer, FHIR_URL_MAPPING );
@@ -62,13 +61,11 @@ public class FhirConfig
         return registration;
     }
 
-    @Bean
     public AuthorizationResetFilter fhirAuthorizationResetFilter( AuthorizationContext authorizationContext )
     {
         return new AuthorizationResetFilter( authorizationContext );
     }
 
-    @Bean
     public FilterRegistrationBean<AuthorizationResetFilter> fhirAuthorizationResetFilter( @Qualifier( "fhirServerRegistrationBean" ) ServletRegistrationBean<RestfulServer> fhirServerRegistrationBean, AuthorizationResetFilter authorizationResetFilter )
     {
         final FilterRegistrationBean<AuthorizationResetFilter> registration = new FilterRegistrationBean<>( authorizationResetFilter, fhirServerRegistrationBean );

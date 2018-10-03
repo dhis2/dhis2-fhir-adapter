@@ -34,7 +34,10 @@ import java.util.Map;
 
 public enum FhirResourceType
 {
+    DIAGNOSTIC_REPORT( "diagnosticreport" ),
     IMMUNIZATION( "immunization" ),
+    LOCATION( "location" ),
+    OBSERVATION( "observation" ),
     ORGANIZATION( "organization" ),
     PATIENT( "patient" );
 

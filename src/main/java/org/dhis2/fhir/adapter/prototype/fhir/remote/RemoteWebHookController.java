@@ -287,21 +287,21 @@ public class RemoteWebHookController
         result.getEntry().stream().map( Bundle.BundleEntryComponent::getResource )
             .filter( r -> r.getResourceType() == resourceType ).forEach( r -> {
             final ProcessedResource pr = new ProcessedResource( r.getIdElement().toUnqualifiedVersionless().asStringValue(), r.getMeta().getLastUpdated() );
-                if ( !lastProcessedResources.contains( pr ) )
+            if ( !lastProcessedResources.contains( pr ) )
+            {
+                logger.info( "Processing {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                try
                 {
-                    logger.info( "Processing {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
-                    try
-                    {
-                        consumer.accept( (T) r, resourcesById );
-                        fhirRepository.save( subscriptionResource, r );
-                        logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
-                    }
-                    catch ( Throwable e )
-                    {
-                        logger.error( "Processing {} of subscription resource {} caused an error.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId(), e );
-                    }
+                    consumer.accept( (T) r, resourcesById );
+                    fhirRepository.save( subscriptionResource, r );
+                    logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
                 }
-                currentProcessedResources.add( pr );
+                catch ( Throwable e )
+                {
+                    logger.error( "Processing {} of subscription resource {} caused an error.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId(), e );
+                }
+            }
+            currentProcessedResources.add( pr );
         } );
         processedResourcesByResourceId.put( subscriptionResource.getId(), currentProcessedResources );
 

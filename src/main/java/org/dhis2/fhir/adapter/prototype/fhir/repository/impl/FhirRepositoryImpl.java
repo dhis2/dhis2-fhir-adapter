@@ -128,12 +128,6 @@ public class FhirRepositoryImpl implements FhirRepository
         }
     }
 
-    @Override
-    public String save( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest )
-    {
-        return saveDhisAuthenticated( resource, fhirRequest );
-    }
-
     protected String saveDhisAuthenticated( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest )
     {
         final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(

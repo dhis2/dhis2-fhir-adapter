@@ -104,7 +104,7 @@ The above contains an example of such a generated resource ID. It contains the I
 
 ## Implementation Notes
 - The prototype may only contain technical and functional implementations that are absolutely required for the demo (even if in most cases more than required for the demo).
-- The prototype may contain a read-only metadata database that contains the mappings.
+- The prototype may contain an in-memory database that also contains the mappings.
 - The prototype may not be optimized (e.g. may not use caching).
 - The prototype may not be unit tested.
 - The prototype may not be able to handle multiple FHIR versions at the same time.

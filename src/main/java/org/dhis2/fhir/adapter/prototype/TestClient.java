@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.prototype;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.DecimalType;
@@ -46,30 +45,30 @@ import org.hl7.fhir.dstu3.model.Reference;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.Random;
 
 public class TestClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
 
-    private static final String USERNAME = "admin";
-
-    private static final String PASSWORD = "district";
-
-    private static final boolean STATIC_PATIENT_NATIONAL_ID = true;
 
     public static void main( String[] args )
     {
+        if ( args.length != 2 )
+        {
+            System.err.println( "Syntax: ORG_CODE PATIENT_NATIONAL_ID" );
+            System.exit( 10 );
+        }
+        final String orgCode = args[0];
+        final String patientNationalId = args[1];
+
         final FhirContext ctx = FhirContext.forDstu3();
         final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
         client.registerInterceptor( new LoggingInterceptor( true ) );
-        client.registerInterceptor( new BasicAuthInterceptor( USERNAME, PASSWORD ) );
 
-        final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4911" : String.valueOf( Math.abs( new Random().nextInt() ) );
-
-        final String orgCode = "PHL-D-2";
+        ///////////////
         // Organization
+        ///////////////
+
         Organization org = new Organization();
         org.setId( IdType.newRandomUuid() );
         org.setName( "District Hospital" );
@@ -77,13 +76,15 @@ public class TestClient
             .setSystem( "http://example.ph/organizations" )
             .setValue( orgCode );
 
-        // Create Patient
+        //////////////////////////////////
+        // Create Patient (new born child)
+        //////////////////////////////////
+
         Patient patient = new Patient();
         patient.setIdElement( IdType.newRandomUuid() );
         patient.addIdentifier()
             .setSystem( "http://example.ph/national-patient-id" )
             .setValue( patientNationalId );
-
         patient.addName()
             .setFamily( "Cruz" )
             .addGiven( "Angelica" )
@@ -107,25 +108,28 @@ public class TestClient
                 .setValue( new DecimalType( 123.9 ) ) );
         patient.setManagingOrganization( new Reference( org.getId() ) );
 
-        // Create Vaccination
+        //////////////////////
+        // Create Vaccinations
+        //////////////////////
+
         Immunization imm1 = new Immunization();
         imm1.getPatient().setReference( patient.getId() );
         imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm1.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm1.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm1.setNotGiven( false );
         imm1.setPrimarySource( true );
         imm1.getVaccineCode()
             .addCoding()
             .setSystem( "http://example.ph/vaccine-codes" )
             .setCode( "DTaP" )
-            .setDisplay( "Oral Polio Vaccine" );
+            .setDisplay( "DTaP" );
         imm1.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
         Immunization imm2 = new Immunization();
         imm2.getPatient().setReference( patient.getId() );
         imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm2.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm2.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm2.setNotGiven( false );
         imm2.setPrimarySource( true );
         imm2.getVaccineCode()
@@ -139,7 +143,7 @@ public class TestClient
         Immunization imm3 = new Immunization();
         imm3.getPatient().setReference( patient.getId() );
         imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm3.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm3.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm3.setNotGiven( false );
         imm3.setPrimarySource( true );
         imm3.getVaccineCode()
@@ -150,13 +154,24 @@ public class TestClient
         imm3.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
-        /*
-         * Create transaction
-         *
-         * This has the following logic:
-         *  - Always update the patient
-         *  - Always update the immunization
-         */
+        Immunization imm4 = new Immunization();
+        imm4.getPatient().setReference( patient.getId() );
+        imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm4.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm4.setNotGiven( false );
+        imm4.setPrimarySource( true );
+        imm4.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://example.ph/vaccine-codes" )
+            .setCode( "OPV" )
+            .setDisplay( "OPV" );
+        imm4.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
+
+        ////////////////////////////////////////
+        // Transaction Bundle with Create/Update
+        ////////////////////////////////////////
+
         Bundle bundle = new Bundle();
         bundle.setType( Bundle.BundleType.TRANSACTION );
         bundle.addEntry()
@@ -176,19 +191,25 @@ public class TestClient
             .setFullUrl( imm1.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2897" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2896" );
         bundle.addEntry()
             .setResource( imm2 )
             .setFullUrl( imm2.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2878" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2897" );
         bundle.addEntry()
             .setResource( imm3 )
             .setFullUrl( imm3.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2879" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2898" );
+        bundle.addEntry()
+            .setResource( imm4 )
+            .setFullUrl( imm4.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2899" );
 
         client.transaction().withBundle( bundle ).execute();
     }

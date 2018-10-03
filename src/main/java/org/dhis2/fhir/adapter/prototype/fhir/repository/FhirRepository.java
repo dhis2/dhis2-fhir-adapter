@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.prototype.fhir.repository;
  */
 
 import org.dhis2.fhir.adapter.prototype.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.prototype.fhir.model.FhirRequest;
 import org.hl7.fhir.dstu3.model.Resource;
 
 import javax.annotation.Nonnull;
@@ -37,6 +36,4 @@ import javax.annotation.Nonnull;
 public interface FhirRepository
 {
     String save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Resource resource );
-
-    String save( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest );
 }

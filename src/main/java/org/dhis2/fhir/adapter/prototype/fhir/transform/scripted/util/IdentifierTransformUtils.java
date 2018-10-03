@@ -83,12 +83,7 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
                 return idPart;
             }
         }
-        final String idPart = reference.getReferenceElement().getIdPart();
-        if ( (idPart == null) && (reference.getResource() != null) )
-        {
-            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
-        }
-        return idPart;
+        return null;
     }
 
     @Nullable
@@ -111,12 +106,7 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
                 return id;
             }
         }
-        final String idPart = reference.getReferenceElement().getIdPart();
-        if ( (idPart == null) && (reference.getResource() != null) )
-        {
-            throw new TransformMappingException( "FHIR reference contains referenced resource " + reference.getResource().getClass().getSimpleName() + " but no unqualified ID." );
-        }
-        return (idPart == null) ? null : new Id( idPart, IdType.ID );
+        return null;
     }
 
     @Nullable
@@ -148,8 +138,7 @@ public class IdentifierTransformUtils extends AbstractTransformUtils
         {
             return new Id( identifier, IdType.CODE );
         }
-        final String idPart = domainResource.getIdElement().getIdPart();
-        return (idPart == null) ? null : new Id( idPart, IdType.ID );
+        return null;
     }
 
     public boolean containsIdentifier( @Nullable DomainResource domainResource, @Nullable String system ) throws TransformException
