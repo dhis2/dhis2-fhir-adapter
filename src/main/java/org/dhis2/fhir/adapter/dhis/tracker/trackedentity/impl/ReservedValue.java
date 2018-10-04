@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.model;
+package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,34 +28,21 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.io.Serializable;
 
-public enum FhirResourceType
+public class ReservedValue implements Serializable
 {
-    IMMUNIZATION( "immunization" ),
-    ORGANIZATION( "organization" ),
-    PATIENT( "patient" );
+    private static final long serialVersionUID = 5364088079776272121L;
 
-    private static final Map<String, FhirResourceType> resourceTypesByPath = Arrays.stream( values() ).collect( Collectors.toMap( FhirResourceType::getPath, v -> v ) );
+    private String value;
 
-    public static @Nullable
-    FhirResourceType getByPath( @Nullable String path )
+    public String getValue()
     {
-        return resourceTypesByPath.get( path );
+        return value;
     }
 
-    private final String path;
-
-    FhirResourceType( String path )
+    public void setValue( String value )
     {
-        this.path = path;
-    }
-
-    public String getPath()
-    {
-        return path;
+        this.value = value;
     }
 }

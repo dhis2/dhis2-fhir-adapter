@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.util;
+package org.dhis2.fhir.adapter.prototype.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo

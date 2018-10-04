@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -70,5 +70,15 @@ public class CodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransforme
             }
         }
         return null;
+    }
+
+    public boolean containsCode( @Nullable CodeableConcept codeableConcept, @Nonnull String system, @Nonnull String code )
+    {
+        if ( codeableConcept == null )
+        {
+            return false;
+        }
+        return codeableConcept.getCoding().stream().anyMatch(
+            coding -> system.equals( coding.getSystem() ) && code.equals( coding.getCode() ) );
     }
 }

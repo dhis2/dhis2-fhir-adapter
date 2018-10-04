@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.prototype;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -33,63 +33,79 @@ import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.codesystems.ObservationCategory;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.UUID;
 
 public class TestClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
 
-    private static final boolean STATIC_PATIENT_NATIONAL_ID = false;
 
     public static void main( String[] args )
     {
+        if ( args.length != 3 )
+        {
+            System.err.println( "Syntax: ORG_CODE CHILD_NATIONAL_ID MOTHER_NATIONAL_ID" );
+            System.exit( 10 );
+        }
+        final String orgCode = args[0];
+        final String childNationalId = args[1];
+        final String motherNationalId = args[2];
+
         final FhirContext ctx = FhirContext.forDstu3();
         final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
         client.registerInterceptor( new LoggingInterceptor( true ) );
 
-        final String patientNationalId = STATIC_PATIENT_NATIONAL_ID ?
-            "4740" : UUID.randomUUID().toString();
-
+        ///////////////
         // Organization
+        ///////////////
+
         Organization org = new Organization();
         org.setId( IdType.newRandomUuid() );
         org.setName( "District Hospital" );
         org.addIdentifier()
             .setSystem( "http://example.ph/organizations" )
-            .setValue( "PHL-D-1" );
+            .setValue( orgCode );
 
-        // Create Patient
-        Patient patient = new Patient();
-        patient.setIdElement( IdType.newRandomUuid() );
-        patient.addIdentifier()
+        //////////////////////////////////
+        // Create Patient (new born child)
+        //////////////////////////////////
+
+        Patient child = new Patient();
+        child.setIdElement( IdType.newRandomUuid() );
+        child.addIdentifier()
             .setSystem( "http://example.ph/national-patient-id" )
-            .setValue( patientNationalId );
-
-        patient.addName()
+            .setValue( childNationalId );
+        child.addName()
             .setFamily( "Cruz" )
-            .addGiven( "Angelica" )
-            .addGiven( "Cecelia" ).addGiven( "Kristin" );
-        patient.getBirthDateElement().setValue( Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            .addGiven( "Kristin" );
+        child.getBirthDateElement().setValue(
+            Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY );
-        patient.setGender( Enumerations.AdministrativeGender.FEMALE );
-        patient.addAddress()
-            .addLine( "Unit 607, Tower 1 Marco Polo Residences " + System.currentTimeMillis() )
+        child.setGender( Enumerations.AdministrativeGender.FEMALE );
+        child.addAddress()
+            .addLine( "Unit 607, Tower 1 Marco Polo Residences" )
             .setCity( "Cebu City" )
             .setState( "Cebu" )
             .setCountry( "Philippines" );
-        patient.getAddress().get( 0 )
+        child.getAddress().get( 0 )
             .addExtension()
             .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
             .addExtension( new Extension()
@@ -98,27 +114,63 @@ public class TestClient
             .addExtension( new Extension()
                 .setUrl( "longitude" )
                 .setValue( new DecimalType( 123.9 ) ) );
-        patient.setManagingOrganization( new Reference( org.getId() ) );
+        child.setManagingOrganization( new Reference( org.getId() ) );
 
-        // Create Vaccination
+        //////////////////////////
+        // Create Patient (mother)
+        //////////////////////////
+
+        Patient mother = new Patient();
+        mother.setIdElement( IdType.newRandomUuid() );
+        mother.addIdentifier()
+            .setSystem( "http://example.ph/national-patient-id" )
+            .setValue( motherNationalId );
+        mother.addName()
+            .setFamily( "Cruz" )
+            .addGiven( "Angelica" )
+            .addGiven( "Cecelia" );
+        mother.getBirthDateElement().setValue(
+            Date.from( LocalDate.now().minusYears( 16 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY );
+        mother.setGender( Enumerations.AdministrativeGender.FEMALE );
+        mother.addAddress()
+            .addLine( "Unit 607, Tower 1 Marco Polo Residences" )
+            .setCity( "Cebu City" )
+            .setState( "Cebu" )
+            .setCountry( "Philippines" );
+        mother.getAddress().get( 0 )
+            .addExtension()
+            .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
+            .addExtension( new Extension()
+                .setUrl( "latitude" )
+                .setValue( new DecimalType( 10.3 ) ) )
+            .addExtension( new Extension()
+                .setUrl( "longitude" )
+                .setValue( new DecimalType( 123.9 ) ) );
+        mother.setManagingOrganization( new Reference( org.getId() ) );
+
+        //////////////////////
+        // Create Vaccinations
+        //////////////////////
+
         Immunization imm1 = new Immunization();
-        imm1.getPatient().setReference( patient.getId() );
+        imm1.getPatient().setReference( child.getId() );
         imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm1.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm1.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm1.setNotGiven( false );
         imm1.setPrimarySource( true );
         imm1.getVaccineCode()
             .addCoding()
             .setSystem( "http://example.ph/vaccine-codes" )
-            .setCode( "OPV" )
-            .setDisplay( "Oral Polio Vaccine" );
+            .setCode( "DTaP" )
+            .setDisplay( "DTaP" );
         imm1.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
         Immunization imm2 = new Immunization();
-        imm2.getPatient().setReference( patient.getId() );
+        imm2.getPatient().setReference( child.getId() );
         imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm2.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm2.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm2.setNotGiven( false );
         imm2.setPrimarySource( true );
         imm2.getVaccineCode()
@@ -130,9 +182,9 @@ public class TestClient
             .setSeries( "2" );
 
         Immunization imm3 = new Immunization();
-        imm3.getPatient().setReference( patient.getId() );
+        imm3.getPatient().setReference( child.getId() );
         imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
-        imm3.getDateElement().setValueAsString( "2011-09-12T14:00:03+07:00" );
+        imm3.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm3.setNotGiven( false );
         imm3.setPrimarySource( true );
         imm3.getVaccineCode()
@@ -143,45 +195,104 @@ public class TestClient
         imm3.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
-        /*
-         * Create transaction
-         *
-         * This has the following logic:
-         *  - Always update the patient
-         *  - Always update the immunization
-         */
+        Immunization imm4 = new Immunization();
+        imm4.getPatient().setReference( child.getId() );
+        imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm4.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm4.setNotGiven( false );
+        imm4.setPrimarySource( true );
+        imm4.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://example.ph/vaccine-codes" )
+            .setCode( "OPV" )
+            .setDisplay( "OPV" );
+        imm4.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
+
+        ////////////////////////
+        // Last Menstrual Period
+        ////////////////////////
+
+        Observation lmp = new Observation();
+        lmp.addCategory( new CodeableConcept().addCoding( new Coding().setSystem( ObservationCategory.SOCIALHISTORY.getSystem() ).setCode( ObservationCategory.SOCIALHISTORY.toCode() ) ) );
+        lmp.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8665-2" ) ) );
+        lmp.getSubject().setReference( mother.getId() );
+        lmp.setValue( new DateTimeType( Date.from( LocalDate.now().minusDays( 7 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ), TemporalPrecisionEnum.DAY ) );
+
+        /////////////////
+        // Blood Pressure
+        /////////////////
+
+        Observation bloodPressure = new Observation();
+        bloodPressure.setStatus( Observation.ObservationStatus.FINAL );
+        bloodPressure.addCategory( new CodeableConcept().addCoding( new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bloodPressure.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "85354-9" ) ) );
+        bloodPressure.getSubject().setReference( mother.getId() );
+        bloodPressure.addComponent().setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8480-6" ) ) )
+            .setValue( new Quantity().setValue( new BigDecimal( 120L ) ).setCode( "UCUM" ).setUnit( "mm[Hg]" ) );
+        bloodPressure.addComponent().setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8462-4" ) ) )
+            .setValue( new Quantity().setValue( new BigDecimal( 100L ) ).setCode( "UCUM" ).setUnit( "mm[Hg]" ) );
+
+        ////////////////////////////////////////
+        // Transaction Bundle with Create/Update
+        ////////////////////////////////////////
+
         Bundle bundle = new Bundle();
         bundle.setType( Bundle.BundleType.TRANSACTION );
         bundle.addEntry()
-            .setResource( patient )
-            .setFullUrl( patient.getId() )
+            .setResource( child )
+            .setFullUrl( child.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + patientNationalId );
+            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + childNationalId );
+        bundle.addEntry()
+            .setResource( mother )
+            .setFullUrl( mother.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + motherNationalId );
         bundle.addEntry()
             .setResource( org )
             .setFullUrl( org.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Organization?identifier=http://example.ph/organizations|PHL-D-1" );
+            .setUrl( "Organization?identifier=http://example.ph/organizations|" + orgCode );
         bundle.addEntry()
             .setResource( imm1 )
             .setFullUrl( imm1.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2877" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2896" );
         bundle.addEntry()
             .setResource( imm2 )
             .setFullUrl( imm2.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2878" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2897" );
         bundle.addEntry()
             .setResource( imm3 )
             .setFullUrl( imm3.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2879" );
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2898" );
+        bundle.addEntry()
+            .setResource( imm4 )
+            .setFullUrl( imm4.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2899" );
+        bundle.addEntry()
+            .setResource( lmp )
+            .setFullUrl( lmp.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Observation?identifier=http://example.ph/observations|378-2879" );
+        bundle.addEntry()
+            .setResource( bloodPressure )
+            .setFullUrl( bloodPressure.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Observation?identifier=http://example.ph/observations|378-2880" );
 
         client.transaction().withBundle( bundle ).execute();
     }

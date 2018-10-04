@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.rest;
+package org.dhis2.fhir.adapter.prototype.fhir.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,30 @@ package org.dhis2.fhir.adapter.prototype.rest;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.http.HttpStatus;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.hl7.fhir.dstu3.model.BaseDateTimeType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 
-public class RestResourceNotFoundException extends RestResponseEntityException
+public class BaseDateTimeTypeToZonedDateTimeConverter extends TypedConverter<BaseDateTimeType, ZonedDateTime>
 {
-    private static final long serialVersionUID = -7487909336857881610L;
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
-    public RestResourceNotFoundException()
+    public BaseDateTimeTypeToZonedDateTimeConverter()
     {
-        super();
+        super( BaseDateTimeType.class, ZonedDateTime.class );
     }
 
-    public RestResourceNotFoundException( String message )
-    {
-        super( message );
-    }
-
-    public RestResourceNotFoundException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
-
-    public RestResourceNotFoundException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    @Nonnull
+    @Nullable
     @Override
-    public HttpStatus getHttpStatus()
+    public ZonedDateTime doConvert( @Nonnull BaseDateTimeType source ) throws ConversionException
     {
-        return HttpStatus.NOT_FOUND;
+        final Date value = source.getValue();
+        return (value == null) ? null : value.toInstant().atZone( zoneId );
     }
 }

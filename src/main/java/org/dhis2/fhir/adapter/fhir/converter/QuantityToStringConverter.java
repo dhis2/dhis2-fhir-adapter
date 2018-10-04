@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.rest;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,25 @@ package org.dhis2.fhir.adapter.prototype.rest;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.http.HttpStatus;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.hl7.fhir.dstu3.model.Quantity;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class RestResourceNotFoundException extends RestResponseEntityException
+public class QuantityToStringConverter extends TypedConverter<Quantity, String>
 {
-    private static final long serialVersionUID = -7487909336857881610L;
-
-    public RestResourceNotFoundException()
+    public QuantityToStringConverter()
     {
-        super();
+        super( Quantity.class, String.class );
     }
 
-    public RestResourceNotFoundException( String message )
-    {
-        super( message );
-    }
-
-    public RestResourceNotFoundException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
-
-    public RestResourceNotFoundException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    @Nonnull
+    @Nullable
     @Override
-    public HttpStatus getHttpStatus()
+    public String doConvert( @Nonnull Quantity source ) throws ConversionException
     {
-        return HttpStatus.NOT_FOUND;
+        final Number number = source.getValueElement().getValueAsNumber();
+        return (number == null) ? null : number.toString();
     }
 }

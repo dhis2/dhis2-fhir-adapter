@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
@@ -72,8 +73,16 @@ public class EnrollmentServiceImpl implements EnrollmentService
     @Override
     public Enrollment create( Enrollment enrollment )
     {
-        final ResponseEntity<EnrollmentImportSummaryWebMessage> response =
-            restTemplate.postForEntity( ENROLLMENTS_URI, enrollment, EnrollmentImportSummaryWebMessage.class );
+        final ResponseEntity<EnrollmentImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.postForEntity( ENROLLMENTS_URI, enrollment, EnrollmentImportSummaryWebMessage.class );
+        }
+        catch (
+            HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Enrollment could not be created: " + e.getResponseBodyAsString(), e );
+        }
         final EnrollmentImportSummaryWebMessage result = response.getBody();
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||

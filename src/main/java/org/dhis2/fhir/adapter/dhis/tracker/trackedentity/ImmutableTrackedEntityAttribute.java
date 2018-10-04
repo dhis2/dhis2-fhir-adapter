@@ -59,4 +59,10 @@ public class ImmutableTrackedEntityAttribute implements TrackedEntityAttribute, 
     {
         return delegate.getCode();
     }
+
+    @Override
+    public boolean isGenerated()
+    {
+        return delegate.isGenerated();
+    }
 }

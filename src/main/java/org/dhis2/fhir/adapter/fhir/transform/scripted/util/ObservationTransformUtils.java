@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.rest;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,41 @@ package org.dhis2.fhir.adapter.prototype.rest;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.http.HttpStatus;
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
-public class RestResourceNotFoundException extends RestResponseEntityException
+@Component
+@Scriptable
+public class ObservationTransformUtils extends AbstractTransformUtils
 {
-    private static final long serialVersionUID = -7487909336857881610L;
+    private static final String SCRIPT_ATTR_NAME = "observationUtils";
 
-    public RestResourceNotFoundException()
-    {
-        super();
-    }
+    private CodeTransformUtils codeTransformUtils;
 
-    public RestResourceNotFoundException( String message )
+    public ObservationTransformUtils( @Nonnull CodeTransformUtils codeTransformUtils )
     {
-        super( message );
-    }
-
-    public RestResourceNotFoundException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
-
-    public RestResourceNotFoundException( Throwable cause )
-    {
-        super( cause );
+        this.codeTransformUtils = codeTransformUtils;
     }
 
     @Nonnull
     @Override
-    public HttpStatus getHttpStatus()
+    public String getScriptAttrName()
     {
-        return HttpStatus.NOT_FOUND;
+        return SCRIPT_ATTR_NAME;
+    }
+
+    public Observation.ObservationComponentComponent getBackboneElement( @Nullable List<Observation.ObservationComponentComponent> backboneElements, @Nonnull String system, @Nonnull String code )
+    {
+        if ( backboneElements == null )
+        {
+            return null;
+        }
+        return backboneElements.stream().filter( c -> codeTransformUtils.containsCode( c.getCode(), system, code ) )
+            .findFirst().orElse( new Observation.ObservationComponentComponent() );
     }
 }

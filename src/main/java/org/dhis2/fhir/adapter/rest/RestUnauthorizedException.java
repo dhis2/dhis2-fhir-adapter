@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.rest;
+package org.dhis2.fhir.adapter.prototype.rest;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo

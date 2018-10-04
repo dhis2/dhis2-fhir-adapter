@@ -40,16 +40,19 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
 
     private String code;
 
+    private boolean generated;
+
     public WritableTrackedEntityAttribute()
     {
         super();
     }
 
-    public WritableTrackedEntityAttribute( String id, String name, String code )
+    public WritableTrackedEntityAttribute( String id, String name, String code, boolean generated )
     {
         this.id = id;
         this.name = name;
         this.code = code;
+        this.generated = generated;
     }
 
     @Override
@@ -83,5 +86,16 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
     public void setCode( String code )
     {
         this.code = code;
+    }
+
+    @Override
+    public boolean isGenerated()
+    {
+        return generated;
+    }
+
+    public void setGenerated( boolean generated )
+    {
+        this.generated = generated;
     }
 }

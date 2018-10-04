@@ -38,4 +38,6 @@ public interface TrackedEntityAttribute
     String getName();
 
     String getCode();
+
+    boolean isGenerated();
 }

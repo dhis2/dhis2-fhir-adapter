@@ -40,6 +40,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
@@ -90,8 +91,15 @@ public class EventServiceImpl implements EventService
     @Nonnull
     public Event create( @Nonnull Event event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( CREATE_URI, event, ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.postForEntity( CREATE_URI, event, ImportSummaryWebMessage.class );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Event could not be created: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
@@ -107,9 +115,16 @@ public class EventServiceImpl implements EventService
     @Nonnull
     public Event update( @Nonnull Event event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
                 ImportSummaryWebMessage.class, event.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( result.getStatus() != Status.OK )
         {
@@ -120,9 +135,16 @@ public class EventServiceImpl implements EventService
 
     public void update( @Nonnull MinimalEvent event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.exchange( UPDATE_DATA_VALUE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.exchange( UPDATE_DATA_VALUE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
                 ImportSummaryWebMessage.class, event.getId(), event.getDataElementId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( result.getStatus() != Status.OK )
         {

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.rest;
+package org.dhis2.fhir.adapter.prototype.fhir.model;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,37 @@ package org.dhis2.fhir.adapter.prototype.rest;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.http.HttpStatus;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.annotation.Nonnull;
-
-public class RestResourceNotFoundException extends RestResponseEntityException
+public enum FhirResourceType
 {
-    private static final long serialVersionUID = -7487909336857881610L;
+    DIAGNOSTIC_REPORT( "diagnosticreport" ),
+    IMMUNIZATION( "immunization" ),
+    LOCATION( "location" ),
+    MEDICATION_REQUEST( "medicationrequest" ),
+    OBSERVATION( "observation" ),
+    ORGANIZATION( "organization" ),
+    PATIENT( "patient" );
 
-    public RestResourceNotFoundException()
+    private static final Map<String, FhirResourceType> resourceTypesByPath = Arrays.stream( values() ).collect( Collectors.toMap( FhirResourceType::getPath, v -> v ) );
+
+    @Nullable
+    public static FhirResourceType getByPath( @Nullable String path )
     {
-        super();
+        return resourceTypesByPath.get( path );
     }
 
-    public RestResourceNotFoundException( String message )
+    private final String path;
+
+    FhirResourceType( String path )
     {
-        super( message );
+        this.path = path;
     }
 
-    public RestResourceNotFoundException( String message, Throwable cause )
+    public String getPath()
     {
-        super( message, cause );
-    }
-
-    public RestResourceNotFoundException( Throwable cause )
-    {
-        super( cause );
-    }
-
-    @Nonnull
-    @Override
-    public HttpStatus getHttpStatus()
-    {
-        return HttpStatus.NOT_FOUND;
+        return path;
     }
 }
