@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.trackedentity.impl;
+package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo

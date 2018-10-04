@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo

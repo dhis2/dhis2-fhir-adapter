@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Objects;

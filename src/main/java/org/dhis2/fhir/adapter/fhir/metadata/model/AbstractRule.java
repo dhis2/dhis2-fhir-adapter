@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
@@ -75,8 +74,8 @@ public abstract class AbstractRule implements Serializable
     private String description;
     private boolean enabled;
     private int evaluationOrder;
-    private FhirResourceType fhirResourceType;
     private DhisResourceType dhisResourceType;
+    private FhirResourceType fhirResourceType;
     private ExecutableScript applicableInScript;
     private ExecutableScript transformInScript;
 

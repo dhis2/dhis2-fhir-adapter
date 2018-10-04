@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.converter;
+package org.dhis2.fhir.adapter.fhir.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.prototype.fhir.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
-import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
+import org.dhis2.fhir.adapter.converter.TypedConverter;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
 
 import javax.annotation.Nonnull;
@@ -38,6 +40,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+@ConvertedValueTypes( types = ValueType.DATETIME )
 public class BaseDateTimeTypeToZonedDateTimeConverter extends TypedConverter<BaseDateTimeType, ZonedDateTime>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();

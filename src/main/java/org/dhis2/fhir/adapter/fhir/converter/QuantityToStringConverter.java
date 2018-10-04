@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.converter;
+package org.dhis2.fhir.adapter.fhir.converter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,16 @@ package org.dhis2.fhir.adapter.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
-import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
+import org.dhis2.fhir.adapter.converter.TypedConverter;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.dstu3.model.Quantity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@ConvertedValueTypes( types = ValueType.TEXT )
 public class QuantityToStringConverter extends TypedConverter<Quantity, String>
 {
     public QuantityToStringConverter()

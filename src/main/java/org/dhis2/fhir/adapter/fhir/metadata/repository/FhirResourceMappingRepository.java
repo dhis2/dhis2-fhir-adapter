@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
-import org.dhis2.fhir.adapter.fhir.transform.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

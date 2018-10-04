@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,7 +28,8 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.springframework.stereotype.Component;
 
@@ -38,14 +39,15 @@ import java.util.List;
 
 @Component
 @Scriptable
-public class ObservationTransformUtils extends AbstractTransformUtils
+public class ObservationTransformUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "observationUtils";
 
-    private CodeTransformUtils codeTransformUtils;
+    private CodeFhirToDhisTransformerUtils codeTransformUtils;
 
-    public ObservationTransformUtils( @Nonnull CodeTransformUtils codeTransformUtils )
+    public ObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeFhirToDhisTransformerUtils codeTransformUtils )
     {
+        super( scriptExecutionContext );
         this.codeTransformUtils = codeTransformUtils;
     }
 

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -33,7 +33,8 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +48,7 @@ import java.util.Map;
 
 @Component
 @Scriptable
-public class FhirClientTransformUtils extends AbstractTransformUtils
+public class FhirClientTransformUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
 
@@ -58,6 +59,11 @@ public class FhirClientTransformUtils extends AbstractTransformUtils
 
     @Value( "${dhis2.subscription.remote.authorizationHeader}" )
     private String remoteAuthorizationHeader;
+
+    public FhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
 
     @Override
     public String getScriptAttrName()
