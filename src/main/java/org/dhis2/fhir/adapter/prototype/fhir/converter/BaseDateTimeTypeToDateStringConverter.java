@@ -28,18 +28,32 @@ package org.dhis2.fhir.adapter.prototype.fhir.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.hl7.fhir.dstu3.model.BaseDateTimeType;
 
-public class FhirDhisValueConverter extends DhisValueConverter
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
+public class BaseDateTimeTypeToDateStringConverter extends TypedConverter<BaseDateTimeType, String>
 {
-    @Override
-    protected void initConverters()
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE.withZone( zoneId );
+
+    public BaseDateTimeTypeToDateStringConverter()
     {
-        addConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
-        addConverter( ValueType.NUMBER, new QuantityToStringConverter() );
-        addConverter( ValueType.DATE, new BaseDateTimeTypeToDateStringConverter() );
-        addConverter( ValueType.DATETIME, new BaseDateTimeTypeToZonedDateTimeConverter() );
-        super.initConverters();
+        super( BaseDateTimeType.class, String.class );
+    }
+
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull BaseDateTimeType source ) throws ConversionException
+    {
+        final Date value = source.getValue();
+        return (value == null) ? null : formatter.format( value.toInstant().atZone( zoneId ) );
     }
 }

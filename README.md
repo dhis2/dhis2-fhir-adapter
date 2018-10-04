@@ -1,13 +1,14 @@
 # DHIS2 FHIR Adapter Prototype for Demo
-The adapter prototype handles data for a demo. 
+The adapter prototype handles data for a demo and can be seen as a proof of concept that rules and transformations can be used to bring data from FHIR into DHIS Tracker.. 
 
 The adapter provides the following functions:
 
 - Accepting subscription web hook notification from a remote FHIR server.
 - Importing data from systems that uses different FHIR resource IDs than the adapter itself (creation and updates based on filters).
 - Creating and updating (based on a national identifier, not on the resource ID) Tracked Entity Type "Person" from FHIR resource "Patient".
-- Enrolling a "Person" into the child immunization program when it is younger than one year and receives one of the vaccines that is handled by the program. 
-- Creating and updating events with vaccination information of the enrolled "Person".
+- Enrolling a "Person" into the child immunization program when it is younger than one year and receives one of the vaccines that is handled by the program.
+- Enrolling a female "Person" into the WHO RMNCH Tracker program when it is older than fifteen years and has a last menstrual period observation and any supported data in the 1st ANC program stage is delivered.
+- Creating and updating events with vaccination, observation information of the enrolled "Person".
 
 The mapping process uses a flexible and configurable rule based data transformation. 
 
@@ -25,7 +26,8 @@ The adapter uses the following mapping table to decide which rule is applicable 
 
 The same vaccine may be assigned to multiple rules. The applicable script may decide when it is applicable for that rule. Additionally, for events the state of the event and the existence of an active enrollment in a specific program may be relevant. Also an evaluation order may be defined. All of this is evaluated when deciding if the vaccine will be assigned to a specific rule.
 
-Furthermore, a single country may use different coding schemas for coding the same vaccine. In order to support this and to have a central vaccine administration, the adapter may offer the definition of vaccines, where one vaccine may also be assigned to multiple coding schemas. Such a feature would allow a simplification and a reusability of scripts. It has not yet been implemented and it has not been decided if and when such a feature will be integrated.
+Furthermore, a single country may use different coding schemas for coding the same vaccine. In order to support this and to have a central vaccine administration, the adapter may offer the definition of vaccines, where one vaccine may also be assigned to 
+multiple coding schemas. Such a feature would allow a simplification and a reusability of scripts. It has not yet been implemented but it has been decided that such a feature will be integrated.
 
     !input.notGiven && codeUtils.containsCode(input.vaccineCode, 'VACCINE_BCG')
     
@@ -37,7 +39,7 @@ The script above could check multiple vaccine codes at the same time with the ta
 | VACCINE       | VACCINE_BCG   | http://hospital.org/vaccine-codes | T-BCG | 
 | VACCINE       | VACCINE_BCG   | http://hl7.org/fhir/sid/cvx       | CVX   |
 
-To make scripts even more reusable, passing arguments to scripts would increase the reusability immensely. It has not yet been implemented and it has not been decided if and when such a feature will be integrated.
+To make scripts even more reusable, passing arguments to scripts would increase the reusability immensely. It has not yet been implemented but it has been decided that such a feature will be integrated.
 
     !input.notGiven && codeUtils.containsCode(input.vaccineCode, args['immunizationCode'])
 
@@ -110,3 +112,15 @@ The above contains an example of such a generated resource ID. It contains the I
 - The prototype may not be able to handle multiple FHIR versions at the same time.
 - The prototype may not support extensible scripts. The concepts to get extensible scripts are outlined in this document.
 - The prototype does not yet support distributed processing of FHIR subscriptions.
+
+## Running the Demo Adapter
+### Dependent Software Components
+#### DHIS2
+The adapter has been tested with DHIS2 2.29. There are no special requirements on the organization unit structure. A recent version of Tracker Programs "Child Programme" and "WHO RMNCH Tracker" is required. Names that are used by these programs must not 
+have been changed.
+
+#### FHIR Service
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.  
+
+### Building 
+In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven.

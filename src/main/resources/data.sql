@@ -74,4 +74,6 @@ INSERT INTO FHIR_DHIS_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b',1,'OBSER
  ', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8462-4'').value); output.setValueByName(''RMNCH - WHOMCH Systolic blood pressure'', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8480-6'')' ||
   '.value); true',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_EVENT_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b','WHO RMNCH Tracker','First antenatal care visit',TRUE,'2f311cf9-f1a5-4c7d-8c3e-7d92509fc850');
-
+INSERT INTO FHIR_DHIS_MAP VALUES('d43c264f-7331-4c64-9af5-46e1da610fe8',1,'OBSERVATION','DSTU3','EVENT',TRUE,1,'codeUtils.containsCode( input.code, ''http://loinc.org'', ''8665-2'' )',
+ 'output.setValueByName(''RMNCH - WHOMCH LMP date'', input.hasValueDateTimeType() ? input.valueDateTimeType : null); true',NULL,NULL,NULL,FALSE);
+INSERT INTO FHIR_EVENT_MAP VALUES('d43c264f-7331-4c64-9af5-46e1da610fe8','WHO RMNCH Tracker','First antenatal care visit',TRUE,'2f311cf9-f1a5-4c7d-8c3e-7d92509fc850');
