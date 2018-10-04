@@ -37,7 +37,6 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -54,10 +53,8 @@ public class FhirClientTransformUtils extends AbstractFhirToDhisTransformerUtils
 
     private final FhirContext fhirContext = FhirContext.forDstu3();
 
-    @Value( "${dhis2.subscription.remote.baseUrl}" )
     private String remoteBaseUrl;
 
-    @Value( "${dhis2.subscription.remote.authorizationHeader}" )
     private String remoteAuthorizationHeader;
 
     public FhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )

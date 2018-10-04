@@ -31,8 +31,10 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -51,6 +53,8 @@ import java.util.Optional;
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
+    protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
+
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String ID_URI = "/trackedEntityInstances/{id}.json";
@@ -66,6 +70,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type )
+    {
+        final TrackedEntityInstance instance = new TrackedEntityInstance( type.getId(), null, true );
+        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() ).forEach( a -> instance.getAttributes().add(
+            new TrackedEntityAttributeValue( a.getAttributeId(), getReservedValue( a.getAttributeId() ) ) ) );
+        return instance;
     }
 
     @Nonnull
@@ -110,9 +124,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Nonnull
     protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
                 trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Tracked tracked entity instance could not be created: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
@@ -129,14 +150,28 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Nonnull
     protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
                 ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Tracked tracked entity instance could not be updated: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( result.getStatus() != Status.OK )
         {
             throw new RuntimeException( "Tracked tracked entity instance could not be created." );
         }
         return trackedEntityInstance;
+    }
+
+    @Nonnull
+    protected String getReservedValue( @Nonnull String attributeId )
+    {
+        final ReservedValue reservedValue = restTemplate.getForObject( GENERATE_URI, ReservedValue.class, attributeId );
+        return reservedValue.getValue();
     }
 }

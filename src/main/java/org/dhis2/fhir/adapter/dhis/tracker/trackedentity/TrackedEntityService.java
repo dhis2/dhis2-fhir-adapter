@@ -35,6 +35,9 @@ import java.util.Optional;
 public interface TrackedEntityService
 {
     @Nonnull
+    TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type );
+
+    @Nonnull
     Optional<TrackedEntityInstance> getById( @Nonnull String id );
 
     @Nonnull

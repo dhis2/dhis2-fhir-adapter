@@ -1,3 +1,5 @@
+__Source code under development and under restructuring!__
+
 # DHIS2 FHIR Adapter
 ## Running with Sample Data
 ### HAPI FHIR JPA Server
