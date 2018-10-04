@@ -140,7 +140,7 @@ Three subscriptions must be setup on the FHIR Service. The adapter works with FH
             }, 
             "status": "requested"
         }'
-			  			  
+    			  			  
 		curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
         '{
             "resourceType": "Subscription",
@@ -153,7 +153,7 @@ Three subscriptions must be setup on the FHIR Service. The adapter works with FH
             }, 
             "status": "requested"
         }'
-				
+    				
     curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
         '{
             "resourceType": "Subscription",
