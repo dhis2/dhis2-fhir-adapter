@@ -1,10 +1,10 @@
 # DHIS2 FHIR Adapter Prototype for Demo
-The adapter prototype handles data for a demo and can be seen as a proof of concept that rules and transformations can be used to bring data from FHIR into DHIS Tracker.. 
+The adapter prototype handles data for a demo and can be seen as a proof of concept that rules and transformations can be used to bring data from FHIR into DHIS Tracker.
 
 The adapter provides the following functions:
 
-- Accepting subscription web hook notification from a remote FHIR server.
-- Importing data from systems that uses different FHIR resource IDs than the adapter itself (creation and updates based on filters).
+- Accepting subscription web hook notifications from a remote FHIR server.
+- Importing data from systems that use different FHIR resource IDs than the adapter itself.
 - Creating and updating (based on a national identifier, not on the resource ID) Tracked Entity Type "Person" from FHIR resource "Patient".
 - Enrolling a "Person" into the child immunization program when it is younger than one year and receives one of the vaccines that is handled by the program.
 - Enrolling a female "Person" into the WHO RMNCH Tracker program when it is older than fifteen years and has a last menstrual period observation and any supported data in the 1st ANC program stage is delivered.
@@ -117,10 +117,79 @@ The above contains an example of such a generated resource ID. It contains the I
 ### Dependent Software Components
 #### DHIS2
 The adapter has been tested with DHIS2 2.29. There are no special requirements on the organization unit structure. A recent version of Tracker Programs "Child Programme" and "WHO RMNCH Tracker" is required. Names that are used by these programs must not 
-have been changed.
+have been changed. The tracked entity type Person must have the additional tracked entity attributes that are listed above in section [FHIR Patient](#fhir-patient). The project contains also a file metadata/dhis2-metadata-update.json that can be used to 
+merge the required tracked entity attributes into the DHIS2 metadata.  
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.  
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.  
+
+Three subscriptions must be setup on the FHIR Service. The adapter works with FHIR web hook subscriptions that do not need a payload. If the FHIR Service does not support this or there are any issues (like any kind of bugs or FHIR service does not behave as
+ described by FHIR specification), a payload can be added optionally (payload will be ignored by the adapter). Authorization has been disabled in the adapter configuration for the subscription. The values listed below do not need to be changed. The shell 
+ script command snippets below assume that FHIR Endpoints of HAPI FHIR JPA Server Example can be reached on http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3 (HAPI FHIR JPA Server Example WAR has been placed in a Servlet Container that listens on 
+ port 8082 on the local machine) and the adapter can be reached on http://localhost:8081/aehin2018-dhis2-fhir-adapter-prototype (Adapter WAR has been placed in a Servlet Container that listens on port 8081 on the local machine). 
+
+    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
+        '{
+            "resourceType": "Subscription",
+            "criteria": "Patient?",
+            "channel": {
+                "type": "rest-hook",
+                "endpoint": "http://localhost:8081/aehin2018-dhis2-fhir-adapter-prototype/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/667bfa41-867c-4796-86b6-eb9f9ed4dc94",
+                "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
+                "payload": "application/fhir+json"
+            }, 
+            "status": "requested"
+        }'
+			  			  
+		curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
+        '{
+            "resourceType": "Subscription",
+            "criteria": "Immunization?",
+            "channel": {
+                "type": "rest-hook",
+                "endpoint": "http://localhost:8081/aehin2018-dhis2-fhir-adapter-prototype/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/a756ef2a-1bf4-43f4-a991-fbb48ad358ac",
+                "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
+                "payload": "application/fhir+json"
+            }, 
+            "status": "requested"
+        }'
+				
+    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
+        '{
+            "resourceType": "Subscription",
+            "criteria": "Observation?",
+            "channel": {
+                "type": "rest-hook",
+                "endpoint": "http://localhost:8081/aehin2018-dhis2-fhir-adapter-prototype/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b32b4098-f8e1-426a-8dad-c5c4d8e0fab6",
+                "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
+                "payload": "application/fhir+json"
+            }, 
+            "status": "requested"
+        }'
 
 ### Building 
-In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven.
+In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven configuration. The following command builds the artifact aehin2018-dhis2-fhir-adapter-prototype.war in sub-directory target.
+
+`mvn clean package`
+
+The project can also be imported into an IDE like IntelliJ IDEA ULTIMATE where it can be built automatically.
+
+### Configuration
+The adapter uses the following configuration with the specified standard values that may be overridden with environment specific values. The configuration values can be easily overridden by specifying system properties when starting the servlet container 
+(like Apache Tomcat or Jetty). This way of configuring the adapter is just used for the demo. In upcoming versions of the adapter there will be configuration files in which these values can be overridden.
+
+| Name                                          | Default Value                                               | Description                                                                                                                                   |
+|-----------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| dhis2.endpoint.url                            | http://localhost:8080                                       | The base URL of the DHIS2 installation. The Web API Endpoints /api must be located below this URL.                                            |
+| dhis2.endpoint.username                       | admin                                                       | The username that is used to authenticate with DHIS2.                                                                                         |
+| dhis2.endpoint.password                       | district                                                    | The password that is used to authenticate with DHIS2.                                                                                         |
+| dhis2.subscription.remote.baseUrl             | http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3 | The base URL of the FHIR Endpoints on the FHIR Service.                                                                                       |
+| dhis2.subscription.remote.authorizationHeader | Bearer jshru38jsHdsdfy38sh38H3d                             | The authorization header value that is used to authenticate requests on FHIR endpoints. This will be ignored by HAPI FHIR JPA Server Example. |
+
+### Running
+The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). In IntelliJ IDEA ULTIMATE also class org.dhis2.fhir.adapter.prototype.App can be used to start the adapter without an external servlet container.
+
+The project contains a sample test FHIR client that enrolls a mother into WHO RMNCH Tracker program and a new born child into Child Programme. The main class is named org.dhis2.fhir.adapter.prototype.TestClient and expects three arguments. The first argument
+ must be the code of an existing organization unit in which the enrollments should take place (tracker programs must have been assigned to these organization unit in maintenance section of DHIS2). The second argument is the new national identifier that will
+ be assigned to the new born child and the third argument is the new national identifier that will be assigned to the mother.
+ 
