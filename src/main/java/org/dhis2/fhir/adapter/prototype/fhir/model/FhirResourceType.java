@@ -37,6 +37,7 @@ public enum FhirResourceType
     DIAGNOSTIC_REPORT( "diagnosticreport" ),
     IMMUNIZATION( "immunization" ),
     LOCATION( "location" ),
+    MEDICATION_REQUEST( "medicationrequest" ),
     OBSERVATION( "observation" ),
     ORGANIZATION( "organization" ),
     PATIENT( "patient" );

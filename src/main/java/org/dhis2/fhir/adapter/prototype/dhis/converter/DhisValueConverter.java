@@ -51,6 +51,11 @@ public class DhisValueConverter
 
     public DhisValueConverter()
     {
+        initConverters();
+    }
+
+    protected void initConverters()
+    {
         addConverter( ValueType.BOOLEAN, new BooleanToStringConverter() );
         addConverter( ValueType.DATETIME, new DateToZonedDateTimeConverter() );
         addConverter( ValueType.DATE, new DateToIsoDateStringConverter() );

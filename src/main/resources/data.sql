@@ -39,6 +39,10 @@ INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_
 VALUES ('667bfa41-867c-4796-86b6-eb9f9ed4dc94', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PATIENT', '_format=json', 'Subscription for all Patients.', 'http://example.ph/national-patient-id');
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description, resource_system)
 VALUES ('a756ef2a-1bf4-43f4-a991-fbb48ad358ac', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'IMMUNIZATION', '_format=json', 'Subscription for all Immunizations.', NULL);
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description, resource_system)
+VALUES ('b32b4098-f8e1-426a-8dad-c5c4d8e0fab6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'OBSERVATION', '_format=json', 'Subscription for all Observations.', NULL);
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description, resource_system)
+VALUES ('664b61b4-c0ab-4be0-8865-eec266902fac', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'MEDICATION_REQUEST', '_format=json', 'Subscription for all Medication Requests.', NULL);
 
 INSERT INTO FHIR_AUTOMATED_ENROLLMENT VALUES('e48eb514-aa60-4541-841a-16119507e525',1,'var age = dateTimeUtils.getAge( trackedEntityInstance.getValueByName(''Birth date'') ); (age != null) && (age < 1)','output.organizationUnitId = trackedEntityInstance' ||
  '.organizationUnitId; output.enrollmentDate = new Date(); output.incidentDate = trackedEntityInstance.getValueByName( ''Birth date'' ); true;');
@@ -59,3 +63,15 @@ INSERT INTO FHIR_EVENT_MAP VALUES('f4e164a7-ed91-4f76-83b8-eda0daa0b406','Child 
 INSERT INTO FHIR_EVENT_MAP VALUES('f4e164a7-ed91-4f76-83b8-eda0daa0b408','Child Programme','Baby Postnatal',TRUE,'e48eb514-aa60-4541-841a-16119507e525');
 INSERT INTO FHIR_RESOURCE_MAP VALUES('f4e164a7-ed91-4f76-83b8-eda0daa0b407',1,'IMMUNIZATION','trackedEntityUtils.getTrackedEntityInstance( trackedEntityType, ''National identifier'', input.patient, ''http://example.ph/national-patient-id'' )','dateTimeUtils.getPrecisePastDate( input.dateElement )',
 'enrollment.organizationUnitId');
+INSERT INTO FHIR_RESOURCE_MAP VALUES('7df0ddf5-1c8d-4578-b515-fcc0a2436ec7',1,'OBSERVATION','trackedEntityUtils.getTrackedEntityInstance( trackedEntityType, ''National identifier'', input.subject, ''http://example.ph/national-patient-id'' )',
+'input.hasEffectiveDateTimeType() ? dateTimeUtils.getPrecisePastDate( input.getEffectiveDateTimeType() ) : null',
+'enrollment.organizationUnitId');
+INSERT INTO FHIR_AUTOMATED_ENROLLMENT VALUES('2f311cf9-f1a5-4c7d-8c3e-7d92509fc850',1,'var age = dateTimeUtils.getAge( trackedEntityInstance.getValueByName(''Birth date'') ); (trackedEntityInstance.getValueByName(''Gender'') == ''Female'') && (age != null) ' ||
+ '&& (age > 15)', 'output.organizationUnitId = trackedEntityInstance.organizationUnitId; output.enrollmentDate = new Date(); ' ||
+  'var observation = fhirClientUtils.queryLatest(''Observation'', ''subject:Patient.identifier'', ''http://example.ph/national-patient-id|'' + trackedEntityInstance.getValueByName(''National identifier''), ''code'', ''http://loinc.org|8665-2''); output' ||
+   '.incidentDate = (observation == null) || !observation.hasValueDateTimeType() ? null : observation.valueDateTimeType; (output.incidentDate != null)');
+INSERT INTO FHIR_DHIS_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b',1,'OBSERVATION','DSTU3','EVENT',TRUE,1,'codeUtils.containsCode( input.code, ''http://loinc.org'', ''85354-9'' )','output.setValueByName(''RMNCH - WHOMCH Diastolic blood pressure''' ||
+ ', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8462-4'').value); output.setValueByName(''RMNCH - WHOMCH Systolic blood pressure'', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8480-6'')' ||
+  '.value); true',NULL,NULL,NULL,FALSE);
+INSERT INTO FHIR_EVENT_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b','WHO RMNCH Tracker','First antenatal care visit',TRUE,'2f311cf9-f1a5-4c7d-8c3e-7d92509fc850');
+

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.converter;
+package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,17 +28,41 @@ package org.dhis2.fhir.adapter.prototype.fhir.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.Scriptable;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.springframework.stereotype.Component;
 
-public class FhirDhisValueConverter extends DhisValueConverter
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+
+@Component
+@Scriptable
+public class ObservationTransformUtils extends AbstractTransformUtils
 {
-    @Override
-    protected void initConverters()
+    private static final String SCRIPT_ATTR_NAME = "observationUtils";
+
+    private CodeTransformUtils codeTransformUtils;
+
+    public ObservationTransformUtils( @Nonnull CodeTransformUtils codeTransformUtils )
     {
-        addConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
-        addConverter( ValueType.NUMBER, new QuantityToStringConverter() );
-        addConverter( ValueType.DATETIME, new BaseDateTimeTypeToZonedDateTimeConverter() );
-        super.initConverters();
+        this.codeTransformUtils = codeTransformUtils;
+    }
+
+    @Nonnull
+    @Override
+    public String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
+
+    public Observation.ObservationComponentComponent getBackboneElement( @Nullable List<Observation.ObservationComponentComponent> backboneElements, @Nonnull String system, @Nonnull String code )
+    {
+        if ( backboneElements == null )
+        {
+            return null;
+        }
+        return backboneElements.stream().filter( c -> codeTransformUtils.containsCode( c.getCode(), system, code ) )
+            .findFirst().orElse( new Observation.ObservationComponentComponent() );
     }
 }

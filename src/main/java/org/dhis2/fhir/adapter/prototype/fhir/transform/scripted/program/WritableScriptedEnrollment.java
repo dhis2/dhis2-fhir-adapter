@@ -107,7 +107,8 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     public void setIncidentDate( Object incidentDate )
     {
-        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
+        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id,
+            Object.class, id -> dhisValueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
     }
 
     @Override

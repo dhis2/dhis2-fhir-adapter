@@ -65,4 +65,14 @@ public class CodeTransformUtils extends AbstractTransformUtils
         }
         return null;
     }
+
+    public boolean containsCode( @Nullable CodeableConcept codeableConcept, @Nonnull String system, @Nonnull String code )
+    {
+        if ( codeableConcept == null )
+        {
+            return false;
+        }
+        return codeableConcept.getCoding().stream().anyMatch(
+            coding -> system.equals( coding.getSystem() ) && code.equals( coding.getCode() ) );
+    }
 }

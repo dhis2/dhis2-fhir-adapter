@@ -28,17 +28,25 @@ package org.dhis2.fhir.adapter.prototype.fhir.converter;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
+import org.hl7.fhir.dstu3.model.Quantity;
 
-public class FhirDhisValueConverter extends DhisValueConverter
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+public class QuantityToStringConverter extends TypedConverter<Quantity, String>
 {
-    @Override
-    protected void initConverters()
+    public QuantityToStringConverter()
     {
-        addConverter( ValueType.TEXT, new AdministrativeGenderToStringConverter() );
-        addConverter( ValueType.NUMBER, new QuantityToStringConverter() );
-        addConverter( ValueType.DATETIME, new BaseDateTimeTypeToZonedDateTimeConverter() );
-        super.initConverters();
+        super( Quantity.class, String.class );
+    }
+
+    @Nullable
+    @Override
+    public String doConvert( @Nonnull Quantity source ) throws ConversionException
+    {
+        final Number number = source.getValueElement().getValueAsNumber();
+        return (number == null) ? null : number.toString();
     }
 }

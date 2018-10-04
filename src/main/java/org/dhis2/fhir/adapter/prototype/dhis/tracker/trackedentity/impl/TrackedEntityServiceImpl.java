@@ -124,9 +124,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Nonnull
     protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
                 trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Tracked tracked entity instance could not be created: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
@@ -143,9 +150,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Nonnull
     protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
                 ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            throw new RuntimeException( "Tracked tracked entity instance could not be updated: " + e.getResponseBodyAsString(), e );
+        }
         final ImportSummaryWebMessage result = response.getBody();
         if ( result.getStatus() != Status.OK )
         {

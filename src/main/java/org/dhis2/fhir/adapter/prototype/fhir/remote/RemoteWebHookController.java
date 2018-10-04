@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.prototype.rest.RestResourceNotFoundException;
 import org.dhis2.fhir.adapter.prototype.rest.RestUnauthorizedException;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.ResourceType;
@@ -91,7 +92,7 @@ public class RemoteWebHookController
 
     private final ProcessingThread processingThread;
 
-    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 20, true );
+    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 50, true );
 
     private final Map<UUID, Set<ProcessedResource>> processedResourcesByResourceId = new ConcurrentHashMap<>();
 
@@ -213,6 +214,9 @@ public class RemoteWebHookController
                         case IMMUNIZATION:
                             remoteLastUpdate = processImmunizations( subscriptionResource );
                             break;
+                        case OBSERVATION:
+                            remoteLastUpdate = processObservations( subscriptionResource );
+                            break;
                         default:
                             throw new AssertionError( "Unhandled FHIR resource type: " + subscriptionResource.getFhirResourceType() );
                     }
@@ -260,6 +264,17 @@ public class RemoteWebHookController
             {
                 i.getPatient().setResource(
                     resourcesById.get( i.getPatient().getReferenceElement().toUnqualifiedVersionless() ) );
+            }
+        } );
+    }
+
+    protected LocalDateTime processObservations( @Nonnull RemoteSubscriptionResource subscriptionResource )
+    {
+        return processResource( subscriptionResource, Observation.class, ResourceType.Observation, "Observation:subject", ( i, resourcesById ) -> {
+            if ( i.hasSubject() )
+            {
+                i.getSubject().setResource(
+                    resourcesById.get( i.getSubject().getReferenceElement().toUnqualifiedVersionless() ) );
             }
         } );
     }
