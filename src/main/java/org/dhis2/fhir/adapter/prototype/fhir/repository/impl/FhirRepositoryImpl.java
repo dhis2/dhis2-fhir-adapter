@@ -51,12 +51,15 @@ import org.dhis2.fhir.adapter.prototype.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.util.IdentifierTransformUtils;
+import org.dhis2.fhir.adapter.prototype.util.ExceptionUtils;
 import org.glassfish.jersey.internal.util.Base64;
 import org.hl7.fhir.dstu3.model.DomainResource;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nonnull;
 
@@ -64,6 +67,8 @@ import javax.annotation.Nonnull;
 public class FhirRepositoryImpl implements FhirRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    public static final int MAX_CONFLICT_RETRIES = 2;
 
     private final AuthorizationContext authorizationContext;
 
@@ -120,7 +125,7 @@ public class FhirRepositoryImpl implements FhirRepository
         authorizationContext.setAuthorization( new Authorization( "Basic " + Base64.encodeAsString( endpointConfig.getUsername() + ":" + endpointConfig.getPassword() ) ) );
         try
         {
-            return saveDhisAuthenticated( resource, fhirRequest );
+            return saveRetried( resource, fhirRequest );
         }
         finally
         {
@@ -128,7 +133,31 @@ public class FhirRepositoryImpl implements FhirRepository
         }
     }
 
-    protected String saveDhisAuthenticated( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest )
+    protected String saveRetried( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest )
+    {
+        RuntimeException lastException = null;
+        for ( int i = 0; i < MAX_CONFLICT_RETRIES + 1; i++ )
+        {
+            try
+            {
+                return saveInternally( resource, fhirRequest );
+            }
+            catch ( RuntimeException e )
+            {
+                // case will be handled with non runtime exceptions in non-demo adapter (error handling will be enhanced)
+                final HttpClientErrorException clientErrorException = (HttpClientErrorException) ExceptionUtils.findCause( e, HttpClientErrorException.class );
+                if ( (clientErrorException == null) || !HttpStatus.CONFLICT.equals( clientErrorException.getStatusCode() ) )
+                {
+                    throw e;
+                }
+                logger.info( "DHIS2 Conflict reported. Retrying action if possible: " + clientErrorException.getResponseBodyAsString(), e );
+                lastException = e;
+            }
+        }
+        throw new RuntimeException( "Could not resolve DHIS2 reported Conflict after " + MAX_CONFLICT_RETRIES + " retries.", lastException );
+    }
+
+    protected String saveInternally( @Nonnull Resource resource, @Nonnull FhirRequest fhirRequest )
     {
         final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(
             fhirToDhisTransformerService.createContext( fhirRequest ), resource );
