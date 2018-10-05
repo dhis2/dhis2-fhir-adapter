@@ -1,16 +1,25 @@
 .classpath
 .DS_Store
 .DS_Store?
+.metadata
+.mtj
 .project
 .settings
+.springbeans
 .Spotlight-V100
+.swp
 .Trashes
+
+nbactions.xml
 
 *.class
 *.iml
+*.ipr
+*.ids
 *.jar
 *.lck
 *.log
+*.log.*
 
 .idea/
 target/

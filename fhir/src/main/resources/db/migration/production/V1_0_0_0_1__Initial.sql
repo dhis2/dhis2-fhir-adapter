@@ -26,8 +26,9 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Should be invoked manually with the appropriate permissions:
+-- REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE fhir_constant (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),

@@ -77,5 +77,27 @@
 
   <build>
     <finalName>dhis2-fhir-adapter</finalName>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <archive>
+            <compress>false</compress>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.12.v20180830</version>
+        <configuration>
+          <httpConnector>
+            <host>localhost</host>
+            <port>8081</port>
+          </httpConnector>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>
