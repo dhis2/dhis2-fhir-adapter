@@ -47,7 +47,7 @@ public class AuthorizationResetFilter implements Filter
     }
 
     @Override
-    public void init( FilterConfig filterConfig ) throws ServletException
+    public void init( FilterConfig filterConfig )
     {
         // nothing to be done
     }

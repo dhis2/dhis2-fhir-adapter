@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Id;
 import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;

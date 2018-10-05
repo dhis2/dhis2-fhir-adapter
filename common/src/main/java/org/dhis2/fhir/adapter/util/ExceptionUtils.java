@@ -29,13 +29,14 @@ package org.dhis2.fhir.adapter.util;
  */
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
 public abstract class ExceptionUtils
 {
-    public static @Nonnull
-    Throwable findCause( @Nonnull Throwable exception, @Nonnull Class<?>... causeClasses )
+    @Nullable
+    public static Throwable findCause( @Nonnull Throwable exception, @Nonnull Class<?>... causeClasses )
     {
         final Set<Throwable> checkedCauses = new HashSet<>();
         Throwable cause = exception;

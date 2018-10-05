@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.jackson.jackson;
+package org.dhis2.fhir.adapter.jackson;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.jackson.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
