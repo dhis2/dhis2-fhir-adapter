@@ -13,5 +13,4 @@
 *.log
 
 .idea/
-/dhis_fhir_demo_db/
 target/

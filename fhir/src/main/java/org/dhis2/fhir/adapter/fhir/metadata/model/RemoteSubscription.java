@@ -76,6 +76,8 @@ public class RemoteSubscription implements Serializable
     private FhirVersion fhirVersion;
     private boolean supportIncludes;
     private int toleranceMinutes;
+    private boolean logging;
+    private boolean verboseLogging;
     private Set<RequestHeader> remoteHeaders;
     private Collection<RemoteSubscriptionSystem> systems;
 
@@ -293,5 +295,29 @@ public class RemoteSubscription implements Serializable
     public void setSystems( Collection<RemoteSubscriptionSystem> systems )
     {
         this.systems = systems;
+    }
+
+    @Basic
+    @Column( name = "logging", nullable = false )
+    public boolean isLogging()
+    {
+        return logging;
+    }
+
+    public void setLogging( boolean logging )
+    {
+        this.logging = logging;
+    }
+
+    @Basic
+    @Column( name = "verbose_logging", nullable = false )
+    public boolean isVerboseLogging()
+    {
+        return verboseLogging;
+    }
+
+    public void setVerboseLogging( boolean verboseLogging )
+    {
+        this.verboseLogging = verboseLogging;
     }
 }

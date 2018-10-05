@@ -74,7 +74,10 @@ public enum FhirResourceType
         do
         {
             frt = resourcesBySimpleClassName.get( c.getSimpleName() );
-            c = c.getSuperclass();
+            if ( frt == null )
+            {
+                c = c.getSuperclass();
+            }
         }
         while ( (frt == null) && (c != null) && (c != Object.class) );
         return frt;

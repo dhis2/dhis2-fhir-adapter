@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.app;
+package org.dhis2.fhir.adapter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -56,7 +56,6 @@ import java.util.Date;
 public class TestClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
-
 
     public static void main( String[] args )
     {

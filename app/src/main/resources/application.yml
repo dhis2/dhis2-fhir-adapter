@@ -45,6 +45,8 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+  mvc:
+    logResolvedException: false
 
 management:
   security:
@@ -54,6 +56,7 @@ logging:
   level:
     org.hibernate: warn
     org.hibernate.cfg.AnnotationBinder: error
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
 
 dhis2:
   endpoint:

@@ -167,7 +167,10 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     protected IGenericClient createFhirClient( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
         final IGenericClient client = fhirContext.newRestfulGenericClient( subscriptionResource.getRemoteSubscription().getRemoteBaseUrl() );
-        client.registerInterceptor( new LoggingInterceptor( true ) );
+        if ( subscriptionResource.getRemoteSubscription().isLogging() )
+        {
+            client.registerInterceptor( new LoggingInterceptor( subscriptionResource.getRemoteSubscription().isVerboseLogging() ) );
+        }
 
         final AdditionalRequestHeadersInterceptor requestHeadersInterceptor = new AdditionalRequestHeadersInterceptor();
         subscriptionResource.getRemoteSubscription().getRemoteHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );

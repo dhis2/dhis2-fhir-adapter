@@ -40,7 +40,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
@@ -128,7 +127,7 @@ public class FhirRepositoryImpl implements FhirRepository
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
         fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
-        fhirRequest.setVersion( FhirVersion.DSTU3 );
+        fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
 
         final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(

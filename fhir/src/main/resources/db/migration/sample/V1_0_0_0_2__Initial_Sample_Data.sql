@@ -31,7 +31,7 @@ VALUES ('c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3', 0, 'Philippines Organization', '
 INSERT INTO fhir_system (id, version, name, code, system_uri)
 VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Philippines Patient', 'SYSTEM_PH_PATIENT', 'http://example.ph/national-patient-id');
 
-INSERT INTO fhir_remote_subscription (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authorization_header, remote_base_url, tolerance_minutes)
+INSERT INTO fhir_remote_subscription (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authorization_header, remote_base_url, tolerance_minutes, logging, verbose_logging)
 VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f',
         0,
         'HAPI FHIR JPA Server',
@@ -40,7 +40,7 @@ VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f',
         'DSTU3',
         '',
         'Basic YWRtaW46ZGlzdHJpY3Q=',
-        'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1);
+        'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1, TRUE, TRUE);
 
 INSERT INTO fhir_remote_subscription_header (remote_subscription_id, name, value, secured)
 VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'Authorization', 'Bearer jshru38jsHdsdfy38sh38H3d', TRUE);
@@ -49,6 +49,8 @@ INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_
 VALUES ('667bfa41-867c-4796-86b6-eb9f9ed4dc94', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PATIENT', '_format=json', 'Subscription for all Patients.');
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
 VALUES ('a756ef2a-1bf4-43f4-a991-fbb48ad358ac', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'IMMUNIZATION', '_format=json', 'Subscription for all Immunizations.');
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
+VALUES ('b32b4098-f8e1-426a-8dad-c5c4d8e0fab6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'OBSERVATION', '_format=json', 'Subscription for all Observations.');
 
 INSERT INTO fhir_remote_subscription_system (
   id           ,

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.app;
+package org.dhis2.fhir.adapter;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,15 +28,35 @@ package org.dhis2.fhir.adapter.app;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.validation.annotation.Validated;
 
-@SpringBootApplication
-public class App extends SpringBootServletInitializer
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
+@Configuration
+@Validated
+public class AppConfig
 {
-    public static void main( String[] args )
+    @Bean
+    @Order( 1 )
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer()
     {
-        SpringApplication.run( App.class, args );
+        return jacksonObjectMapperBuilder -> {
+            final ZoneId zoneId = ZoneId.systemDefault();
+            jacksonObjectMapperBuilder
+                .serializers(
+                    new ZonedDateTimeSerializer(),
+                    new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
+                .deserializers( new ZonedDateTimeDeserializer(),
+                    new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+        };
     }
 }

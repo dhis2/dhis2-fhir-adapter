@@ -338,6 +338,8 @@ CREATE TABLE fhir_remote_subscription (
   remote_base_url               VARCHAR(200)                   NOT NULL,
   support_includes              BOOLEAN                        NOT NULL DEFAULT FALSE,
   tolerance_minutes              INTEGER DEFAULT 0 NOT NULL,
+  logging BOOLEAN NOT NULL DEFAULT FALSE,
+  verbose_logging BOOLEAN NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_uk1 UNIQUE (name),
   CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code)

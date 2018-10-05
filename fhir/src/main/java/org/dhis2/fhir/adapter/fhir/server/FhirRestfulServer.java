@@ -62,8 +62,8 @@ public class FhirRestfulServer extends RestfulServer
         setInterceptors( interceptors );
     }
 
-    private static @Nullable
-    <T> List<T> sortByOrderAnnotation( @Nullable List<T> list )
+    @Nullable
+    private static <T> List<T> sortByOrderAnnotation( @Nullable List<T> list )
     {
         if ( list == null )
         {
