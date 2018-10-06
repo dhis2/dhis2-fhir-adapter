@@ -118,7 +118,7 @@ The above contains an example of such a generated resource ID. It contains the I
 #### DHIS2
 The adapter has been tested with DHIS2 2.29. There are no special requirements on the organization unit structure. A recent version of Tracker Programs "Child Programme" and "WHO RMNCH Tracker" is required. Names that are used by these programs must not 
 have been changed. The tracked entity type Person must have the additional tracked entity attributes that are listed above in section [FHIR Patient](#fhir-patient). The project contains also a file metadata/dhis2-metadata-update.json that can be used to 
-merge the required tracked entity attributes into the DHIS2 metadata.  
+merge the required tracked entity attributes into the DHIS2 metadata. But it is recommended to enter them manually in order to avoid possible UID conflicts. The additional attributes should also be added as attributes to the two Tracker Programs.  
 
 #### FHIR Service
 A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.  
