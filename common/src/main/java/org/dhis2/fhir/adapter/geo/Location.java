@@ -43,9 +43,14 @@ public class Location implements Geometry, Serializable
 {
     private static final long serialVersionUID = 7916805545140123930L;
 
-    private final double longitude;
+    private double longitude;
 
-    private final double latitude;
+    private double latitude;
+
+    public Location()
+    {
+        super();
+    }
 
     public Location( double longitude, double latitude )
     {
