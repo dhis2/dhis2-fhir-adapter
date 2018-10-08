@@ -92,7 +92,7 @@ public class RemoteWebHookController
 
     private final ProcessingThread processingThread;
 
-    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 50, true );
+    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 200, true );
 
     private final Map<UUID, Set<ProcessedResource>> processedResourcesByResourceId = new ConcurrentHashMap<>();
 
@@ -285,42 +285,57 @@ public class RemoteWebHookController
     {
         final Date fromLastUpdated = Date.from( subscriptionResource.getRemoteLastUpdate().minusMinutes(
             subscriptionResource.getRemoteSubscription().getToleranceMinutes() ).atZone( ZoneId.systemDefault() ).toInstant() );
-
         final IGenericClient client = createFhirClient( subscriptionResource );
-        logger.info( "Querying for resource type {} of subscription resource {}.", resourceType, subscriptionResource.getId() );
-        final Bundle result = (Bundle) client.search().forResource( resourceClass ).include( new Include( include ) )
-            .lastUpdated( new DateRangeParam( fromLastUpdated, null ) ).sort().ascending( "_lastUpdated" ).execute();
-        logger.info( "Queried {} entries for resource type {} of subscription resource {}.", result.getEntry().size(), resourceType, subscriptionResource.getId() );
 
-        final Set<ProcessedResource> lastProcessedResources = processedResourcesByResourceId.getOrDefault(
-            subscriptionResource.getId(), new HashSet<>() );
         final Set<ProcessedResource> currentProcessedResources = new HashSet<>();
+        final LocalDateTime lastUpdated = LocalDateTime.now();
+        logger.info( "Querying for resource type {} of subscription resource {}.", resourceType, subscriptionResource.getId() );
+        Bundle result = (Bundle) client.search().forResource( resourceClass ).include( new Include( include ) ).count( 1000 )
+            .lastUpdated( new DateRangeParam( fromLastUpdated, null ) ).sort().ascending( "_lastUpdated" ).execute();
+        do
+        {
+            logger.info( "Queried {} entries for resource type {} of subscription resource {}.", result.getEntry().size(), resourceType, subscriptionResource.getId() );
 
-        final Map<IIdType, Resource> resourcesById = result.getEntry().stream().map( Bundle.BundleEntryComponent::getResource )
-            .collect( Collectors.toMap( r -> r.getIdElement().toUnqualifiedVersionless(), r -> r ) );
+            final Set<ProcessedResource> lastProcessedResources = processedResourcesByResourceId.getOrDefault(
+                subscriptionResource.getId(), new HashSet<>() );
 
-        result.getEntry().stream().map( Bundle.BundleEntryComponent::getResource )
-            .filter( r -> r.getResourceType() == resourceType ).forEach( r -> {
-            final ProcessedResource pr = new ProcessedResource( r.getIdElement().toUnqualifiedVersionless().asStringValue(), r.getMeta().getLastUpdated() );
-            if ( !lastProcessedResources.contains( pr ) )
+            final Map<IIdType, Resource> resourcesById = result.getEntry().stream().map( Bundle.BundleEntryComponent::getResource )
+                .collect( Collectors.toMap( r -> r.getIdElement().toUnqualifiedVersionless(), r -> r ) );
+            result.getEntry().stream().map( Bundle.BundleEntryComponent::getResource )
+                .filter( r -> r.getResourceType() == resourceType ).forEach( r -> {
+                final ProcessedResource pr = new ProcessedResource( r.getIdElement().toUnqualifiedVersionless().asStringValue(), r.getMeta().getLastUpdated() );
+                if ( !lastProcessedResources.contains( pr ) )
+                {
+                    logger.info( "Processing {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                    try
+                    {
+                        consumer.accept( (T) r, resourcesById );
+                        fhirRepository.save( subscriptionResource, r );
+                        logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                    }
+                    catch ( Throwable e )
+                    {
+                        logger.error( "Processing {} of subscription resource {} caused an error.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId(), e );
+                    }
+                }
+                currentProcessedResources.add( pr );
+            } );
+
+            if ( result.getLink( Bundle.LINK_NEXT ) == null )
             {
-                logger.info( "Processing {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
-                try
-                {
-                    consumer.accept( (T) r, resourcesById );
-                    fhirRepository.save( subscriptionResource, r );
-                    logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
-                }
-                catch ( Throwable e )
-                {
-                    logger.error( "Processing {} of subscription resource {} caused an error.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId(), e );
-                }
+                result = null;
             }
-            currentProcessedResources.add( pr );
-        } );
+            else
+            {
+                logger.info( "Querying next for resource type {} of subscription resource {}.", resourceType, subscriptionResource.getId() );
+                // load next page
+                result = client.loadPage().next( result ).execute();
+            }
+        }
+        while ( result != null );
         processedResourcesByResourceId.put( subscriptionResource.getId(), currentProcessedResources );
 
-        return LocalDateTime.now();
+        return lastUpdated;
     }
 
     protected IGenericClient createFhirClient( @Nonnull RemoteSubscriptionResource subscriptionResource )
