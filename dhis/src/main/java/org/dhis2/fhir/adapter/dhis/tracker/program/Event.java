@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
+package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -31,10 +31,10 @@ package org.dhis2.fhir.adapter.prototype.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -103,7 +103,7 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     @Override
     public DhisResourceType getResourceType()
     {
-        return DhisResourceType.EVENT;
+        return DhisResourceType.PROGRAM_STAGE_EVENT;
     }
 
     @Override

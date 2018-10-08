@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,17 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
-import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
-import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
-import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
-import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataValue;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.ProgramStage;
-import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.ProgramStageDataElement;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
+
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,9 +55,9 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     private final Event event;
 
-    private final DhisValueConverter dhisValueConverter;
+    private final ValueConverter dhisValueConverter;
 
-    public WritableScriptedEvent( @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull DhisValueConverter dhisValueConverter )
+    public WritableScriptedEvent( @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull ValueConverter dhisValueConverter )
     {
         this.programStage = programStage;
         this.event = event;
@@ -90,24 +91,24 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return event.getEventDate();
     }
 
-    public void setValueByName( @Nonnull String dataElementName, Object value ) throws TransformException
+    public void setValueByName( @Nonnull String dataElementName, Object value ) throws TransformerException
     {
         setValueByName( dataElementName, value, null );
     }
 
-    public void setValueByName( @Nonnull String dataElementName, Object value, Boolean providedElsewhere ) throws TransformException
+    public void setValueByName( @Nonnull String dataElementName, Object value, Boolean providedElsewhere ) throws TransformerException
     {
         final ProgramStageDataElement dataElement = programStage.getOptionalDataElementByName( dataElementName ).orElseThrow( () ->
-            new TransformMappingException( "Program stage \"" + programStage.getName() +
+            new TransformerMappingException( "Program stage \"" + programStage.getName() +
                 "\" does not include data element with name \"" + dataElementName + "\"" ) );
         setValue( dataElement, value, providedElsewhere );
     }
 
-    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere ) throws TransformException
+    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere ) throws TransformerException
     {
         if ( Boolean.TRUE.equals( providedElsewhere ) && !dataElement.isAllowProvidedElsewhere() )
         {
-            throw new TransformMappingException( "Program stage \"" + programStage.getName() +
+            throw new TransformerMappingException( "Program stage \"" + programStage.getName() +
                 "\" does not allow that data is provided elsewhere for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
@@ -118,14 +119,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         }
         catch ( ConversionException e )
         {
-            throw new TransformMappingException( "Value of data element \"" + dataElement.getElement().getName() +
+            throw new TransformerMappingException( "Value of data element \"" + dataElement.getElement().getName() +
                 "\" could not be converted: " + e.getMessage(), e );
         }
 
         if ( (convertedValue != null) && dataElement.getElement().isOptionSetValue() &&
             dataElement.getElement().getOptionSet().getOptions().stream().noneMatch( o -> Objects.equals( convertedValue, o.getCode() ) ) )
         {
-            throw new TransformMappingException( "Code \"" + value + "\" is not a valid option of \"" +
+            throw new TransformerMappingException( "Code \"" + value + "\" is not a valid option of \"" +
                 dataElement.getElement().getOptionSet().getName() + "\" for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
@@ -152,11 +153,11 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     }
 
     @Override
-    public void validate() throws TransformException
+    public void validate() throws TransformerException
     {
         if ( event.getOrgUnitId() == null )
         {
-            throw new TransformMappingException( "Organization unit ID of event has not been specified." );
+            throw new TransformerMappingException( "Organization unit ID of event has not been specified." );
         }
     }
 }

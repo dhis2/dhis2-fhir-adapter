@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.geo;
+package org.dhis2.fhir.adapter.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -29,16 +29,19 @@ package org.dhis2.fhir.adapter.prototype.geo;
  */
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
+import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@ConvertedValueTypes( types = ValueType.COORDINATE )
 public class StringToLocationConverter extends TypedConverter<String, Location>
 {
-    private final Pattern locationPattern = Pattern.compile( "\\[\\s*([\\d.]+)\\s*,\\s*([\\d.]+)\\s*\\]" );
+    private final Pattern locationPattern = Pattern.compile( "\\[\\s*([\\d.]+)\\s*,\\s*([\\d.]+)\\s*]" );
 
     public StringToLocationConverter()
     {
@@ -50,12 +53,16 @@ public class StringToLocationConverter extends TypedConverter<String, Location>
     public Location doConvert( @Nonnull String source ) throws ConversionException
     {
         final Matcher matcher = locationPattern.matcher( source );
-        if (!matcher.matches()) {
+        if ( !matcher.matches() )
+        {
             throw new ConversionException( "Not a valid location: " + source );
         }
-        try {
+        try
+        {
             return new Location( Double.valueOf( matcher.group( 1 ) ), Double.valueOf( matcher.group( 2 ) ) );
-        } catch(NumberFormatException e) {
+        }
+        catch ( NumberFormatException e )
+        {
             throw new ConversionException( "Not a valid location: " + source );
         }
     }
