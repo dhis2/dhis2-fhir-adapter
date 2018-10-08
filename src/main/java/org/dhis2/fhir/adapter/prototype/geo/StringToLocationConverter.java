@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
+package org.dhis2.fhir.adapter.prototype.geo;
 
 /*
  *  Copyright (c) 2004-2018, University of Oslo
@@ -28,64 +28,35 @@ package org.dhis2.fhir.adapter.prototype.fhir.transform.scripted.program;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.prototype.Scriptable;
-import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
-import org.dhis2.fhir.adapter.prototype.geo.Location;
+import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
+import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-@Scriptable
-public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
+public class StringToLocationConverter extends TypedConverter<String, Location>
 {
-    private static final long serialVersionUID = -3248712035742910069L;
+    private final Pattern locationPattern = Pattern.compile( "\\[\\s*([\\d.]+)\\s*,\\s*([\\d.]+)\\s*\\]" );
 
-    private final ScriptedEvent delegate;
-
-    public ImmutableScriptedEvent( @Nonnull ScriptedEvent delegate )
+    public StringToLocationConverter()
     {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public boolean isNewResource()
-    {
-        return delegate.isNewResource();
+        super( String.class, Location.class );
     }
 
     @Nullable
     @Override
-    public String getId()
+    public Location doConvert( @Nonnull String source ) throws ConversionException
     {
-        return delegate.getId();
-    }
-
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return delegate.getOrganizationUnitId();
-    }
-
-    @Nullable
-    @Override
-    public ZonedDateTime getEventDate()
-    {
-        return delegate.getEventDate();
-    }
-
-    @Nullable
-    @Override
-    public Location getCoordinate()
-    {
-        return delegate.getCoordinate();
-    }
-
-    @Override
-    public void validate() throws TransformException
-    {
-        delegate.validate();
+        final Matcher matcher = locationPattern.matcher( source );
+        if (!matcher.matches()) {
+            throw new ConversionException( "Not a valid location: " + source );
+        }
+        try {
+            return new Location( Double.valueOf( matcher.group( 1 ) ), Double.valueOf( matcher.group( 2 ) ) );
+        } catch(NumberFormatException e) {
+            throw new ConversionException( "Not a valid location: " + source );
+        }
     }
 }

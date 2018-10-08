@@ -32,12 +32,14 @@ import org.dhis2.fhir.adapter.prototype.Scriptable;
 import org.dhis2.fhir.adapter.prototype.converter.ConversionException;
 import org.dhis2.fhir.adapter.prototype.dhis.converter.DhisValueConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.prototype.dhis.tracker.program.ProgramStageDataElement;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformException;
 import org.dhis2.fhir.adapter.prototype.fhir.transform.TransformMappingException;
+import org.dhis2.fhir.adapter.prototype.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -144,6 +146,18 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
             }
             dataValue.setProvidedElsewhere( providedElsewhere );
         }
+    }
+
+    @Nullable
+    @Override
+    public Location getCoordinate()
+    {
+        return event.getCoordinate();
+    }
+
+    public void setCoordinate(@Nullable Location location) {
+        event.setCoordinate( location );
+        event.setModified( true );
     }
 
     public boolean isAnyDataValueModified()

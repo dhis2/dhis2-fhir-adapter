@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.prototype.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.prototype.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.prototype.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.prototype.geo.Location;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -80,6 +81,8 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     private ZonedDateTime eventDate;
 
     private ZonedDateTime dueDate;
+
+    private Location coordinate;
 
     private List<WritableDataValue> dataValues;
 
@@ -211,6 +214,16 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setDueDate( ZonedDateTime dueDate )
     {
         this.dueDate = dueDate;
+    }
+
+    public Location getCoordinate()
+    {
+        return coordinate;
+    }
+
+    public void setCoordinate( Location coordinate )
+    {
+        this.coordinate = coordinate;
     }
 
     public List<? extends DataValue> getDataValues()

@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.prototype.converter.ObjectToZonedDateTimeConverter
 import org.dhis2.fhir.adapter.prototype.converter.TypedConverter;
 import org.dhis2.fhir.adapter.prototype.dhis.model.ValueType;
 import org.dhis2.fhir.adapter.prototype.geo.LocationToStringConverter;
+import org.dhis2.fhir.adapter.prototype.geo.StringToLocationConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,6 +64,7 @@ public class DhisValueConverter
         addConverter( ValueType.DATETIME, new LocalDateToZonedDateTimeConverter() );
         addConverter( ValueType.DATETIME, new ObjectToZonedDateTimeConverter() );
         addConverter( ValueType.COORDINATE, new LocationToStringConverter() );
+        addConverter( ValueType.COORDINATE, new StringToLocationConverter() );
         addConverter( ValueType.TEXT, new DoubleToTextStringConverter() );
     }
 

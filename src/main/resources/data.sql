@@ -47,15 +47,19 @@ VALUES ('664b61b4-c0ab-4be0-8865-eec266902fac', 0, '73cd99c5-0ca8-42ad-a53b-1891
 INSERT INTO FHIR_AUTOMATED_ENROLLMENT VALUES('e48eb514-aa60-4541-841a-16119507e525',1,'var age = dateTimeUtils.getAge( trackedEntityInstance.getValueByName(''Birth date'') ); (age != null) && (age < 1)','output.organizationUnitId = trackedEntityInstance' ||
  '.organizationUnitId; output.enrollmentDate = new Date(); output.incidentDate = trackedEntityInstance.getValueByName( ''Birth date'' ); true;');
 INSERT INTO FHIR_DHIS_MAP VALUES('13aeb380-0695-4e36-b255-36e18aa8a5c2',1,'IMMUNIZATION','DSTU3','EVENT',TRUE,1,'!input.notGiven && codeUtils.getCode( input.vaccineCode, ''http://example.ph/vaccine-codes'' ) == ''BCG''','output.setValueByName( ''CP - MCH ' ||
- 'BCG dose'', true ); true;',NULL,NULL,NULL,FALSE);
+ 'BCG dose'', true ); output.coordinate=trackedEntityInstance.coordinates; true;',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_DHIS_MAP VALUES('5b4bae24-ec73-46fc-89ef-accfcd81e14d',1,'IMMUNIZATION','DSTU3','EVENT',TRUE,1,'!input.notGiven && codeUtils.getCode( input.vaccineCode, ''http://example.ph/vaccine-codes'' ) == ''MMR''','output.setValueByName( ''CP - MCH ' ||
- 'Measles dose'', true ); true;',NULL,NULL,NULL,FALSE);
+ 'Measles dose'', true ); output.coordinate=trackedEntityInstance.coordinates; true;',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_DHIS_MAP VALUES('a5623570-446a-4267-944b-025a2c35c18c',1,'PATIENT','DSTU3','TRACKED_ENTITY',TRUE,1,'true','output.organizationUnitId = organizationUtils.getOrganizationUnitId( input.managingOrganization, ''http://example.ph/organizations'' ' ||
- '); output.setValueByName( ''National identifier'', identifierUtils.getIdentifier( input, ''http://example.ph/national-patient-id'' ) ); output.setValueByName( ''Last name'', humanNameUtils.getPrimaryName( input.name ).family ); output.setValueByName( ''First name'', humanNameUtils.getSingleGiven( humanNameUtils.getPrimaryName( input.name ) ) ); output.setValueByName( ''Birth date'', dateTimeUtils.getPreciseDate( input.birthDateElement ) ); output.setValueByName( ''Gender'', input.gender ); output.setValueByName( ''Address line'', addressUtils.getSingleLine( addressUtils.getPrimaryAddress( input.address ) ) ); output.setValueByName( ''City'', addressUtils.getPrimaryAddress( input.address ).city ); output.setValueByName( ''State of country'', addressUtils.getPrimaryAddress( input.address ).state ); output.setValueByName( ''Country'', addressUtils.getPrimaryAddress( input.address ).country ); output.coordinates = geoUtils.getLocation( addressUtils.getPrimaryAddress( input.address ) );  true;','National identifier','NAME','http://example.ph/national-patient-id',FALSE);
+ '); output.setValueByName( ''National identifier'', identifierUtils.getIdentifier( input, ''http://example.ph/national-patient-id'' ) ); output.setValueByName( ''Last name'', humanNameUtils.getPrimaryName( input.name ).family ); output.setValueByName( ' ||
+  '''First name'', humanNameUtils.getSingleGiven( humanNameUtils.getPrimaryName( input.name ) ) ); output.setValueByName( ''Birth date'', dateTimeUtils.getPreciseDate( input.birthDateElement ) ); output.setValueByName( ''Gender'', input.gender ); output' ||
+   '.setValueByName( ''Address line'', addressUtils.getSingleLine( addressUtils.getPrimaryAddress( input.address ) ) ); output.setValueByName( ''City'', addressUtils.getPrimaryAddress( input.address ).city ); output.setValueByName( ''State of country'', ' ||
+    'addressUtils.getPrimaryAddress( input.address ).state ); output.setValueByName( ''Country'', addressUtils.getPrimaryAddress( input.address ).country ); output.coordinates = geoUtils.getLocation( addressUtils.getPrimaryAddress( input.address ) ); true;',
+    'National identifier','NAME','http://example.ph/national-patient-id',FALSE);
 INSERT INTO FHIR_DHIS_MAP VALUES('f4e164a7-ed91-4f76-83b8-eda0daa0b406',1,'IMMUNIZATION','DSTU3','EVENT',TRUE,1,'!input.notGiven && codeUtils.getCode( input.vaccineCode, ''http://example.ph/vaccine-codes'' ) == ''OPV''','output.setValueByName( ''CP - MCH ' ||
- 'OPV dose'', Math.max(0, Math.min(3, immunizationUtils.getMaxDoseSequence(input)-1)) ); true;',NULL,NULL,NULL,FALSE);
+ 'OPV dose'', Math.max(0, Math.min(3, immunizationUtils.getMaxDoseSequence(input)-1)) ); output.coordinate=trackedEntityInstance.coordinates; true;',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_DHIS_MAP VALUES('f4e164a7-ed91-4f76-83b8-eda0daa0b408',1,'IMMUNIZATION','DSTU3','EVENT',TRUE,1,'!input.notGiven && codeUtils.getCode( input.vaccineCode, ''http://example.ph/vaccine-codes'' ) == ''DTaP''','output.setValueByName( ''CP - MCH ' ||
- 'DPT dose'', Math.max(1, Math.min(3, immunizationUtils.getMaxDoseSequence(input))) ); true;',NULL,NULL,NULL,FALSE);
+ 'DPT dose'', Math.max(1, Math.min(3, immunizationUtils.getMaxDoseSequence(input))) ); output.coordinate=trackedEntityInstance.coordinates; true;',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_TRACKED_ENTITY_MAP VALUES('a5623570-446a-4267-944b-025a2c35c18c','Person');
 INSERT INTO FHIR_EVENT_MAP VALUES('13aeb380-0695-4e36-b255-36e18aa8a5c2','Child Programme','Birth',TRUE,'e48eb514-aa60-4541-841a-16119507e525');
 INSERT INTO FHIR_EVENT_MAP VALUES('5b4bae24-ec73-46fc-89ef-accfcd81e14d','Child Programme','Baby Postnatal',TRUE,'e48eb514-aa60-4541-841a-16119507e525');
@@ -72,8 +76,8 @@ INSERT INTO FHIR_AUTOMATED_ENROLLMENT VALUES('2f311cf9-f1a5-4c7d-8c3e-7d92509fc8
    '.incidentDate = (observation == null) || !observation.hasValueDateTimeType() ? null : observation.valueDateTimeType; (output.incidentDate != null)');
 INSERT INTO FHIR_DHIS_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b',1,'OBSERVATION','DSTU3','EVENT',TRUE,1,'codeUtils.containsCode( input.code, ''http://loinc.org'', ''85354-9'' )','output.setValueByName(''RMNCH - WHOMCH Diastolic blood pressure''' ||
  ', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8462-4'').value); output.setValueByName(''RMNCH - WHOMCH Systolic blood pressure'', observationUtils.getBackboneElement(input.component, ''http://loinc.org'', ''8480-6'')' ||
-  '.value); true',NULL,NULL,NULL,FALSE);
+  '.value); output.coordinate=trackedEntityInstance.coordinates; true',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_EVENT_MAP VALUES('f33451e1-ab0b-4bdd-bcd9-8784b3717f2b','WHO RMNCH Tracker','First antenatal care visit',TRUE,'2f311cf9-f1a5-4c7d-8c3e-7d92509fc850');
 INSERT INTO FHIR_DHIS_MAP VALUES('d43c264f-7331-4c64-9af5-46e1da610fe8',1,'OBSERVATION','DSTU3','EVENT',TRUE,1,'codeUtils.containsCode( input.code, ''http://loinc.org'', ''8665-2'' )',
- 'output.setValueByName(''RMNCH - WHOMCH LMP date'', input.hasValueDateTimeType() ? input.valueDateTimeType : null); true',NULL,NULL,NULL,FALSE);
+ 'output.setValueByName(''RMNCH - WHOMCH LMP date'', input.hasValueDateTimeType() ? input.valueDateTimeType : null); output.coordinate=trackedEntityInstance.coordinates; true',NULL,NULL,NULL,FALSE);
 INSERT INTO FHIR_EVENT_MAP VALUES('d43c264f-7331-4c64-9af5-46e1da610fe8','WHO RMNCH Tracker','First antenatal care visit',TRUE,'2f311cf9-f1a5-4c7d-8c3e-7d92509fc850');
