@@ -57,8 +57,8 @@ public interface FhirRequest
     UUID getRemoteSubscriptionRequestId();
 
     @Nullable
-    ResourceSystem getRemoteResourceSystem( @Nonnull FhirResourceType resourceType );
+    ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
-    Optional<ResourceSystem> getOptionalRemoteResourceSystem( @Nonnull FhirResourceType resourceType );
+    Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
 }

@@ -28,15 +28,34 @@ package org.dhis2.fhir.adapter.fhir.transform;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@Scriptable
 public interface FhirToDhisTransformerContext
 {
     @Nonnull
     FhirRequest getFhirRequest();
+
+    /**
+     * Creates the reference for the specified value and the specified reference type. The
+     * specified reference type must be one of the values defined by {@link ReferenceType}.
+     *
+     * @param value         the value of the reference or <code>null</code> if no reference should
+     *                      be created.
+     * @param referenceType the typed of the reference as defined by {@link ReferenceType}.
+     * @return the reference or <code>null</code> if the specified value is <code>null</code>.
+     * @throws TransformerScriptException thrown if the specified reference type is invalid.
+     */
+    @Nullable
+    Reference createReference( @Nullable String value, @Nonnull Object referenceType )
+        throws TransformerScriptException;
 
     @Nonnull
     <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException;

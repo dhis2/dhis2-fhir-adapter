@@ -64,7 +64,7 @@ public class IdentifierFhirToDhisTransformerUtils extends AbstractIdentifierFhir
     @Override
     protected String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system )
     {
-        @SuppressWarnings( "unchecked" ) final List<Identifier> identifiers = (List<Identifier>) ReflectionUtils.invokeMethod( identifierMethod, domainResource, system );
+        @SuppressWarnings( "unchecked" ) final List<Identifier> identifiers = (List<Identifier>) ReflectionUtils.invokeMethod( identifierMethod, domainResource );
         if ( identifiers != null )
         {
             return identifiers.stream().filter( i -> Objects.equals( system, i.getSystem() ) ).findFirst().orElse( new Identifier() ).getValue();

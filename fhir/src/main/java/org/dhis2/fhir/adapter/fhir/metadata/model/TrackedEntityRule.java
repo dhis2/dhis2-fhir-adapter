@@ -36,6 +36,8 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -49,6 +51,7 @@ public class TrackedEntityRule extends AbstractRule
     private static final long serialVersionUID = -3997570895838354307L;
 
     private Reference trackedEntityReference;
+    private ExecutableScript orgUnitLookupScript;
 
     @Basic
     @Column( name = "tracked_entity_ref", nullable = false, length = 230 )
@@ -61,5 +64,17 @@ public class TrackedEntityRule extends AbstractRule
     public void setTrackedEntityReference( Reference trackedEntityRef )
     {
         this.trackedEntityReference = trackedEntityRef;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "org_lookup_script_id", nullable = false )
+    public ExecutableScript getOrgUnitLookupScript()
+    {
+        return orgUnitLookupScript;
+    }
+
+    public void setOrgUnitLookupScript( ExecutableScript orgUnitLookupScript )
+    {
+        this.orgUnitLookupScript = orgUnitLookupScript;
     }
 }

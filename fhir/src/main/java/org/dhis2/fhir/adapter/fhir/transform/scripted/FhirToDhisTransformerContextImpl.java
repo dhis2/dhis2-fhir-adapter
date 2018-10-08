@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -54,6 +56,27 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     public FhirRequest getFhirRequest()
     {
         return fhirRequest;
+    }
+
+    @Nullable
+    @Override
+    public Reference createReference( @Nullable String value, @Nonnull Object referenceType )
+    {
+        final ReferenceType rt;
+        try
+        {
+            rt = ReferenceType.valueOf( referenceType.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Not a valid reference type: " + referenceType, e );
+        }
+
+        if ( value == null )
+        {
+            return null;
+        }
+        return new Reference( value, rt );
     }
 
     @Nonnull

@@ -94,6 +94,13 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
         return delegate.getOptionalTypeAttributeByName( name ).map( ImmutableTrackedEntityTypeAttribute::new );
     }
 
+    @Nonnull
+    @Override
+    public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeById( @Nonnull String id )
+    {
+        return delegate.getOptionalTypeAttributeById( id );
+    }
+
     @Nullable
     @Override
     public TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name )

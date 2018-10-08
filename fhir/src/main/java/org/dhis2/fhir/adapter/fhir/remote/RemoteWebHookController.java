@@ -66,7 +66,7 @@ public class RemoteWebHookController
 
     private final ProcessingThread processingThread;
 
-    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 50, true );
+    private final BlockingQueue<UUID> requestQueue = new ArrayBlockingQueue<>( 1000, true );
 
     public RemoteWebHookController( @Nonnull RemoteSubscriptionResourceRepository resourceRepository, @Nonnull RemoteWebHookProcessor processor )
     {

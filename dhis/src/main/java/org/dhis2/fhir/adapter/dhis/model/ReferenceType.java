@@ -43,5 +43,10 @@ public enum ReferenceType
     /**
      * The reference is made by the unique name of the specific entity.
      */
-    NAME
+    NAME,
+
+    /**
+     * The reference is made by the unique ID of the specific entity.
+     */
+    ID
 }

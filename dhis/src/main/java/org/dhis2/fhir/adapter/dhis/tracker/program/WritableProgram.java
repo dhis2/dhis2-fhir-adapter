@@ -63,6 +63,8 @@ public class WritableProgram implements Program, Serializable
 
     private transient volatile Map<String, ProgramStage> stagesByCode;
 
+    private transient volatile Map<String, ProgramStage> stagesById;
+
     @Override
     public String getId()
     {
@@ -128,6 +130,8 @@ public class WritableProgram implements Program, Serializable
                 return Optional.ofNullable( getStageByName( reference.getValue() ) );
             case CODE:
                 return Optional.ofNullable( getStageByCode( reference.getValue() ) );
+            case ID:
+                return Optional.ofNullable( getStageById( reference.getValue() ) );
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
@@ -154,4 +158,16 @@ public class WritableProgram implements Program, Serializable
         }
         return stagesByCode.get( name );
     }
+
+    @Nullable
+    public ProgramStage getStageById( @Nonnull String id )
+    {
+        Map<String, ProgramStage> stagesById = this.stagesById;
+        if ( stagesById == null )
+        {
+            this.stagesById = stagesById = stages.stream().collect( Collectors.toMap( WritableProgramStage::getId, s -> s ) );
+        }
+        return stagesById.get( id );
+    }
+
 }

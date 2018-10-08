@@ -39,11 +39,13 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestMethod;
+import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.util.ExceptionUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -54,6 +56,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Component
 public class FhirRepositoryImpl implements FhirRepository
@@ -64,6 +68,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final AuthorizationContext authorizationContext;
 
+    private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
+
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
 
     private final TrackedEntityService trackedEntityService;
@@ -72,11 +78,12 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final EventService eventService;
 
-    public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext, @Nonnull RemoteSubscriptionResourceRepository resourceRepository,
+    public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext, @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
     {
         this.authorizationContext = authorizationContext;
+        this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.trackedEntityService = trackedEntityService;
         this.enrollmentService = enrollmentService;
@@ -124,11 +131,16 @@ public class FhirRepositoryImpl implements FhirRepository
 
     protected void saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
     {
+        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findBySubscription( subscriptionResource.getRemoteSubscription() );
+
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
         fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
+        fhirRequest.setResourceSystemsByType( systems.stream()
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri() ) )
+            .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
         final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(
             fhirToDhisTransformerService.createContext( fhirRequest ), resource );

@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,6 +52,8 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
     private transient volatile Map<String, WritableTrackedEntityTypeAttribute> attributesByName;
 
     private transient volatile Map<String, WritableTrackedEntityTypeAttribute> attributesByCode;
+
+    private transient volatile Map<String, WritableTrackedEntityTypeAttribute> attributesById;
 
     public WritableTrackedEntityType()
     {
@@ -99,13 +100,24 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
         this.attributes = attributes;
         this.attributesByName = null;
         this.attributesByCode = null;
+        this.attributesById = null;
     }
 
     @Nonnull
     @Override
     public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
     {
-        return (reference.getType() == ReferenceType.NAME) ? getOptionalTypeAttributeByName( reference.getValue() ) : getOptionalTypeAttributeByCode( reference.getValue() );
+        switch ( reference.getType() )
+        {
+            case CODE:
+                return getOptionalTypeAttributeByCode( reference.getValue() );
+            case NAME:
+                return getOptionalTypeAttributeByName( reference.getValue() );
+            case ID:
+                return getOptionalTypeAttributeById( reference.getValue() );
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
+        }
     }
 
     @Nonnull
@@ -145,6 +157,22 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
             this.attributesByName = attributesByName = attributes.stream().filter( a -> (a.getAttribute() != null) ).collect( Collectors.toMap( a -> a.getAttribute().getName(), a -> a ) );
         }
         return Optional.ofNullable( attributesByName.get( name ) );
+    }
+
+    @Nonnull
+    @Override
+    public Optional<WritableTrackedEntityTypeAttribute> getOptionalTypeAttributeById( @Nonnull String id )
+    {
+        if ( attributes == null )
+        {
+            return Optional.empty();
+        }
+        Map<String, WritableTrackedEntityTypeAttribute> attributesById = this.attributesById;
+        if ( attributesById == null )
+        {
+            this.attributesById = attributesById = attributes.stream().filter( a -> (a.getAttribute() != null) ).collect( Collectors.toMap( a -> a.getAttribute().getId(), a -> a ) );
+        }
+        return Optional.ofNullable( attributesById.get( id ) );
     }
 
     @Nullable

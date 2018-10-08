@@ -304,8 +304,10 @@ CREATE INDEX fhir_program_stage_rule_i5
 CREATE TABLE fhir_tracked_entity_rule (
   id                 UUID         NOT NULL,
   tracked_entity_ref VARCHAR(230) NOT NULL,
+  org_lookup_script_id UUID       NOT NULL,
   CONSTRAINT fhir_tracked_entity_rule_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_tracked_entity_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE
+  CONSTRAINT fhir_tracked_entity_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_tracked_entity_rule_fk2 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id)
 );
 
 CREATE TABLE fhir_resource_mapping (
@@ -319,7 +321,10 @@ CREATE TABLE fhir_resource_mapping (
   enrollment_org_lookup_script_id UUID                           NOT NULL,
   event_org_lookup_script_id      UUID                           NOT NULL,
   CONSTRAINT fhir_resource_mapping_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_resource_mapping_uk1 UNIQUE (fhir_resource_type)
+  CONSTRAINT fhir_resource_mapping_uk1 UNIQUE (fhir_resource_type),
+  CONSTRAINT fhir_resource_mapping_fk1 FOREIGN KEY (tei_lookup_script_id) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_resource_mapping_fk2 FOREIGN KEY (enrollment_org_lookup_script_id) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_resource_mapping_fk3 FOREIGN KEY (event_org_lookup_script_id ) REFERENCES fhir_executable_script (id)
 );
 
 CREATE TABLE fhir_remote_subscription (
@@ -402,3 +407,85 @@ VALUES ('1ded2081-8836-43dd-a5e1-7cb9562c93ef', 0, 'GENDER', 'Gender Male', 'GEN
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378', 0, 'CVX (Vaccine Administered)', 'SYSTEM_CVX', 'http://hl7.org/fhir/sid/cvx', 'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. ' ||
                                                                                                                               'Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
+-- Script that returns boolean value true every time
+INSERT INTO fhir_script (id, version, name, description, code, script_type, return_type, input_type, output_type)
+VALUES ('5b37861d-9442-4e13-ac9f-88a893e91ce9', 0, 'True', 'Returns Boolean True.', 'TRUE', 'EVALUATE', 'BOOLEAN', NULL, NULL);
+INSERT INTO fhir_script_source (id , version, script_id, source_text, source_type)
+VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 0, '5b37861d-9442-4e13-ac9f-88a893e91ce9', 'true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 'DSTU3');
+INSERT INTO fhir_executable_script (id, script_id)
+VALUES ('9299b82e-b90a-4542-8b78-200cadff3d7d', '5b37861d-9442-4e13-ac9f-88a893e91ce9');
+
+-- Script that extracts Organisation Unit Reference from Patient
+INSERT INTO fhir_script (id, version, name, description, code, script_type, return_type, input_type, output_type)
+VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 0, 'Org Unit Reference Code from Patient Organization',
+'Extracts the organization unit code reference from the business identifier that is specified by the FHIR Organization of the FHIR Patient.',
+'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE', 'EVALUATE', 'ORG_UNIT_REF', 'FHIR_PATIENT', 'DHIS_TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('7b94feba-bcf6-4635-929a-01311b25d975', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
+'context.createReference(identifierUtils.getReferenceIdentifier(input.managingOrganization, ''ORGANIZATION''), ''CODE'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('7b94feba-bcf6-4635-929a-01311b25d975', 'DSTU3');
+INSERT INTO fhir_executable_script (id, script_id)
+VALUES ('25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'a250e109-a135-42b2-8bdb-1c050c1d384c');
+
+-- Script that transforms Patient to Person
+INSERT INTO fhir_script (id, version, name, description, code, script_type, return_type, input_type, output_type)
+VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 0, 'True', 'Transforms FHIR Patient to DHIS Person.', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_PATIENT', 'DHIS_TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('d02a5fe8-e651-41ed-9f41-ad3e23199d48', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'nationalIdentifierAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:National identifier',
+'The reference of the tracked entity attribute that contains the national identifier of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('0a7c26cb-7bd3-4394-9d47-a610ac231f8a', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:Last name',
+'The reference of the tracked entity attribute that contains the last name of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('b41dd571-a129-4fa6-a807-35ea5663e8e3', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:First name',
+'The reference of the tracked entity attribute that contains the first name of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('90b3c110-38e4-4291-934c-e2569e8af1ba', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the birth date of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'genderAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the gender of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('40a28a9c-82e3-46e8-9eb9-44aaf2f5eacc', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'addressLineAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the address line (e.g. street, house number) of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('ae13ceca-86d7-4f60-8d54-25587d53a5bd', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'cityAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the city of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('6fb6bfe4-5b44-42a1-812f-be1dc8413d6e', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'stateOfCountryAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the state (i.e. state of country) of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('a77ef245-e65e-4a87-9c96-5047911f9830', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'countryAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
+'The reference of the tracked entity attribute that contains the country of the Person.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'output.setValue(args[''nationalIdentifierAttribute''], identifierUtils.getResourceIdentifier(input, ''PATIENT''));
+output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family);
+output.setValue(args[''firstNameAttribute''], humanNameUtils.getSingleGiven(humanNameUtils.getPrimaryName(input.name)));
+output.setOptionalValue(args[''birthDateAttribute''], dateTimeUtils.getPreciseDate(input.birthDateElement));
+output.setOptionalValue(args[''genderAttribute''], input.gender);
+output.setOptionalValue(args[''addressLineAttribute''], addressUtils.getSingleLine(addressUtils.getPrimaryAddress(input.address)));
+output.setOptionalValue(args[''cityAttribute''], addressUtils.getPrimaryAddress(input.address).city);
+output.setOptionalValue(args[''stateOfCountryAttribute''], addressUtils.getPrimaryAddress(input.address).state);
+output.setOptionalValue(args[''countryAttribute''], addressUtils.getPrimaryAddress(input.address).country);
+output.coordinates = geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address));
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 'DSTU3');
+INSERT INTO fhir_executable_script (id, script_id)
+VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 'ea887943-5e94-4e31-9441-c7661fe1063e');

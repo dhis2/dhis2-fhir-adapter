@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -106,17 +107,19 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         trackedEntityInstance.setCoordinates( valueConverter.convert( location, ValueType.COORDINATE, String.class ) );
     }
 
-    public void setValueByName( @Nonnull String typeAttrName, Object value ) throws TransformerException
+    public void setValue( @Nonnull Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
-        final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
+        final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttribute( attributeReference ).orElseThrow( () ->
+            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute \"" + attributeReference + "\"" ) );
         setValue( typeAttribute, value );
     }
 
-    public void setValueByCode( @Nonnull String typeAttrCode, Object value ) throws TransformerException
+    public void setOptionalValue( @Nullable Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
-        final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttributeByCode( typeAttrCode ).orElseThrow( () ->
-            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with code \"" + typeAttrCode + "\"" ) );
-        setValue( typeAttribute, value );
+        if ( attributeReference != null )
+        {
+            setValue( attributeReference, value );
+        }
     }
 
     @Nullable

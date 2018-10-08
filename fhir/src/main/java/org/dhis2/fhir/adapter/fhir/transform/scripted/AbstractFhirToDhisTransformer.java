@@ -37,6 +37,8 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,6 +48,8 @@ import java.util.Set;
 
 public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U extends AbstractRule> implements FhirToDhisTransformer<R, U>
 {
+    protected final Logger logger = LoggerFactory.getLogger( getClass() );
+
     private final ScriptExecutor scriptExecutor;
 
     public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor )

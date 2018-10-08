@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -69,13 +68,19 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     @Override
     public Optional<TrackedEntityType> getType( @Nonnull Reference reference )
     {
-        // tracked entity type can only be retrieved by name
-        if ( reference.getType() != ReferenceType.NAME )
+        switch ( reference.getType() )
         {
-            return Optional.empty();
+            case NAME:
+                return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), reference.getValue() ) )
+                    .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
+            case ID:
+                return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), reference.getValue() ) )
+                    .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
+            case CODE:
+                return Optional.empty();
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
-        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), reference.getValue() ) )
-            .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 
     public List<TrackedEntityType> getTrackedEntityTypes()

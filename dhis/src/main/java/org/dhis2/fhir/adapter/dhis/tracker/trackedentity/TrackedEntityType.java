@@ -57,6 +57,9 @@ public interface TrackedEntityType
     @Nonnull
     Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeByName( @Nonnull String name );
 
+    @Nonnull
+    Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttributeById( @Nonnull String id );
+
     @Nullable
     TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String name );
 }

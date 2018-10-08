@@ -145,15 +145,15 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     @Nullable
     @Override
-    public ResourceSystem getRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    public ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType )
     {
         return (resourceSystemsByType == null) ? null : resourceSystemsByType.get( resourceType );
     }
 
     @Nonnull
     @Override
-    public Optional<ResourceSystem> getOptionalRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    public Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType )
     {
-        return Optional.ofNullable( getRemoteResourceSystem( resourceType ) );
+        return Optional.ofNullable( getResourceSystem( resourceType ) );
     }
 }

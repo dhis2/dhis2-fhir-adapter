@@ -91,15 +91,15 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
 
     @Nullable
     @Override
-    public ResourceSystem getRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    public ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType )
     {
-        return delegate.getRemoteResourceSystem( resourceType );
+        return delegate.getResourceSystem( resourceType );
     }
 
     @Nonnull
     @Override
-    public Optional<ResourceSystem> getOptionalRemoteResourceSystem( @Nonnull FhirResourceType resourceType )
+    public Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType )
     {
-        return delegate.getOptionalRemoteResourceSystem( resourceType );
+        return delegate.getOptionalResourceSystem( resourceType );
     }
 }

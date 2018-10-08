@@ -80,19 +80,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         }
         if ( reference.getResource() instanceof IDomainResource )
         {
-            final FhirResourceType resourceType;
-            try
-            {
-                resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
-            }
-            catch ( IllegalArgumentException e )
-            {
-                throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
-            }
-            final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-            final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalRemoteResourceSystem( resourceType )
-                .orElseThrow( () -> new TransformerDataException( "No system has been defined for resource type " + resourceType + "." ) );
-            return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType, resourceSystem.getSystem() );
+            return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType );
         }
         return null;
     }
@@ -110,6 +98,28 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
             return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType, system );
         }
         return null;
+    }
+
+    @Nullable
+    public String getResourceIdentifier( @Nullable IDomainResource resource, @Nonnull Object fhirResourceType ) throws TransformerException
+    {
+        if ( resource == null )
+        {
+            return null;
+        }
+        final FhirResourceType resourceType;
+        try
+        {
+            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+        }
+        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+        final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
+            .orElseThrow( () -> new TransformerDataException( "No system has been defined for resource type " + resourceType + "." ) );
+        return getResourceIdentifier( resource, fhirResourceType, resourceSystem.getSystem() );
     }
 
     @Nullable

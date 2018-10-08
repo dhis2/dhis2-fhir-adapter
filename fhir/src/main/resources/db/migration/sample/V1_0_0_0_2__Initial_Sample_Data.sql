@@ -32,15 +32,8 @@ INSERT INTO fhir_system (id, version, name, code, system_uri)
 VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Philippines Patient', 'SYSTEM_PH_PATIENT', 'http://example.ph/national-patient-id');
 
 INSERT INTO fhir_remote_subscription (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authorization_header, remote_base_url, tolerance_minutes, logging, verbose_logging)
-VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f',
-        0,
-        'HAPI FHIR JPA Server',
-        'SAMPLE',
-        'HAPI FHIR JPA Server with sample data.',
-        'DSTU3',
-        '',
-        'Basic YWRtaW46ZGlzdHJpY3Q=',
-        'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1, TRUE, TRUE);
+VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f', 0, 'HAPI FHIR JPA Server', 'SAMPLE', 'HAPI FHIR JPA Server with sample data.', 'DSTU3',
+'', 'Basic YWRtaW46ZGlzdHJpY3Q=', 'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1, TRUE, TRUE);
 
 INSERT INTO fhir_remote_subscription_header (remote_subscription_id, name, value, secured)
 VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'Authorization', 'Bearer jshru38jsHdsdfy38sh38H3d', TRUE);
@@ -52,70 +45,10 @@ VALUES ('a756ef2a-1bf4-43f4-a991-fbb48ad358ac', 0, '73cd99c5-0ca8-42ad-a53b-1891
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
 VALUES ('b32b4098-f8e1-426a-8dad-c5c4d8e0fab6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'OBSERVATION', '_format=json', 'Subscription for all Observations.');
 
-INSERT INTO fhir_remote_subscription_system (
-  id           ,
-  version                    ,
-  remote_subscription_id       ,
-  fhir_resource_type         ,
-  system_id
-) VALUES ('ea9804a3-9e82-4d0d-9cd2-e417b32b1c0c', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', 'c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3');
-
--- Script that returns boolean value true
-INSERT INTO fhir_script (
-  id      ,
-  version,
-  name            ,
-  description     ,
-  code           ,
-  script_type   ,
-  return_type  ,
-  input_type  ,
-  output_type
-) VALUES ('5b37861d-9442-4e13-ac9f-88a893e91ce9', 0, 'True', 'Returns Boolean True.', 'TRUE', 'EVALUATE', 'BOOLEAN', NULL, NULL);
-INSERT INTO fhir_script_source (
-  id            ,
-  version        ,
-  script_id       ,
-  source_text     ,
-  source_type
-) VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 0, '5b37861d-9442-4e13-ac9f-88a893e91ce9', 'true', 'JAVASCRIPT');
-INSERT INTO fhir_script_source_version (
-  script_source_id ,
-  fhir_version
-) VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 'DSTU3');
-INSERT INTO fhir_executable_script (
-  id,
-  script_id
-) VALUES ('9299b82e-b90a-4542-8b78-200cadff3d7d', '5b37861d-9442-4e13-ac9f-88a893e91ce9');
-
--- Script that transforms Patient to Person
-INSERT INTO fhir_script (
-  id      ,
-  version,
-  name            ,
-  description     ,
-  code           ,
-  script_type   ,
-  return_type  ,
-  input_type  ,
-  output_type
-) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 0, 'True', 'Transforms FHIR Patient to DHIS Person.', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_PATIENT', 'DHIS_TRACKED_ENTITY_INSTANCE');
-INSERT INTO fhir_script_source (
-  id            ,
-  version        ,
-  script_id       ,
-  source_text     ,
-  source_type
-) VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e', 'output.organizationUnitId = organizationUtils.getOrganizationUnitId( input.managingOrganization, ''http://example.ph/organizations'' ); output.setValueByName( ' ||
- '''National identifier'', identifierUtils.getIdentifier( input, ''http://example.ph/national-patient-id'' ) ); output.setValueByName( ''Last name'', humanNameUtils.getPrimaryName( input.name ).family ); output.setValueByName( ''First name'', humanNameUtils.getSingleGiven( humanNameUtils.getPrimaryName( input.name ) ) );  output.setValueByName( ''Birth date'', dateTimeUtils.getPreciseDate( input.birthDateElement ) );  output.setValueByName( ''Gender'', input.gender );  output.setValueByName( ''Address line'', addressUtils.getSingleLine( addressUtils.getPrimaryAddress( input.address ) ) );  output.setValueByName( ''City'', addressUtils.getPrimaryAddress( input.address ).city );  output.setValueByName( ''State of country'', addressUtils.getPrimaryAddress( input.address ).state );  output.setValueByName( ''Country'', addressUtils.getPrimaryAddress( input.address ).country );  output.coordinates = geoUtils.getLocation( addressUtils.getPrimaryAddress( input.address ) ); true;', 'JAVASCRIPT');
-INSERT INTO fhir_script_source_version (
-  script_source_id ,
-  fhir_version
-) VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 'DSTU3');
-INSERT INTO fhir_executable_script (
-  id,
-  script_id
-) VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 'ea887943-5e94-4e31-9441-c7661fe1063e');
+INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
+VALUES ('ea9804a3-9e82-4d0d-9cd2-e417b32b1c0c', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', 'c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3');
+INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
+VALUES ('ef7d37ae-6a02-46de-bf15-3dc522a464ed', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PATIENT', 'ff842c76-a529-4563-972d-216b887a3573');
 
 -- Script that performs the lookup of TEI ID from FHIR Immunization
 INSERT INTO fhir_script (
@@ -154,23 +87,24 @@ INSERT INTO fhir_resource_mapping (
   event_org_lookup_script_id
 ) VALUES ('44a6c99c-c83c-4061-acd2-39e4101de147', 0, 'IMMUNIZATION', 'a08caa8a-1cc9-4f51-b6b8-814af781a442', 'a08caa8a-1cc9-4f51-b6b8-814af781a442', 'a08caa8a-1cc9-4f51-b6b8-814af781a442');
 
+-- Executable script arguments that defines all attributes of Person
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'NAME:Birth date');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('6f35479f-d594-4286-9269-1fdfc5dcc2cd', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '40a28a9c-82e3-46e8-9eb9-44aaf2f5eacc', 'NAME:Address line');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'NAME:City');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('b27348e5-7eff-461f-9516-7ab72289a94d', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '6fb6bfe4-5b44-42a1-812f-be1dc8413d6e', 'NAME:State of country');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('5aedebb4-b62b-4b4d-b47e-3b067ed74db2', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'a77ef245-e65e-4a87-9c96-5047911f9830', 'NAME:Country');
+
 -- Patient rule
-INSERT INTO fhir_rule (
-  id,
-  version,
-  name    ,
-  description,
-  enabled     ,
-  evaluation_order,
-  fhir_resource_type,
-  dhis_resource_type ,
-  applicable_in_script_id ,
-  transform_in_script_id
-) VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
-INSERT INTO fhir_tracked_entity_rule (
-  id                ,
-  tracked_entity_ref
-) VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person');
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
+VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
+INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id) VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf');
 
 -- Child Programme
 INSERT INTO fhir_tracker_program (

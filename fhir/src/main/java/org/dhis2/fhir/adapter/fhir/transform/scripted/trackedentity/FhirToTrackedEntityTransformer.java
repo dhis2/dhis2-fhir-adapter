@@ -30,6 +30,9 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
@@ -59,15 +62,18 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     private final TrackedEntityService trackedEntityService;
 
+    private final OrganisationUnitService organisationUnitService;
+
     private final ValueConverter valueConverter;
 
     public FhirToTrackedEntityTransformer( @Nonnull ScriptExecutor scriptExecutor,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull ValueConverter valueConverter )
+        @Nonnull OrganisationUnitService organisationUnitService, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutor );
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.trackedEntityService = trackedEntityService;
+        this.organisationUnitService = organisationUnitService;
         this.valueConverter = valueConverter;
     }
 
@@ -98,22 +104,24 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        if ( !addScriptVariables( variables, context, rule ) )
+        if ( !addScriptVariables( variables, rule ) )
         {
             return null;
         }
 
-        final TrackedEntityType trackedEntityType = (TrackedEntityType) variables.get( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName() );
-        if ( trackedEntityType == null )
-        {
-            throw new FatalTransformerException( "Tracked entity type is not included as script argument." );
-        }
-
+        final TrackedEntityType trackedEntityType = getTrackedEntityType( variables );
         final TrackedEntityInstance trackedEntityInstance = getResource( context, rule, variables )
             .orElseThrow( () -> new FatalTransformerException( "Tracked entity instance could neither be retrieved nor created." ) );
         final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
             trackedEntityType, trackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedTrackedEntityInstance );
+
+        final Optional<OrganisationUnit> organisationUnit = getOrganizationUnit( context, rule, variables );
+        if ( !organisationUnit.isPresent() )
+        {
+            return null;
+        }
+        scriptedTrackedEntityInstance.setOrganizationUnitId( organisationUnit.get().getId() );
 
         if ( !transform( context, rule, variables ) )
         {
@@ -124,7 +132,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         return new FhirToDhisTransformOutcome<>( trackedEntityInstance.getId(), trackedEntityInstance );
     }
 
-    protected boolean addScriptVariables( @Nonnull Map<String, Object> arguments, @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule ) throws TransformerException
+    protected boolean addScriptVariables( @Nonnull Map<String, Object> arguments, @Nonnull TrackedEntityRule rule ) throws TransformerException
     {
         final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getType( rule.getTrackedEntityReference() )
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity type in rule " + rule + " could not be found: " + rule.getTrackedEntityReference() ) );
@@ -187,6 +195,24 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return new TrackedEntityInstance( getTrackedEntityType( scriptVariables ).getId(), id, true );
+    }
+
+    @Nonnull
+    protected Optional<OrganisationUnit> getOrganizationUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
+    {
+        final Reference organizationUnitReference = getScriptExecutor().execute( rule.getOrgUnitLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, Reference.class );
+        if ( organizationUnitReference == null )
+        {
+            logger.info( "Could not extract organization unit reference." );
+            return Optional.empty();
+        }
+
+        final Optional<OrganisationUnit> organisationUnit = organisationUnitService.get( organizationUnitReference );
+        if ( !organisationUnit.isPresent() )
+        {
+            logger.info( "Organization unit of extracted reference does not exist: " + organizationUnitReference );
+        }
+        return organisationUnit;
     }
 
     @Nonnull

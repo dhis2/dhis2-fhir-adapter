@@ -72,6 +72,9 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
                 case NAME:
                     value = p.getName();
                     break;
+                case ID:
+                    value = p.getId();
+                    break;
                 default:
                     throw new AssertionError( "Unhandled reference type: " + reference.getType() );
             }

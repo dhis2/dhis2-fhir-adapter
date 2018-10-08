@@ -48,6 +48,8 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
 
     protected static final String ORGANISATION_UNIT_BY_NAME_URI = "/organisationUnits.json?paging=false&fields=id,code&filter=name:eq:{name}";
 
+    protected static final String ORGANISATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json";
+
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -67,6 +69,9 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
                 break;
             case NAME:
                 result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_NAME_URI, DhisOrganisationUnits.class, reference.getValue() );
+                break;
+            case ID:
+                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, DhisOrganisationUnits.class, reference.getValue() );
                 break;
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
