@@ -42,7 +42,8 @@ public enum ScriptVariable
     TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
     PROGRAM( "program" ),
     PROGRAM_STAGE( "programStage" ),
-    ENROLLMENT( "enrollment" );
+    ENROLLMENT( "enrollment" ),
+    IDENTIFIER_UTILS( "identifierUtils" );
 
     private final String variableName;
 

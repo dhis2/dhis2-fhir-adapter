@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -72,6 +73,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     protected abstract String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system );
 
     @Nullable
+    @ScriptExecutionRequired
     public String getReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformerException
     {
         if ( reference == null )
@@ -101,6 +103,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     }
 
     @Nullable
+    @ScriptExecutionRequired
     public String getResourceIdentifier( @Nullable IDomainResource resource, @Nonnull Object fhirResourceType ) throws TransformerException
     {
         if ( resource == null )

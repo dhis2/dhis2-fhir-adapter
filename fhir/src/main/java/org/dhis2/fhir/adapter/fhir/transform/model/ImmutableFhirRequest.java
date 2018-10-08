@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 
@@ -37,6 +38,7 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
 
+@Scriptable
 public class ImmutableFhirRequest implements FhirRequest, Serializable
 {
     private static final long serialVersionUID = 8079249171843824509L;

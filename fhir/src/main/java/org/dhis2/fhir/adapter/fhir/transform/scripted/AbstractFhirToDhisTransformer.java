@@ -30,12 +30,15 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,5 +121,28 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformInScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
+    }
+
+    @Nonnull
+    protected IBaseResource getInput( @Nonnull Map<String, Object> scriptVariables ) throws FatalTransformerException
+    {
+        final IBaseResource baseResource = (IBaseResource) scriptVariables.get( ScriptVariable.INPUT.getVariableName() );
+        if ( baseResource == null )
+        {
+            throw new FatalTransformerException( "Input is not included as script variables." );
+        }
+        return baseResource;
+    }
+
+    @Nonnull
+    protected AbstractIdentifierFhirToDhisTransformerUtils getIdentifierUtils( @Nonnull Map<String, Object> scriptVariables ) throws FatalTransformerException
+    {
+        final AbstractIdentifierFhirToDhisTransformerUtils identifierUtils =
+            (AbstractIdentifierFhirToDhisTransformerUtils) scriptVariables.get( ScriptVariable.IDENTIFIER_UTILS.getVariableName() );
+        if ( identifierUtils == null )
+        {
+            throw new FatalTransformerException( "Identifier utils is not included as script variables." );
+        }
+        return identifierUtils;
     }
 }

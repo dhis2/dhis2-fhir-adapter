@@ -33,26 +33,35 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.AbstractFhirToDhisTransformer;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -123,10 +132,26 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
         scriptedTrackedEntityInstance.setOrganizationUnitId( organisationUnit.get().getId() );
 
+        if ( trackedEntityInstance.isNewResource() )
+        {
+            final String identifier = getIdentifier( context, rule, scriptVariables );
+            if ( identifier == null )
+            {
+                return null;
+            }
+
+            final String attributeId = trackedEntityType.getOptionalTypeAttribute( rule.getTrackedEntityIdentifierReference() ).orElseThrow( () ->
+                new TransformerMappingException( "Rule \"" + rule + "\" expects that tracked entity type \"" + trackedEntityType.getName() +
+                    "\" contains undefined attribute \"" + rule.getTrackedEntityIdentifierReference() + "\"." ) ).getAttributeId();
+            trackedEntityInstance.getAttribute( attributeId ).setValue( identifier );
+        }
+
         if ( !transform( context, rule, variables ) )
         {
             return null;
         }
+        trackedEntityService.updateGeneratedValues( trackedEntityInstance, trackedEntityType,
+            Collections.singletonMap( RequiredValueType.ORG_UNIT_CODE, organisationUnit.get().getCode() ) );
         scriptedTrackedEntityInstance.validate();
 
         return new FhirToDhisTransformOutcome<>( trackedEntityInstance.getId(), trackedEntityInstance );
@@ -154,30 +179,25 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     protected Optional<TrackedEntityInstance> getResourceByIdentifier(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-//        final TrackedEntityType trackedEntityType = getTrackedEntityType( scriptVariables );
-//        final TrackedEntityTypeAttribute identifierAttribute = trackedEntityType.getOptionalTypeAttribute( rule.getIdentifierMapping().getAttributeReference() )
-//            .orElseThrow( () -> new TransformerMappingException( "Tracked entity \"" + rule.getTrackedEntityTypeName() +
-//                "\" does not include identifier attribute " + rule.getIdentifierMapping().getAttributeReference() + "." ) );
-//        final String identifierValue;
-//        try
-//        {
-//            identifierValue = valueConverter.convert( identifier, identifierAttribute.getValueType(), String.class );
-//        }
-//        catch ( ConversionException e )
-//        {
-//            throw new TransformerMappingException( "Identifier attribute value could not be converted: " + e.getMessage(), e );
-//        }
-//
-//        final Collection<TrackedEntityInstance> result = trackedEntityService.findByAttrValue(
-//            trackedEntityType.getId(), identifierAttribute.getAttributeId(), Objects.requireNonNull( identifierValue ), 2 );
-//        if ( result.size() > 1 )
-//        {
-//            throw new TransformerMappingException( "Filtering with identifier of rule " + rule +
-//                " returned more than one tracked entity instance." );
-//        }
-//        return result.stream().findFirst();
-        // TODO
-        return Optional.empty();
+        final String identifier = getIdentifier( context, rule, scriptVariables );
+        if ( identifier == null )
+        {
+            return Optional.empty();
+        }
+
+        final TrackedEntityType trackedEntityType = getTrackedEntityType( scriptVariables );
+        final TrackedEntityTypeAttribute identifierAttribute = trackedEntityType.getOptionalTypeAttribute( rule.getTrackedEntityIdentifierReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity type \"" + rule.getTrackedEntityReference() +
+                "\" does not include identifier attribute \"" + rule.getTrackedEntityIdentifierReference() + "\"." ) );
+
+        final Collection<TrackedEntityInstance> result = trackedEntityService.findByAttrValue(
+            trackedEntityType.getId(), identifierAttribute.getAttributeId(), Objects.requireNonNull( identifier ), 2 );
+        if ( result.size() > 1 )
+        {
+            throw new TransformerMappingException( "Filtering with identifier of rule " + rule +
+                " returned more than one tracked entity instance: " + identifier );
+        }
+        return result.stream().findFirst();
     }
 
     @Nonnull
@@ -195,6 +215,37 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return new TrackedEntityInstance( getTrackedEntityType( scriptVariables ).getId(), id, true );
+    }
+
+    @Nullable
+    protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
+    {
+        final IBaseResource baseResource = getInput( scriptVariables );
+        if ( !(baseResource instanceof IDomainResource) )
+        {
+            throw new TransformerDataException( "Resource " + context.getFhirRequest().getResourceType() +
+                " is no domain resource and does not include the required identifier." );
+        }
+
+        final FhirResourceType resourceType = context.getFhirRequest().getResourceType();
+        final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
+            .orElseThrow( () -> new TransformerDataException( "No system has been defined for resource type " + resourceType + "." ) );
+
+        final String identifier = getIdentifierUtils( scriptVariables ).getResourceIdentifier(
+            (IDomainResource) baseResource, context.getFhirRequest().getResourceType(), resourceSystem.getSystem() );
+        if ( identifier == null )
+        {
+            logger.info( "Resource " + context.getFhirRequest().getResourceType() + " does not include the required identifier with system: " +
+                resourceSystem.getSystem() );
+            return null;
+        }
+
+        if ( rule.isTrackedEntityIdentifierFq() )
+        {
+            throw new TransformerDataException( "Tracked entity rule " + rule.getId() + " requires full qualified identifiers. " +
+                "Full qualified identifiers are currently not supported." );
+        }
+        return identifier;
     }
 
     @Nonnull
@@ -221,7 +272,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         final TrackedEntityType trackedEntityType = (TrackedEntityType) scriptVariables.get( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName() );
         if ( trackedEntityType == null )
         {
-            throw new FatalTransformerException( "Tracked entity type is not included as script argument." );
+            throw new FatalTransformerException( "Tracked entity type is not included as script variables." );
         }
         return trackedEntityType;
     }

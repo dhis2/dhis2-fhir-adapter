@@ -297,7 +297,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     protected FhirResourceMapping getFhirResourceMapping( @Nonnull ProgramStageRule rule )
     {
-        return fhirResourceMappingRepository.getByFhirResourceType( rule.getFhirResourceType() ).orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
+        return fhirResourceMappingRepository.getByFhirResourceType( rule.getFhirResourceType() )
+            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
     }
 
 //    @Nonnull protected
@@ -306,7 +307,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 //        final TrackedEntityType trackedEntityType = (TrackedEntityType) scriptVariables.get( ScriptVariable.TRACKED_ENTITY_TYPE );
 //        if ( trackedEntityType == null )
 //        {
-//            throw new FatalTransformerException( "Tracked entity type is not included as script argument." );
+//            throw new FatalTransformerException( "Tracked entity type is not included as script variables." );
 //        }
 //        return trackedEntityType;
 //    }
@@ -409,7 +410,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final ProgramStage programStage = (ProgramStage) scriptVariables.get( ScriptVariable.PROGRAM_STAGE.getVariableName() );
         if ( programStage == null )
         {
-            throw new FatalTransformerException( "MappedTrackerProgram stage is not included as script argument." );
+            throw new FatalTransformerException( "MappedTrackerProgram stage is not included as script variables." );
         }
         return programStage;
     }

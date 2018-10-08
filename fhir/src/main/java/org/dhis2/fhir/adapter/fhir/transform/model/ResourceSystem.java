@@ -51,14 +51,14 @@ public class ResourceSystem implements Serializable
         this.system = system;
     }
 
-    public @Nonnull
-    FhirResourceType getFhirResourceType()
+    @Nonnull
+    public FhirResourceType getFhirResourceType()
     {
         return fhirResourceType;
     }
 
-    public @Nonnull
-    String getSystem()
+    @Nonnull
+    public String getSystem()
     {
         return system;
     }

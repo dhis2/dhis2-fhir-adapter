@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,8 +48,8 @@ public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
     String getOrganizationUnitId();
 
     @Nullable
-    Location getCoordinates();
+    String getCoordinates();
 
     @Nullable
-    Object getValueByName( @Nonnull String typeAttrName );
+    Object getValue( @Nonnull Reference attributeReference );
 }

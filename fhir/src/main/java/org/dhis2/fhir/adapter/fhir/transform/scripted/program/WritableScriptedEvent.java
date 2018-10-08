@@ -104,7 +104,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         setValue( dataElement, value, providedElsewhere );
     }
 
-    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere ) throws TransformerException
+    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere )
     {
         if ( Boolean.TRUE.equals( providedElsewhere ) && !dataElement.isAllowProvidedElsewhere() )
         {

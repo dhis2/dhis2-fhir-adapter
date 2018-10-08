@@ -30,12 +30,13 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 public interface TrackedEntityService
 {
-    @Nonnull
-    TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type );
+    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
+        @Nonnull Map<RequiredValueType, String> requiredValues );
 
     @Nonnull
     Optional<TrackedEntityInstance> getById( @Nonnull String id );

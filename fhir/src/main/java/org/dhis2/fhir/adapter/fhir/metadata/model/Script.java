@@ -75,7 +75,7 @@ public class Script implements Serializable
     private DataType returnType;
     private TransformDataType inputType;
     private TransformDataType outputType;
-    private Collection<ScriptArgument> arguments;
+    private Collection<ScriptArg> arguments;
     private Set<ScriptVariable> variables;
     private Collection<ScriptSource> sources;
 
@@ -230,17 +230,17 @@ public class Script implements Serializable
     }
 
     @OneToMany( mappedBy = "script" )
-    public Collection<ScriptArgument> getArguments()
+    public Collection<ScriptArg> getArguments()
     {
         return arguments;
     }
 
-    public void setArguments( Collection<ScriptArgument> scriptVariables )
+    public void setArguments( Collection<ScriptArg> scriptVariables )
     {
         this.arguments = scriptVariables;
     }
 
-    @ElementCollection
+    @ElementCollection( fetch = FetchType.EAGER )
     @CollectionTable( name = "fhir_script_variable", joinColumns = @JoinColumn( name = "script_id" ) )
     @Column( name = "variable" )
     @Enumerated( EnumType.STRING )

@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -42,17 +42,24 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
+    protected static final String REQUIRED_VALUE_URI = "/trackedEntityAttributes/{attributeId}/requiredValues.json";
+
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
@@ -64,6 +71,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     protected static final String FIND_BY_ATTR_VALUE_URI = "/trackedEntityInstances.json?" +
         "trackedEntityType={typeId}&ouMode=ACCESSIBLE&filter={attrId}:EQ:{attrValue}&pageSize={maxResult}";
 
+    protected static final int MAX_RESERVE_RETRIES = 10;
+
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -72,14 +81,34 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         this.restTemplate = restTemplate;
     }
 
-    @Nonnull
     @Override
-    public TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type )
+    public void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type, @Nonnull Map<RequiredValueType, String> requiredValues )
     {
-        final TrackedEntityInstance instance = new TrackedEntityInstance( type.getId(), null, true );
-        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() ).forEach( a -> instance.getAttributes().add(
-            new TrackedEntityAttributeValue( a.getAttributeId(), getReservedValue( a.getAttributeId() ) ) ) );
-        return instance;
+        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() && (trackedEntityInstance.getAttribute( a.getAttributeId() ).getValue() == null) ).forEach( a -> {
+            final RequiredValue requiredValue = getRequiredValue( a.getAttributeId() );
+            final MultiValueMap<String, String> resultingRequiredValues =
+                CollectionUtils.toMultiValueMap( requiredValues.entrySet().stream().filter( rq -> requiredValue.containsRequired( rq.getKey() ) )
+                    .collect( Collectors.toMap( rq -> rq.getKey().name(), rq -> Collections.singletonList( rq.getValue() ) ) ) );
+
+            // numeric generated values that start with 0 are not supported by most patterns
+            boolean retry = true;
+            for ( int i = 0; (i < MAX_RESERVE_RETRIES) && retry; i++ )
+            {
+                final String reservedValue = getReservedValue( a.getAttributeId(), resultingRequiredValues );
+                retry = false;
+                switch ( a.getValueType() )
+                {
+                    case INTEGER:
+                    case INTEGER_NEGATIVE:
+                    case INTEGER_POSITIVE:
+                    case INTEGER_ZERO_OR_POSITIVE:
+                    case NUMBER:
+                        retry = reservedValue.startsWith( "0" );
+                        break;
+                }
+                trackedEntityInstance.getAttribute( a.getAttributeId() ).setValue( reservedValue );
+            }
+        } );
     }
 
     @Nonnull
@@ -169,9 +198,17 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     }
 
     @Nonnull
-    protected String getReservedValue( @Nonnull String attributeId )
+    protected String getReservedValue( @Nonnull String attributeId, @Nonnull MultiValueMap<String, String> requiredValues )
     {
-        final ReservedValue reservedValue = restTemplate.getForObject( GENERATE_URI, ReservedValue.class, attributeId );
-        return reservedValue.getValue();
+        final UriComponentsBuilder builder = UriComponentsBuilder.fromUriString( GENERATE_URI ).queryParams( requiredValues );
+        final HttpEntity<ReservedValue> response = restTemplate.exchange( builder.buildAndExpand( attributeId ).toUriString(),
+            HttpMethod.GET, null, ReservedValue.class );
+        return response.getBody().getValue();
+    }
+
+    @Nonnull
+    protected RequiredValue getRequiredValue( @Nonnull String attributeId )
+    {
+        return restTemplate.getForObject( REQUIRED_VALUE_URI, RequiredValue.class, attributeId );
     }
 }

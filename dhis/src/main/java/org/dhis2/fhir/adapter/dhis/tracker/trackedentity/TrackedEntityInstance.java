@@ -62,6 +62,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
 
     private Collection<TrackedEntityAttributeValue> attributes;
 
+    @JsonIgnore
+    private boolean modified;
+
     public TrackedEntityInstance()
     {
         super();
@@ -72,6 +75,7 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.typeId = typeId;
         this.id = id;
         this.newResource = newResource;
+        this.modified = newResource;
         this.attributes = new ArrayList<>();
     }
 
@@ -91,7 +95,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
 
     public void setNewResource( boolean newResource )
     {
+
         this.newResource = newResource;
+        this.modified = true;
     }
 
     public String getId()
@@ -147,6 +153,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     public boolean containsAttribute( @Nonnull String attributeId )
     {
         return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
+    }
+
+    public boolean isModified()
+    {
+        return modified;
+    }
+
+    public void setModified( boolean modified )
+    {
+        this.modified = modified;
     }
 
     @Nonnull

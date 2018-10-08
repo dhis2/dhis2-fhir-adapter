@@ -33,8 +33,6 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -45,28 +43,25 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Defines a single argument of a script. Arguments of a script have names (are not referenced by their position) and
- * may be mandatory. A default value can be given also for mandatory arguments.
+ * The arguments of an {@linkplain ExecutableScript executable script}. All arguments of the underlying
+ * {@linkplain Script script} may be overridden by executable arguments.
  *
  * @author volsch
  */
 @Entity
-@Table( name = "fhir_script_argument" )
-public class ScriptArgument implements Serializable
+@Table( name = "fhir_executable_script_argument" )
+public class ExecutableScriptArg implements Serializable
 {
-    private static final long serialVersionUID = -5052962742547037363L;
+    private static final long serialVersionUID = 487628755797899218L;
 
     private UUID id;
     private Long version;
     private LocalDateTime createdAt;
     private String lastUpdatedBy;
     private LocalDateTime lastUpdatedAt;
-    private String name;
-    private DataType dataType;
-    private boolean mandatory;
-    private String defaultValue;
-    private String description;
-    private Script script;
+    private String overrideValue;
+    private ExecutableScript script;
+    private ScriptArg argument;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -131,75 +126,38 @@ public class ScriptArgument implements Serializable
     }
 
     @Basic
-    @Column( name = "name", nullable = false, length = 30 )
-    public String getName()
+    @Column( name = "override_value", length = 230 )
+    public String getOverrideValue()
     {
-        return name;
+        return overrideValue;
     }
 
-    public void setName( String name )
+    public void setOverrideValue( String overrideValue )
     {
-        this.name = name;
-    }
-
-    @Basic
-    @Column( name = "data_type", nullable = false, length = 30 )
-    @Enumerated( EnumType.STRING )
-    public DataType getDataType()
-    {
-        return dataType;
-    }
-
-    public void setDataType( DataType dataType )
-    {
-        this.dataType = dataType;
-    }
-
-    @Basic
-    @Column( name = "mandatory", nullable = false )
-    public boolean isMandatory()
-    {
-        return mandatory;
-    }
-
-    public void setMandatory( boolean mandatory )
-    {
-        this.mandatory = mandatory;
-    }
-
-    @Basic
-    @Column( name = "default_value", length = 230 )
-    public String getDefaultValue()
-    {
-        return defaultValue;
-    }
-
-    public void setDefaultValue( String defaultValue )
-    {
-        this.defaultValue = defaultValue;
-    }
-
-    @Basic
-    @Column( name = "description", length = -1 )
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription( String description )
-    {
-        this.description = description;
+        this.overrideValue = overrideValue;
     }
 
     @ManyToOne
-    @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
-    public Script getScript()
+    @JoinColumn( name = "executable_script_id", referencedColumnName = "id", nullable = false )
+    public ExecutableScript getScript()
     {
         return script;
     }
 
-    public void setScript( Script script )
+    public void setScript( ExecutableScript script )
     {
         this.script = script;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "script_argument_id", referencedColumnName = "id", nullable = false )
+    public ScriptArg getArgument()
+    {
+        return argument;
+    }
+
+    public void setArgument( ScriptArg argument )
+    {
+        this.argument = argument;
     }
 }

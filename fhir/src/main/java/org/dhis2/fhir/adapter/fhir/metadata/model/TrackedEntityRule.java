@@ -52,6 +52,8 @@ public class TrackedEntityRule extends AbstractRule
 
     private Reference trackedEntityReference;
     private ExecutableScript orgUnitLookupScript;
+    private Reference trackedEntityIdentifierReference;
+    private boolean trackedEntityIdentifierFq;
 
     @Basic
     @Column( name = "tracked_entity_ref", nullable = false, length = 230 )
@@ -76,5 +78,30 @@ public class TrackedEntityRule extends AbstractRule
     public void setOrgUnitLookupScript( ExecutableScript orgUnitLookupScript )
     {
         this.orgUnitLookupScript = orgUnitLookupScript;
+    }
+
+    @Basic
+    @Column( name = "tracked_entity_identifier_ref", nullable = false, length = 230 )
+    @Convert( converter = ReferenceAttributeConverter.class )
+    public Reference getTrackedEntityIdentifierReference()
+    {
+        return trackedEntityIdentifierReference;
+    }
+
+    public void setTrackedEntityIdentifierReference( Reference trackedEntityIdentifierReference )
+    {
+        this.trackedEntityIdentifierReference = trackedEntityIdentifierReference;
+    }
+
+    @Basic
+    @Column( name = "tracked_entity_identifier_fq", nullable = false )
+    public boolean isTrackedEntityIdentifierFq()
+    {
+        return trackedEntityIdentifierFq;
+    }
+
+    public void setTrackedEntityIdentifierFq( boolean trackedEntityIdentifierFq )
+    {
+        this.trackedEntityIdentifierFq = trackedEntityIdentifierFq;
     }
 }

@@ -58,7 +58,7 @@ public class ExecutableScript implements Serializable
 
     private UUID id;
     private Script script;
-    private Collection<ExecutableScriptArgument> overrideArguments;
+    private Collection<ExecutableScriptArg> overrideArguments;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -87,12 +87,12 @@ public class ExecutableScript implements Serializable
     }
 
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
-    public Collection<ExecutableScriptArgument> getOverrideArguments()
+    public Collection<ExecutableScriptArg> getOverrideArguments()
     {
         return overrideArguments;
     }
 
-    public void setOverrideArguments( Collection<ExecutableScriptArgument> overrideArguments )
+    public void setOverrideArguments( Collection<ExecutableScriptArg> overrideArguments )
     {
         this.overrideArguments = overrideArguments;
     }

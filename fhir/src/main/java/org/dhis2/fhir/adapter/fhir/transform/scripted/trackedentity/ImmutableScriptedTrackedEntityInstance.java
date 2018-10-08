@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,16 +72,16 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
 
     @Nullable
     @Override
-    public Location getCoordinates()
+    public String getCoordinates()
     {
         return delegate.getCoordinates();
     }
 
     @Override
     @Nullable
-    public Object getValueByName( @Nonnull String typeAttrName )
+    public Object getValue( @Nonnull Reference attributeReference )
     {
-        return delegate.getValueByName( typeAttrName );
+        return delegate.getValue( attributeReference );
     }
 
     @Override

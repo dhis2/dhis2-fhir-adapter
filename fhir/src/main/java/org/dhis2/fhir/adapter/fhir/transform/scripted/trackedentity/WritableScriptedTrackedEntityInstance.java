@@ -38,11 +38,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Scriptable
 public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
@@ -53,7 +53,8 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityType trackedEntityType, @Nonnull TrackedEntityInstance trackedEntityInstance,
+        @Nonnull ValueConverter valueConverter )
     {
         this.trackedEntityType = trackedEntityType;
         this.trackedEntityInstance = trackedEntityInstance;
@@ -93,18 +94,35 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         {
             throw new TransformerMappingException( "Organization unit ID of tracked entity instance must not be null." );
         }
+        if ( !Objects.equals( trackedEntityInstance.getId(), id ) )
+        {
+            trackedEntityInstance.setModified( true );
+        }
         trackedEntityInstance.setOrgUnitId( id );
     }
 
     @Nullable
-    public Location getCoordinates()
+    public String getCoordinates()
     {
-        return valueConverter.convert( trackedEntityInstance.getCoordinates(), ValueType.COORDINATE, Location.class );
+        return trackedEntityInstance.getCoordinates();
     }
 
-    public void setCoordinates( @Nullable Location location )
+    public void setCoordinates( @Nullable Object coordinates )
     {
-        trackedEntityInstance.setCoordinates( valueConverter.convert( location, ValueType.COORDINATE, String.class ) );
+        final String convertedValue;
+        try
+        {
+            convertedValue = valueConverter.convert( coordinates, ValueType.COORDINATE, String.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new TransformerMappingException( "Value of tracked entity coordinates could not be converted: " + e.getMessage(), e );
+        }
+        if ( !Objects.equals( trackedEntityInstance.getCoordinates(), convertedValue ) )
+        {
+            trackedEntityInstance.setModified( true );
+        }
+        trackedEntityInstance.setCoordinates( convertedValue );
     }
 
     public void setValue( @Nonnull Reference attributeReference, @Nullable Object value ) throws TransformerException
@@ -124,9 +142,9 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nullable
     @Override
-    public Object getValueByName( @Nonnull String typeAttrName )
+    public Object getValue( @Nonnull Reference attributeReference )
     {
-        final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( typeAttrName );
+        final TrackedEntityTypeAttribute typeAttribute = getTypeAttributeByName( attributeReference );
         return getValue( typeAttribute );
     }
 
@@ -150,7 +168,12 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         {
             throw new TransformerMappingException( "Value of tracked entity type attribute \"" + typeAttribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
-        trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() ).setValue( convertedValue );
+        final TrackedEntityAttributeValue attributeValue = trackedEntityInstance.getAttribute( typeAttribute.getAttributeId() );
+        if ( !Objects.equals( attributeValue.getValue(), convertedValue ) )
+        {
+            trackedEntityInstance.setModified( true );
+        }
+        attributeValue.setValue( convertedValue );
     }
 
     protected Object getValue( @Nonnull TrackedEntityTypeAttribute typeAttribute ) throws TransformerException
@@ -184,9 +207,9 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         } );
     }
 
-    private TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull String typeAttrName )
+    private TrackedEntityTypeAttribute getTypeAttributeByName( @Nonnull Reference attributeReference )
     {
-        return trackedEntityType.getOptionalTypeAttributeByName( typeAttrName ).orElseThrow( () ->
-            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute with name \"" + typeAttrName + "\"" ) );
+        return trackedEntityType.getOptionalTypeAttribute( attributeReference ).orElseThrow( () ->
+            new TransformerMappingException( "Tracked entity type \"" + trackedEntityType.getName() + "\" does not include type attribute \"" + attributeReference + "\"" ) );
     }
 }

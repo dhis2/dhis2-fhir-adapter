@@ -44,7 +44,6 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.util.FhirToDhisTransformer
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,7 +98,6 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nullable
     @Override
-    @Transactional( readOnly = true )
     public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input ) throws TransformerException
     {
         final List<? extends AbstractRule> rules = ruleRepository.findRulesByInputData( context.getFhirRequest().getResourceType() );

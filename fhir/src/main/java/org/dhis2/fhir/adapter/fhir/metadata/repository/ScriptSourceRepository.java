@@ -28,9 +28,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -40,4 +46,7 @@ import java.util.UUID;
  */
 public interface ScriptSourceRepository extends JpaRepository<ScriptSource, UUID>
 {
+    @Query( "SELECT ss FROM #{#entityName} ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions" )
+    @Nonnull
+    Optional<ScriptSource> getByScriptAndVersion( @Param( "script" ) @Nonnull Script script, @Param( "fhirVersion" ) @Nonnull FhirVersion fhirVersion );
 }

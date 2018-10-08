@@ -30,8 +30,12 @@ package org.dhis2.fhir.adapter.fhir.script.impl;
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgument;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptArgRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptArgRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptSourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
@@ -43,6 +47,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,10 +61,21 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
     private final ScriptExecutionContext scriptExecutionContext;
 
-    public ScriptExecutorImpl( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final ExecutableScriptArgRepository executableScriptArgRepository;
+
+    private final ScriptArgRepository scriptArgRepository;
+
+    private final ScriptSourceRepository scriptSourceRepository;
+
+    public ScriptExecutorImpl( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull ScriptArgRepository scriptArgRepository,
+        @Nonnull ScriptSourceRepository scriptSourceRepository )
     {
         this.scriptEvaluator = scriptEvaluator;
         this.scriptExecutionContext = scriptExecutionContext;
+        this.executableScriptArgRepository = executableScriptArgRepository;
+        this.scriptArgRepository = scriptArgRepository;
+        this.scriptSourceRepository = scriptSourceRepository;
     }
 
     @Nullable
@@ -78,12 +94,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
         if ( !resultClass.isAssignableFrom( executableScript.getScript().getReturnType().getJavaType() ) )
         {
             throw new ScriptPreparationException(
-                "Script \"" + executableScript.getScript().getName() + "\" returns " + executableScript.getScript().getReturnType() + " and not requested " + resultClass.getSimpleName() + "." );
+                "Script \"" + executableScript.getScript().getName() + "\" returns " + executableScript.getScript().getReturnType() +
+                    " and not requested " + resultClass.getSimpleName() + "." );
         }
 
-        final ScriptSource scriptSource =
-            executableScript.getScript().getSources().stream().filter( s -> s.getFhirVersions().contains( fhirVersion ) ).findFirst()
-                .orElseThrow( () -> new ScriptPreparationException( "Script \"" + executableScript.getScript().getName() + "\" does not include a source for FHIR version" + fhirVersion + "." ) );
+        final ScriptSource scriptSource = scriptSourceRepository.getByScriptAndVersion( executableScript.getScript(), fhirVersion ).orElseThrow( () ->
+            new ScriptPreparationException( "Script \"" + executableScript.getScript().getName() + "\" does not include a source for FHIR version " + fhirVersion + "." ) );
 
         // validate that all required script variables have been provided
         executableScript.getScript().getVariables().forEach( v -> {
@@ -107,7 +123,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         catch ( ScriptExecutionException e )
         {
-            throw new ScriptExecutionException( "Error while executing script \"" + executableScript.getScript().getName() + "\" (" + executableScript.getId() + "): " + e.getMessage(), e );
+            throw new ScriptExecutionException( "Error while executing script \"" + executableScript.getScript().getName() +
+                "\" (" + executableScript.getId() + "): " + e.getMessage(), e );
         }
         finally
         {
@@ -122,9 +139,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
     private Map<String, Object> createArgs( @Nonnull ExecutableScript executableScript, @Nonnull Map<String, Object> arguments )
     {
+        final Collection<ScriptArg> scriptArgs = scriptArgRepository.findAllByScript( executableScript.getScript() );
+        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptArgRepository.findAllByScript( executableScript );
+
         final Map<String, Object> args = new HashMap<>();
         // use default values of the script first
-        executableScript.getScript().getArguments().forEach( sa -> {
+        scriptArgs.forEach( sa -> {
             try
             {
                 args.put( sa.getName(), sa.getDataType().getFromStringConverter().convert( sa.getDefaultValue() ) );
@@ -135,7 +155,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
             }
         } );
         // override default values of the script with execution specific arguments
-        executableScript.getOverrideArguments().forEach( sa -> {
+        executableScriptArgs.forEach( sa -> {
             try
             {
                 args.put( sa.getArgument().getName(), sa.getArgument().getDataType().getFromStringConverter().convert( sa.getOverrideValue() ) );
@@ -148,10 +168,10 @@ public class ScriptExecutorImpl implements ScriptExecutor
         // specified arguments may override everything
         args.putAll( arguments );
         // validate final arguments
-        executableScript.getScript().getArguments().stream().filter( ScriptArgument::isMandatory ).forEach( sa -> {
+        scriptArgs.stream().filter( ScriptArg::isMandatory ).forEach( sa -> {
             if ( args.get( sa.getName() ) == null )
             {
-                throw new ScriptPreparationException( "Script argument \"" + sa.getName() + "\" is mandatory and has not been specified." );
+                throw new ScriptPreparationException( "Script variables \"" + sa.getName() + "\" is mandatory and has not been specified." );
             }
         } );
         return args;

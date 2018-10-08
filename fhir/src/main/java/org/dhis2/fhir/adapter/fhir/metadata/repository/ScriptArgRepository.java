@@ -28,16 +28,24 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArgument;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
- * Repository for {@link ExecutableScriptArgument} entities.
+ * Repository for {@link ScriptArg} entities.
  *
  * @author volsch
  */
-public interface ExecutableScriptArgumentRepository extends JpaRepository<ExecutableScriptArgument, UUID>
+public interface ScriptArgRepository extends JpaRepository<ScriptArg, UUID>
 {
+    @Query( "SELECT sa FROM #{#entityName} sa WHERE sa.script=:script" )
+    @Nonnull
+    Collection<ScriptArg> findAllByScript( @Param( "script" ) @Nonnull Script script );
 }

@@ -47,7 +47,7 @@ import java.util.Optional;
 public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataService
 {
     protected static final String TRACKED_ENTITY_TYPE_URI = "/trackedEntityTypes.json?paging=false&" +
-        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code]]," +
+        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code,generated]]," +
         "attributeValues[lastUpdated,value,attribute[id,name,code]]";
 
     private final RestTemplate restTemplate;

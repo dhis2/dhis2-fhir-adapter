@@ -302,9 +302,11 @@ CREATE INDEX fhir_program_stage_rule_i5
   ON fhir_program_stage_rule (final_script_id);
 
 CREATE TABLE fhir_tracked_entity_rule (
-  id                 UUID         NOT NULL,
-  tracked_entity_ref VARCHAR(230) NOT NULL,
-  org_lookup_script_id UUID       NOT NULL,
+  id                            UUID         NOT NULL,
+  tracked_entity_ref            VARCHAR(230) NOT NULL,
+  org_lookup_script_id          UUID         NOT NULL,
+  tracked_entity_identifier_ref VARCHAR(230) NOT NULL,
+  tracked_entity_identifier_fq  BOOLEAN      NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_tracked_entity_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_tracked_entity_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
   CONSTRAINT fhir_tracked_entity_rule_fk2 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id)
@@ -317,7 +319,7 @@ CREATE TABLE fhir_resource_mapping (
   created_at                      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by                 VARCHAR(11),
   last_updated_at                 TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  tei_lookup_script_id         UUID                           NOT NULL,
+  tei_lookup_script_id            UUID                           NOT NULL,
   enrollment_org_lookup_script_id UUID                           NOT NULL,
   event_org_lookup_script_id      UUID                           NOT NULL,
   CONSTRAINT fhir_resource_mapping_pk PRIMARY KEY (id),
@@ -343,9 +345,9 @@ CREATE TABLE fhir_remote_subscription (
   dhis_authorization_header     VARCHAR(200)                   NOT NULL,
   remote_base_url               VARCHAR(200)                   NOT NULL,
   support_includes              BOOLEAN                        NOT NULL DEFAULT FALSE,
-  tolerance_minutes              INTEGER DEFAULT 0 NOT NULL,
-  logging BOOLEAN NOT NULL DEFAULT FALSE,
-  verbose_logging BOOLEAN NOT NULL DEFAULT FALSE,
+  tolerance_minutes             INTEGER                        NOT NULL DEFAULT 0,
+  logging                       BOOLEAN                        NOT NULL DEFAULT FALSE,
+  verbose_logging               BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_uk1 UNIQUE (name),
   CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code)
@@ -353,9 +355,9 @@ CREATE TABLE fhir_remote_subscription (
 
 CREATE TABLE fhir_remote_subscription_header (
   remote_subscription_id UUID         NOT NULL,
-  name                 VARCHAR(50) NOT NULL,
-  value                 VARCHAR(200) NOT NULL,
-  secured            BOOLEAN NOT NULL DEFAULT FALSE,
+  name                   VARCHAR(50)  NOT NULL,
+  value                  VARCHAR(200) NOT NULL,
+  secured                BOOLEAN      NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_header_pk PRIMARY KEY (remote_subscription_id, name, value),
   CONSTRAINT fhir_remote_subscription_header_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE
 );
@@ -366,9 +368,9 @@ CREATE TABLE fhir_remote_subscription_system (
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
   last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  remote_subscription_id        UUID NOT NULL,
-  fhir_resource_type                 VARCHAR(30) NOT NULL,
-  system_id    UUID NOT NULL,
+  remote_subscription_id        UUID                           NOT NULL,
+  fhir_resource_type            VARCHAR(30)                    NOT NULL,
+  system_id                     UUID NOT NULL,
   CONSTRAINT fhir_remote_subscription_system_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_system_uk1 UNIQUE (remote_subscription_id , fhir_resource_type ),
   CONSTRAINT fhir_remote_subscription_system_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE,
@@ -405,8 +407,9 @@ VALUES ('1ded2081-8836-43dd-a5e1-7cb9562c93ef', 0, 'GENDER', 'Gender Male', 'GEN
 
 -- Systems (the value is the system URI)
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378', 0, 'CVX (Vaccine Administered)', 'SYSTEM_CVX', 'http://hl7.org/fhir/sid/cvx', 'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. ' ||
-                                                                                                                              'Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
+VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378', 0, 'CVX (Vaccine Administered)', 'SYSTEM_CVX', 'http://hl7.org/fhir/sid/cvx',
+'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
+
 -- Script that returns boolean value true every time
 INSERT INTO fhir_script (id, version, name, description, code, script_type, return_type, input_type, output_type)
 VALUES ('5b37861d-9442-4e13-ac9f-88a893e91ce9', 0, 'True', 'Returns Boolean True.', 'TRUE', 'EVALUATE', 'BOOLEAN', NULL, NULL);
@@ -437,10 +440,6 @@ VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 0, 'True', 'Transforms FHIR Pati
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'INPUT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'OUTPUT');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('d02a5fe8-e651-41ed-9f41-ad3e23199d48', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'nationalIdentifierAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:National identifier',
-'The reference of the tracked entity attribute that contains the national identifier of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('0a7c26cb-7bd3-4394-9d47-a610ac231f8a', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
 'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:Last name',
@@ -474,8 +473,7 @@ VALUES ('a77ef245-e65e-4a87-9c96-5047911f9830', 0, 'ea887943-5e94-4e31-9441-c766
 'countryAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, NULL,
 'The reference of the tracked entity attribute that contains the country of the Person.');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'output.setValue(args[''nationalIdentifierAttribute''], identifierUtils.getResourceIdentifier(input, ''PATIENT''));
-output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family);
+'output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family);
 output.setValue(args[''firstNameAttribute''], humanNameUtils.getSingleGiven(humanNameUtils.getPrimaryName(input.name)));
 output.setOptionalValue(args[''birthDateAttribute''], dateTimeUtils.getPreciseDate(input.birthDateElement));
 output.setOptionalValue(args[''genderAttribute''], input.gender);
