@@ -64,6 +64,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     protected static final String FIND_BY_ATTR_VALUE_URI = "/trackedEntityInstances.json?" +
         "trackedEntityType={typeId}&ouMode=ACCESSIBLE&filter={attrId}:EQ:{attrValue}&pageSize={maxResult}";
 
+    protected static final int MAX_RESERVE_RETRIES = 10;
+
     private final RestTemplate restTemplate;
 
     @Autowired
@@ -77,8 +79,28 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     public TrackedEntityInstance createNewInstance( @Nonnull TrackedEntityType type )
     {
         final TrackedEntityInstance instance = new TrackedEntityInstance( type.getId(), null, true );
-        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() ).forEach( a -> instance.getAttributes().add(
-            new TrackedEntityAttributeValue( a.getAttributeId(), getReservedValue( a.getAttributeId() ) ) ) );
+        type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() ).forEach( a -> {
+            boolean retry = true;
+            for ( int i = 0; (i < MAX_RESERVE_RETRIES) && retry; i++ )
+            {
+                final String reservedValue = getReservedValue( a.getAttributeId() );
+                retry = false;
+                switch ( a.getValueType() )
+                {
+                    case INTEGER:
+                    case INTEGER_NEGATIVE:
+                    case INTEGER_POSITIVE:
+                    case INTEGER_ZERO_OR_POSITIVE:
+                    case NUMBER:
+                        retry = reservedValue.startsWith( "0" );
+                        break;
+                }
+                if ( !retry )
+                {
+                    instance.getAttributes().add( new TrackedEntityAttributeValue( a.getAttributeId(), reservedValue ) );
+                }
+            }
+        } );
         return instance;
     }
 

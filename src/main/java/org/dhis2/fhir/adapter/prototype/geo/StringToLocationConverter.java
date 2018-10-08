@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 public class StringToLocationConverter extends TypedConverter<String, Location>
 {
-    private final Pattern locationPattern = Pattern.compile( "\\[\\s*([\\d.]+)\\s*,\\s*([\\d.]+)\\s*\\]" );
+    private final Pattern locationPattern = Pattern.compile( "\\s*\\[\\s*([+\\-\\d.eE]+)\\s*,\\s*([+\\-\\d.eE]+)\\s*]\\s*" );
 
     public StringToLocationConverter()
     {
