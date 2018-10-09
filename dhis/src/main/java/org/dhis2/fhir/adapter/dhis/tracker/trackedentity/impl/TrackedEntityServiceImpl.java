@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +59,6 @@ import java.util.stream.Collectors;
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
-    protected static final String REQUIRED_VALUE_URI = "/trackedEntityAttributes/{attributeId}/requiredValues.json";
-
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
@@ -75,17 +74,20 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     private final RestTemplate restTemplate;
 
+    private final TrackedEntityMetadataService metadataService;
+
     @Autowired
-    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull TrackedEntityMetadataService metadataService )
     {
         this.restTemplate = restTemplate;
+        this.metadataService = metadataService;
     }
 
     @Override
     public void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type, @Nonnull Map<RequiredValueType, String> requiredValues )
     {
         type.getAttributes().stream().filter( a -> a.getAttribute().isGenerated() && (trackedEntityInstance.getAttribute( a.getAttributeId() ).getValue() == null) ).forEach( a -> {
-            final RequiredValue requiredValue = getRequiredValue( a.getAttributeId() );
+            final RequiredValues requiredValue = metadataService.getRequiredValues( a.getAttributeId() );
             final MultiValueMap<String, String> resultingRequiredValues =
                 CollectionUtils.toMultiValueMap( requiredValues.entrySet().stream().filter( rq -> requiredValue.containsRequired( rq.getKey() ) )
                     .collect( Collectors.toMap( rq -> rq.getKey().name(), rq -> Collections.singletonList( rq.getValue() ) ) ) );
@@ -139,7 +141,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         {
             return Collections.emptyList();
         }
-        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, DhisTrackedEntityInstances.class, typeId, attributeId, value, maxResult )
+        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
             .getBody().getTrackedEntityInstances();
     }
 
@@ -204,11 +206,5 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final HttpEntity<ReservedValue> response = restTemplate.exchange( builder.buildAndExpand( attributeId ).toUriString(),
             HttpMethod.GET, null, ReservedValue.class );
         return response.getBody().getValue();
-    }
-
-    @Nonnull
-    protected RequiredValue getRequiredValue( @Nonnull String attributeId )
-    {
-        return restTemplate.getForObject( REQUIRED_VALUE_URI, RequiredValue.class, attributeId );
     }
 }

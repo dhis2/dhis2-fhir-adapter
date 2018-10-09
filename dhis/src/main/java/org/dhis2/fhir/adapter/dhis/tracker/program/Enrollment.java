@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -59,6 +60,9 @@ public class Enrollment implements DhisResource, Serializable
 
     @JsonProperty( "program" )
     private String programId;
+
+    @JsonIgnore
+    private TrackedEntityInstance trackedEntityInstance;
 
     @JsonProperty( "trackedEntityInstance" )
     private String trackedEntityInstanceId;
@@ -126,6 +130,17 @@ public class Enrollment implements DhisResource, Serializable
     public void setProgramId( String programId )
     {
         this.programId = programId;
+    }
+
+    public TrackedEntityInstance getTrackedEntityInstance()
+    {
+        return trackedEntityInstance;
+    }
+
+    public void setTrackedEntityInstance( TrackedEntityInstance trackedEntityInstance )
+    {
+        this.trackedEntityInstance = trackedEntityInstance;
+        this.trackedEntityInstanceId = (trackedEntityInstance == null) ? null : trackedEntityInstance.getId();
     }
 
     public String getTrackedEntityInstanceId()

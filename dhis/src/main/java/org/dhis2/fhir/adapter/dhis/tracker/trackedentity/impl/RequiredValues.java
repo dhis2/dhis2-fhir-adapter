@@ -28,32 +28,49 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class DhisTrackedEntityTypes implements Serializable
+public class RequiredValues implements Serializable
 {
-    private static final long serialVersionUID = 5150630816129625111L;
+    private static final long serialVersionUID = 7748716793482034747L;
 
-    private List<DhisTrackedEntityType> trackedEntityTypes;
+    @JsonProperty( "REQUIRED" )
+    private List<String> required;
 
-    public List<DhisTrackedEntityType> getTrackedEntityTypes()
+    @JsonProperty( "OPTIONAL" )
+    private List<String> optional;
+
+    public List<String> getRequired()
     {
-        return trackedEntityTypes;
+        return required;
     }
 
-    public void setTrackedEntityTypes( List<DhisTrackedEntityType> trackedEntityTypes )
+    public void setRequired( List<String> required )
     {
-        this.trackedEntityTypes = trackedEntityTypes;
+        this.required = required;
     }
 
-    public List<TrackedEntityType> toModel()
+    public List<String> getOptional()
     {
-        return Optional.ofNullable( trackedEntityTypes ).orElse( Collections.emptyList() ).stream().map( DhisTrackedEntityType::toModel ).collect( Collectors.toList() );
+        return optional;
+    }
+
+    public void setOptional( List<String> optional )
+    {
+        this.optional = optional;
+    }
+
+    public boolean containsRequired( @Nonnull String value )
+    {
+        return (required != null) && required.contains( value );
+    }
+
+    public boolean containsRequired( @Nonnull Enum<?> value )
+    {
+        return containsRequired( value.name() );
     }
 }

@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+
 import java.io.Serializable;
 
 public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, Serializable
@@ -40,6 +42,8 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
 
     private String code;
 
+    private ValueType valueType;
+
     private boolean generated;
 
     public WritableTrackedEntityAttribute()
@@ -47,11 +51,12 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
         super();
     }
 
-    public WritableTrackedEntityAttribute( String id, String name, String code, boolean generated )
+    public WritableTrackedEntityAttribute( String id, String name, String code, ValueType valueType, boolean generated )
     {
         this.id = id;
         this.name = name;
         this.code = code;
+        this.valueType = valueType;
         this.generated = generated;
     }
 
@@ -86,6 +91,17 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
     public void setCode( String code )
     {
         this.code = code;
+    }
+
+    @Override
+    public ValueType getValueType()
+    {
+        return valueType;
+    }
+
+    public void setValueType( ValueType valueType )
+    {
+        this.valueType = valueType;
     }
 
     @Override

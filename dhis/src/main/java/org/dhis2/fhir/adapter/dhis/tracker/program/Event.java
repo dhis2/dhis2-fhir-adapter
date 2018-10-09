@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -66,6 +67,9 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
 
     @JsonIgnore
     private Enrollment enrollment;
+
+    @JsonIgnore
+    private TrackedEntityInstance trackedEntityInstance;
 
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -161,6 +165,17 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     {
         this.enrollment = enrollment;
         setEnrollmentId( (enrollment == null) ? null : enrollment.getId() );
+    }
+
+    public TrackedEntityInstance getTrackedEntityInstance()
+    {
+        return trackedEntityInstance;
+    }
+
+    public void setTrackedEntityInstance( TrackedEntityInstance trackedEntityInstance )
+    {
+        this.trackedEntityInstance = trackedEntityInstance;
+        this.trackedEntityInstanceId = (trackedEntityInstance == null) ? null : trackedEntityInstance.getId();
     }
 
     public String getTrackedEntityInstanceId()

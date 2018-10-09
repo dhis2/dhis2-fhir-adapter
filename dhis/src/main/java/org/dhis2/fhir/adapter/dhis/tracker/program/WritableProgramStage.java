@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +54,13 @@ public class WritableProgramStage implements ProgramStage, Serializable
     private List<WritableProgramStageDataElement> dataElements;
 
     @JsonIgnore
+    private transient volatile Map<String, WritableProgramStageDataElement> dataElementsById;
+
+    @JsonIgnore
     private transient volatile Map<String, WritableProgramStageDataElement> dataElementsByName;
+
+    @JsonIgnore
+    private transient volatile Map<String, WritableProgramStageDataElement> dataElementsByCode;
 
     @Override
     public String getId()
@@ -97,7 +104,46 @@ public class WritableProgramStage implements ProgramStage, Serializable
     public void setDataElements( List<WritableProgramStageDataElement> dataElements )
     {
         this.dataElements = dataElements;
+        this.dataElementsById = null;
         this.dataElementsByName = null;
+        this.dataElementsByCode = null;
+    }
+
+    @Nonnull
+    public Optional<? extends WritableProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference )
+    {
+        switch ( reference.getType() )
+        {
+            case ID:
+                return getOptionalDataElementById( reference.getValue() );
+            case NAME:
+                return getOptionalDataElementByName( reference.getValue() );
+            case CODE:
+                return getOptionalDataElementByCode( reference.getValue() );
+            default:
+                throw new AssertionError( "Unhandled reference type:" + reference.getType() );
+        }
+    }
+
+    @Nullable
+    public WritableProgramStageDataElement getDataElement( @Nonnull Reference reference )
+    {
+        return getOptionalDataElement( reference ).orElse( null );
+    }
+
+    @Nonnull
+    public Optional<? extends WritableProgramStageDataElement> getOptionalDataElementById( @Nonnull String id )
+    {
+        if ( dataElements == null )
+        {
+            return Optional.empty();
+        }
+        Map<String, WritableProgramStageDataElement> dataElementsById = this.dataElementsById;
+        if ( dataElementsById == null )
+        {
+            this.dataElementsById = dataElementsById = dataElements.stream().collect( Collectors.toMap( de -> de.getElement().getId(), de -> de ) );
+        }
+        return Optional.ofNullable( dataElementsById.get( id ) );
     }
 
     @Nonnull
@@ -115,9 +161,18 @@ public class WritableProgramStage implements ProgramStage, Serializable
         return Optional.ofNullable( dataElementsByName.get( name ) );
     }
 
-    @Nullable
-    public WritableProgramStageDataElement getDataElementByName( @Nonnull String name )
+    @Nonnull
+    public Optional<? extends WritableProgramStageDataElement> getOptionalDataElementByCode( @Nonnull String code )
     {
-        return getOptionalDataElementByName( name ).orElse( null );
+        if ( dataElements == null )
+        {
+            return Optional.empty();
+        }
+        Map<String, WritableProgramStageDataElement> dataElementsByCode = this.dataElementsByCode;
+        if ( dataElementsByCode == null )
+        {
+            this.dataElementsByCode = dataElementsByCode = dataElements.stream().collect( Collectors.toMap( de -> de.getElement().getCode(), de -> de ) );
+        }
+        return Optional.ofNullable( dataElementsByCode.get( code ) );
     }
 }

@@ -28,69 +28,24 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityAttribute;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 
 import java.io.Serializable;
+import java.util.List;
 
-public class DhisTrackedEntityAttribute implements Serializable
+public class TrackedEntityInstances implements Serializable
 {
-    private static final long serialVersionUID = 4118291027293431331L;
+    private static final long serialVersionUID = -129293730256216700L;
 
-    private String id;
+    private List<TrackedEntityInstance> trackedEntityInstances;
 
-    private String name;
-
-    private String code;
-
-    private boolean generated;
-
-    public DhisTrackedEntityAttribute()
+    public List<TrackedEntityInstance> getTrackedEntityInstances()
     {
-        super();
+        return trackedEntityInstances;
     }
 
-    public String getId()
+    public void setTrackedEntityInstances( List<TrackedEntityInstance> trackedEntityInstances )
     {
-        return id;
-    }
-
-    public void setId( String id )
-    {
-        this.id = id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName( String name )
-    {
-        this.name = name;
-    }
-
-    public String getCode()
-    {
-        return code;
-    }
-
-    public void setCode( String code )
-    {
-        this.code = code;
-    }
-
-    public boolean isGenerated()
-    {
-        return generated;
-    }
-
-    public void setGenerated( boolean generated )
-    {
-        this.generated = generated;
-    }
-
-    public WritableTrackedEntityAttribute toModel()
-    {
-        return new WritableTrackedEntityAttribute( getId(), getName(), getCode(), isGenerated() );
+        this.trackedEntityInstances = trackedEntityInstances;
     }
 }

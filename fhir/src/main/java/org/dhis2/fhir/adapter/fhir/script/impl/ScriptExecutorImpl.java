@@ -1,31 +1,31 @@
 package org.dhis2.fhir.adapter.fhir.script.impl;
 
 /*
- *  Copyright (c) 2004-2018, University of Oslo
- *  All rights reserved.
+ * Copyright (c) 2004-2018, University of Oslo
+ * All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *  Redistributions of source code must retain the above copyright notice, this
- *  list of conditions and the following disclaimer.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
  *
- *  Redistributions in binary form must reproduce the above copyright notice,
- *  this list of conditions and the following disclaimer in the documentation
- *  and/or other materials provided with the distribution.
- *  Neither the name of the HISP project nor the names of its contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * Neither the name of the HISP project nor the names of its contributors may
+ * be used to endorse or promote products derived from this software without
+ * specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- *  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.script.ScriptPreparationException;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
 import org.springframework.stereotype.Component;
@@ -51,11 +52,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Component
 public class ScriptExecutorImpl implements ScriptExecutor
 {
     public static final String ARGUMENTS_VARIABLE_NAME = "args";
+
+    public static final String ARRAY_SEPARATOR = "|";
+
+    protected static final String ARRAY_SEPARATOR_REGEXP = Pattern.quote( ARRAY_SEPARATOR );
 
     private final ScriptEvaluator scriptEvaluator;
 
@@ -100,6 +106,15 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
         final ScriptSource scriptSource = scriptSourceRepository.getByScriptAndVersion( executableScript.getScript(), fhirVersion ).orElseThrow( () ->
             new ScriptPreparationException( "Script \"" + executableScript.getScript().getName() + "\" does not include a source for FHIR version " + fhirVersion + "." ) );
+        // performance optimization in case script is just a boolean value
+        if ( Boolean.class.equals( resultClass ) )
+        {
+            @SuppressWarnings( "unchecked" ) final T booleanScriptValue = (T) convertToBoolean( scriptSource.getSourceText() );
+            if ( booleanScriptValue != null )
+            {
+                return booleanScriptValue;
+            }
+        }
 
         // validate that all required script variables have been provided
         executableScript.getScript().getVariables().forEach( v -> {
@@ -140,14 +155,14 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private Map<String, Object> createArgs( @Nonnull ExecutableScript executableScript, @Nonnull Map<String, Object> arguments )
     {
         final Collection<ScriptArg> scriptArgs = scriptArgRepository.findAllByScript( executableScript.getScript() );
-        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptArgRepository.findAllByScript( executableScript );
+        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptArgRepository.findAllEnabledByScript( executableScript );
 
         final Map<String, Object> args = new HashMap<>();
         // use default values of the script first
         scriptArgs.forEach( sa -> {
             try
             {
-                args.put( sa.getName(), sa.getDataType().getFromStringConverter().convert( sa.getDefaultValue() ) );
+                args.put( sa.getName(), convertScriptArg( sa, sa.getDefaultValue() ) );
             }
             catch ( ConversionException e )
             {
@@ -158,7 +173,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         executableScriptArgs.forEach( sa -> {
             try
             {
-                args.put( sa.getArgument().getName(), sa.getArgument().getDataType().getFromStringConverter().convert( sa.getOverrideValue() ) );
+                args.put( sa.getArgument().getName(), convertScriptArg( sa.getArgument(), sa.getOverrideValue() ) );
             }
             catch ( ConversionException e )
             {
@@ -175,5 +190,59 @@ public class ScriptExecutorImpl implements ScriptExecutor
             }
         } );
         return args;
+    }
+
+    @Nullable
+    private Object convertScriptArg( @Nonnull ScriptArg scriptArg, @Nullable String value )
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        final Converter<String, ?> converter = scriptArg.getDataType().getFromStringConverter();
+        final Object convertedValue;
+        try
+        {
+            if ( scriptArg.isArray() )
+            {
+                final String[] values = value.split( ARRAY_SEPARATOR_REGEXP );
+                final Object[] convertedValues = new Object[values.length];
+                for ( int i = 0; i < values.length; i++ )
+                {
+                    convertedValues[i] = converter.convert( values[i] );
+                }
+                convertedValue = convertedValues;
+            }
+            else
+            {
+                convertedValue = converter.convert( value );
+            }
+        }
+        catch ( ConversionException e )
+        {
+            throw new ScriptPreparationException( "Could not convert value \"" + value + "\" of argument \"" + scriptArg.getName() +
+                " (array=" + scriptArg.isArray() + ")\": " + e.getMessage() );
+        }
+        return convertedValue;
+    }
+
+    @Nullable
+    private Boolean convertToBoolean( @Nonnull String script )
+    {
+        if ( script.length() > 20 )
+        {
+            return null;
+        }
+        final String preparedScript = script.replace( ";", "" ).trim();
+        if ( preparedScript.equals( "true" ) )
+        {
+            return Boolean.TRUE;
+        }
+        if ( preparedScript.equals( "false" ) )
+        {
+            return Boolean.FALSE;
+        }
+        return null;
     }
 }

@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,11 @@ import java.util.Optional;
 public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataService
 {
     protected static final String TRACKED_ENTITY_TYPE_URI = "/trackedEntityTypes.json?paging=false&" +
-        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code,generated]]," +
-        "attributeValues[lastUpdated,value,attribute[id,name,code]]";
+        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code,valueType,generated]]";
+
+    protected static final String TRACKED_ENTITY_ATTRIBUTES_URI = "/trackedEntityAttributes.json?paging=false&fields=id,name,code,valueType,generated";
+
+    protected static final String REQUIRED_VALUE_URI = "/trackedEntityAttributes/{attributeId}/requiredValues.json";
 
     private final RestTemplate restTemplate;
 
@@ -58,6 +62,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
         this.restTemplate = restTemplate;
     }
 
+    @Nonnull
     @Override
     public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
     {
@@ -65,6 +70,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
             .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
     }
 
+    @Nonnull
     @Override
     public Optional<TrackedEntityType> getType( @Nonnull Reference reference )
     {
@@ -77,15 +83,31 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
                 return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), reference.getValue() ) )
                     .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
             case CODE:
+                // tracked entity type does not have a code
                 return Optional.empty();
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
     }
 
-    public List<TrackedEntityType> getTrackedEntityTypes()
+    @Nonnull
+    @Override
+    public TrackedEntityAttributes getAttributes()
     {
-        final ResponseEntity<DhisTrackedEntityTypes> result = restTemplate.getForEntity( TRACKED_ENTITY_TYPE_URI, DhisTrackedEntityTypes.class );
-        return Optional.ofNullable( result.getBody() ).orElse( new DhisTrackedEntityTypes() ).toModel();
+        final ResponseEntity<TrackedEntityAttributes> result = restTemplate.getForEntity( TRACKED_ENTITY_ATTRIBUTES_URI, TrackedEntityAttributes.class );
+        return result.getBody();
+    }
+
+    @Override
+    @Nonnull
+    public RequiredValues getRequiredValues( @Nonnull String attributeId )
+    {
+        return restTemplate.getForObject( REQUIRED_VALUE_URI, RequiredValues.class, attributeId );
+    }
+
+    protected List<? extends TrackedEntityType> getTrackedEntityTypes()
+    {
+        final ResponseEntity<TrackedEntityTypes> result = restTemplate.getForEntity( TRACKED_ENTITY_TYPE_URI, TrackedEntityTypes.class );
+        return result.getBody().getTrackedEntityTypes();
     }
 }

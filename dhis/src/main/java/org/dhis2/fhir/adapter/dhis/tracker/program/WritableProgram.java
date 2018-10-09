@@ -53,16 +53,29 @@ public class WritableProgram implements Program, Serializable
 
     private String code;
 
+    private boolean selectIncidentDatesInFuture;
+
+    private boolean selectEnrollmentDatesInFuture;
+
+    private boolean displayIncidentDate;
+
+    private boolean registration;
+
+    private boolean withoutRegistration;
+
     @JsonProperty
     private Id trackedEntityType;
 
     @JsonProperty( "programStages" )
     private List<WritableProgramStage> stages;
 
+    @JsonIgnore
     private transient volatile Map<String, ProgramStage> stagesByName;
 
+    @JsonIgnore
     private transient volatile Map<String, ProgramStage> stagesByCode;
 
+    @JsonIgnore
     private transient volatile Map<String, ProgramStage> stagesById;
 
     @Override
@@ -108,6 +121,61 @@ public class WritableProgram implements Program, Serializable
     public void setTrackedEntityTypeId( String trackedEntityTypeId )
     {
         this.trackedEntityType = (trackedEntityTypeId == null) ? null : new Id( trackedEntityTypeId );
+    }
+
+    @Override
+    public boolean isSelectIncidentDatesInFuture()
+    {
+        return selectIncidentDatesInFuture;
+    }
+
+    public void setSelectIncidentDatesInFuture( boolean selectIncidentDatesInFuture )
+    {
+        this.selectIncidentDatesInFuture = selectIncidentDatesInFuture;
+    }
+
+    @Override
+    public boolean isSelectEnrollmentDatesInFuture()
+    {
+        return selectEnrollmentDatesInFuture;
+    }
+
+    public void setSelectEnrollmentDatesInFuture( boolean selectEnrollmentDatesInFuture )
+    {
+        this.selectEnrollmentDatesInFuture = selectEnrollmentDatesInFuture;
+    }
+
+    @Override
+    public boolean isDisplayIncidentDate()
+    {
+        return displayIncidentDate;
+    }
+
+    public void setDisplayIncidentDate( boolean displayIncidentDate )
+    {
+        this.displayIncidentDate = displayIncidentDate;
+    }
+
+    @Override
+    public boolean isRegistration()
+    {
+        return registration;
+    }
+
+    public void setRegistration( boolean registration )
+    {
+        this.registration = registration;
+    }
+
+    @Override
+    public boolean isWithoutRegistration()
+    {
+        return withoutRegistration;
+    }
+
+    public void setWithoutRegistration( boolean withoutRegistration )
+    {
+        this.withoutRegistration = withoutRegistration;
     }
 
     @Override

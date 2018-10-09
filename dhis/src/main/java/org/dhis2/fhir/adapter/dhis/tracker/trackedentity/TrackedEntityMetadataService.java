@@ -29,13 +29,22 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl.RequiredValues;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
 public interface TrackedEntityMetadataService
 {
+    @Nonnull
     Optional<TrackedEntityType> getTypeById( @Nonnull String id );
 
+    @Nonnull
     Optional<TrackedEntityType> getType( @Nonnull Reference reference );
+
+    @Nonnull
+    TrackedEntityAttributes getAttributes();
+
+    @Nonnull
+    RequiredValues getRequiredValues( @Nonnull String attributeId );
 }

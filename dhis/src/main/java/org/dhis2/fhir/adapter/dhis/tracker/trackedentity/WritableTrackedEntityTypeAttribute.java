@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import java.io.Serializable;
@@ -44,20 +45,12 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
 
     private boolean mandatory;
 
+    @JsonProperty( "trackedEntityAttribute" )
     private WritableTrackedEntityAttribute attribute;
 
     public WritableTrackedEntityTypeAttribute()
     {
         super();
-    }
-
-    public WritableTrackedEntityTypeAttribute( String id, String name, ValueType valueType, boolean mandatory, WritableTrackedEntityAttribute attribute )
-    {
-        this.id = id;
-        this.name = name;
-        this.valueType = valueType;
-        this.mandatory = mandatory;
-        this.attribute = attribute;
     }
 
     @Override

@@ -28,78 +28,24 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.dhis.model.AttributeValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityType;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
-
-public class DhisTrackedEntityType implements Serializable
+public class TrackedEntityTypes implements Serializable
 {
     private static final long serialVersionUID = 5150630816129625111L;
 
-    private String id;
+    private List<WritableTrackedEntityType> trackedEntityTypes;
 
-    private String name;
-
-    @JsonProperty( "trackedEntityTypeAttributes" )
-    private List<DhisTrackedEntityTypeAttribute> typeAttributes;
-
-    private List<AttributeValue> attributeValues;
-
-    public String getId()
+    public List<WritableTrackedEntityType> getTrackedEntityTypes()
     {
-        return id;
+        return trackedEntityTypes;
     }
 
-    public void setId( String id )
+    public void setTrackedEntityTypes( List<WritableTrackedEntityType> trackedEntityTypes )
     {
-        this.id = id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName( String name )
-    {
-        this.name = name;
-    }
-
-    public List<DhisTrackedEntityTypeAttribute> getTypeAttributes()
-    {
-        return typeAttributes;
-    }
-
-    public void setTypeAttributes( List<DhisTrackedEntityTypeAttribute> typeAttributes )
-    {
-        this.typeAttributes = typeAttributes;
-    }
-
-    public List<AttributeValue> getAttributeValues()
-    {
-        return attributeValues;
-    }
-
-    public void setAttributeValues( List<AttributeValue> attributeValues )
-    {
-        this.attributeValues = attributeValues;
-    }
-
-    public Optional<AttributeValue> getAttributeValue( String code )
-    {
-        return Optional.ofNullable( attributeValues ).orElse( Collections.emptyList() ).stream().filter( av -> Objects.equals( code, av.getAttribute().getCode() ) ).min( ( av1, av2 ) -> av2.getLastUpdated().compareTo( av1.getLastUpdated() ) );
-    }
-
-    public WritableTrackedEntityType toModel()
-    {
-        return new WritableTrackedEntityType( getId(), getName(), Optional.ofNullable( typeAttributes ).orElse( Collections.emptyList() ).stream().map( DhisTrackedEntityTypeAttribute::toModel ).collect( toList() ) );
+        this.trackedEntityTypes = trackedEntityTypes;
     }
 }
