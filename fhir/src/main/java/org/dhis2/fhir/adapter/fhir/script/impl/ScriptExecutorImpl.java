@@ -48,8 +48,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -72,6 +75,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private final ScriptArgRepository scriptArgRepository;
 
     private final ScriptSourceRepository scriptSourceRepository;
+
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     public ScriptExecutorImpl( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull ScriptArgRepository scriptArgRepository,
@@ -134,7 +139,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables ) );
         try
         {
-            result = scriptEvaluator.evaluate( new StaticScriptSource( scriptSource.getSourceText() ), scriptVariables );
+            result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource( scriptSource.getSourceText() ), scriptVariables ) );
         }
         catch ( ScriptExecutionException e )
         {
@@ -150,6 +155,16 @@ public class ScriptExecutorImpl implements ScriptExecutor
             throw new ScriptExecutionException( "Script \"" + executableScript.getScript().getName() + "\" (" + executableScript.getId() + ") is expected to return " + executableScript.getScript().getReturnType() + ", but returned " + result.getClass().getSimpleName() + "." );
         }
         return resultClass.cast( result );
+    }
+
+    @Nullable
+    protected Object convertSimpleReturnValue( @Nullable Object value )
+    {
+        if ( value instanceof Date )
+        {
+            return ZonedDateTime.from( ((Date) value).toInstant().atZone( zoneId ) );
+        }
+        return value;
     }
 
     private Map<String, Object> createArgs( @Nonnull ExecutableScript executableScript, @Nonnull Map<String, Object> arguments )

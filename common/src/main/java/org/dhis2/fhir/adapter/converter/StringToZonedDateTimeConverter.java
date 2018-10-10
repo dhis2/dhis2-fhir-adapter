@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,37 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.MappedEnrollment;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
-/**
- * Repository for {@link MappedEnrollment} entities.
- *
- * @author volsch
- */
-public interface MappedEnrollmentRepository extends JpaRepository<MappedEnrollment, UUID>
+@Component
+@ConvertedValueTypes( types = ValueType.DATETIME )
+public class StringToZonedDateTimeConverter extends TypedConverter<String, ZonedDateTime>
 {
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+
+    public StringToZonedDateTimeConverter()
+    {
+        super( String.class, ZonedDateTime.class );
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime doConvert( @Nonnull String source )
+    {
+        try
+        {
+            return ZonedDateTime.from( formatter.parse( source ) );
+        }
+        catch ( DateTimeParseException e )
+        {
+            throw new ConversionException( "Could not parse ISO formatted date/time in string: " + source, e );
+        }
+    }
 }

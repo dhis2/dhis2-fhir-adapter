@@ -59,7 +59,7 @@ public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, Zoned
         final Matcher matcher = dateTimePattern.matcher( source.toString() );
         if ( !matcher.matches() )
         {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source );
+            throw new ConversionException( "Could not parse ISO formatted date/time in string: " + source );
         }
         final String value = matcher.group( 1 );
         try

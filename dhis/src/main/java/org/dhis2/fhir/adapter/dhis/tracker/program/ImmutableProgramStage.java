@@ -61,9 +61,21 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
     }
 
     @Override
-    public String getCode()
+    public boolean isRepeatable()
     {
-        return delegate.getCode();
+        return delegate.isRepeatable();
+    }
+
+    @Override
+    public boolean isCaptureCoordinates()
+    {
+        return delegate.isCaptureCoordinates();
+    }
+
+    @Override
+    public boolean isGeneratedByEnrollmentDate()
+    {
+        return delegate.isGeneratedByEnrollmentDate();
     }
 
     @Override

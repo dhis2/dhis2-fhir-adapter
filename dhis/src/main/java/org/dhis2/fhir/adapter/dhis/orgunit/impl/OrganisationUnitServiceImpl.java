@@ -71,8 +71,7 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
                 result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_NAME_URI, DhisOrganisationUnits.class, reference.getValue() );
                 break;
             case ID:
-                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, DhisOrganisationUnits.class, reference.getValue() );
-                break;
+                return Optional.ofNullable( restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, OrganisationUnit.class, reference.getValue() ).getBody() );
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }

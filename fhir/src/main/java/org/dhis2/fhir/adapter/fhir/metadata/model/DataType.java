@@ -32,11 +32,14 @@ import org.dhis2.fhir.adapter.converter.ObjectConverter;
 import org.dhis2.fhir.adapter.converter.StringToBooleanConverter;
 import org.dhis2.fhir.adapter.converter.StringToDoubleConverter;
 import org.dhis2.fhir.adapter.converter.StringToIntegerConverter;
+import org.dhis2.fhir.adapter.converter.StringToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToExceptionConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToReferenceConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.core.convert.converter.Converter;
+
+import java.time.ZonedDateTime;
 
 /**
  * Data types of constants and script arguments. They are used to perform value conversions and support the validation
@@ -50,6 +53,7 @@ public enum DataType
     STRING( String.class, new ObjectConverter<>( String.class ) ),
     INTEGER( Integer.class, new StringToIntegerConverter() ),
     DOUBLE( Double.class, new StringToDoubleConverter() ),
+    DATE_TIME( ZonedDateTime.class, new StringToZonedDateTimeConverter() ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),
     ORG_UNIT_REF( Reference.class, new StringToReferenceConverter() ),

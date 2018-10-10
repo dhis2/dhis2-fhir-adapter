@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.util.CastUtils;
+import org.dhis2.fhir.adapter.util.DateTimeUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -87,10 +88,10 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         return enrollment.getEnrollmentDate();
     }
 
-    public boolean setEnrollmentDate( Object enrollmentDate )
+    public boolean setEnrollmentDate( @Nullable Object enrollmentDate )
     {
         enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
-        return true;
+        return (enrollmentDate != null);
     }
 
     @Nullable
@@ -100,10 +101,10 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         return enrollment.getIncidentDate();
     }
 
-    public boolean setIncidentDate( Object incidentDate )
+    public boolean setIncidentDate( @Nullable Object incidentDate )
     {
         enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> valueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
-        return true;
+        return (incidentDate != null);
     }
 
     @Override
@@ -117,9 +118,17 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         {
             throw new TransformerMappingException( "Enrollment date of enrollment has not been specified." );
         }
+        if ( !program.isSelectEnrollmentDatesInFuture() && DateTimeUtils.isFutureDate( enrollment.getEnrollmentDate() ) )
+        {
+            throw new TransformerMappingException( "Enrollment date of enrollment is in the future and program does not allow dates in the future." );
+        }
         if ( enrollment.getIncidentDate() == null )
         {
             throw new TransformerMappingException( "Incident date of enrollment has not been specified." );
+        }
+        if ( !program.isSelectIncidentDatesInFuture() && DateTimeUtils.isFutureDate( enrollment.getIncidentDate() ) )
+        {
+            throw new TransformerMappingException( "Incident date of enrollment is in the future and program does not allow dates in the future." );
         }
     }
 }

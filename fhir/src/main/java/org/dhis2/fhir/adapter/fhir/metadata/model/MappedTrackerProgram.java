@@ -66,6 +66,9 @@ public class MappedTrackerProgram implements Serializable
     private Reference programReference;
     private boolean enabled;
     private TrackedEntityRule trackedEntityRule;
+    private boolean creationEnabled;
+    private ExecutableScript creationApplicableScript;
+    private ExecutableScript creationScript;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -188,5 +191,41 @@ public class MappedTrackerProgram implements Serializable
     public void setTrackedEntityRule( TrackedEntityRule trackedEntityRule )
     {
         this.trackedEntityRule = trackedEntityRule;
+    }
+
+    @Basic
+    @Column( name = "creation_enabled", nullable = false )
+    public boolean isCreationEnabled()
+    {
+        return creationEnabled;
+    }
+
+    public void setCreationEnabled( boolean creationEnabled )
+    {
+        this.creationEnabled = creationEnabled;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationApplicableScript()
+    {
+        return creationApplicableScript;
+    }
+
+    public void setCreationApplicableScript( ExecutableScript creationApplicableScript )
+    {
+        this.creationApplicableScript = creationApplicableScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "creation_script_id", referencedColumnName = "id" )
+    public ExecutableScript getCreationScript()
+    {
+        return creationScript;
+    }
+
+    public void setCreationScript( ExecutableScript creationScript )
+    {
+        this.creationScript = creationScript;
     }
 }

@@ -250,99 +250,90 @@ CREATE INDEX fhir_tracked_entity_rule_i1
   ON fhir_tracked_entity_rule (org_lookup_script_id);
 
 CREATE TABLE fhir_tracker_program (
-  id                      UUID                           NOT NULL,
-  version                 BIGINT                         NOT NULL,
-  created_at              TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_updated_by         VARCHAR(11),
-  last_updated_at         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name                    VARCHAR(230)                   NOT NULL,
-  description             TEXT,
-  program_ref             VARCHAR(230)                   NOT NULL,
-  enabled                 BOOLEAN                        NOT NULL DEFAULT TRUE,
-  tracked_entity_rule_id  UUID                           NOT NULL,
-  CONSTRAINT fhir_tracker_program_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_tracker_program_uk1 UNIQUE (name),
-  CONSTRAINT fhir_tracker_program_uk2 UNIQUE (program_ref),
-  CONSTRAINT fhir_tracker_program_fk1 FOREIGN KEY (tracked_entity_rule_id) REFERENCES fhir_tracked_entity_rule(id)
-);
-CREATE INDEX fhir_tracker_program_i1
-  ON fhir_tracker_program (tracked_entity_rule_id);
-
-CREATE TABLE fhir_enrollment (
   id                            UUID                           NOT NULL,
   version                       BIGINT                         NOT NULL,
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
   last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  program_id                    UUID                           NOT NULL,
   name                          VARCHAR(230)                   NOT NULL,
   description                   TEXT,
+  program_ref                   VARCHAR(230)                   NOT NULL,
+  enabled                       BOOLEAN                        NOT NULL DEFAULT TRUE,
+  tracked_entity_rule_id        UUID                           NOT NULL,
   creation_enabled              BOOLEAN                        NOT NULL DEFAULT FALSE,
   creation_applicable_script_id UUID,
   creation_script_id            UUID,
-  final_script_id               UUID,
-  CONSTRAINT fhir_enrollment_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_enrollment_fk1 FOREIGN KEY (program_id) REFERENCES fhir_tracker_program (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_enrollment_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_enrollment_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_enrollment_fk4 FOREIGN KEY (final_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_enrollment_uk1 UNIQUE (name)
+  CONSTRAINT fhir_tracker_program_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_tracker_program_uk1 UNIQUE (name),
+  CONSTRAINT fhir_tracker_program_uk2 UNIQUE (program_ref),
+  CONSTRAINT fhir_tracker_program_fk1 FOREIGN KEY (tracked_entity_rule_id) REFERENCES fhir_tracked_entity_rule(id),
+  CONSTRAINT fhir_tracker_program_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id)
 );
-CREATE INDEX fhir_enrollment_i1
-  ON fhir_enrollment (program_id);
-CREATE INDEX fhir_enrollment_i2
-  ON fhir_enrollment (creation_applicable_script_id);
-CREATE INDEX fhir_enrollment_i3
-  ON fhir_enrollment (creation_script_id);
-CREATE INDEX fhir_enrollment_i4
-  ON fhir_enrollment (final_script_id);
+CREATE INDEX fhir_tracker_program_i1
+  ON fhir_tracker_program (tracked_entity_rule_id);
+CREATE INDEX fhir_tracker_program_i2
+  ON fhir_tracker_program (creation_applicable_script_id);
+CREATE INDEX fhir_tracker_program_i3
+  ON fhir_tracker_program (creation_script_id);
+
+CREATE TABLE fhir_tracker_program_stage (
+  id                            UUID                           NOT NULL,
+  version                       BIGINT                         NOT NULL,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by               VARCHAR(11),
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name                          VARCHAR(230)                   NOT NULL,
+  description                   TEXT,
+  program_id                    UUID                           NOT NULL,
+  program_stage_ref             VARCHAR(230)                   NOT NULL,
+  enabled                       BOOLEAN                        NOT NULL DEFAULT TRUE,
+  creation_enabled              BOOLEAN                        NOT NULL DEFAULT FALSE,
+  creation_applicable_script_id UUID,
+  creation_script_id            UUID,
+  CONSTRAINT fhir_tracker_program_stage_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_tracker_program_stage_uk1 UNIQUE (name),
+  CONSTRAINT fhir_tracker_program_stage_uk2 UNIQUE (program_id, program_stage_ref),
+  CONSTRAINT fhir_tracker_program_stage_fk1 FOREIGN KEY (program_id) REFERENCES fhir_tracker_program(id),
+  CONSTRAINT fhir_tracker_program_stage_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_stage_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id)
+);
+CREATE INDEX fhir_tracker_program_stage_i1
+  ON fhir_tracker_program_stage (program_id);
+CREATE INDEX fhir_tracker_program_stage_i2
+  ON fhir_tracker_program_stage (creation_applicable_script_id);
+CREATE INDEX fhir_tracker_program_stage_i3
+  ON fhir_tracker_program_stage (creation_script_id);
 
 CREATE TABLE fhir_program_stage_rule (
   id                            UUID         NOT NULL,
-  program_id                    UUID         NOT NULL,
-  program_stage_ref             VARCHAR(230) NOT NULL,
-  enrollment_enabled            BOOLEAN      NOT NULL DEFAULT FALSE,
-  enrollment_id                 UUID,
-  creation_enabled              BOOLEAN      NOT NULL DEFAULT FALSE,
-  creation_applicable_script_id UUID,
-  creation_script_id            UUID,
-  final_script_id               UUID,
+  program_stage_id              UUID         NOT NULL,
   CONSTRAINT fhir_program_stage_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_program_stage_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_program_stage_rule_fk2 FOREIGN KEY (program_id) REFERENCES fhir_tracker_program (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_program_stage_rule_fk3 FOREIGN KEY (enrollment_id) REFERENCES fhir_enrollment (id),
-  CONSTRAINT fhir_program_stage_rule_fk4 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_program_stage_rule_fk5 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_program_stage_rule_fk6 FOREIGN KEY (final_script_id) REFERENCES fhir_executable_script (id)
+  CONSTRAINT fhir_program_stage_rule_fk2 FOREIGN KEY (program_stage_id) REFERENCES fhir_tracker_program_stage (id) ON DELETE CASCADE
 );
 CREATE INDEX fhir_program_stage_rule_i1
-  ON fhir_program_stage_rule (program_id);
-CREATE INDEX fhir_program_stage_rule_i2
-  ON fhir_program_stage_rule (enrollment_id);
-CREATE INDEX fhir_program_stage_rule_i3
-  ON fhir_program_stage_rule (creation_applicable_script_id);
-CREATE INDEX fhir_program_stage_rule_i4
-  ON fhir_program_stage_rule (creation_script_id);
-CREATE INDEX fhir_program_stage_rule_i5
-  ON fhir_program_stage_rule (final_script_id);
+  ON fhir_program_stage_rule (program_stage_id);
 
 CREATE TABLE fhir_resource_mapping (
-  id                              UUID                           NOT NULL,
-  version                         BIGINT                         NOT NULL,
-  fhir_resource_type              VARCHAR(30)                    NOT NULL,
-  created_at                      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_updated_by                 VARCHAR(11),
-  last_updated_at                 TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  tei_lookup_script_id            UUID                           NOT NULL,
-  enrollment_org_lookup_script_id UUID                           NOT NULL,
-  event_org_lookup_script_id      UUID                           NOT NULL,
-  event_date_lookup_script_id     UUID                           NOT NULL,
+  id                               UUID                           NOT NULL,
+  version                          BIGINT                         NOT NULL,
+  fhir_resource_type               VARCHAR(30)                    NOT NULL,
+  created_at                       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by                  VARCHAR(11),
+  last_updated_at                  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  tei_lookup_script_id             UUID                           NOT NULL,
+  enrollment_org_lookup_script_id  UUID                           NOT NULL,
+  event_org_lookup_script_id       UUID                           NOT NULL,
+  enrollment_date_lookup_script_id UUID                           NOT NULL,
+  event_date_lookup_script_id      UUID                           NOT NULL,
   CONSTRAINT fhir_resource_mapping_pk PRIMARY KEY (id),
   CONSTRAINT fhir_resource_mapping_uk1 UNIQUE (fhir_resource_type),
   CONSTRAINT fhir_resource_mapping_fk1 FOREIGN KEY (tei_lookup_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_resource_mapping_fk2 FOREIGN KEY (enrollment_org_lookup_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_resource_mapping_fk3 FOREIGN KEY (event_org_lookup_script_id ) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_resource_mapping_fk4 FOREIGN KEY (event_date_lookup_script_id ) REFERENCES fhir_executable_script (id)
+  CONSTRAINT fhir_resource_mapping_fk4 FOREIGN KEY (enrollment_date_lookup_script_id ) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_resource_mapping_fk5 FOREIGN KEY (event_date_lookup_script_id ) REFERENCES fhir_executable_script (id)
 );
 CREATE INDEX fhir_resource_mapping_i1
   ON fhir_resource_mapping (tei_lookup_script_id);
@@ -351,6 +342,8 @@ CREATE INDEX fhir_resource_mapping_i2
 CREATE INDEX fhir_resource_mapping_i3
   ON fhir_resource_mapping (event_org_lookup_script_id);
 CREATE INDEX fhir_resource_mapping_i4
+  ON fhir_resource_mapping (enrollment_date_lookup_script_id);
+CREATE INDEX fhir_resource_mapping_i5
   ON fhir_resource_mapping (event_date_lookup_script_id);
 
 CREATE TABLE fhir_remote_subscription (
@@ -543,7 +536,7 @@ output.setOptionalValue(args[''addressLineAttribute''], addressUtils.getSingleLi
 output.setOptionalValue(args[''cityAttribute''], addressUtils.getPrimaryAddress(input.address).city);
 output.setOptionalValue(args[''stateOfCountryAttribute''], addressUtils.getPrimaryAddress(input.address).state);
 output.setOptionalValue(args[''countryAttribute''], addressUtils.getPrimaryAddress(input.address).country);
-output.coordinates = geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address));', 'JAVASCRIPT');
+output.setCoordinates(geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address)));', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 'DSTU3');
 INSERT INTO fhir_executable_script (id, script_id, name, code, description)
@@ -553,6 +546,8 @@ VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 'ea887943-5e94-4e31-9441-c7661fe
 -- Script that performs the lookup of TEI FHIR Resource from FHIR Immunization
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 0, 'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_IMMUNIZATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'input.patient.getResource()', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
@@ -561,9 +556,24 @@ INSERT INTO fhir_executable_script (id,script_id, name, code, description)
 VALUES ('a08caa8a-1cc9-4f51-b6b8-814af781a442', 'd4e2822a-4422-46a3-badc-cf5604c6e11f',
 'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.');
 
+-- Script that gets the exact date from FHIR Immunization
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('15c2a8b8-b8f0-443a-adda-cfb87a1a4378', 0, 'Immunization Date Lookup', 'IMMUNIZATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Immunization.', 'EVALUATE', 'DATE_TIME', 'FHIR_IMMUNIZATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('15c2a8b8-b8f0-443a-adda-cfb87a1a4378', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('15c2a8b8-b8f0-443a-adda-cfb87a1a4378', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('71056dc1-6bd3-491d-908c-c1494090ed65', 0, '15c2a8b8-b8f0-443a-adda-cfb87a1a4378', 'dateTimeUtils.getPreciseDate(input.hasDateElement() ? input.getDateElement() : null)', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('71056dc1-6bd3-491d-908c-c1494090ed65', 'DSTU3');
+INSERT INTO fhir_executable_script (id,script_id, name, code, description)
+VALUES ('c0e2c559-ff88-4376-8063-031f971072dc', '15c2a8b8-b8f0-443a-adda-cfb87a1a4378',
+'Immunization Date Lookup', 'IMMUNIZATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Immunization.');
+
 -- FHIR resource mapping for FHIR Immunization
-INSERT INTO fhir_resource_mapping (id,version,fhir_resource_type,tei_lookup_script_id,enrollment_org_lookup_script_id,event_org_lookup_script_id,event_date_lookup_script_id)
-VALUES ('44a6c99c-c83c-4061-acd2-39e4101de147', 0, 'IMMUNIZATION', 'a08caa8a-1cc9-4f51-b6b8-814af781a442', 'a08caa8a-1cc9-4f51-b6b8-814af781a442', 'a08caa8a-1cc9-4f51-b6b8-814af781a442', 'a08caa8a-1cc9-4f51-b6b8-814af781a442');
+INSERT INTO fhir_resource_mapping (id,version,fhir_resource_type,tei_lookup_script_id,enrollment_org_lookup_script_id,event_org_lookup_script_id,enrollment_date_lookup_script_id,event_date_lookup_script_id)
+VALUES ('44a6c99c-c83c-4061-acd2-39e4101de147', 0, 'IMMUNIZATION', 'a08caa8a-1cc9-4f51-b6b8-814af781a442',
+'a52945b5-94b9-48d4-9c49-f67b43d9dfbc', 'a52945b5-94b9-48d4-9c49-f67b43d9dfbc',
+'c0e2c559-ff88-4376-8063-031f971072dc', 'c0e2c559-ff88-4376-8063-031f971072dc');
 
 -- Script that checks if given FHIR Immunization is applicable
 INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
@@ -605,9 +615,29 @@ VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NUL
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, tracked_entity_identifier_ref, tracked_entity_identifier_fq)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'NAME:National identifier', FALSE);
 
+-- Script that is executed on creation of a program instance of Child Programme
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 0, 'Child Programme Creation', 'CHILD_PROGRAMME_CREATION', 'Child programme creation.', 'EVALUATE', 'BOOLEAN', NULL, 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'ENROLLMENT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('363ed415-be4a-4311-a7bf-780a304d6f8c', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3',
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'NAME:Birth date', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('f45aed60-5208-430e-869e-f0b87f5a6321', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'enrollment.setIncidentDate(trackedEntityInstance.getValue(args[''birthDateAttribute'']))', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('f45aed60-5208-430e-869e-f0b87f5a6321', 'DSTU3');
+INSERT INTO fhir_executable_script (id,script_id, name, code, description)
+VALUES ('6836cbd1-93ba-4ab8-a4cb-69348ad9d099', '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3',
+'Child Programme Creation', 'CHILD_PROGRAMME_CREATION', 'Child programme creation.');
+
 -- Tracker Program Child Programme
-INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled)
-VALUES ('45e61665-754d-4861-891e-a2064fc0ae7d', 0, 'Child Programme', 'NAME:Child Programme', '5f9ebdc9-852e-4c83-87ca-795946aabc35', TRUE);
+INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,creation_script_id)
+VALUES ('45e61665-754d-4861-891e-a2064fc0ae7d', 0, 'Child Programme', 'NAME:Child Programme', '5f9ebdc9-852e-4c83-87ca-795946aabc35', TRUE, TRUE,
+'6836cbd1-93ba-4ab8-a4cb-69348ad9d099');
+-- Tracker Program Child Programme, Stage Baby Postnatal
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled)
+VALUES ('526b4e01-7747-47ef-a25d-f32ccd739e87', 0, 'Baby Postnatal', 'NAME:Baby Postnatal', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE);
 
 -- Tracker Program Child Programme: Measles given
 INSERT INTO fhir_executable_script (id, script_id, code, name)
@@ -618,5 +648,5 @@ VALUES ('86759369-63d9-4a2c-84f8-e9897f69166a', 0, '51ae5077-ddd7-45dc-b8ed-2900
 -- Rule Tracker Program Child Programme: Measles
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
 VALUES ('8019cebe-da61-4aff-a2fd-579a538c8671', 0, 'Child Programme: Measles', NULL, TRUE, 0, 'IMMUNIZATION', 'PROGRAM_STAGE_EVENT', '1f4e3e5e-1287-48fa-b4cd-e936f59cc169', '51ae5077-ddd7-45dc-b8ed-29000b9faaab');
-INSERT INTO fhir_program_stage_rule (id, program_id, program_stage_ref, enrollment_enabled, enrollment_id, creation_enabled, creation_applicable_script_id, creation_script_id, final_script_id)
-VALUES ('8019cebe-da61-4aff-a2fd-579a538c8671','45e61665-754d-4861-891e-a2064fc0ae7d', 'NAME:Child Programme', TRUE, NULL, TRUE, NULL, NULL, NULL);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('8019cebe-da61-4aff-a2fd-579a538c8671','526b4e01-7747-47ef-a25d-f32ccd739e87');

@@ -48,7 +48,11 @@ public class WritableProgramStage implements ProgramStage, Serializable
 
     private String name;
 
-    private String code;
+    private boolean repeatable;
+
+    private boolean captureCoordinates;
+
+    private boolean generatedByEnrollmentDate;
 
     @JsonProperty( "programStageDataElements" )
     private List<WritableProgramStageDataElement> dataElements;
@@ -85,14 +89,36 @@ public class WritableProgramStage implements ProgramStage, Serializable
     }
 
     @Override
-    public String getCode()
+    public boolean isRepeatable()
     {
-        return code;
+        return repeatable;
     }
 
-    public void setCode( String code )
+    public void setRepeatable( boolean repeatable )
     {
-        this.code = code;
+        this.repeatable = repeatable;
+    }
+
+    @Override
+    public boolean isCaptureCoordinates()
+    {
+        return captureCoordinates;
+    }
+
+    public void setCaptureCoordinates( boolean captureCoordinates )
+    {
+        this.captureCoordinates = captureCoordinates;
+    }
+
+    @Override
+    public boolean isGeneratedByEnrollmentDate()
+    {
+        return generatedByEnrollmentDate;
+    }
+
+    public void setGeneratedByEnrollmentDate( boolean generatedByEnrollmentDate )
+    {
+        this.generatedByEnrollmentDate = generatedByEnrollmentDate;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,40 +28,16 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgramStage;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
-@Scriptable
-public interface Program
+/**
+ * Repository for {@link MappedTrackerProgramStage} entities.
+ *
+ * @author volsch
+ */
+public interface MappedTrackerProgramStageRepository extends JpaRepository<MappedTrackerProgramStage, UUID>
 {
-    String getId();
-
-    String getName();
-
-    String getCode();
-
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    List<? extends ProgramStage> getStages();
-
-    @Nonnull
-    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
-
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
 }

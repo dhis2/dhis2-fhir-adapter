@@ -64,6 +64,7 @@ public class FhirResourceMapping implements Serializable
     private ExecutableScript teiLookupScript;
     private ExecutableScript enrollmentOrgLookupScript;
     private ExecutableScript eventOrgLookupScript;
+    private ExecutableScript enrollmentDateLookupScript;
     private ExecutableScript eventDateLookupScript;
 
     @GeneratedValue( generator = "uuid2" )
@@ -165,6 +166,18 @@ public class FhirResourceMapping implements Serializable
         this.enrollmentOrgLookupScript = enrollmentOrgLookupScript;
     }
 
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "enrollment_date_lookup_script_id", referencedColumnName = "id", nullable = false )
+    public ExecutableScript getEnrollmentDateLookupScript()
+    {
+        return enrollmentDateLookupScript;
+    }
+
+    public void setEnrollmentDateLookupScript( ExecutableScript enrollmentDateLookupScript )
+    {
+        this.enrollmentDateLookupScript = enrollmentDateLookupScript;
+    }
+    
     @ManyToOne( optional = false )
     @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id", nullable = false )
     public ExecutableScript getEventOrgLookupScript()

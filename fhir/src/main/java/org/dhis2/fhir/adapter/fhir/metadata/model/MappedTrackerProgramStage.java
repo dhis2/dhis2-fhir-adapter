@@ -28,43 +28,43 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.UUID;
 
-/**
- * Defines if and how an automatic enrollment into a program can be made and when its status can be changed.
- *
- * @author volsch
- */
 @Entity
-@Table( name = "fhir_enrollment" )
-public class MappedEnrollment implements Serializable
+@Table( name = "fhir_tracker_program_stage" )
+public class MappedTrackerProgramStage implements Serializable
 {
-    private static final long serialVersionUID = 780897620440499823L;
+    private static final long serialVersionUID = 7561285892767275117L;
 
     private UUID id;
     private Long version;
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
     private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
+    private Timestamp lastUpdatedAt;
     private String name;
     private String description;
+    private Reference programStageReference;
+    private boolean enabled;
     private MappedTrackerProgram program;
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationScript;
-    private ExecutableScript finalScript;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -80,6 +80,8 @@ public class MappedEnrollment implements Serializable
         this.id = id;
     }
 
+    @Column( name = "version", nullable = false )
+    @Version
     public Long getVersion()
     {
         return version;
@@ -92,12 +94,12 @@ public class MappedEnrollment implements Serializable
 
     @Basic
     @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
+    public Timestamp getCreatedAt()
     {
         return createdAt;
     }
 
-    public void setCreatedAt( LocalDateTime createdAt )
+    public void setCreatedAt( Timestamp createdAt )
     {
         this.createdAt = createdAt;
     }
@@ -116,12 +118,12 @@ public class MappedEnrollment implements Serializable
 
     @Basic
     @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
+    public Timestamp getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
 
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
+    public void setLastUpdatedAt( Timestamp lastUpdatedAt )
     {
         this.lastUpdatedAt = lastUpdatedAt;
     }
@@ -150,6 +152,31 @@ public class MappedEnrollment implements Serializable
         this.description = description;
     }
 
+    @Basic
+    @Column( name = "program_stage_ref", nullable = false, length = 230 )
+    @Convert( converter = ReferenceAttributeConverter.class )
+    public Reference getProgramStageReference()
+    {
+        return programStageReference;
+    }
+
+    public void setProgramStageReference( Reference programStageReference )
+    {
+        this.programStageReference = programStageReference;
+    }
+
+    @Basic
+    @Column( name = "enabled", nullable = false )
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
     @ManyToOne( optional = false )
     @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false )
     public MappedTrackerProgram getProgram()
@@ -163,7 +190,7 @@ public class MappedEnrollment implements Serializable
     }
 
     @Basic
-    @Column( name = "creation_enabled" )
+    @Column( name = "creation_enabled", nullable = false )
     public boolean isCreationEnabled()
     {
         return creationEnabled;
@@ -196,17 +223,5 @@ public class MappedEnrollment implements Serializable
     public void setCreationScript( ExecutableScript creationScript )
     {
         this.creationScript = creationScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "final_script_id", referencedColumnName = "id" )
-    public ExecutableScript getFinalScript()
-    {
-        return finalScript;
-    }
-
-    public void setFinalScript( ExecutableScript finalScript )
-    {
-        this.finalScript = finalScript;
     }
 }

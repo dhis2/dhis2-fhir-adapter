@@ -28,12 +28,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -52,109 +46,17 @@ public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;
 
-    private Reference programStageReference;
-    private MappedTrackerProgram program;
-    private boolean enrollmentEnabled;
-    private MappedEnrollment enrollment;
-    private boolean creationEnabled;
-    private ExecutableScript creationApplicableScript;
-    private ExecutableScript creationScript;
-    private ExecutableScript finalScript;
-
-    @Basic
-    @Column( name = "program_stage_ref", nullable = false, length = 230 )
-    @Convert( converter = ReferenceAttributeConverter.class )
-    public Reference getProgramStageReference()
-    {
-        return programStageReference;
-    }
-
-    public void setProgramStageReference( Reference programStageReference )
-    {
-        this.programStageReference = programStageReference;
-    }
+    private MappedTrackerProgramStage programStage;
 
     @ManyToOne( optional = false )
-    @JoinColumn( name = "program_id", referencedColumnName = "id", nullable = false )
-    public MappedTrackerProgram getProgram()
+    @JoinColumn( name = "program_stage_id", referencedColumnName = "id", nullable = false )
+    public MappedTrackerProgramStage getProgramStage()
     {
-        return program;
+        return programStage;
     }
 
-    public void setProgram( MappedTrackerProgram program )
+    public void setProgramStage( MappedTrackerProgramStage programStage )
     {
-        this.program = program;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "enrollment_id", referencedColumnName = "id" )
-    public MappedEnrollment getEnrollment()
-    {
-        return enrollment;
-    }
-
-    public void setEnrollment( MappedEnrollment enrollment )
-    {
-        this.enrollment = enrollment;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "creation_applicable_script_id", referencedColumnName = "id" )
-    public ExecutableScript getCreationApplicableScript()
-    {
-        return creationApplicableScript;
-    }
-
-    public void setCreationApplicableScript( ExecutableScript creationApplicableScript )
-    {
-        this.creationApplicableScript = creationApplicableScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "creation_script_id", referencedColumnName = "id" )
-    public ExecutableScript getCreationScript()
-    {
-        return creationScript;
-    }
-
-    public void setCreationScript( ExecutableScript creationScript )
-    {
-        this.creationScript = creationScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "final_script_id", referencedColumnName = "id" )
-    public ExecutableScript getFinalScript()
-    {
-        return finalScript;
-    }
-
-    public void setFinalScript( ExecutableScript finalScript )
-    {
-        this.finalScript = finalScript;
-    }
-
-    @Basic
-    @Column( name = "enrollment_enabled" )
-    public boolean isEnrollmentEnabled()
-    {
-        return enrollmentEnabled;
-    }
-
-    public void setEnrollmentEnabled( boolean enrollmentEnabled )
-    {
-        this.enrollmentEnabled = enrollmentEnabled;
-    }
-
-    @Basic
-    @Column( name = "creation_enabled" )
-    public boolean isCreationEnabled()
-    {
-        return creationEnabled;
-    }
-
-    public void setCreationEnabled( boolean creationEnabled )
-    {
-        this.creationEnabled = creationEnabled;
+        this.programStage = programStage;
     }
 }

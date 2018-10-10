@@ -43,7 +43,11 @@ public interface ProgramStage
 
     String getName();
 
-    String getCode();
+    boolean isRepeatable();
+
+    boolean isCaptureCoordinates();
+
+    boolean isGeneratedByEnrollmentDate();
 
     List<? extends ProgramStageDataElement> getDataElements();
 

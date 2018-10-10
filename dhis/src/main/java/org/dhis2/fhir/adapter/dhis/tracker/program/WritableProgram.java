@@ -196,10 +196,11 @@ public class WritableProgram implements Program, Serializable
         {
             case NAME:
                 return Optional.ofNullable( getStageByName( reference.getValue() ) );
-            case CODE:
-                return Optional.ofNullable( getStageByCode( reference.getValue() ) );
             case ID:
                 return Optional.ofNullable( getStageById( reference.getValue() ) );
+            case CODE:
+                // program stages do not have a code
+                return Optional.empty();
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
@@ -214,17 +215,6 @@ public class WritableProgram implements Program, Serializable
             this.stagesByName = stagesByName = stages.stream().collect( Collectors.toMap( WritableProgramStage::getName, s -> s ) );
         }
         return stagesByName.get( name );
-    }
-
-    @Nullable
-    public ProgramStage getStageByCode( @Nonnull String name )
-    {
-        Map<String, ProgramStage> stagesByCode = this.stagesByCode;
-        if ( stagesByCode == null )
-        {
-            this.stagesByCode = stagesByCode = stages.stream().collect( Collectors.toMap( WritableProgramStage::getCode, s -> s ) );
-        }
-        return stagesByCode.get( name );
     }
 
     @Nullable

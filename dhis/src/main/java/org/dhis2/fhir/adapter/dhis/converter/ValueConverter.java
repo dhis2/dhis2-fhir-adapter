@@ -78,7 +78,7 @@ public class ValueConverter
     @Nullable
     public <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
     {
-        if ( (value == null) || (isResultValueType( value, resultClass ) && isUnconvertedPrimitive( value, valueType )) )
+        if ( (value == null) || isResultValueType( value, resultClass ) || isUnconvertedPrimitive( value, valueType ) )
         {
             return (R) value;
         }

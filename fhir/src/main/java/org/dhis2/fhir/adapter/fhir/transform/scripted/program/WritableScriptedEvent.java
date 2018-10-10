@@ -104,7 +104,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
             event.setModified( true );
         }
         event.setEventDate( zonedDateTime );
-        return true;
+        return (eventDate != null);
     }
 
     @Nullable
