@@ -45,6 +45,7 @@ public enum ScriptVariable
     PROGRAM_STAGE( "programStage" ),
     ENROLLMENT( "enrollment" ),
     EVENT( "event" ),
+    DATE_TIME( "dateTime" ),
     IDENTIFIER_UTILS( "identifierUtils" );
 
     private final String variableName;

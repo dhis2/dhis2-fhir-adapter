@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -73,6 +74,8 @@ public class Enrollment implements DhisResource, Serializable
     private ZonedDateTime enrollmentDate;
 
     private ZonedDateTime incidentDate;
+
+    private Location coordinate;
 
     private List<Event> events;
 
@@ -181,6 +184,16 @@ public class Enrollment implements DhisResource, Serializable
     public void setIncidentDate( ZonedDateTime incidentDate )
     {
         this.incidentDate = incidentDate;
+    }
+
+    public Location getCoordinate()
+    {
+        return coordinate;
+    }
+
+    public void setCoordinate( Location coordinate )
+    {
+        this.coordinate = coordinate;
     }
 
     public List<Event> getEvents()

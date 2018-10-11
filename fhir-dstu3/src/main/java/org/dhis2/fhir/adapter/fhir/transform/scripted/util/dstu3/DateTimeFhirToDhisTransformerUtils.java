@@ -39,6 +39,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.Set;
@@ -47,6 +49,8 @@ import java.util.Set;
 @Scriptable
 public class DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhirToDhisTransformerUtils
 {
+    protected final ZoneId zoneId = ZoneId.systemDefault();
+
     public DateTimeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
@@ -91,15 +95,16 @@ public class DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhirToDh
         return date;
     }
 
+    @Override
     @Nullable
-    public Integer getAge( @Nullable Object dateTime )
+    protected LocalDate castDate( @Nonnull Object date )
     {
-        return CastUtils.cast( dateTime, BaseDateTimeType.class, this::getAge, Date.class, this::getAge, Temporal.class, this::getAge );
-    }
-
-    @Nullable
-    protected Integer getAge( @Nullable BaseDateTimeType dateTime )
-    {
-        return getAge( getPreciseDate( dateTime ) );
+        return CastUtils.cast( date,
+            BaseDateTimeType.class, d -> {
+                final Date result = getPreciseDate( d );
+                return (result == null) ? null : LocalDate.from( result.toInstant().atZone( zoneId ) );
+            },
+            Date.class, d -> LocalDate.from( d.toInstant().atZone( zoneId ) ),
+            Temporal.class, LocalDate::from );
     }
 }

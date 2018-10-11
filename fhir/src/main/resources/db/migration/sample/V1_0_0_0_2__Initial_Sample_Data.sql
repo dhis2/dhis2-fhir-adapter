@@ -29,7 +29,7 @@
 -- Definition of HAPI FHIR JPA Server on which a subscription exists
 INSERT INTO fhir_remote_subscription (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authorization_header, remote_base_url, tolerance_minutes, logging, verbose_logging)
 VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f', 0, 'HAPI FHIR JPA Server', 'SAMPLE', 'HAPI FHIR JPA Server with sample data.', 'DSTU3',
-'', 'Basic YWRtaW46ZGlzdHJpY3Q=', 'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1, TRUE, TRUE);
+'Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs', 'Basic YWRtaW46ZGlzdHJpY3Q=', 'http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3', 1, TRUE, TRUE);
 INSERT INTO fhir_remote_subscription_header (remote_subscription_id, name, value, secured)
 VALUES ('73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'Authorization', 'Bearer jshru38jsHdsdfy38sh38H3d', TRUE);
 

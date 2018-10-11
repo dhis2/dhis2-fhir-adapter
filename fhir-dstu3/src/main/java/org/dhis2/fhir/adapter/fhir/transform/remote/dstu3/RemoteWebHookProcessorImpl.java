@@ -33,6 +33,7 @@ import ca.uhn.fhir.model.api.Include;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteWebHookProcessor;
@@ -42,6 +43,7 @@ import org.hl7.fhir.dstu3.model.Immunization;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.ResourceType;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.slf4j.Logger;
@@ -52,6 +54,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
@@ -86,7 +91,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     @Nonnull
     public LocalDateTime processPatients( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
-        return processResource( subscriptionResource, Patient.class, ResourceType.Patient, "Patient:organization", ( p, resourcesById ) -> {
+        return processResource( subscriptionResource, Patient.class, ResourceType.Patient, Collections.singletonList( Patient.INCLUDE_ORGANIZATION ), ( p, resourcesById ) -> {
             if ( p.hasManagingOrganization() )
             {
                 p.getManagingOrganization().setResource(
@@ -98,11 +103,16 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     @Nonnull
     public LocalDateTime processImmunizations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
-        return processResource( subscriptionResource, Immunization.class, ResourceType.Immunization, "Immunization:patient", ( i, resourcesById ) -> {
+        return processResource( subscriptionResource, Immunization.class, ResourceType.Immunization, Arrays.asList( Immunization.INCLUDE_PATIENT, Immunization.INCLUDE_LOCATION ), ( i, resourcesById ) -> {
             if ( i.hasPatient() )
             {
                 i.getPatient().setResource(
                     resourcesById.get( i.getPatient().getReferenceElement().toUnqualifiedVersionless() ) );
+            }
+            if ( i.hasLocation() )
+            {
+                i.getLocation().setResource(
+                    resourcesById.get( i.getLocation().getReferenceElement().toUnqualifiedVersionless() ) );
             }
         } );
     }
@@ -110,7 +120,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     @Nonnull
     public LocalDateTime processObservations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
-        return processResource( subscriptionResource, Observation.class, ResourceType.Observation, "Observation:subject", ( i, resourcesById ) -> {
+        return processResource( subscriptionResource, Observation.class, ResourceType.Observation, Collections.singletonList( Observation.INCLUDE_SUBJECT ), ( i, resourcesById ) -> {
             if ( i.hasSubject() )
             {
                 i.getSubject().setResource(
@@ -121,7 +131,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
 
     @SuppressWarnings( "unchecked" )
     protected <T extends IBaseResource> LocalDateTime processResource( @Nonnull RemoteSubscriptionResource subscriptionResource,
-        @Nonnull Class<T> resourceClass, @Nonnull ResourceType resourceType, @Nonnull String include, @Nonnull BiConsumer<T, Map<IIdType, IBaseResource>> consumer )
+        @Nonnull Class<T> resourceClass, @Nonnull ResourceType resourceType, @Nonnull Collection<Include> includes, @Nonnull BiConsumer<T, Map<IIdType, IBaseResource>> consumer )
     {
         final Date fromLastUpdated = Date.from( subscriptionResource.getRemoteLastUpdate().minusMinutes(
             subscriptionResource.getRemoteSubscription().getToleranceMinutes() ).atZone( ZoneId.systemDefault() ).toInstant() );
@@ -130,8 +140,9 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         final Set<ProcessedResource> currentProcessedResources = new HashSet<>();
         final LocalDateTime lastUpdated = LocalDateTime.now();
         logger.info( "Querying for resource type {} of subscription resource {}.", resourceType, subscriptionResource.getId() );
-        Bundle result = (Bundle) client.search().forResource( resourceClass ).include( new Include( include ) ).count( 1000 )
-            .lastUpdated( new DateRangeParam( fromLastUpdated, null ) ).sort().ascending( "_lastUpdated" ).execute();
+        IQuery<IBaseBundle> query = addAllIncludes( client.search().forResource( resourceClass ), includes );
+        Bundle result = (Bundle) query.count( 1000 ).lastUpdated( new DateRangeParam( fromLastUpdated, null ) )
+            .sort().ascending( "_lastUpdated" ).execute();
         do
         {
             logger.info( "Queried {} entries for resource type {} of subscription resource {}.", result.getEntry().size(), resourceType, subscriptionResource.getId() );
@@ -179,6 +190,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         return lastUpdated;
     }
 
+    @Nonnull
     protected IGenericClient createFhirClient( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
         final IGenericClient client = fhirContext.newRestfulGenericClient( subscriptionResource.getRemoteSubscription().getRemoteBaseUrl() );
@@ -192,6 +204,17 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         client.registerInterceptor( requestHeadersInterceptor );
 
         return client;
+    }
+
+    @Nonnull
+    protected <T> IQuery<T> addAllIncludes( @Nonnull IQuery<T> query, @Nonnull Collection<Include> includes )
+    {
+        IQuery<T> modifiedQuery = query;
+        for ( Include include : includes )
+        {
+            modifiedQuery = modifiedQuery.include( include );
+        }
+        return modifiedQuery;
     }
 
     protected static class ProcessedResource

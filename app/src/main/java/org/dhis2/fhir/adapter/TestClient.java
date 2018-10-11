@@ -41,6 +41,7 @@ import org.hl7.fhir.dstu3.model.Enumerations;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.Location;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
@@ -71,6 +72,19 @@ public class TestClient
         final FhirContext ctx = FhirContext.forDstu3();
         final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
         client.registerInterceptor( new LoggingInterceptor( true ) );
+
+        ///////////
+        // Location
+        ///////////
+
+        Location location = new Location();
+        location.setId( IdType.newRandomUuid() );
+        location.setName( "Connaught Hospital" );
+        location.addIdentifier()
+            .setSystem( "http://example.sl/locations" )
+            .setValue( orgCode );
+        location.getAddress().setCity( "Freetown" );
+        location.getPosition().setLatitude( 8.488431 ).setLongitude( -13.238409 );
 
         ///////////////
         // Organization
@@ -153,7 +167,9 @@ public class TestClient
         //////////////////////
 
         Immunization imm1 = new Immunization();
+        imm1.setId( IdType.newRandomUuid() );
         imm1.getPatient().setReference( child.getId() );
+        imm1.getLocation().setReference( location.getId() );
         imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm1.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm1.setNotGiven( false );
@@ -161,13 +177,15 @@ public class TestClient
         imm1.getVaccineCode()
             .addCoding()
             .setSystem( "http://hl7.org/fhir/sid/cvx" )
-            .setCode( "DTaP" )
-            .setDisplay( "DTaP" );
+            .setCode( "01" )
+            .setDisplay( "DTP" );
         imm1.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
         Immunization imm2 = new Immunization();
+        imm2.setId( IdType.newRandomUuid() );
         imm2.getPatient().setReference( child.getId() );
+        imm2.getLocation().setReference( location.getId() );
         imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm2.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm2.setNotGiven( false );
@@ -181,7 +199,9 @@ public class TestClient
             .setSeries( "2" );
 
         Immunization imm3 = new Immunization();
+        imm3.setId( IdType.newRandomUuid() );
         imm3.getPatient().setReference( child.getId() );
+        imm3.getLocation().setReference( location.getId() );
         imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm3.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm3.setNotGiven( false );
@@ -189,13 +209,15 @@ public class TestClient
         imm3.getVaccineCode()
             .addCoding()
             .setSystem( "http://hl7.org/fhir/sid/cvx" )
-            .setCode( "BCG" )
+            .setCode( "19" )
             .setDisplay( "BCG" );
         imm3.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
         Immunization imm4 = new Immunization();
+        imm4.setId( IdType.newRandomUuid() );
         imm4.getPatient().setReference( child.getId() );
+        imm4.getLocation().setReference( location.getId() );
         imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm4.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
         imm4.setNotGiven( false );
@@ -203,7 +225,7 @@ public class TestClient
         imm4.getVaccineCode()
             .addCoding()
             .setSystem( "http://hl7.org/fhir/sid/cvx" )
-            .setCode( "OPV" )
+            .setCode( "02" )
             .setDisplay( "OPV" );
         imm4.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
@@ -213,18 +235,23 @@ public class TestClient
         ////////////////////////
 
         Observation lmp = new Observation();
-        lmp.addCategory( new CodeableConcept().addCoding( new Coding().setSystem( ObservationCategory.SOCIALHISTORY.getSystem() ).setCode( ObservationCategory.SOCIALHISTORY.toCode() ) ) );
+        lmp.setId( IdType.newRandomUuid() );
+        lmp.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SOCIALHISTORY.getSystem() ).setCode( ObservationCategory.SOCIALHISTORY.toCode() ) ) );
         lmp.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8665-2" ) ) );
         lmp.getSubject().setReference( mother.getId() );
-        lmp.setValue( new DateTimeType( Date.from( LocalDate.now().minusDays( 7 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ), TemporalPrecisionEnum.DAY ) );
+        lmp.setValue( new DateTimeType(
+            Date.from( LocalDate.now().minusDays( 7 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ), TemporalPrecisionEnum.DAY ) );
 
         /////////////////
         // Blood Pressure
         /////////////////
 
         Observation bloodPressure = new Observation();
+        bloodPressure.setId( IdType.newRandomUuid() );
         bloodPressure.setStatus( Observation.ObservationStatus.FINAL );
-        bloodPressure.addCategory( new CodeableConcept().addCoding( new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bloodPressure.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
         bloodPressure.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "85354-9" ) ) );
         bloodPressure.getSubject().setReference( mother.getId() );
         bloodPressure.addComponent().setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8480-6" ) ) )
@@ -251,6 +278,12 @@ public class TestClient
             .setMethod( Bundle.HTTPVerb.PUT )
             .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + motherNationalId );
         bundle.addEntry()
+            .setResource( location )
+            .setFullUrl( location.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Location?identifier=http://example.sl/locations|" + orgCode );
+        bundle.addEntry()
             .setResource( org )
             .setFullUrl( org.getId() )
             .getRequest()
@@ -260,38 +293,38 @@ public class TestClient
             .setResource( imm1 )
             .setFullUrl( imm1.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2896" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
         bundle.addEntry()
             .setResource( imm2 )
             .setFullUrl( imm2.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2897" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
         bundle.addEntry()
             .setResource( imm3 )
             .setFullUrl( imm3.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2898" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
         bundle.addEntry()
             .setResource( imm4 )
             .setFullUrl( imm4.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Immunization?identifier=http://example.ph/vaccinations|376-2899" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
         bundle.addEntry()
             .setResource( lmp )
             .setFullUrl( lmp.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Observation?identifier=http://example.ph/observations|378-2879" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
         bundle.addEntry()
             .setResource( bloodPressure )
             .setFullUrl( bloodPressure.getId() )
             .getRequest()
-            .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Observation?identifier=http://example.ph/observations|378-2880" );
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
 
         client.transaction().withBundle( bundle ).execute();
     }

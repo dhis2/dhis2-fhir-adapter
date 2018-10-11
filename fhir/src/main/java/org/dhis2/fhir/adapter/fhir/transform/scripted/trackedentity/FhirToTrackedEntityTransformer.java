@@ -106,7 +106,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             return null;
         }
 
-        final TrackedEntityAttributes trackedEntityAttributes = getTrackedEntityAttributes( variables );
+        final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityType trackedEntityType = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final TrackedEntityInstance trackedEntityInstance = getResource( context, rule, variables )
             .orElseThrow( () -> new FatalTransformerException( "Tracked entity instance could neither be retrieved nor created." ) );
@@ -123,7 +123,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
         if ( trackedEntityInstance.isNewResource() )
         {
-            final String identifier = getIdentifier( context, scriptVariables, rule );
+            final String identifier = getIdentifier( context, rule, scriptVariables );
             if ( identifier == null )
             {
                 return null;
@@ -135,6 +135,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             trackedEntityInstance.getAttribute( attributeId ).setValue( identifier );
         }
 
+        scriptedTrackedEntityInstance.setCoordinates( getCoordinate( context, rule.getLocationLookupScript(), variables ) );
         if ( !transform( context, rule, variables ) )
         {
             return null;
@@ -193,20 +194,9 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     }
 
     @Nullable
-    protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> scriptVariables, @Nonnull TrackedEntityRule rule )
+    protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
     {
         final IBaseResource baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
         return getIdentifier( context, baseResource, rule.isTrackedEntityIdentifierFq(), scriptVariables );
-    }
-
-    @Nonnull
-    protected TrackedEntityAttributes getTrackedEntityAttributes( @Nonnull Map<String, Object> scriptVariables ) throws FatalTransformerException
-    {
-        final TrackedEntityAttributes trackedEntityAttributes = (TrackedEntityAttributes) scriptVariables.get( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName() );
-        if ( trackedEntityAttributes == null )
-        {
-            throw new FatalTransformerException( "Tracked entity attributes are not included as script variables." );
-        }
-        return trackedEntityAttributes;
     }
 }

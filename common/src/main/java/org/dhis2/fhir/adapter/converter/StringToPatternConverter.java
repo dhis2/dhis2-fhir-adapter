@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,42 +28,34 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-@Scriptable
-public interface Program
+/**
+ * Converts a string to a regular expression pattern.
+ *
+ * @author volsch
+ */
+public class StringToPatternConverter extends TypedConverter<String, Pattern>
 {
-    String getId();
-
-    String getName();
-
-    String getCode();
-
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramStage> getStages();
-
-    @Nonnull
-    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    public StringToPatternConverter()
+    {
+        super( String.class, Pattern.class );
+    }
 
     @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Override
+    public Pattern doConvert( @Nonnull String source ) throws ConversionException
+    {
+        try
+        {
+            return Pattern.compile( source );
+        }
+        catch ( PatternSyntaxException e )
+        {
+            throw new ConversionException( "Invalid regular expression: " + source, e );
+        }
+    }
 }

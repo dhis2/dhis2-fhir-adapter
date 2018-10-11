@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -49,4 +50,7 @@ public interface ScriptedEvent extends ScriptedDhisResource
 
     @Nullable
     ZonedDateTime getEventDate();
+
+    @Nullable
+    Location getCoordinate();
 }

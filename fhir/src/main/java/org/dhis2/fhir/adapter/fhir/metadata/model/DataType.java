@@ -31,15 +31,21 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import org.dhis2.fhir.adapter.converter.ObjectConverter;
 import org.dhis2.fhir.adapter.converter.StringToBooleanConverter;
 import org.dhis2.fhir.adapter.converter.StringToDoubleConverter;
+import org.dhis2.fhir.adapter.converter.StringToEnumConverter;
 import org.dhis2.fhir.adapter.converter.StringToIntegerConverter;
+import org.dhis2.fhir.adapter.converter.StringToPatternConverter;
 import org.dhis2.fhir.adapter.converter.StringToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToExceptionConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToReferenceConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
+import org.dhis2.fhir.adapter.model.DateUnit;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.core.convert.converter.Converter;
 
 import java.time.ZonedDateTime;
+import java.util.regex.Pattern;
 
 /**
  * Data types of constants and script arguments. They are used to perform value conversions and support the validation
@@ -54,8 +60,11 @@ public enum DataType
     INTEGER( Integer.class, new StringToIntegerConverter() ),
     DOUBLE( Double.class, new StringToDoubleConverter() ),
     DATE_TIME( ZonedDateTime.class, new StringToZonedDateTimeConverter() ),
+    DATE_UNIT( DateUnit.class, new StringToEnumConverter<>( DateUnit.class ) ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),
+    LOCATION( Location.class, new StringToLocationConverter() ),
+    PATTERN( Pattern.class, new StringToPatternConverter() ),
     ORG_UNIT_REF( Reference.class, new StringToReferenceConverter() ),
     TRACKED_ENTITY_REF( Reference.class, new StringToReferenceConverter() ),
     TRACKED_ENTITY_ATTRIBUTE_REF( Reference.class, new StringToReferenceConverter() ),

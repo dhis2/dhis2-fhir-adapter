@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -80,6 +81,13 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializ
     public ZonedDateTime getIncidentDate()
     {
         return delegate.getIncidentDate();
+    }
+
+    @Override
+    @Nullable
+    public Location getCoordinate()
+    {
+        return delegate.getCoordinate();
     }
 
     @Override

@@ -66,6 +66,8 @@ public class FhirResourceMapping implements Serializable
     private ExecutableScript eventOrgLookupScript;
     private ExecutableScript enrollmentDateLookupScript;
     private ExecutableScript eventDateLookupScript;
+    private ExecutableScript enrollmentLocationLookupScript;
+    private ExecutableScript eventLocationLookupScript;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -200,5 +202,29 @@ public class FhirResourceMapping implements Serializable
     public void setEventDateLookupScript( ExecutableScript eventDateLookupScript )
     {
         this.eventDateLookupScript = eventDateLookupScript;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "enrollment_loc_lookup_script_id", referencedColumnName = "id", nullable = false )
+    public ExecutableScript getEnrollmentLocationLookupScript()
+    {
+        return enrollmentLocationLookupScript;
+    }
+
+    public void setEnrollmentLocationLookupScript( ExecutableScript enrollmentLocationLookupScript )
+    {
+        this.enrollmentLocationLookupScript = enrollmentLocationLookupScript;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "event_loc_lookup_script_id", referencedColumnName = "id", nullable = false )
+    public ExecutableScript getEventLocationLookupScript()
+    {
+        return eventLocationLookupScript;
+    }
+
+    public void setEventLocationLookupScript( ExecutableScript eventLocationLookupScript )
+    {
+        this.eventLocationLookupScript = eventLocationLookupScript;
     }
 }

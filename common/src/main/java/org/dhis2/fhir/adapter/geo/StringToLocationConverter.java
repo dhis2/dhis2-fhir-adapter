@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 @ConvertedValueTypes( types = ValueType.COORDINATE )
 public class StringToLocationConverter extends TypedConverter<String, Location>
 {
-    private final Pattern locationPattern = Pattern.compile( "\\s*\\[\\s*([\\d.eE]+)\\s*,\\s*([\\d.eE]+)\\s*]\\s*" );
+    private static final Pattern LOCATION_PATTERN = Pattern.compile( "\\s*\\[\\s*([\\d.eE]+)\\s*,\\s*([\\d.eE]+)\\s*]\\s*" );
 
     public StringToLocationConverter()
     {
@@ -52,7 +52,7 @@ public class StringToLocationConverter extends TypedConverter<String, Location>
     @Override
     public Location doConvert( @Nonnull String source ) throws ConversionException
     {
-        final Matcher matcher = locationPattern.matcher( source );
+        final Matcher matcher = LOCATION_PATTERN.matcher( source );
         if ( !matcher.matches() )
         {
             throw new ConversionException( "Not a valid location: " + source );
@@ -65,5 +65,18 @@ public class StringToLocationConverter extends TypedConverter<String, Location>
         {
             throw new ConversionException( "Not a valid location: " + source );
         }
+    }
+
+    /**
+     * Returns if the specified source is the string representation of a single location. No strict
+     * validation of the longitude and latitude values is made.
+     *
+     * @param source the string that should be checked.
+     * @return <code>true</code> if the specified string is a representation of a single location
+     * or <code>null</code>, <code>false</code> otherwise.
+     */
+    public static boolean isLocation( @Nullable String source )
+    {
+        return (source == null) || LOCATION_PATTERN.matcher( source ).matches();
     }
 }

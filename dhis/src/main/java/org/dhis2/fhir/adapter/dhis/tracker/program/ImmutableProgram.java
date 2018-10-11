@@ -103,6 +103,12 @@ public class ImmutableProgram implements Program, Serializable
     }
 
     @Override
+    public boolean isCaptureCoordinates()
+    {
+        return delegate.isCaptureCoordinates();
+    }
+
+    @Override
     public List<? extends ProgramStage> getStages()
     {
         return (delegate.getStages() == null) ? null : delegate.getStages().stream().map( ImmutableProgramStage::new ).collect( Collectors.toList() );

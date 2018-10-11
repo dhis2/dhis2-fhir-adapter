@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,42 +28,28 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
 
-@Scriptable
-public interface Program
+/**
+ * The units of a date.
+ *
+ * @author volsch
+ */
+public enum DateUnit
 {
-    String getId();
+    YEARS( ChronoUnit.YEARS ), MONTHS( ChronoUnit.MONTHS ), DAYS( ChronoUnit.DAYS );
 
-    String getName();
+    private final ChronoUnit chronoUnit;
 
-    String getCode();
-
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramStage> getStages();
+    DateUnit( @Nonnull ChronoUnit chronoUnit )
+    {
+        this.chronoUnit = chronoUnit;
+    }
 
     @Nonnull
-    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
-
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    public ChronoUnit getChronoUnit()
+    {
+        return chronoUnit;
+    }
 }

@@ -42,6 +42,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.util.CastUtils;
 
@@ -49,7 +50,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Scriptable
 public class WritableScriptedEvent implements ScriptedEvent, Serializable
@@ -133,18 +136,62 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return true;
     }
 
-    public boolean setValue( @Nonnull Reference dataElementReference, Object value ) throws TransformerException
+    @Nullable
+    @Override
+    public Location getCoordinate()
+    {
+        return event.getCoordinate();
+    }
+
+    public boolean setCoordinate( @Nullable Object coordinate )
+    {
+        final Location convertedCoordinate = valueConverter.convert( coordinate, ValueType.COORDINATE, Location.class );
+        if ( !Objects.equals( event.getCoordinate(), convertedCoordinate ) )
+        {
+            event.setModified( true );
+        }
+        event.setCoordinate( convertedCoordinate );
+        return true;
+    }
+
+    public boolean setValue( @Nonnull Reference dataElementReference, @Nullable Object value ) throws TransformerException
     {
         return setValue( dataElementReference, value, null );
     }
 
-    public boolean setValue( @Nonnull Reference dataElementReference, Object value, Boolean providedElsewhere ) throws TransformerException
+    public boolean setValue( @Nonnull Reference dataElementReference, @Nullable Object value, @Nullable Boolean providedElsewhere ) throws TransformerException
     {
-        final ProgramStageDataElement dataElement = programStage.getOptionalDataElement( dataElementReference ).orElseThrow( () ->
-            new TransformerMappingException( "Program stage \"" + programStage.getName() +
-                "\" does not include data element \"" + dataElementReference + "\"" ) );
+        final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
         setValue( dataElement, value, providedElsewhere );
         return true;
+    }
+
+    public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
+    {
+        final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
+        if ( !dataElement.getElement().isOptionSetValue() || (dataElement.getElement().getOptionSet() == null) )
+        {
+            throw new TransformerMappingException( "Data element \"" + dataElementReference + "\" is not an option set." );
+        }
+
+        if ( value < valueBase )
+        {
+            return false;
+        }
+        final int resultingValue = value - valueBase;
+
+        final List<String> codes = FhirToDhisOptionSetUtils.resolveIntegerOptionCodes( dataElement.getElement().getOptionSet(), optionValuePattern );
+        final String code = codes.get( Math.min( resultingValue, codes.size() - 1 ) );
+        setValue( dataElement, code, providedElsewhere );
+        return true;
+    }
+
+    @Nonnull
+    private ProgramStageDataElement getProgramStageDataElement( @Nonnull Reference dataElementReference )
+    {
+        return programStage.getOptionalDataElement( dataElementReference ).orElseThrow( () ->
+            new TransformerMappingException( "Program stage \"" + programStage.getName() +
+                "\" does not include data element \"" + dataElementReference + "\"" ) );
     }
 
     protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere )

@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.util.CastUtils;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
@@ -42,6 +43,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @Scriptable
 public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializable
@@ -105,6 +107,24 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     {
         enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> valueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
         return (incidentDate != null);
+    }
+
+    @Nullable
+    @Override
+    public Location getCoordinate()
+    {
+        return enrollment.getCoordinate();
+    }
+
+    public boolean setCoordinate( @Nullable Object coordinate )
+    {
+        final Location convertedCoordinate = valueConverter.convert( coordinate, ValueType.COORDINATE, Location.class );
+        if ( !Objects.equals( enrollment.getCoordinate(), convertedCoordinate ) )
+        {
+            enrollment.setModified();
+        }
+        enrollment.setCoordinate( convertedCoordinate );
+        return true;
     }
 
     @Override

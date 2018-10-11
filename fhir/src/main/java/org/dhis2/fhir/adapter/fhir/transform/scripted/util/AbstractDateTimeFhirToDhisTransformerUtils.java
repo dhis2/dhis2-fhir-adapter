@@ -30,13 +30,17 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.model.DateUnit;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 
 @Component
@@ -58,15 +62,73 @@ public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends Abstrac
     }
 
     @Nullable
-    protected final Integer getAge( @Nullable Date date )
+    public Integer getAge( @Nonnull Object relativeDateTime, @Nullable Object dateTime, @Nonnull Object dateUnit )
     {
-        return (date == null) ? null : getAge( date.toInstant() );
+        if ( dateTime == null )
+        {
+            return null;
+        }
+
+        final DateUnit convertedDateUnit;
+        try
+        {
+            convertedDateUnit = DateUnit.valueOf( dateUnit.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid date unit: " + dateUnit, e );
+        }
+
+        final LocalDate convertedRelativeDate = castDate( relativeDateTime );
+        if ( convertedRelativeDate == null )
+        {
+            // in case the base date time has not at least day precision
+            return null;
+        }
+        final LocalDate convertedDate = castDate( dateTime );
+        return getAge( convertedRelativeDate, convertedDate, convertedDateUnit.getChronoUnit() );
     }
 
     @Nullable
-    protected final Integer getAge( @Nullable Temporal temporal )
+    public Integer getAge( @Nullable Object dateTime, @Nonnull Object dateUnit )
     {
-        return (temporal == null) ? null : Period.between( LocalDate.from( temporal ), LocalDate.now() ).getYears();
+        return getAge( ZonedDateTime.now(), dateTime, dateUnit );
     }
 
+    public boolean isYoungerThan( @Nonnull Object relativeDateTime, @Nullable Object dateTime, int amount, @Nonnull Object dateUnit )
+    {
+        final Integer age = getAge( relativeDateTime, dateTime, dateUnit );
+        return (age != null) && (age < amount);
+    }
+
+    public boolean isYoungerThan( @Nullable Object dateTime, int amount, @Nonnull Object dateUnit )
+    {
+        return isYoungerThan( ZonedDateTime.now(), dateTime, amount, dateUnit );
+    }
+
+    public boolean isOlderThan( @Nonnull Object relativeDateTime, @Nullable Object dateTime, int amount, @Nonnull Object dateUnit )
+    {
+        final Integer age = getAge( relativeDateTime, dateTime, dateUnit );
+        return (age != null) && (age > amount);
+    }
+
+    public boolean isOlderThan( @Nullable Object dateTime, int amount, @Nonnull Object dateUnit )
+    {
+        return isOlderThan( ZonedDateTime.now(), dateTime, amount, dateUnit );
+    }
+
+    @Nullable
+    protected final Integer getAge( @Nonnull Date relativeDate, @Nullable Date date, @Nonnull TemporalUnit temporalUnit )
+    {
+        return (date == null) ? null : getAge( relativeDate.toInstant(), date.toInstant(), temporalUnit );
+    }
+
+    @Nullable
+    protected final Integer getAge( @Nonnull Temporal relativeTemporal, @Nullable Temporal temporal, @Nonnull TemporalUnit temporalUnit )
+    {
+        return (temporal == null) ? null : Math.min( 0, (int) Period.between( LocalDate.from( temporal ), LocalDate.from( relativeTemporal ) ).get( temporalUnit ) );
+    }
+
+    @Nullable
+    protected abstract LocalDate castDate( @Nonnull Object date );
 }

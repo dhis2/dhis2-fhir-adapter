@@ -53,6 +53,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
 import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractIdentifierFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.geo.Location;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.slf4j.Logger;
@@ -256,6 +257,12 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
 
         return identifier;
+    }
+
+    @Nullable
+    protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
+    {
+        return getScriptExecutor().execute( locationLookupScript, context.getFhirRequest().getVersion(), scriptVariable, Location.class );
     }
 
     @Nonnull

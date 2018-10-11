@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.geo.Location;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -84,6 +85,8 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     private ZonedDateTime eventDate;
 
     private ZonedDateTime dueDate;
+
+    private Location coordinate;
 
     private List<WritableDataValue> dataValues;
 
@@ -226,6 +229,16 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setDueDate( ZonedDateTime dueDate )
     {
         this.dueDate = dueDate;
+    }
+
+    public Location getCoordinate()
+    {
+        return coordinate;
+    }
+
+    public void setCoordinate( Location coordinate )
+    {
+        this.coordinate = coordinate;
     }
 
     public List<? extends DataValue> getDataValues()

@@ -63,6 +63,8 @@ public class WritableProgram implements Program, Serializable
 
     private boolean withoutRegistration;
 
+    private boolean captureCoordinates;
+
     @JsonProperty
     private Id trackedEntityType;
 
@@ -176,6 +178,17 @@ public class WritableProgram implements Program, Serializable
     public void setWithoutRegistration( boolean withoutRegistration )
     {
         this.withoutRegistration = withoutRegistration;
+    }
+
+    @Override
+    public boolean isCaptureCoordinates()
+    {
+        return captureCoordinates;
+    }
+
+    public void setCaptureCoordinates( boolean captureCoordinates )
+    {
+        this.captureCoordinates = captureCoordinates;
     }
 
     @Override

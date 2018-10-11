@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,42 +28,32 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
-@Scriptable
-public interface Program
+/**
+ * Converts a string to an enum value.
+ *
+ * @author volsch
+ */
+public class StringToEnumConverter<T extends Enum<T>> extends TypedConverter<String, T>
 {
-    String getId();
-
-    String getName();
-
-    String getCode();
-
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramStage> getStages();
-
-    @Nonnull
-    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    public StringToEnumConverter( @Nonnull Class<T> toClass )
+    {
+        super( String.class, toClass );
+    }
 
     @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Override
+    public T doConvert( @Nonnull String source ) throws ConversionException
+    {
+        try
+        {
+            return Enum.valueOf( getToClass(), source );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new ConversionException( "Could not convert string to enum " + getToClass().getSimpleName() + " value: " + source, e );
+        }
+    }
 }

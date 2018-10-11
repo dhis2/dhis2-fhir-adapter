@@ -52,6 +52,7 @@ public class TrackedEntityRule extends AbstractRule
 
     private Reference trackedEntityReference;
     private ExecutableScript orgUnitLookupScript;
+    private ExecutableScript locationLookupScript;
     private Reference trackedEntityIdentifierReference;
     private boolean trackedEntityIdentifierFq;
 
@@ -78,6 +79,18 @@ public class TrackedEntityRule extends AbstractRule
     public void setOrgUnitLookupScript( ExecutableScript orgUnitLookupScript )
     {
         this.orgUnitLookupScript = orgUnitLookupScript;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "loc_lookup_script_id", nullable = false )
+    public ExecutableScript getLocationLookupScript()
+    {
+        return locationLookupScript;
+    }
+
+    public void setLocationLookupScript( ExecutableScript locationLookupScript )
+    {
+        this.locationLookupScript = locationLookupScript;
     }
 
     @Basic

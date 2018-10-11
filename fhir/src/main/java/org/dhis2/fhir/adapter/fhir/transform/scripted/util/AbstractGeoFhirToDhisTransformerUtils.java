@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +59,21 @@ public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhir
     public final String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
+    }
+
+    @Nullable
+    public Location create( @Nullable Number longitude, @Nullable Number latitude )
+    {
+        if ( (longitude == null) || (latitude == null) )
+        {
+            return null;
+        }
+        return new Location( longitude.doubleValue(), latitude.doubleValue() );
+    }
+
+    public boolean isLocation( @Nullable String coordinates )
+    {
+        return StringToLocationConverter.isLocation( coordinates );
     }
 
     @Nullable
