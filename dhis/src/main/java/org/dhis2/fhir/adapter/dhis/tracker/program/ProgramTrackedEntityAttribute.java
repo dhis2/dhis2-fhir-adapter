@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
+package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,65 +28,24 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
+import org.dhis2.fhir.adapter.model.ValueType;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
+@Scriptable
+public interface ProgramTrackedEntityAttribute
 {
-    private final ScriptedTrackedEntityInstance delegate;
+    String getId();
 
-    public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
-    {
-        this.delegate = delegate;
-    }
+    String getName();
 
-    @Override
-    public boolean isNewResource()
-    {
-        return delegate.isNewResource();
-    }
+    ValueType getValueType();
 
-    @Override
-    @Nullable
-    public String getId()
-    {
-        return delegate.getId();
-    }
+    boolean isMandatory();
 
-    @Override
-    @Nonnull
-    public String getTypeId()
-    {
-        return delegate.getTypeId();
-    }
+    boolean isAllowFutureDate();
 
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return delegate.getOrganizationUnitId();
-    }
+    TrackedEntityAttribute getAttribute();
 
-    @Nullable
-    @Override
-    public String getCoordinates()
-    {
-        return delegate.getCoordinates();
-    }
-
-    @Override
-    @Nullable
-    public Object getValue( @Nonnull Reference attributeReference )
-    {
-        return delegate.getValue( attributeReference );
-    }
-
-    @Override
-    public void validate() throws TransformerException
-    {
-        delegate.validate();
-    }
+    String getAttributeId();
 }

@@ -30,8 +30,11 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Scriptable
 public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
@@ -51,4 +54,12 @@ public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends Abstra
     {
         return SCRIPT_ATTR_NAME;
     }
+
+    @Nullable
+    public abstract String getSingleGiven( @Nullable ICompositeType humanName );
+
+    public abstract boolean hasPrimaryName( @Nonnull List<? extends ICompositeType> names );
+
+    @Nullable
+    public abstract ICompositeType getPrimaryName( @Nonnull List<? extends ICompositeType> names );
 }

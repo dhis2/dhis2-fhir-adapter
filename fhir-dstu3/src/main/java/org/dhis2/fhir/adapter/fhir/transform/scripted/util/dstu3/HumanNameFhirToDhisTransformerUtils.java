@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractHumanNameFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -59,30 +60,33 @@ public class HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameFhirTo
         return FhirVersion.DSTU3_ONLY;
     }
 
+    @Override
     @Nullable
-    public String getSingleGiven( @Nullable HumanName humanName )
+    public String getSingleGiven( @Nullable ICompositeType humanName )
     {
-        if ( (humanName == null) || humanName.getGiven().isEmpty() )
+        if ( (humanName == null) || ((HumanName) humanName).getGiven().isEmpty() )
         {
             return null;
         }
-        return String.join( DEFAULT_GIVEN_DELIMITER, humanName.getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
+        return String.join( DEFAULT_GIVEN_DELIMITER, ((HumanName) humanName).getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
     }
 
-    public boolean hasPrimaryName( @Nonnull List<HumanName> names )
+    @Override
+    public boolean hasPrimaryName( @Nonnull List<? extends ICompositeType> names )
     {
         return getOptionalPrimaryName( names ).isPresent();
     }
 
+    @Override
     @Nullable
-    public HumanName getPrimaryName( @Nonnull List<HumanName> names )
+    public HumanName getPrimaryName( @Nonnull List<? extends ICompositeType> names )
     {
         return getOptionalPrimaryName( names ).orElse( new HumanName() );
     }
 
     @Nonnull
-    protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<HumanName> names )
+    protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<? extends ICompositeType> names )
     {
-        return names.stream().findFirst();
+        return names.stream().map( HumanName.class::cast ).findFirst();
     }
 }

@@ -93,7 +93,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     @Override
     public FhirToDhisTransformerContext createContext( @Nonnull FhirRequest fhirRequest )
     {
-        return new FhirToDhisTransformerContextImpl( fhirRequest );
+        return new FhirToDhisTransformerContextImpl( fhirRequest, false );
     }
 
     @Nullable

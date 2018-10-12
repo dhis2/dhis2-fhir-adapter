@@ -129,9 +129,8 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
                 return null;
             }
 
-            final String attributeId = trackedEntityType.getOptionalTypeAttribute( rule.getTrackedEntityIdentifierReference() ).orElseThrow( () ->
-                new TransformerMappingException( "Rule \"" + rule + "\" expects that tracked entity type \"" + trackedEntityType.getName() +
-                    "\" contains undefined attribute \"" + rule.getTrackedEntityIdentifierReference() + "\"." ) ).getAttributeId();
+            final String attributeId = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() ).orElseThrow( () ->
+                new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) ).getId();
             trackedEntityInstance.getAttribute( attributeId ).setValue( identifier );
         }
 
@@ -189,8 +188,12 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( context.isCreationDisabled() )
+        {
+            return null;
+        }
         return new TrackedEntityInstance(
-            getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ).getId(), id, true );
+            getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ), id, true );
     }
 
     @Nullable

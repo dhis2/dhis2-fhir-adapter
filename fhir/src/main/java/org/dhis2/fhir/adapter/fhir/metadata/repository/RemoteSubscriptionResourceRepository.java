@@ -28,12 +28,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,4 +54,9 @@ public interface RemoteSubscriptionResourceRepository extends JpaRepository<Remo
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s LEFT JOIN FETCH s.remoteHeaders WHERE r.id=:resourceId" )
     @Nonnull
     Optional<RemoteSubscriptionResource> getOneForSubscriptionProcessing( @Param( "resourceId" ) @Nonnull UUID resourceId );
+
+    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType" )
+    @Nonnull
+    Collection<RemoteSubscriptionResource> findForWebHookEvaluation(
+        @Param( "subscription" ) @Nonnull RemoteSubscription remoteSubscription, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 }

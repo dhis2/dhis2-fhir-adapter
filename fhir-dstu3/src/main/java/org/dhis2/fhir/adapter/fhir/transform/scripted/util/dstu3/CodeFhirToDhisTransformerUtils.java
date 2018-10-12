@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractCodeFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -71,8 +72,9 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
         return FhirVersion.DSTU3_ONLY;
     }
 
+    @Override
     @Nullable
-    public String getCode( @Nullable CodeableConcept codeableConcept, @Nullable String system )
+    public String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system )
     {
         if ( system == null )
         {
@@ -83,7 +85,7 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
         {
             return null;
         }
-        for ( final Coding coding : codeableConcept.getCoding() )
+        for ( final Coding coding : ((CodeableConcept) codeableConcept).getCoding() )
         {
             if ( system.equals( coding.getSystem() ) )
             {
@@ -93,7 +95,8 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
         return null;
     }
 
-    public boolean containsMappedCode( @Nullable CodeableConcept codeableConcept, @Nullable Object mappedCodes )
+    @Override
+    public boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes )
     {
         if ( mappedCodes == null )
         {
@@ -127,13 +130,14 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
         return false;
     }
 
-    public boolean containsCode( @Nullable CodeableConcept codeableConcept, @Nonnull String system, @Nonnull String code )
+    @Override
+    public boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code )
     {
         if ( codeableConcept == null )
         {
             return false;
         }
-        return codeableConcept.getCoding().stream().anyMatch(
+        return ((CodeableConcept) codeableConcept).getCoding().stream().anyMatch(
             coding -> system.equals( coding.getSystem() ) && code.equals( coding.getCode() ) );
     }
 }

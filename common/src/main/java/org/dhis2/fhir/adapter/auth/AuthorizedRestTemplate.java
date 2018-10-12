@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,11 @@ public class AuthorizedRestTemplate extends RestTemplate
     private final AuthorizationContext authorizationContext;
 
     private final List<WwwAuthenticate> wwwAuthenticates;
+
+    public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext )
+    {
+        this( authorizationContext, Collections.emptyList() );
+    }
 
     public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates )
     {

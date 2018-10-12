@@ -28,20 +28,20 @@ package org.dhis2.fhir.adapter.dhis.config;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.auth.WwwAuthenticate;
+import org.dhis2.fhir.adapter.model.UsernamePassword;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.Nonnull;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.List;
 
 @Configuration
-@ConfigurationProperties( "dhis2.endpoint" )
+@ConfigurationProperties( "dhis2.fhir-adapter.endpoint" )
 @Validated
 public class DhisEndpointConfig implements Serializable
 {
@@ -53,14 +53,9 @@ public class DhisEndpointConfig implements Serializable
     @Pattern( regexp = "\\d+" )
     private String apiVersion;
 
-    @NotBlank
-    private String username;
-
-    @NotBlank
-    private String password;
-
-    @NotNull @Size( min = 1 )
-    private List<WwwAuthenticate> wwwAuthenticates;
+    @NotNull
+    @Valid
+    private UsernamePassword systemAuthentication;
 
     public String getUrl()
     {
@@ -82,33 +77,14 @@ public class DhisEndpointConfig implements Serializable
         this.apiVersion = apiVersion;
     }
 
-    public String getUsername()
+    @Nonnull
+    public UsernamePassword getSystemAuthentication()
     {
-        return username;
+        return systemAuthentication;
     }
 
-    public void setUsername( String username )
+    public void setSystemAuthentication( @NotNull @Valid @Nonnull UsernamePassword systemAuthentication )
     {
-        this.username = username;
-    }
-
-    public String getPassword()
-    {
-        return password;
-    }
-
-    public void setPassword( String password )
-    {
-        this.password = password;
-    }
-
-    public List<WwwAuthenticate> getWwwAuthenticates()
-    {
-        return wwwAuthenticates;
-    }
-
-    public void setWwwAuthenticates( List<WwwAuthenticate> wwwAuthenticates )
-    {
-        this.wwwAuthenticates = wwwAuthenticates;
+        this.systemAuthentication = systemAuthentication;
     }
 }

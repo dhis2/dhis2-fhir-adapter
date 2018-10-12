@@ -68,6 +68,9 @@ public class WritableProgram implements Program, Serializable
     @JsonProperty
     private Id trackedEntityType;
 
+    @JsonProperty( "programTrackedEntityAttributes" )
+    private List<WritableProgramTrackedEntityAttribute> trackedEntityAttributes;
+
     @JsonProperty( "programStages" )
     private List<WritableProgramStage> stages;
 
@@ -189,6 +192,17 @@ public class WritableProgram implements Program, Serializable
     public void setCaptureCoordinates( boolean captureCoordinates )
     {
         this.captureCoordinates = captureCoordinates;
+    }
+
+    @Override
+    public List<WritableProgramTrackedEntityAttribute> getTrackedEntityAttributes()
+    {
+        return trackedEntityAttributes;
+    }
+
+    public void setTrackedEntityAttributes( List<WritableProgramTrackedEntityAttribute> trackedEntityAttributes )
+    {
+        this.trackedEntityAttributes = trackedEntityAttributes;
     }
 
     @Override

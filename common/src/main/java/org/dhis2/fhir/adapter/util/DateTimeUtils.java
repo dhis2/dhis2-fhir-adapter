@@ -29,9 +29,8 @@ package org.dhis2.fhir.adapter.util;
  */
 
 import javax.annotation.Nonnull;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.temporal.Temporal;
 import java.util.regex.Pattern;
 
 /**
@@ -57,12 +56,12 @@ public abstract class DateTimeUtils
     /**
      * Checks if the specified date/time is on the next day or even later.
      *
-     * @param dateTime the date/time that should be checked.
+     * @param temporal the date/time that should be checked.
      * @return <code>true</code> if the specified date/time is on the next day or even later, <code>false</code> otherwise.
      */
-    public static boolean isFutureDate( @Nonnull ZonedDateTime dateTime )
+    public static boolean isFutureDate( @Nonnull Temporal temporal )
     {
-        return dateTime.toLocalDateTime().truncatedTo( ChronoUnit.DAYS ).isAfter( LocalDateTime.now().truncatedTo( ChronoUnit.DAYS ) );
+        return LocalDate.from( temporal ).isAfter( LocalDate.now() );
     }
 
     public DateTimeUtils()

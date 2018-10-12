@@ -62,6 +62,7 @@ public class GeoFhirToDhisTransformerUtils extends AbstractGeoFhirToDhisTransfor
         return FhirVersion.DSTU3_ONLY;
     }
 
+    @Override
     @Nullable
     public Location getLocation( @Nonnull IElement element ) throws TransformerException
     {

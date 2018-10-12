@@ -45,6 +45,12 @@ public class Reference implements Serializable
 
     private final ReferenceType type;
 
+    @Nonnull
+    public static Reference createIdReference( @Nonnull String name )
+    {
+        return new Reference( name, ReferenceType.ID );
+    }
+
     /**
      * @param name the code or name to which the reference refers to.
      * @param type the type of the reference (either a reference by code or by name).

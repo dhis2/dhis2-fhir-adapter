@@ -56,7 +56,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 @Component
@@ -77,6 +81,8 @@ public class FhirRepositoryImpl implements FhirRepository
     private final EnrollmentService enrollmentService;
 
     private final EventService eventService;
+
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext, @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService, @Nonnull TrackedEntityService trackedEntityService,
@@ -136,6 +142,8 @@ public class FhirRepositoryImpl implements FhirRepository
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
         fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
+        fhirRequest.setLastUpdated( getLastUpdated( resource ) );
+        fhirRequest.setResourceVersionId( (resource.getMeta() == null) ? null : resource.getMeta().getVersionId() );
         fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
         fhirRequest.setResourceSystemsByType( systems.stream()
@@ -156,6 +164,12 @@ public class FhirRepositoryImpl implements FhirRepository
                     break;
                 case PROGRAM_STAGE_EVENT:
                     final Event event = (Event) outcome.getResource();
+                    if ( (event.getTrackedEntityInstance() != null) && event.getTrackedEntityInstance().isModified() )
+                    {
+                        logger.info( "Persisting tracked entity instance." );
+                        trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
+                        logger.info( "Persisted tracked entity instance {}.", event.getTrackedEntityInstance().getId() );
+                    }
                     // Creation of enrollment and event can be made at the
                     // same time. This will be simplified.
                     if ( event.getEnrollment().isNewResource() )
@@ -173,5 +187,12 @@ public class FhirRepositoryImpl implements FhirRepository
             }
             resource.setId( dhisResource.getId() );
         }
+    }
+
+    @Nullable
+    private ZonedDateTime getLastUpdated( @Nonnull IBaseResource resource )
+    {
+        final Date lastUpdated = (resource.getMeta() == null) ? null : resource.getMeta().getLastUpdated();
+        return (lastUpdated == null) ? null : lastUpdated.toInstant().atZone( zoneId );
     }
 }

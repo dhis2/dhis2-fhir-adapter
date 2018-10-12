@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractAddressFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -59,36 +60,34 @@ public class AddressFhirToDhisTransformerUtils extends AbstractAddressFhirToDhis
         return FhirVersion.DSTU3_ONLY;
     }
 
-    public boolean hasPrimaryAddress( @Nonnull List<Address> addresses )
+    @Override
+    public boolean hasPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses )
     {
         return getOptionalPrimaryAddress( addresses ).isPresent();
     }
 
     @Nullable
-    public Address getPrimaryAddress( @Nonnull List<Address> addresses )
+    @Override
+    public ICompositeType getPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses )
     {
         return getOptionalPrimaryAddress( addresses ).orElse( new Address() );
     }
 
     @Nullable
-    public String getSingleLine( @Nullable Address address, @Nonnull String delimiter )
+    @Override
+    public String getSingleLine( @Nullable ICompositeType address, @Nonnull String delimiter )
     {
-        if ( (address == null) || address.getLine().isEmpty() )
+        final Address convertedAddress = (Address) address;
+        if ( (address == null) || convertedAddress.getLine().isEmpty() )
         {
             return null;
         }
-        return String.join( delimiter, address.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
-    }
-
-    @Nullable
-    public String getSingleLine( @Nullable Address address )
-    {
-        return getSingleLine( address, DEFAULT_LINE_DELIMITER );
+        return String.join( delimiter, convertedAddress.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
     }
 
     @Nonnull
-    protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<Address> addresses )
+    protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses )
     {
-        return addresses.stream().findFirst();
+        return addresses.stream().map( Address.class::cast ).findFirst();
     }
 }

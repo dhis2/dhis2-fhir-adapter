@@ -28,34 +28,23 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.util.CastUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
-@Scriptable
-public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public abstract class ScriptedDateTimeUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "codeUtils";
-
-    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    public static ZonedDateTime toZonedDateTime( @Nullable Object dateTime, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutionContext );
+        return CastUtils.cast( dateTime, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) );
     }
 
-    @Nonnull
-    @Override
-    public final String getScriptAttrName()
+    private ScriptedDateTimeUtils()
     {
-        return SCRIPT_ATTR_NAME;
+        super();
     }
-
-    @Nullable
-    public abstract String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system );
-
-    public abstract boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes );
-
-    public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
 }

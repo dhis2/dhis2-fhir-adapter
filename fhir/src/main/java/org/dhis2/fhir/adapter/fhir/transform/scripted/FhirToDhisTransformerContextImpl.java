@@ -46,9 +46,12 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
 
     private final FhirRequest fhirRequest;
 
-    public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest )
+    private final boolean creationDisabled;
+
+    public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest, boolean creationDisabled )
     {
         this.fhirRequest = new ImmutableFhirRequest( fhirRequest );
+        this.creationDisabled = creationDisabled;
     }
 
     @Nonnull
@@ -77,6 +80,12 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
             return null;
         }
         return new Reference( value, rt );
+    }
+
+    @Override
+    public boolean isCreationDisabled()
+    {
+        return creationDisabled;
     }
 
     @Nonnull

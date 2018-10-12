@@ -41,7 +41,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Configuration
-@ConfigurationProperties( "dhis2.transformation" )
+@ConfigurationProperties( "dhis2.fhir-adapter.transformation" )
 @Validated
 public class TransformationConfig implements Serializable
 {

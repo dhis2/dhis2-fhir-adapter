@@ -32,7 +32,8 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractObservationTransformUtils;
-import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
+import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -59,14 +60,15 @@ public class ObservationTransformUtils extends AbstractObservationTransformUtils
         return FhirVersion.DSTU3_ONLY;
     }
 
-    public Observation.ObservationComponentComponent getBackboneElement( @Nullable List<Observation.ObservationComponentComponent> backboneElements,
-        @Nonnull String system, @Nonnull String code )
+    @Override
+    @Nullable
+    public IBaseBackboneElement getBackboneElement( @Nullable List<? extends IBaseBackboneElement> backboneElements, @Nonnull String system, @Nonnull String code )
     {
         if ( backboneElements == null )
         {
             return null;
         }
-        return backboneElements.stream().filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
-            .findFirst().orElse( new Observation.ObservationComponentComponent() );
+        return backboneElements.stream().map( ObservationComponentComponent.class::cast ).filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
+            .findFirst().orElse( new ObservationComponentComponent() );
     }
 }

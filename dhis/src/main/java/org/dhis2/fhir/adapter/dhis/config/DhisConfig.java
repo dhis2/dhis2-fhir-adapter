@@ -41,14 +41,14 @@ public class DhisConfig
     @Bean
     public RestTemplate userDhis2RestTemplate( RestTemplateBuilder builder, DhisEndpointConfig endpointConfig, AuthorizationContext authorizationContext )
     {
-        return builder.rootUri( getRootUri( endpointConfig ) ).configure(
-            new AuthorizedRestTemplate( authorizationContext, endpointConfig.getWwwAuthenticates() ) );
+        return builder.rootUri( getRootUri( endpointConfig ) ).configure( new AuthorizedRestTemplate( authorizationContext ) );
     }
 
     @Bean
     public RestTemplate systemDhis2RestTemplate( RestTemplateBuilder builder, DhisEndpointConfig endpointConfig )
     {
-        return builder.rootUri( getRootUri( endpointConfig ) ).basicAuthorization( endpointConfig.getUsername(), endpointConfig.getPassword() ).build();
+        return builder.rootUri( getRootUri( endpointConfig ) ).basicAuthorization(
+            endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
     }
 
     private String getRootUri( DhisEndpointConfig endpointConfig )

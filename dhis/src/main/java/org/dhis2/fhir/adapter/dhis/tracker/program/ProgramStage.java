@@ -49,6 +49,8 @@ public interface ProgramStage
 
     boolean isGeneratedByEnrollmentDate();
 
+    int getMinDaysFromStart();
+
     List<? extends ProgramStageDataElement> getDataElements();
 
     @Nullable

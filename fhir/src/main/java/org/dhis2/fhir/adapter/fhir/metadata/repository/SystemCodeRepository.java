@@ -44,7 +44,7 @@ import java.util.UUID;
  */
 public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>
 {
-    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c WHERE c.code IN (:codes)" )
+    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND s.enabled=true" )
     @Nonnull
     Collection<SystemCode> findAllByCodes( @Param( "codes" ) @Nonnull Collection<String> codes );
 }

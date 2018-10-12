@@ -48,7 +48,8 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
     protected static final String PROGRAM_URI = "/programs.json?paging=false&" +
         "fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
         "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
-        "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate," +
+        "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute[id,name,code,valueType,generated]]," +
+        "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
         "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
         "dataElement[id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
 

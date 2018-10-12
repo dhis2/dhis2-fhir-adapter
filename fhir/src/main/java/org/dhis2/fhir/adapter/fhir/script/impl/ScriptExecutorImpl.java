@@ -49,7 +49,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -162,7 +161,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     {
         if ( value instanceof Date )
         {
-            return ZonedDateTime.from( ((Date) value).toInstant().atZone( zoneId ) );
+            return ((Date) value).toInstant().atZone( zoneId );
         }
         return value;
     }

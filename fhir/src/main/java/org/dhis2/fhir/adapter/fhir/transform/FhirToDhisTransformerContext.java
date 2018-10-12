@@ -57,6 +57,11 @@ public interface FhirToDhisTransformerContext
     Reference createReference( @Nullable String value, @Nonnull Object referenceType )
         throws TransformerScriptException;
 
+    /**
+     * @return <code>true</code> if creation of enrollments and events has been disabled, <code>false</code> otherwise.
+     */
+    boolean isCreationDisabled();
+
     @Nonnull
     <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException;
 }

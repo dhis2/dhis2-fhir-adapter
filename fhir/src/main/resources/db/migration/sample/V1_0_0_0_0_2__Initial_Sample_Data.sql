@@ -41,28 +41,16 @@ VALUES ('a756ef2a-1bf4-43f4-a991-fbb48ad358ac', 0, '73cd99c5-0ca8-42ad-a53b-1891
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
 VALUES ('b32b4098-f8e1-426a-8dad-c5c4d8e0fab6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'OBSERVATION', '_format=json', 'Subscription for all Observations.');
 
--- Definition of system URIs that are used for unique business identifiers for FHIR resources.
+-- Definition of systemAuthentication URIs that are used for unique business identifiers for FHIR resources.
 INSERT INTO fhir_system (id, version, name, code, system_uri)
-VALUES ('c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3', 0, 'Philippines Organization', 'SYSTEM_PH_ORGANIZATION', 'http://example.ph/organizations');
+VALUES ('2dd51309-3319-40d2-9a1f-be2a102df4a7', 0, 'Sierra Leone Location', 'SYSTEM_SL_LOCATION', 'http://example.sl/locations');
 INSERT INTO fhir_system (id, version, name, code, system_uri)
-VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Philippines Patient', 'SYSTEM_PH_PATIENT', 'http://example.ph/national-patient-id');
+VALUES ('c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3', 0, 'Sierra Leone Organization', 'SYSTEM_SL_ORGANIZATION', 'http://example.sl/organizations');
+INSERT INTO fhir_system (id, version, name, code, system_uri)
+VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Sierra Leone Patient', 'SYSTEM_SL_PATIENT', 'http://example.sl/national-patient-id');
 
--- Assignment of system URIs of unique business identifiers for FHIR resources to the subscription.
+-- Assignment of systemAuthentication URIs of unique business identifiers for FHIR resources to the subscription.
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
 VALUES ('ea9804a3-9e82-4d0d-9cd2-e417b32b1c0c', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', 'c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3');
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
 VALUES ('ef7d37ae-6a02-46de-bf15-3dc522a464ed', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PATIENT', 'ff842c76-a529-4563-972d-216b887a3573');
-
--- Executable script arguments that defines all attributes of tracked entity type Person
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'NAME:Birth date');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('6f35479f-d594-4286-9269-1fdfc5dcc2cd', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '40a28a9c-82e3-46e8-9eb9-44aaf2f5eacc', 'NAME:Address line');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'NAME:City');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('b27348e5-7eff-461f-9516-7ab72289a94d', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '6fb6bfe4-5b44-42a1-812f-be1dc8413d6e', 'NAME:State of country');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('5aedebb4-b62b-4b4d-b47e-3b067ed74db2', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'a77ef245-e65e-4a87-9c96-5047911f9830', 'NAME:Country');

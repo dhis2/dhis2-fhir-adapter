@@ -48,26 +48,18 @@ spring:
   mvc:
     logResolvedException: false
 
-management:
-  security:
-    enabled: false
-
 logging:
   level:
     org.hibernate: warn
     org.hibernate.cfg.AnnotationBinder: error
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: error
 
-dhis2:
+dhis2.fhir-adapter:
   endpoint:
-    username: @dhis2.username@
-    password: @dhis2.password@
     url: @dhis2.url@
-    apiVersion: @dhis2.apiVersion@
-    wwwAuthenticates:
-    - type: Basic
-      realm: DHIS2
-    - type: Bearer
-      realm: dhis2/oauth2
+    api-version: @dhis2.apiVersion@
+    system-authentication:
+      username: @dhis2.username@
+      password: @dhis2.password@
   transformation:
-    scriptEngineName: nashorn
+    script-engine-name: nashorn

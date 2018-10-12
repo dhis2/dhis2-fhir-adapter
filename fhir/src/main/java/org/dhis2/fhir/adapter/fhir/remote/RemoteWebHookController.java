@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.remote;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.rest.RestResourceNotFoundException;
@@ -115,6 +116,17 @@ public class RemoteWebHookController
             throw new RestUnauthorizedException( "Authentication has failed." );
         }
 
+        if ( subscriptionResource.getFhirResourceType() != FhirResourceType.PATIENT )
+        {
+            // all resources depend on patient and patient need to be updated beforehand
+            resourceRepository.findForWebHookEvaluation( subscriptionResource.getRemoteSubscription(), FhirResourceType.PATIENT )
+                .forEach( this::offerResource );
+        }
+        offerResource( subscriptionResource );
+    }
+
+    private void offerResource( RemoteSubscriptionResource subscriptionResource )
+    {
         if ( requestQueue.offer( subscriptionResource.getId() ) )
         {
             logger.info( "Web hook processing request for {} has been added to the request queue.", subscriptionResource.getId() );

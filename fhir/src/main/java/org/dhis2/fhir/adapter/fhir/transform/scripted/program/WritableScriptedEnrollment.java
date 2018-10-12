@@ -34,9 +34,9 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.util.CastUtils;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
 
 import javax.annotation.Nonnull;
@@ -92,7 +92,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     public boolean setEnrollmentDate( @Nullable Object enrollmentDate )
     {
-        enrollment.setEnrollmentDate( CastUtils.cast( enrollmentDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) ) );
+        enrollment.setEnrollmentDate( ScriptedDateTimeUtils.toZonedDateTime( enrollmentDate, valueConverter ) );
         return (enrollmentDate != null);
     }
 
@@ -105,7 +105,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     public boolean setIncidentDate( @Nullable Object incidentDate )
     {
-        enrollment.setIncidentDate( CastUtils.cast( incidentDate, ZonedDateTime.class, id -> id, Object.class, id -> valueConverter.convert( id, ValueType.DATETIME, ZonedDateTime.class ) ) );
+        enrollment.setIncidentDate( ScriptedDateTimeUtils.toZonedDateTime( incidentDate, valueConverter ) );
         return (incidentDate != null);
     }
 

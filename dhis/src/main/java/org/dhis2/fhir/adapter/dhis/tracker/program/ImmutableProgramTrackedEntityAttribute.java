@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,34 +28,63 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityAttribute;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
+import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
-@Scriptable
-public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public class ImmutableProgramTrackedEntityAttribute implements ProgramTrackedEntityAttribute, Serializable
 {
-    private static final String SCRIPT_ATTR_NAME = "codeUtils";
+    private static final long serialVersionUID = -6094500152005916960L;
 
-    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final ProgramTrackedEntityAttribute delegate;
+
+    public ImmutableProgramTrackedEntityAttribute( @Nonnull ProgramTrackedEntityAttribute delegate )
     {
-        super( scriptExecutionContext );
+        this.delegate = delegate;
     }
 
-    @Nonnull
     @Override
-    public final String getScriptAttrName()
+    public String getId()
     {
-        return SCRIPT_ATTR_NAME;
+        return delegate.getId();
     }
 
-    @Nullable
-    public abstract String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system );
+    @Override
+    public String getName()
+    {
+        return delegate.getName();
+    }
 
-    public abstract boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes );
+    @Override
+    public ValueType getValueType()
+    {
+        return delegate.getValueType();
+    }
 
-    public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
+    @Override
+    public boolean isMandatory()
+    {
+        return delegate.isMandatory();
+    }
+
+    @Override
+    public boolean isAllowFutureDate()
+    {
+        return delegate.isAllowFutureDate();
+    }
+
+    @Override
+    public String getAttributeId()
+    {
+        return delegate.getAttributeId();
+    }
+
+    @Override
+    public TrackedEntityAttribute getAttribute()
+    {
+        return (delegate.getAttribute() == null) ? null : new ImmutableTrackedEntityAttribute( delegate.getAttribute() );
+    }
 }

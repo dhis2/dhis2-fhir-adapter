@@ -51,6 +51,7 @@ public class System implements Serializable
     private String name;
     private String code;
     private String systemUri;
+    private boolean enabled;
     private String description;
 
     @Id
@@ -147,6 +148,18 @@ public class System implements Serializable
     public void setSystemUri( String systemUri )
     {
         this.systemUri = systemUri;
+    }
+
+    @Basic
+    @Column( name = "enabled", nullable = false )
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
     }
 
     @Basic

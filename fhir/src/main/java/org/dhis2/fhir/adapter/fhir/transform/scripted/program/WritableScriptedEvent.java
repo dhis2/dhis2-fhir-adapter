@@ -42,9 +42,9 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.util.CastUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -101,13 +101,31 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     public boolean setEventDate( @Nullable Object eventDate )
     {
-        final ZonedDateTime zonedDateTime = CastUtils.cast( eventDate, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) );
+        final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( eventDate, valueConverter );
         if ( !Objects.equals( event.getEventDate(), zonedDateTime ) )
         {
             event.setModified( true );
         }
         event.setEventDate( zonedDateTime );
         return (eventDate != null);
+    }
+
+    @Nullable
+    @Override
+    public ZonedDateTime getDueDate()
+    {
+        return event.getDueDate();
+    }
+
+    public boolean setDueDate( @Nullable Object dueDate )
+    {
+        final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( dueDate, valueConverter );
+        if ( !Objects.equals( event.getDueDate(), zonedDateTime ) )
+        {
+            event.setModified( true );
+        }
+        event.setDueDate( zonedDateTime );
+        return (dueDate != null);
     }
 
     @Nullable
@@ -166,7 +184,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return true;
     }
 
-    public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
+    public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, boolean decrementAllowed, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
         if ( !dataElement.getElement().isOptionSetValue() || (dataElement.getElement().getOptionSet() == null) )
@@ -181,8 +199,22 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         final int resultingValue = value - valueBase;
 
         final List<String> codes = FhirToDhisOptionSetUtils.resolveIntegerOptionCodes( dataElement.getElement().getOptionSet(), optionValuePattern );
-        final String code = codes.get( Math.min( resultingValue, codes.size() - 1 ) );
-        setValue( dataElement, code, providedElsewhere );
+        final int newIndex = Math.min( resultingValue, codes.size() - 1 );
+        final String newCode = codes.get( newIndex );
+        if ( !decrementAllowed && (newIndex > 0) )
+        {
+            final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+            if ( dataValue.getValue() != null )
+            {
+                final String currentCode = valueConverter.convert( dataValue.getValue(), dataElement.getElement().getValueType(), String.class );
+                final int currentIndex = codes.indexOf( FhirToDhisOptionSetUtils.getIntegerOptionCode( currentCode, optionValuePattern ) );
+                if ( currentIndex > newIndex )
+                {
+                    return false;
+                }
+            }
+        }
+        setValue( dataElement, newCode, providedElsewhere );
         return true;
     }
 
@@ -196,12 +228,6 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere )
     {
-        if ( Boolean.TRUE.equals( providedElsewhere ) && !dataElement.isAllowProvidedElsewhere() )
-        {
-            throw new TransformerMappingException( "Program stage \"" + programStage.getName() +
-                "\" does not allow that data is provided elsewhere for data element \"" + dataElement.getElement().getName() + "\"." );
-        }
-
         final Object convertedValue;
         try
         {
@@ -227,7 +253,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         }
         dataValue.setValue( convertedValue );
 
-        if ( providedElsewhere != null )
+        if ( (providedElsewhere != null) && dataElement.isAllowProvidedElsewhere() )
         {
             if ( providedElsewhere != dataValue.isProvidedElsewhere() )
             {
@@ -252,6 +278,10 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         if ( event.getEventDate() == null )
         {
             throw new TransformerMappingException( "Event date of event has not been specified." );
+        }
+        if ( event.getDueDate() == null )
+        {
+            throw new TransformerMappingException( "Due date of event has not been specified." );
         }
     }
 }

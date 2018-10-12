@@ -59,6 +59,8 @@ public interface Program
 
     boolean isCaptureCoordinates();
 
+    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
+
     List<? extends ProgramStage> getStages();
 
     @Nonnull

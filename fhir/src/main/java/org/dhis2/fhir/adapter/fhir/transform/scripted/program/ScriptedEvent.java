@@ -52,5 +52,8 @@ public interface ScriptedEvent extends ScriptedDhisResource
     ZonedDateTime getEventDate();
 
     @Nullable
+    ZonedDateTime getDueDate();
+
+    @Nullable
     Location getCoordinate();
 }

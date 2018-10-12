@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
@@ -42,6 +43,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ImmutableProgram;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramTrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -71,6 +73,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,6 +265,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( context.isCreationDisabled() )
+        {
+            return null;
+        }
+
         if ( !rule.getProgramStage().isCreationEnabled() )
         {
             return null;
@@ -316,6 +325,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return null;
         }
         event.setEventDate( eventDate );
+        event.setDueDate( enrollment.getEnrollmentDate().plus( eventInfo.getProgramStage().getMinDaysFromStart(), ChronoUnit.DAYS ) );
 
         if ( (rule.getProgramStage().getCreationScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute(
             rule.getProgramStage().getCreationScript(), context.getFhirRequest().getVersion(), variables, Boolean.class ) ) )
@@ -363,6 +373,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected Enrollment createEnrollment( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables )
     {
+        if ( context.isCreationDisabled() )
+        {
+            return null;
+        }
+
         final MappedTrackerProgram mappedProgram = rule.getProgramStage().getProgram();
         if ( !mappedProgram.isCreationEnabled() )
         {
@@ -424,8 +439,38 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             enrollment.setStatus( EnrollmentStatus.ACTIVE );
         }
 
+        // enrollment may require more tracked entity attributes
+        if ( !initAndValidateTrackedEntity( program, variables ) )
+        {
+            return null;
+        }
+
         scriptedEnrollment.validate();
         return enrollment;
+    }
+
+    private boolean initAndValidateTrackedEntity( Program program, Map<String, Object> variables )
+    {
+        final ScriptedTrackedEntityInstance trackedEntityInstance = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
+        for ( final ProgramTrackedEntityAttribute attribute : program.getTrackedEntityAttributes() )
+        {
+            trackedEntityInstance.initValue( Reference.createIdReference( attribute.getAttributeId() ) );
+            if ( !attribute.isAllowFutureDate() && ValueType.DATE_TYPES.contains( attribute.getValueType() ) )
+            {
+                final Temporal temporal = valueConverter.convert( trackedEntityInstance.getValue( Reference.createIdReference( attribute.getAttributeId() ) ), attribute.getValueType(), Temporal.class );
+                if ( (temporal != null) && DateTimeUtils.isFutureDate( temporal ) )
+                {
+                    logger.info( "Tracked entity attribute \"" + attribute.getAttribute().getName() + "\" contains future date, which is not allowed by program \"" + program.getName() + "\"." );
+                    return false;
+                }
+            }
+            if ( attribute.isMandatory() && (trackedEntityInstance.getValue( Reference.createIdReference( attribute.getAttributeId() ) ) == null) )
+            {
+                logger.info( "Tracked entity attribute \"" + attribute.getAttribute().getName() + "\" is mandatory but not set, which is not allowed by program \"" + program.getName() + "\"." );
+                return false;
+            }
+        }
+        return true;
     }
 
     @Nullable

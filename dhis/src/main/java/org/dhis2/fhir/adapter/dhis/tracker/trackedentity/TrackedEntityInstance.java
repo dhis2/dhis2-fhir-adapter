@@ -70,13 +70,21 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         super();
     }
 
-    public TrackedEntityInstance( @Nonnull String typeId, @Nullable String id, boolean newResource )
+    public TrackedEntityInstance( @Nonnull TrackedEntityType type, @Nullable String id, boolean newResource )
     {
-        this.typeId = typeId;
+        this.typeId = type.getId();
         this.id = id;
         this.newResource = newResource;
         this.modified = newResource;
+
         this.attributes = new ArrayList<>();
+        if ( newResource )
+        {
+            for ( final TrackedEntityTypeAttribute typeAttribute : type.getAttributes() )
+            {
+                this.attributes.add( new TrackedEntityAttributeValue( typeAttribute.getAttributeId() ) );
+            }
+        }
     }
 
     @JsonIgnore

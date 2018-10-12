@@ -84,13 +84,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>sample</id>
-      <properties>
-        <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/sample</db.flyway.locations>
-      </properties>
-    </profile>
-  </profiles>
 </project>

@@ -32,10 +32,11 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
@@ -212,13 +213,13 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             return Optional.empty();
         }
 
-        final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
-        final TrackedEntityTypeAttribute identifierAttribute = trackedEntityType.getOptionalTypeAttribute( rule.getTrackedEntityIdentifierReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Tracked entity type \"" + rule.getTrackedEntityReference() +
-                "\" does not include identifier attribute \"" + rule.getTrackedEntityIdentifierReference() + "\"." ) );
+        final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
+        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) );
 
+        final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final Collection<TrackedEntityInstance> result = getTrackedEntityService().findByAttrValue(
-            trackedEntityType.getId(), identifierAttribute.getAttributeId(), Objects.requireNonNull( identifier ), 2 );
+            trackedEntityType.getId(), identifierAttribute.getId(), Objects.requireNonNull( identifier ), 2 );
         if ( result.size() > 1 )
         {
             throw new TransformerMappingException( "Filtering with identifier of rule " + rule +

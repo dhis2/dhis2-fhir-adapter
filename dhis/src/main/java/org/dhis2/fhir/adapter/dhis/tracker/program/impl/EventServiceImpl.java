@@ -61,7 +61,7 @@ public class EventServiceImpl implements EventService
     protected static final String FIND_URI = "/events.json?" +
         "program={programId}&trackedEntityInstance={trackedEntityInstanceId}&ouMode=ACCESSIBLE&" +
         "fields=event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate," +
-        "dataValues[dataElement,value,providedElsewhere]&skipPaging=true";
+        "dataValues[dataElement,value,providedElsewhere,lastUpdated]&skipPaging=true";
 
     private final RestTemplate restTemplate;
 

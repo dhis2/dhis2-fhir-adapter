@@ -40,10 +40,12 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Scriptable
@@ -134,20 +136,35 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     public boolean setValue( @Nonnull Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
+        return setValue( attributeReference, value, null );
+    }
+
+    public boolean setValue( @Nonnull Reference attributeReference, @Nullable Object value, @Nullable Object lastUpdated ) throws TransformerException
+    {
         final TrackedEntityAttribute attribute = trackedEntityAttributes.getOptional( attributeReference ).orElseThrow( () ->
             new TransformerMappingException( "Tracked entity type attribute \"" + attributeReference + "\" does not exist." ) );
         final TrackedEntityTypeAttribute typeAttribute = trackedEntityType.getOptionalTypeAttribute( attributeReference ).orElse( null );
-        setValue( attribute, typeAttribute, value );
-        return true;
+        return setValue( attribute, typeAttribute, value, ScriptedDateTimeUtils.toZonedDateTime( lastUpdated, valueConverter ) );
     }
 
     public boolean setOptionalValue( @Nullable Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
+        return setOptionalValue( attributeReference, value, null );
+    }
+
+    public boolean setOptionalValue( @Nullable Reference attributeReference, @Nullable Object value, @Nullable Object lastUpdated ) throws TransformerException
+    {
         if ( attributeReference != null )
         {
-            setValue( attributeReference, value );
+            return setValue( attributeReference, value, lastUpdated );
         }
         return true;
+    }
+
+    @Override
+    public void initValue( @Nonnull Reference attributeReference )
+    {
+        trackedEntityType.getOptionalTypeAttribute( attributeReference ).ifPresent( ta -> trackedEntityInstance.getAttribute( ta.getAttributeId() ) );
     }
 
     @Nullable
@@ -158,7 +175,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return getValue( attribute );
     }
 
-    protected void setValue( @Nonnull TrackedEntityAttribute attribute, @Nullable TrackedEntityTypeAttribute typeAttribute, Object value ) throws TransformerException
+    protected boolean setValue( @Nonnull TrackedEntityAttribute attribute, @Nullable TrackedEntityTypeAttribute typeAttribute, @Nullable Object value, @Nullable ZonedDateTime lastUpdated ) throws TransformerException
     {
         if ( (value == null) && (typeAttribute != null) && typeAttribute.isMandatory() )
         {
@@ -178,12 +195,19 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         {
             throw new TransformerMappingException( "Value of tracked entity type attribute \"" + attribute.getName() + "\" could not be converted: " + e.getMessage(), e );
         }
+
         final TrackedEntityAttributeValue attributeValue = trackedEntityInstance.getAttribute( attribute.getId() );
+        if ( (lastUpdated != null) && (attributeValue.getLastUpdated() != null) && attributeValue.getLastUpdated().isAfter( lastUpdated ) )
+        {
+            return false;
+        }
+
         if ( !Objects.equals( attributeValue.getValue(), convertedValue ) )
         {
             trackedEntityInstance.setModified( true );
         }
         attributeValue.setValue( convertedValue );
+        return true;
     }
 
     protected Object getValue( @Nonnull TrackedEntityAttribute attribute ) throws TransformerException
@@ -217,6 +241,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         } );
     }
 
+    @Nonnull
     private TrackedEntityAttribute getTypeAttribute( @Nonnull Reference attributeReference )
     {
         return trackedEntityAttributes.getOptional( attributeReference ).orElseThrow( () ->

@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,6 +70,20 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     public String getResourceId()
     {
         return delegate.getResourceId();
+    }
+
+    @Override
+    @Nullable
+    public String getResourceVersionId()
+    {
+        return delegate.getResourceVersionId();
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
     }
 
     @Nonnull

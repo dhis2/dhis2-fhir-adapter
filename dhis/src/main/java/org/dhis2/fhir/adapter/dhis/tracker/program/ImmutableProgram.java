@@ -109,6 +109,12 @@ public class ImmutableProgram implements Program, Serializable
     }
 
     @Override
+    public List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes()
+    {
+        return (delegate.getTrackedEntityAttributes() == null) ? null : delegate.getTrackedEntityAttributes().stream().map( ImmutableProgramTrackedEntityAttribute::new ).collect( Collectors.toList() );
+    }
+
+    @Override
     public List<? extends ProgramStage> getStages()
     {
         return (delegate.getStages() == null) ? null : delegate.getStages().stream().map( ImmutableProgramStage::new ).collect( Collectors.toList() );

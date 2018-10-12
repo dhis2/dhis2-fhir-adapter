@@ -63,7 +63,9 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
-    protected static final String ID_URI = "/trackedEntityInstances/{id}.json";
+    protected static final String ID_URI = "/trackedEntityInstances/{id}.json?" +
+        "fields=trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
+        "attributes[attribute,value,lastUpdated]";
 
     protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
 

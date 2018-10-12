@@ -62,12 +62,12 @@ public class TestClient
     {
         if ( args.length != 3 )
         {
-            System.err.println( "Syntax: ORG_CODE CHILD_NATIONAL_ID MOTHER_NATIONAL_ID" );
+            System.err.println( "Syntax: ORG_CODE MOTHER_NATIONAL_ID CHILD_NATIONAL_ID" );
             System.exit( 10 );
         }
         final String orgCode = args[0];
-        final String childNationalId = args[1];
-        final String motherNationalId = args[2];
+        final String motherNationalId = args[1];
+        final String childNationalId = args[2];
 
         final FhirContext ctx = FhirContext.forDstu3();
         final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
@@ -92,9 +92,9 @@ public class TestClient
 
         Organization org = new Organization();
         org.setId( IdType.newRandomUuid() );
-        org.setName( "District Hospital" );
+        org.setName( "Connaught Hospital" );
         org.addIdentifier()
-            .setSystem( "http://example.ph/organizations" )
+            .setSystem( "http://example.sl/organizations" )
             .setValue( orgCode );
 
         //////////////////////////////////
@@ -104,29 +104,27 @@ public class TestClient
         Patient child = new Patient();
         child.setIdElement( IdType.newRandomUuid() );
         child.addIdentifier()
-            .setSystem( "http://example.ph/national-patient-id" )
+            .setSystem( "http://example.sl/national-patient-id" )
             .setValue( childNationalId );
         child.addName()
-            .setFamily( "Cruz" )
-            .addGiven( "Kristin" );
+            .setFamily( "West" )
+            .addGiven( "Joe" ).addGiven( "Alan" ).addGiven( "Scott" );
         child.getBirthDateElement().setValue(
             Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY );
-        child.setGender( Enumerations.AdministrativeGender.FEMALE );
+        child.setGender( Enumerations.AdministrativeGender.MALE );
         child.addAddress()
-            .addLine( "Unit 607, Tower 1 Marco Polo Residences" )
-            .setCity( "Cebu City" )
-            .setState( "Cebu" )
-            .setCountry( "Philippines" );
+            .setCity( "Freetown" )
+            .setCountry( "Sierra Leone" );
         child.getAddress().get( 0 )
             .addExtension()
             .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
             .addExtension( new Extension()
                 .setUrl( "latitude" )
-                .setValue( new DecimalType( 10.3 ) ) )
+                .setValue( new DecimalType( 8.4665341 ) ) )
             .addExtension( new Extension()
                 .setUrl( "longitude" )
-                .setValue( new DecimalType( 123.9 ) ) );
+                .setValue( new DecimalType( -13.262743 ) ) );
         child.setManagingOrganization( new Reference( org.getId() ) );
 
         //////////////////////////
@@ -136,30 +134,27 @@ public class TestClient
         Patient mother = new Patient();
         mother.setIdElement( IdType.newRandomUuid() );
         mother.addIdentifier()
-            .setSystem( "http://example.ph/national-patient-id" )
+            .setSystem( "http://example.sl/national-patient-id" )
             .setValue( motherNationalId );
         mother.addName()
-            .setFamily( "Cruz" )
-            .addGiven( "Angelica" )
-            .addGiven( "Cecelia" );
+            .setFamily( "West" )
+            .addGiven( "Elizabeth" );
         mother.getBirthDateElement().setValue(
             Date.from( LocalDate.now().minusYears( 16 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY );
         mother.setGender( Enumerations.AdministrativeGender.FEMALE );
         mother.addAddress()
-            .addLine( "Unit 607, Tower 1 Marco Polo Residences" )
-            .setCity( "Cebu City" )
-            .setState( "Cebu" )
-            .setCountry( "Philippines" );
+            .setCity( "Freetown" )
+            .setCountry( "Sierra Leone" );
         mother.getAddress().get( 0 )
             .addExtension()
             .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
             .addExtension( new Extension()
                 .setUrl( "latitude" )
-                .setValue( new DecimalType( 10.3 ) ) )
+                .setValue( new DecimalType( 8.4665341 ) ) )
             .addExtension( new Extension()
                 .setUrl( "longitude" )
-                .setValue( new DecimalType( 123.9 ) ) );
+                .setValue( new DecimalType( -13.262743 ) ) );
         mother.setManagingOrganization( new Reference( org.getId() ) );
 
         //////////////////////
@@ -230,6 +225,22 @@ public class TestClient
         imm4.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
+        Immunization imm5 = new Immunization();
+        imm5.setId( IdType.newRandomUuid() );
+        imm5.getPatient().setReference( child.getId() );
+        imm5.getLocation().setReference( location.getId() );
+        imm5.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm5.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm5.setNotGiven( false );
+        imm5.setPrimarySource( true );
+        imm5.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "37" )
+            .setDisplay( "Yellow Fever" );
+        imm5.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
+
         ////////////////////////
         // Last Menstrual Period
         ////////////////////////
@@ -270,13 +281,13 @@ public class TestClient
             .setFullUrl( child.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + childNationalId );
+            .setUrl( "Patient?identifier=http://example.sl/national-patient-id|" + childNationalId );
         bundle.addEntry()
             .setResource( mother )
             .setFullUrl( mother.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.ph/national-patient-id|" + motherNationalId );
+            .setUrl( "Patient?identifier=http://example.sl/national-patient-id|" + motherNationalId );
         bundle.addEntry()
             .setResource( location )
             .setFullUrl( location.getId() )
@@ -288,7 +299,7 @@ public class TestClient
             .setFullUrl( org.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Organization?identifier=http://example.ph/organizations|" + orgCode );
+            .setUrl( "Organization?identifier=http://example.sl/organizations|" + orgCode );
         bundle.addEntry()
             .setResource( imm1 )
             .setFullUrl( imm1.getId() )
@@ -310,6 +321,12 @@ public class TestClient
         bundle.addEntry()
             .setResource( imm4 )
             .setFullUrl( imm4.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( imm5 )
+            .setFullUrl( imm5.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Immunization" );

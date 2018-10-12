@@ -48,12 +48,6 @@
     <dhis2.password>district</dhis2.password>
     <dhis2.url>http://localhost:8080</dhis2.url>
     <dhis2.apiVersion>29</dhis2.apiVersion>
-
-    <db.flyway.locations>classpath:db/migration/production</db.flyway.locations>
-    <db.url>jdbc:postgresql://localhost/dhis2-fhir</db.url>
-    <db.username>dhis-fhir</db.username>
-    <db.password>dhis-fhir</db.password>
-    <db.driver>org.postgresql.Driver</db.driver>
   </properties>
 
   <dependencies>

@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.model.DateUnit;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -59,6 +60,30 @@ public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends Abstrac
     public final String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
+    }
+
+    public abstract boolean hasDayPrecision( @Nullable IPrimitiveType<Date> dateTime );
+
+    @Nullable
+    public Date getPreciseDate( @Nullable IPrimitiveType<Date> dateTime )
+    {
+        if ( (dateTime == null) || (dateTime.getValue() == null) || !hasDayPrecision( dateTime ) )
+        {
+            return null;
+        }
+        return dateTime.getValue();
+    }
+
+
+    @Nullable
+    public Date getPrecisePastDate( @Nullable IPrimitiveType<Date> dateTime )
+    {
+        final Date date = getPreciseDate( dateTime );
+        if ( (date != null) && new Date().before( date ) )
+        {
+            return null;
+        }
+        return date;
     }
 
     @Nullable

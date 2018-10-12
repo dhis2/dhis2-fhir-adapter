@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 public class TrackedEntityAttributeValue implements Serializable
 {
@@ -41,6 +42,8 @@ public class TrackedEntityAttributeValue implements Serializable
     private String attributeId;
 
     private Object value;
+
+    private ZonedDateTime lastUpdated;
 
     public TrackedEntityAttributeValue()
     {
@@ -76,5 +79,15 @@ public class TrackedEntityAttributeValue implements Serializable
     public void setValue( Object value )
     {
         this.value = value;
+    }
+
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 }

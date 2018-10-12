@@ -54,6 +54,8 @@ public class WritableProgramStage implements ProgramStage, Serializable
 
     private boolean generatedByEnrollmentDate;
 
+    private int minDaysFromStart;
+
     @JsonProperty( "programStageDataElements" )
     private List<WritableProgramStageDataElement> dataElements;
 
@@ -119,6 +121,17 @@ public class WritableProgramStage implements ProgramStage, Serializable
     public void setGeneratedByEnrollmentDate( boolean generatedByEnrollmentDate )
     {
         this.generatedByEnrollmentDate = generatedByEnrollmentDate;
+    }
+
+    @Override
+    public int getMinDaysFromStart()
+    {
+        return minDaysFromStart;
+    }
+
+    public void setMinDaysFromStart( int minDaysFromStart )
+    {
+        this.minDaysFromStart = minDaysFromStart;
     }
 
     @Override

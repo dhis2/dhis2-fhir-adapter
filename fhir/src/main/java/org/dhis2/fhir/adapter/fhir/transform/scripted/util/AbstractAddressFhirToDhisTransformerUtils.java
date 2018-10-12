@@ -30,8 +30,11 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Scriptable
 public abstract class AbstractAddressFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
@@ -51,4 +54,18 @@ public abstract class AbstractAddressFhirToDhisTransformerUtils extends Abstract
     {
         return SCRIPT_ATTR_NAME;
     }
+
+    @Nullable
+    public String getSingleLine( @Nullable ICompositeType address )
+    {
+        return getSingleLine( address, DEFAULT_LINE_DELIMITER );
+    }
+
+    public abstract boolean hasPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses );
+
+    @Nullable
+    public abstract ICompositeType getPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses );
+
+    @Nullable
+    public abstract String getSingleLine( @Nullable ICompositeType address, @Nonnull String delimiter );
 }

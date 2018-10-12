@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractDateTimeFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.util.CastUtils;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -63,36 +64,15 @@ public class DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhirToDh
         return FhirVersion.DSTU3_ONLY;
     }
 
-    public boolean hasDayPrecision( @Nullable BaseDateTimeType dateTime )
+    @Override
+    public boolean hasDayPrecision( @Nullable IPrimitiveType<Date> dateTime )
     {
         if ( dateTime == null )
         {
             // an unspecified date has at least day precision
             return true;
         }
-        return (dateTime.getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
-    }
-
-    @Nullable
-    public Date getPreciseDate( @Nullable BaseDateTimeType dateTime )
-    {
-        if ( (dateTime == null) || (dateTime.getValue() == null) || !hasDayPrecision( dateTime ) )
-        {
-            return null;
-        }
-        return dateTime.getValue();
-    }
-
-
-    @Nullable
-    public Date getPrecisePastDate( @Nullable BaseDateTimeType dateTime )
-    {
-        final Date date = getPreciseDate( dateTime );
-        if ( (date != null) && new Date().before( date ) )
-        {
-            return null;
-        }
-        return date;
+        return (((BaseDateTimeType) dateTime).getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
     }
 
     @Override

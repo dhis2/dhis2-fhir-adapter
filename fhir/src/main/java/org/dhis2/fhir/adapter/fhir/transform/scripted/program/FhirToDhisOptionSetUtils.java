@@ -50,6 +50,26 @@ public abstract class FhirToDhisOptionSetUtils
 {
     private static final Pattern ALL = Pattern.compile( "(.*)" );
 
+    @Nullable
+    public static String getIntegerOptionCode( @Nullable String code, @Nullable Pattern pattern )
+    {
+        if ( (code == null) || (pattern == null) )
+        {
+            return code;
+        }
+
+        final Matcher matcher = pattern.matcher( code );
+        if ( !matcher.matches() )
+        {
+            return null;
+        }
+        if ( matcher.groupCount() != 1 )
+        {
+            throw new TransformerScriptException( "Pattern to resolve integer options must have exactly one group: " + pattern.pattern() );
+        }
+        return matcher.group( 1 );
+    }
+
     @Nonnull
     public static List<String> resolveIntegerOptionCodes( @Nonnull OptionSet optionSet, @Nullable Pattern pattern ) throws TransformerScriptException
     {
@@ -65,7 +85,7 @@ public abstract class FhirToDhisOptionSetUtils
             else
             {
                 code = option.getCode();
-                value = getMatchingValue( code, resultingPattern );
+                value = getIntegerOptionCode( code, resultingPattern );
             }
             if ( value != null )
             {
@@ -85,31 +105,6 @@ public abstract class FhirToDhisOptionSetUtils
 
         validateAscendingIntegerOptions( options, resultingPattern );
         return new ArrayList<>( options.values() );
-    }
-
-    @Nullable
-    private static String getMatchingValue( @Nullable String code, @Nonnull Pattern pattern )
-    {
-        if ( code == null )
-        {
-            return null;
-        }
-
-        final String value;
-        final Matcher matcher = pattern.matcher( code );
-        if ( matcher.matches() )
-        {
-            if ( matcher.groupCount() != 1 )
-            {
-                throw new TransformerScriptException( "Pattern to resolve integer options must have exactly one group: " + pattern.pattern() );
-            }
-            value = matcher.group( 1 );
-        }
-        else
-        {
-            value = null;
-        }
-        return value;
     }
 
     private static void validateAscendingIntegerOptions( @Nonnull SortedMap<Integer, String> options, @Nonnull Pattern pattern ) throws TransformerScriptException

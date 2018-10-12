@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +48,12 @@ public interface FhirRequest
 
     @Nullable
     String getResourceId();
+
+    @Nullable
+    String getResourceVersionId();
+
+    @Nullable
+    ZonedDateTime getLastUpdated();
 
     @Nonnull
     FhirVersion getVersion();

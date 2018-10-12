@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractImmunizationFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -57,12 +58,14 @@ public class ImmunizationFhirToDhisTransformerUtils extends AbstractImmunization
         return FhirVersion.DSTU3_ONLY;
     }
 
-    public int getMaxDoseSequence( @Nullable Immunization immunization ) throws TransformerException
+    @Override
+    public int getMaxDoseSequence( @Nullable IDomainResource immunization ) throws TransformerException
     {
         if ( immunization == null )
         {
             return 0;
         }
-        return immunization.getVaccinationProtocol().stream().map( Immunization.ImmunizationVaccinationProtocolComponent::getDoseSequence ).max( Comparator.naturalOrder() ).orElse( 0 );
+        return ((Immunization) immunization).getVaccinationProtocol().stream().map( Immunization.ImmunizationVaccinationProtocolComponent::getDoseSequence )
+            .max( Comparator.naturalOrder() ).orElse( 0 );
     }
 }

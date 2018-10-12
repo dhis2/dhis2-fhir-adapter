@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,34 +28,48 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.hl7.fhir.instance.model.api.ICompositeType;
-
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
-@Scriptable
-public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public class UsernamePassword implements Serializable
 {
-    private static final String SCRIPT_ATTR_NAME = "codeUtils";
+    private static final long serialVersionUID = 4203081035958199606L;
 
-    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    @NotBlank
+    private String username;
+
+    @NotBlank
+    private String password;
+
+    public UsernamePassword()
     {
-        super( scriptExecutionContext );
+        super();
     }
 
-    @Nonnull
-    @Override
-    public final String getScriptAttrName()
+    public UsernamePassword( @Nonnull @NotBlank String username, @Nonnull @NotBlank String password )
     {
-        return SCRIPT_ATTR_NAME;
+        this.username = username;
+        this.password = password;
     }
 
-    @Nullable
-    public abstract String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system );
+    public String getUsername()
+    {
+        return username;
+    }
 
-    public abstract boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes );
+    public void setUsername( String username )
+    {
+        this.username = username;
+    }
 
-    public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword( String password )
+    {
+        this.password = password;
+    }
 }

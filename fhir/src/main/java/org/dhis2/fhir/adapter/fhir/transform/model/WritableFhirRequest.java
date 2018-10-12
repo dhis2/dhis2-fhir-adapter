@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +49,10 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     private FhirResourceType resourceType;
 
     private String resourceId;
+
+    private String resourceVersionId;
+
+    private ZonedDateTime lastUpdated;
 
     private ListMultimap<String, String> parameters;
 
@@ -91,6 +96,30 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setResourceId( @Nullable String resourceId )
     {
         this.resourceId = resourceId;
+    }
+
+    @Nullable
+    @Override
+    public String getResourceVersionId()
+    {
+        return resourceVersionId;
+    }
+
+    public void setResourceVersionId( String resourceVersionId )
+    {
+        this.resourceVersionId = resourceVersionId;
+    }
+
+    @Nullable
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 
     public ListMultimap<String, String> getParameters()

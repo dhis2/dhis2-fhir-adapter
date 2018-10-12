@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
+package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,80 +28,103 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityAttribute;
+import org.dhis2.fhir.adapter.model.ValueType;
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
 
-@Scriptable
-public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
+public class WritableProgramTrackedEntityAttribute implements ProgramTrackedEntityAttribute, Serializable
 {
-    private static final long serialVersionUID = -3248712035742910069L;
+    private static final long serialVersionUID = 9074338111048865188L;
 
-    private final ScriptedEvent delegate;
+    private String id;
 
-    public ImmutableScriptedEvent( @Nonnull ScriptedEvent delegate )
+    private String name;
+
+    private ValueType valueType;
+
+    private boolean mandatory;
+
+    private boolean allowFutureDate;
+
+    @JsonProperty( "trackedEntityAttribute" )
+    private WritableTrackedEntityAttribute attribute;
+
+    public WritableProgramTrackedEntityAttribute()
     {
-        this.delegate = delegate;
+        super();
     }
 
-    @Override
-    public boolean isNewResource()
-    {
-        return delegate.isNewResource();
-    }
-
-    @Nullable
     @Override
     public String getId()
     {
-        return delegate.getId();
+        return id;
     }
 
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
+    public void setId( String id )
     {
-        return delegate.getOrganizationUnitId();
-    }
-
-    @Nullable
-    @Override
-    public ZonedDateTime getEventDate()
-    {
-        return delegate.getEventDate();
+        this.id = id;
     }
 
     @Override
-    @Nullable
-    public ZonedDateTime getDueDate()
+    public String getName()
     {
-        return delegate.getDueDate();
+        return name;
     }
 
-    @Nullable
-    @Override
-    public EventStatus getStatus()
+    public void setName( String name )
     {
-        return delegate.getStatus();
+        this.name = name;
     }
 
     @Override
-    @Nullable
-    public Location getCoordinate()
+    public ValueType getValueType()
     {
-        return delegate.getCoordinate();
+        return valueType;
+    }
+
+    public void setValueType( ValueType valueType )
+    {
+        this.valueType = valueType;
     }
 
     @Override
-    public void validate() throws TransformerException
+    public boolean isMandatory()
     {
-        delegate.validate();
+        return mandatory;
+    }
+
+    public void setMandatory( boolean mandatory )
+    {
+        this.mandatory = mandatory;
+    }
+
+    @Override
+    public boolean isAllowFutureDate()
+    {
+        return allowFutureDate;
+    }
+
+    public void setAllowFutureDate( boolean allowFutureDate )
+    {
+        this.allowFutureDate = allowFutureDate;
+    }
+
+    @Override
+    public WritableTrackedEntityAttribute getAttribute()
+    {
+        return attribute;
+    }
+
+    public void setAttribute( WritableTrackedEntityAttribute attribute )
+    {
+        this.attribute = attribute;
+    }
+
+    @Override
+    public String getAttributeId()
+    {
+        return (getAttribute() == null) ? null : getAttribute().getId();
     }
 }

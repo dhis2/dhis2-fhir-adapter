@@ -79,6 +79,12 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
     }
 
     @Override
+    public int getMinDaysFromStart()
+    {
+        return delegate.getMinDaysFromStart();
+    }
+
+    @Override
     public List<? extends ProgramStageDataElement> getDataElements()
     {
         return (delegate.getDataElements() == null) ? null : delegate.getDataElements().stream().map( ImmutableProgramStageDataElement::new ).collect( Collectors.toList() );

@@ -34,6 +34,10 @@ import javax.annotation.Nonnull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Value types that are supported by DHIS2. Not all value types are supported by the
@@ -68,6 +72,8 @@ public enum ValueType
     AGE( ZonedDateTime.class ),
     URL( String.class ),
     IMAGE( String.class );
+
+    public static final Set<ValueType> DATE_TYPES = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( DATE, DATETIME ) ) );
 
     private final Class<?> javaClass;
 
