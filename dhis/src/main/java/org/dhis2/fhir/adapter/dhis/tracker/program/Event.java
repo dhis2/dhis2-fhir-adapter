@@ -88,6 +88,9 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
 
     private Location coordinate;
 
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private ZonedDateTime lastUpdated;
+
     private List<WritableDataValue> dataValues;
 
     @JsonIgnore
@@ -239,6 +242,16 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setCoordinate( Location coordinate )
     {
         this.coordinate = coordinate;
+    }
+
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 
     public List<? extends DataValue> getDataValues()

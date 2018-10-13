@@ -78,7 +78,7 @@ public class ValueConverter
     @Nullable
     public <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
     {
-        if ( (value == null) || isResultValueType( value, resultClass ) || isUnconvertedPrimitive( value, valueType ) )
+        if ( (value == null) || isResultValueType( value, resultClass ) )
         {
             return (R) value;
         }
@@ -98,11 +98,6 @@ public class ValueConverter
     public Object convert( @Nullable Object value, @Nonnull ValueType valueType )
     {
         return convert( value, valueType, Object.class );
-    }
-
-    private static boolean isUnconvertedPrimitive( @Nonnull Object value, @Nonnull ValueType valueType )
-    {
-        return valueType.getJavaClass().equals( value.getClass() ) && ((value instanceof String) || (value instanceof Number) || (value instanceof Boolean));
     }
 
     private <R> boolean isResultValueType( @Nonnull Object value, @Nonnull Class<R> resultClass )

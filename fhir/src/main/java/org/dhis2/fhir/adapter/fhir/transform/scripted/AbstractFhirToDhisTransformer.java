@@ -48,7 +48,6 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
@@ -233,17 +232,17 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     {
         if ( !(baseResource instanceof IDomainResource) )
         {
-            throw new TransformerDataException( "Resource " + baseResource.getClass().getSimpleName() +
+            throw new TransformerMappingException( "Resource " + baseResource.getClass().getSimpleName() +
                 " is no domain resource and does not include the required identifier." );
         }
 
         final FhirResourceType resourceType = FhirResourceType.getByResource( baseResource );
         if ( resourceType == null )
         {
-            throw new TransformerDataException( "Could not map  " + baseResource.getClass().getSimpleName() + " to a FHIR resource." );
+            throw new TransformerMappingException( "Could not map  " + baseResource.getClass().getSimpleName() + " to a FHIR resource." );
         }
         final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
-            .orElseThrow( () -> new TransformerDataException( "No system has been defined for resource type " + resourceType + "." ) );
+            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
 
         final String identifier = getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierFhirToDhisTransformerUtils.class )
             .getResourceIdentifier( (IDomainResource) baseResource, resourceType, resourceSystem.getSystem() );
@@ -254,7 +253,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
         if ( identifierFullQualified )
         {
-            throw new TransformerDataException( "Full qualified identifiers are required that are not yet supported." );
+            throw new TransformerMappingException( "Full qualified identifiers are required that are not yet supported." );
         }
 
         return identifier;

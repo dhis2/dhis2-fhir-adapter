@@ -111,7 +111,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         final TrackedEntityInstance trackedEntityInstance = getResource( context, rule, variables )
             .orElseThrow( () -> new FatalTransformerException( "Tracked entity instance could neither be retrieved nor created." ) );
         final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
-            trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
+            context, trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedTrackedEntityInstance );
 
         final Optional<OrganisationUnit> organisationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );

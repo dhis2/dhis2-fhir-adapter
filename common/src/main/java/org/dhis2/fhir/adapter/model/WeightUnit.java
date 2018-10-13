@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.system.impl;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,22 +28,55 @@ package org.dhis2.fhir.adapter.dhis.system.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
-import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public class DhisCodes implements Serializable
+/**
+ * The units of weight and their conversion.
+ *
+ * @author volsch
+ */
+public enum WeightUnit
 {
-    private static final long serialVersionUID = 3534353667266077892L;
+    GRAM( 1.0, "g" ), KILO_GRAM( 1_000.0, "kg" ), OUNCE( 28.349523125, "[oz_av]" ), POUND( 453.59237, "[lb_av]" );
 
-    private List<String> codes;
+    private final double gramFactor;
 
-    public List<String> getCodes()
+    private final String ucumCode;
+
+    private static final Map<String, WeightUnit> weightUnitByUcumCode = Arrays.stream( WeightUnit.values() ).collect( Collectors.toMap( WeightUnit::getUcumCode, v -> v ) );
+
+    @Nullable
+    public static WeightUnit getByUcumCode( @Nullable String ucumCode )
     {
-        return codes;
+        return weightUnitByUcumCode.get( ucumCode );
     }
 
-    public void setCodes( List<String> codes )
+    WeightUnit( double gramFactor, String ucumCode )
     {
-        this.codes = codes;
+        this.gramFactor = gramFactor;
+        this.ucumCode = ucumCode;
+    }
+
+    public double getGramFactor()
+    {
+        return gramFactor;
+    }
+
+    public String getUcumCode()
+    {
+        return ucumCode;
+    }
+
+    public double convertTo( double value, @Nonnull WeightUnit unit )
+    {
+        if ( unit == this )
+        {
+            return value;
+        }
+        return (value * gramFactor) / unit.gramFactor;
     }
 }

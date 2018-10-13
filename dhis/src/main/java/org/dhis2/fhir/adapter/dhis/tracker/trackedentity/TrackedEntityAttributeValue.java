@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
@@ -43,6 +44,7 @@ public class TrackedEntityAttributeValue implements Serializable
 
     private Object value;
 
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 
     public TrackedEntityAttributeValue()

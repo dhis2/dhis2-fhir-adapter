@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.system.impl;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,33 @@ package org.dhis2.fhir.adapter.dhis.system.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.system.SystemService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
 
-@Service
-public class SystemServiceImpl implements SystemService
+public enum EventPeriodDayType
 {
-    protected static final String IDS_URI = "/system/id.json?limit={limit}";
+    EVENT_DATE, DUE_DATE, ORIG_DUE_DATE, EVENT_UPDATED_DATE, VALUE_UPDATED_DATE;
 
-    private final RestTemplate restTemplate;
-
-    @Autowired
-    public SystemServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    public ZonedDateTime getDate( @Nonnull ProgramStage programStage, @Nonnull Event event )
     {
-        this.restTemplate = restTemplate;
-    }
-
-    @Override
-    public List<String> createIds( int limit )
-    {
-        final ResponseEntity<DhisCodes> response = restTemplate.getForEntity( IDS_URI, DhisCodes.class, limit );
-        return response.getBody().getCodes();
+        switch ( this )
+        {
+            case EVENT_DATE:
+                return event.getEventDate();
+            case DUE_DATE:
+                return event.getDueDate();
+            case ORIG_DUE_DATE:
+                return event.getEnrollment().getIncidentDate().plusDays( programStage.getMinDaysFromStart() );
+            case EVENT_UPDATED_DATE:
+                return (event.getLastUpdated() == null) ? ZonedDateTime.now() : event.getLastUpdated();
+            case VALUE_UPDATED_DATE:
+                return event.getDataValues().stream().map( dv -> (dv.getLastUpdated() == null) ? ZonedDateTime.now() : event.getLastUpdated() ).max( Comparator.naturalOrder() ).orElse( ZonedDateTime.now() );
+            default:
+                throw new AssertionError( "Unhandled event period date type: " + this );
+        }
     }
 }

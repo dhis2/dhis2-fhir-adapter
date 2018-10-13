@@ -31,14 +31,14 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.model.ImmutableFhirRequest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
@@ -82,6 +82,13 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
         return new Reference( value, rt );
     }
 
+    @Nonnull
+    @Override
+    public ZonedDateTime now()
+    {
+        return ZonedDateTime.now();
+    }
+
     @Override
     public boolean isCreationDisabled()
     {
@@ -90,14 +97,18 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
 
     @Nonnull
     @Override
-    public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException
+    public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerDataException
     {
         if ( value == null )
         {
-            throw new TransformerMappingException( message );
+            throw new TransformerDataException( message );
         }
         return value;
     }
 
-
+    @Override
+    public void fail( @Nonnull String message ) throws TransformerDataException
+    {
+        throw new TransformerDataException( message );
+    }
 }

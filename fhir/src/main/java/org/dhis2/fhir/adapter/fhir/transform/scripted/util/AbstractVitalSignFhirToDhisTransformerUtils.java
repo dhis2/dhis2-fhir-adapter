@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,46 +29,30 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractObservationTransformUtils;
-import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
-import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
-import org.springframework.stereotype.Component;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
-@Component
 @Scriptable
-public class ObservationTransformUtils extends AbstractObservationTransformUtils
+public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private final CodeFhirToDhisTransformerUtils codeTransformerUtils;
+    private static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
 
-    public ObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeFhirToDhisTransformerUtils codeTransformerUtils )
+    protected AbstractVitalSignFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
-        this.codeTransformerUtils = codeTransformerUtils;
     }
 
     @Nonnull
     @Override
-    public Set<FhirVersion> getFhirVersions()
+    public final String getScriptAttrName()
     {
-        return FhirVersion.DSTU3_ONLY;
+        return SCRIPT_ATTR_NAME;
     }
 
-    @Override
     @Nullable
-    public IBaseBackboneElement getBackboneElement( @Nullable List<? extends IBaseBackboneElement> backboneElements, @Nonnull String system, @Nonnull String code )
-    {
-        if ( backboneElements == null )
-        {
-            return null;
-        }
-        return backboneElements.stream().map( ObservationComponentComponent.class::cast ).filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
-            .findFirst().orElse( new ObservationComponentComponent() );
-    }
+    public abstract Double getWeight( @Nullable ICompositeType value, @Nullable Object weightUnit, boolean round ) throws TransformerDataException;
 }

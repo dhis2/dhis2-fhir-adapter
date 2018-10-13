@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
@@ -35,10 +37,12 @@ public class AttributeValue implements Serializable
 {
     private static final long serialVersionUID = 8716896028280890377L;
 
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 
     private String value;
 
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private Attribute attribute;
 
     public String getValue()

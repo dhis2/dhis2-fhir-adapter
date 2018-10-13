@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 @Scriptable
 public interface FhirToDhisTransformerContext
@@ -57,11 +58,23 @@ public interface FhirToDhisTransformerContext
     Reference createReference( @Nullable String value, @Nonnull Object referenceType )
         throws TransformerScriptException;
 
+    @Nonnull
+    ZonedDateTime now();
+
     /**
      * @return <code>true</code> if creation of enrollments and events has been disabled, <code>false</code> otherwise.
      */
     boolean isCreationDisabled();
 
     @Nonnull
-    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException;
+    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerDataException;
+
+    /**
+     * Ends the execution of the script with the specified message. This method can be used if the
+     * received data does not match any expectations.
+     *
+     * @param message the message that includes the reason why the transformations failed.
+     * @throws TransformerDataException the thrown exception with the specified message.
+     */
+    void fail( @Nonnull String message ) throws TransformerDataException;
 }

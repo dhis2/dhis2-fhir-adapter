@@ -35,7 +35,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e-0655-46
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e-0655-46db-8111-0a3370970125', 'DATE_TIME');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('b06c9036-006b-4043-9c6f-57dd7286098b', 0, '3ddfc83e-0655-46db-8111-0a3370970125',
-'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'NAME:Birth date', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('8cddd857-d510-472c-835a-d9454ffe1d39', 0, '3ddfc83e-0655-46db-8111-0a3370970125',
 'age', 'INTEGER', TRUE, FALSE, '1', 'The person must be younger than the this amount of time (in specified units).');
@@ -57,7 +57,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'ENROLLMENT');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('363ed415-be4a-4311-a7bf-780a304d6f8c', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3',
-'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'NAME:Birth date', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('f45aed60-5208-430e-869e-f0b87f5a6321', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'enrollment.setIncidentDate(trackedEntityInstance.getValue(args[''birthDateAttribute'']))', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
@@ -67,15 +67,45 @@ VALUES ('6836cbd1-93ba-4ab8-a4cb-69348ad9d099', '60e83e18-5f66-40a1-9c9d-1d993e5
 'Child Programme Creation', 'CHILD_PROGRAMME_CREATION', 'Child programme creation.');
 
 -- Tracker Program Child Programme
-INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,creation_applicable_script_id,creation_script_id)
+INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,creation_applicable_script_id,creation_script_id,enrollment_date_is_incident)
 VALUES ('45e61665-754d-4861-891e-a2064fc0ae7d', 0, 'Child Programme', 'NAME:Child Programme', '5f9ebdc9-852e-4c83-87ca-795946aabc35', TRUE, TRUE,
-'dfb7f13c-ae21-4cfb-8815-6f1416ca8388', '6836cbd1-93ba-4ab8-a4cb-69348ad9d099');
+'dfb7f13c-ae21-4cfb-8815-6f1416ca8388', '6836cbd1-93ba-4ab8-a4cb-69348ad9d099', TRUE);
 -- Tracker Program Child Programme, Stage Birth
-INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled)
-VALUES ('4c074c85-be49-4b9d-8973-9e16b9615dad', 0, 'Birth', 'NAME:Birth', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE);
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled,event_date_is_incident)
+VALUES ('4c074c85-be49-4b9d-8973-9e16b9615dad', 0, 'Birth', 'NAME:Birth', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE, TRUE);
 -- Tracker Program Child Programme, Stage Baby Postnatal
-INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled)
-VALUES ('526b4e01-7747-47ef-a25d-f32ccd739e87', 0, 'Baby Postnatal', 'NAME:Baby Postnatal', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE);
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled,event_date_is_incident)
+VALUES ('526b4e01-7747-47ef-a25d-f32ccd739e87', 0, 'Baby Postnatal', 'NAME:Baby Postnatal', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE, TRUE);
+
+-- Tracker Program Child Programme, Birth: Weight from Birth Weight
+INSERT INTO fhir_executable_script (id, script_id, code, name)
+VALUES ('518b52d2-2d1e-4171-86ce-1e40ec269a1a', '50a60c9b-d7f2-4cea-bbc7-b633d276a2f7', 'CP: Birth Weight', 'CP_BIRTH_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('08d3eedf-b73d-4487-9fa4-f2aeef3be35f', 0, '518b52d2-2d1e-4171-86ce-1e40ec269a1a', '600187f8-eba5-4599-9061-b6fe8bc1c518', 'CODE:DE_2005736');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('75c2d252-e7c2-4321-b20b-ba7d5f89af80', 0, '518b52d2-2d1e-4171-86ce-1e40ec269a1a', 'ead06d42-8e40-47f5-8a89-74fbcf237b2b', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Birth: Weight from Birth Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
+VALUES ('ff043b6e-40c9-4fa7-9721-ba2239b38360', 0, 'Child Programme: Birth Weight', NULL, TRUE, 0, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', '71f0f503-1400-492c-b016-f586e58805d0', '518b52d2-2d1e-4171-86ce-1e40ec269a1a');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('ff043b6e-40c9-4fa7-9721-ba2239b38360','4c074c85-be49-4b9d-8973-9e16b9615dad');
+
+-- Tracker Program Child Programme, Birth: Weight from Body Weight
+INSERT INTO fhir_executable_script (id, script_id, code, name)
+VALUES ('4a326b89-4961-4b69-8021-8d5285c2b0a7', 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'CP: Birth Weight from Body Weight', 'CP_BIRTH_WEIGHT_BODY_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('0c2062a7-c136-472a-a388-94ce6b8325f2', 0, '4a326b89-4961-4b69-8021-8d5285c2b0a7', '1ef4f760-de9a-4c29-a321-a8eee5c52313', 'false');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('70684c93-b22a-4fff-86bb-604683c27fdd', 0, '4a326b89-4961-4b69-8021-8d5285c2b0a7', '07679199-59ae-4530-9411-ac5814102372', 'CODE:DE_2005736');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('6e29a09d-94f8-48b6-863e-976fc3c58568', 0, '4a326b89-4961-4b69-8021-8d5285c2b0a7', '3d15bf81-343c-45bc-9c28-1e87a8da6fa5', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Birth: Weight from Body Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
+VALUES ('097d9ee0-bdb3-44ae-b961-3b4584bad1db', 0, 'Child Programme: Birth Weight from Body Weight', NULL, TRUE, 0, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', '3b60104b-7e5d-4464-abd4-9f5b0b836f89', '4a326b89-4961-4b69-8021-8d5285c2b0a7');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, after_period_day_type, after_period_days)
+VALUES ('097d9ee0-bdb3-44ae-b961-3b4584bad1db','4c074c85-be49-4b9d-8973-9e16b9615dad', 'ORIG_DUE_DATE', 1);
 
 -- Tracker Program Child Programme, Birth: OPV Dose
 INSERT INTO fhir_executable_script (id, script_id, code, name)
@@ -100,6 +130,20 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('9843c898-6a41-4388-ab6e-30503708ac91', 0, 'Child Programme: BCG', NULL, TRUE, 0, 'IMMUNIZATION', 'PROGRAM_STAGE_EVENT', 'c91a85ae-437b-455c-931d-0d64e0e4d29b', '748b12fa-37e4-4276-9ff5-d775f3560dcd');
 INSERT INTO fhir_program_stage_rule (id, program_stage_id)
 VALUES ('9843c898-6a41-4388-ab6e-30503708ac91','4c074c85-be49-4b9d-8973-9e16b9615dad');
+
+-- Tracker Program Child Programme, Baby Postnatal: Infant Weight
+INSERT INTO fhir_executable_script (id, script_id, code, name)
+VALUES ('0104ad19-ba82-48dc-bbd1-38dd5f0d8a2c', 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'CP: Infant Weight', 'CP_BODY_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('794c69f6-86b3-4c30-b4e1-fd162c6ab825', 0, '0104ad19-ba82-48dc-bbd1-38dd5f0d8a2c', '07679199-59ae-4530-9411-ac5814102372', 'CODE:DE_2006099');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('5b729da4-3f0b-49ba-9059-cc7fc74841d8', 0, '0104ad19-ba82-48dc-bbd1-38dd5f0d8a2c', '3d15bf81-343c-45bc-9c28-1e87a8da6fa5', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Baby Postnatal: Infant Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
+VALUES ('a6636c83-f236-48cd-bb2b-592147db9a34', 0, 'Child Programme: Infant Weight', NULL, TRUE, 10, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', '3b60104b-7e5d-4464-abd4-9f5b0b836f89', '0104ad19-ba82-48dc-bbd1-38dd5f0d8a2c');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, before_period_day_type, after_period_day_type, after_period_days, update_event_date)
+VALUES ('a6636c83-f236-48cd-bb2b-592147db9a34','526b4e01-7747-47ef-a25d-f32ccd739e87', 'ORIG_DUE_DATE', 'ORIG_DUE_DATE', 1, TRUE);
 
 -- Tracker Program Child Programme, Baby Postnatal: DPT Dose
 INSERT INTO fhir_executable_script (id, script_id, code, name)

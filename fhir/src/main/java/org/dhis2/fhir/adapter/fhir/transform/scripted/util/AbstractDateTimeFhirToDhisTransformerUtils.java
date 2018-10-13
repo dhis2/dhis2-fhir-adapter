@@ -33,7 +33,6 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.model.DateUnit;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,7 +43,6 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
 
-@Component
 @Scriptable
 public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

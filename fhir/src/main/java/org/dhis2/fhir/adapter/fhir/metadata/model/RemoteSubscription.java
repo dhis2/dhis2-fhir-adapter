@@ -71,6 +71,7 @@ public class RemoteSubscription implements Serializable
     private boolean locked;
     private String description;
     private String webHookAuthorizationHeader;
+    private String dhisUsername;
     private String dhisAuthorizationHeader;
     private String remoteBaseUrl;
     private FhirVersion fhirVersion;
@@ -211,6 +212,18 @@ public class RemoteSubscription implements Serializable
     public void setWebHookAuthorizationHeader( String webHookAuthorizationHeader )
     {
         this.webHookAuthorizationHeader = webHookAuthorizationHeader;
+    }
+
+    @Basic
+    @Column( name = "dhis_username", nullable = false, length = 200 )
+    public String getDhisUsername()
+    {
+        return dhisUsername;
+    }
+
+    public void setDhisUsername( String dhisUsername )
+    {
+        this.dhisUsername = dhisUsername;
     }
 
     @Basic

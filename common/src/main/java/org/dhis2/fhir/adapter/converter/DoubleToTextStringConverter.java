@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Component
-@ConvertedValueTypes( types = ValueType.TEXT )
+@ConvertedValueTypes( types = { ValueType.TEXT, ValueType.NUMBER } )
 public class DoubleToTextStringConverter extends TypedConverter<Double, String>
 {
     public static final String SKIPPED_FLOATING_POINT_EXTENSION = ".0";

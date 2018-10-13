@@ -69,6 +69,7 @@ public class MappedTrackerProgram implements Serializable
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationScript;
+    private boolean enrollmentDateIsIncident;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -227,5 +228,17 @@ public class MappedTrackerProgram implements Serializable
     public void setCreationScript( ExecutableScript creationScript )
     {
         this.creationScript = creationScript;
+    }
+
+    @Basic
+    @Column( name = "enrollment_date_is_incident", nullable = false )
+    public boolean isEnrollmentDateIsIncident()
+    {
+        return enrollmentDateIsIncident;
+    }
+
+    public void setEnrollmentDateIsIncident( boolean enrollmentDateIsIncident )
+    {
+        this.enrollmentDateIsIncident = enrollmentDateIsIncident;
     }
 }

@@ -54,9 +54,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
-public class TestClient
+public class DemoClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
+
+    private static final int BABY_POSTNATAL_STAGE_DAYS = 6;
 
     public static void main( String[] args )
     {
@@ -101,6 +103,8 @@ public class TestClient
         // Create Patient (new born child)
         //////////////////////////////////
 
+        final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
+
         Patient child = new Patient();
         child.setIdElement( IdType.newRandomUuid() );
         child.addIdentifier()
@@ -110,7 +114,7 @@ public class TestClient
             .setFamily( "West" )
             .addGiven( "Joe" ).addGiven( "Alan" ).addGiven( "Scott" );
         child.getBirthDateElement().setValue(
-            Date.from( LocalDate.now().atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY );
         child.setGender( Enumerations.AdministrativeGender.MALE );
         child.addAddress()
@@ -241,6 +245,40 @@ public class TestClient
         imm5.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
+        //////////////
+        // Body Weight
+        //////////////
+
+        Observation bw1 = new Observation();
+        bw1.setId( IdType.newRandomUuid() );
+        bw1.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw1.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8339-4" ) ) );
+        bw1.getSubject().setReference( child.getId() );
+        bw1.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
+
+        Observation bw2 = new Observation();
+        bw2.setId( IdType.newRandomUuid() );
+        bw2.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "29463-7" ) ) );
+        bw2.getSubject().setReference( child.getId() );
+        bw2.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( 1 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw2.setValue( new Quantity().setValue( 20 ).setSystem( "http://unitsofmeasure.org" ).setCode( "kg" ) );
+
+        Observation bw3 = new Observation();
+        bw3.setId( IdType.newRandomUuid() );
+        bw3.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw3.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "29463-7" ) ) );
+        bw3.getSubject().setReference( child.getId() );
+        bw3.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( BABY_POSTNATAL_STAGE_DAYS ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw3.setValue( new Quantity().setValue( 3100 ).setSystem( "http://unitsofmeasure.org" ).setCode( "g" ) );
+
         ////////////////////////
         // Last Menstrual Period
         ////////////////////////
@@ -330,6 +368,24 @@ public class TestClient
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( bw1 )
+            .setFullUrl( bw1.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bw2 )
+            .setFullUrl( bw2.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bw3 )
+            .setFullUrl( bw3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
         bundle.addEntry()
             .setResource( lmp )
             .setFullUrl( lmp.getId() )

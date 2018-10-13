@@ -43,6 +43,7 @@ import org.hl7.fhir.dstu3.model.Immunization;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.ResourceType;
+import org.hl7.fhir.dstu3.model.codesystems.ResourceTypes;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -64,7 +65,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -97,13 +98,14 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                 p.getManagingOrganization().setResource(
                     resourcesById.get( p.getManagingOrganization().getReferenceElement().toUnqualifiedVersionless() ) );
             }
+            return Boolean.TRUE;
         } );
     }
 
     @Nonnull
     public LocalDateTime processImmunizations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
-        return processResource( subscriptionResource, Immunization.class, ResourceType.Immunization, Arrays.asList( Immunization.INCLUDE_PATIENT, Immunization.INCLUDE_LOCATION ), ( i, resourcesById ) -> {
+        return processResource( subscriptionResource, Immunization.class, ResourceType.Immunization, Arrays.asList( Immunization.INCLUDE_PATIENT, Immunization.INCLUDE_LOCATION, Immunization.INCLUDE_PRACTITIONER ), ( i, resourcesById ) -> {
             if ( i.hasPatient() )
             {
                 i.getPatient().setResource(
@@ -114,24 +116,40 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                 i.getLocation().setResource(
                     resourcesById.get( i.getLocation().getReferenceElement().toUnqualifiedVersionless() ) );
             }
+            if ( i.hasPractitioner() )
+            {
+                i.getPractitioner().forEach( p ->
+                    p.getActor().setResource( resourcesById.get( p.getActor().getReferenceElement().toUnqualifiedVersionless() ) ) );
+            }
+            return Boolean.TRUE;
         } );
     }
 
     @Nonnull
     public LocalDateTime processObservations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
-        return processResource( subscriptionResource, Observation.class, ResourceType.Observation, Collections.singletonList( Observation.INCLUDE_SUBJECT ), ( i, resourcesById ) -> {
+        return processResource( subscriptionResource, Observation.class, ResourceType.Observation, Arrays.asList( Observation.INCLUDE_SUBJECT, Observation.INCLUDE_PERFORMER ), ( i, resourcesById ) -> {
             if ( i.hasSubject() )
             {
+                if ( !ResourceTypes.PATIENT.toCode().equals( i.getSubject().getReferenceElement().getResourceType() ) )
+                {
+                    return Boolean.FALSE;
+                }
                 i.getSubject().setResource(
                     resourcesById.get( i.getSubject().getReferenceElement().toUnqualifiedVersionless() ) );
             }
+            if ( i.hasPerformer() )
+            {
+                i.getPerformer().forEach( p ->
+                    p.setResource( resourcesById.get( p.getReferenceElement().toUnqualifiedVersionless() ) ) );
+            }
+            return Boolean.TRUE;
         } );
     }
 
     @SuppressWarnings( "unchecked" )
     protected <T extends IBaseResource> LocalDateTime processResource( @Nonnull RemoteSubscriptionResource subscriptionResource,
-        @Nonnull Class<T> resourceClass, @Nonnull ResourceType resourceType, @Nonnull Collection<Include> includes, @Nonnull BiConsumer<T, Map<IIdType, IBaseResource>> consumer )
+        @Nonnull Class<T> resourceClass, @Nonnull ResourceType resourceType, @Nonnull Collection<Include> includes, @Nonnull BiFunction<T, Map<IIdType, IBaseResource>, Boolean> function )
     {
         final Date fromLastUpdated = Date.from( subscriptionResource.getRemoteLastUpdate().minusMinutes(
             subscriptionResource.getRemoteSubscription().getToleranceMinutes() ).atZone( ZoneId.systemDefault() ).toInstant() );
@@ -161,9 +179,15 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                     logger.info( "Processing {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
                     try
                     {
-                        consumer.accept( (T) r, resourcesById );
-                        fhirRepository.save( subscriptionResource, r );
-                        logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                        if ( Boolean.TRUE.equals( function.apply( (T) r, resourcesById ) ) )
+                        {
+                            fhirRepository.save( subscriptionResource, r );
+                            logger.info( "Processed {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                        }
+                        else
+                        {
+                            logger.info( "Skipped {} of subscription resource {}.", r.getIdElement().toUnqualifiedVersionless().getValue(), subscriptionResource.getId() );
+                        }
                     }
                     catch ( Throwable e )
                     {

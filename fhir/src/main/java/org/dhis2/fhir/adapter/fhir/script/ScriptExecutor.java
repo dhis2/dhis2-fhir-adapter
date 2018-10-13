@@ -51,11 +51,11 @@ public interface ScriptExecutor
      * @param variables        the variables that the script requires.
      * @param resultClass      the type of the result the script returns.
      * @param <T>              the concrete class of the return type.
-     * @return the result of the script.
+     * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
      * @throws ScriptExecutionException thrown if the
      */
     @Nullable
-    <T> T execute( @Nonnull ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
+    <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
         @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
 
     /**
@@ -68,10 +68,10 @@ public interface ScriptExecutor
      * @param arguments        the override arguments the override already given arguments.
      * @param resultClass      the type of the result the script returns.
      * @param <T>              the concrete class of the return type.
-     * @return the result of the script.
+     * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
      * @throws ScriptExecutionException thrown if the
      */
     @Nullable
-    <T> T execute( @Nonnull ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
+    <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
         @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
 }

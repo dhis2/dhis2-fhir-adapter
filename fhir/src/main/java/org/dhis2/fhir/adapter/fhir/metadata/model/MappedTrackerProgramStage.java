@@ -30,12 +30,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -65,6 +68,12 @@ public class MappedTrackerProgramStage implements Serializable
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationScript;
+    private EventStatus creationStatus;
+    private boolean eventDateIsIncident;
+    private EventPeriodDayType beforePeriodDayType;
+    private int beforePeriodDays;
+    private EventPeriodDayType afterPeriodDayType;
+    private int afterPeriodDays;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -223,5 +232,77 @@ public class MappedTrackerProgramStage implements Serializable
     public void setCreationScript( ExecutableScript creationScript )
     {
         this.creationScript = creationScript;
+    }
+
+    @Column( name = "creation_status" )
+    @Enumerated( EnumType.STRING )
+    public EventStatus getCreationStatus()
+    {
+        return creationStatus;
+    }
+
+    public void setCreationStatus( EventStatus creationStatus )
+    {
+        this.creationStatus = creationStatus;
+    }
+
+    @Basic
+    @Column( name = "event_date_is_incident", nullable = false )
+    public boolean isEventDateIsIncident()
+    {
+        return eventDateIsIncident;
+    }
+
+    public void setEventDateIsIncident( boolean eventDateIsIncident )
+    {
+        this.eventDateIsIncident = eventDateIsIncident;
+    }
+
+    @Column( name = "before_period_day_type" )
+    @Enumerated( EnumType.STRING )
+    public EventPeriodDayType getBeforePeriodDayType()
+    {
+        return beforePeriodDayType;
+    }
+
+    public void setBeforePeriodDayType( EventPeriodDayType beforePeriodDayType )
+    {
+        this.beforePeriodDayType = beforePeriodDayType;
+    }
+
+    @Basic
+    @Column( name = "before_period_days", nullable = false )
+    public int getBeforePeriodDays()
+    {
+        return beforePeriodDays;
+    }
+
+    public void setBeforePeriodDays( int beforePeriodDays )
+    {
+        this.beforePeriodDays = beforePeriodDays;
+    }
+
+    @Column( name = "after_period_day_type" )
+    @Enumerated( EnumType.STRING )
+    public EventPeriodDayType getAfterPeriodDayType()
+    {
+        return afterPeriodDayType;
+    }
+
+    public void setAfterPeriodDayType( EventPeriodDayType afterPeriodDayType )
+    {
+        this.afterPeriodDayType = afterPeriodDayType;
+    }
+
+    @Basic
+    @Column( name = "after_period_days", nullable = false )
+    public int getAfterPeriodDays()
+    {
+        return afterPeriodDays;
+    }
+
+    public void setAfterPeriodDays( int afterPeriodDays )
+    {
+        this.afterPeriodDays = afterPeriodDays;
     }
 }

@@ -29,10 +29,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 public class WritableDataValue implements DataValue, Serializable
 {
@@ -44,6 +46,12 @@ public class WritableDataValue implements DataValue, Serializable
     private Object value;
 
     private boolean providedElsewhere;
+
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private ZonedDateTime lastUpdated;
+
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private String storedBy;
 
     @JsonIgnore
     private boolean modified;
@@ -96,6 +104,28 @@ public class WritableDataValue implements DataValue, Serializable
     public void setProvidedElsewhere( boolean providedElsewhere )
     {
         this.providedElsewhere = providedElsewhere;
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
+    }
+
+    @Override
+    public String getStoredBy()
+    {
+        return storedBy;
+    }
+
+    public void setStoredBy( String storedBy )
+    {
+        this.storedBy = storedBy;
     }
 
     public boolean isNewResource()

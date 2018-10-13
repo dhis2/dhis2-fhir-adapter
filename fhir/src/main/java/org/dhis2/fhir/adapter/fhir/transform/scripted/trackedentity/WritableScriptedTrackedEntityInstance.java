@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
+import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.ScriptedDateTimeUtils;
@@ -59,7 +60,8 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedTrackedEntityInstance( @Nonnull TrackedEntityAttributes trackedEntityAttributes, @Nonnull TrackedEntityType trackedEntityType,
+    public WritableScriptedTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext transformerContext,
+        @Nonnull TrackedEntityAttributes trackedEntityAttributes, @Nonnull TrackedEntityType trackedEntityType,
         @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
     {
         this.trackedEntityAttributes = trackedEntityAttributes;

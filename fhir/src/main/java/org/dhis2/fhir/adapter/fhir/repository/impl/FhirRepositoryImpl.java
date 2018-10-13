@@ -140,6 +140,7 @@ public class FhirRepositoryImpl implements FhirRepository
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findBySubscription( subscriptionResource.getRemoteSubscription() );
 
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
+        fhirRequest.setDhisUsername( subscriptionResource.getRemoteSubscription().getDhisUsername() );
         fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setLastUpdated( getLastUpdated( resource ) );

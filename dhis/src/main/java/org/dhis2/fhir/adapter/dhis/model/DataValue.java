@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import org.dhis2.fhir.adapter.Scriptable;
 
+import java.time.ZonedDateTime;
+
 @Scriptable
 public interface DataValue
 {
@@ -38,6 +40,10 @@ public interface DataValue
     Object getValue();
 
     boolean isProvidedElsewhere();
+
+    ZonedDateTime getLastUpdated();
+
+    String getStoredBy();
 
     boolean isModified();
 
