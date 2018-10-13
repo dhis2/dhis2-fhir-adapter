@@ -53,7 +53,7 @@ public class System implements Serializable
     private String systemUri;
     private boolean enabled;
     private String description;
-    private boolean protectedDescription;
+    private boolean descriptionProtected;
 
     @Id
     @Column( name = "id", nullable = false )
@@ -176,14 +176,14 @@ public class System implements Serializable
     }
 
     @Basic
-    @Column( name = "protected_description", nullable = false )
-    public boolean isProtectedDescription()
+    @Column( name = "description_protected", nullable = false, updatable = false )
+    public boolean isDescriptionProtected()
     {
-        return protectedDescription;
+        return descriptionProtected;
     }
 
-    public void setProtectedDescription( boolean protectedDescription )
+    public void setDescriptionProtected( boolean descriptionProtected )
     {
-        this.protectedDescription = protectedDescription;
+        this.descriptionProtected = descriptionProtected;
     }
 }

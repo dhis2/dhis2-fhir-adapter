@@ -58,6 +58,8 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private FhirVersion version;
 
+    private String dhisUsername;
+
     private UUID remoteSubscriptionRequestId;
 
     private Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
@@ -142,6 +144,18 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setVersion( @Nonnull FhirVersion version )
     {
         this.version = version;
+    }
+
+    @Nullable
+    @Override
+    public String getDhisUsername()
+    {
+        return dhisUsername;
+    }
+
+    public void setDhisUsername( String dhisUsername )
+    {
+        this.dhisUsername = dhisUsername;
     }
 
     @Override

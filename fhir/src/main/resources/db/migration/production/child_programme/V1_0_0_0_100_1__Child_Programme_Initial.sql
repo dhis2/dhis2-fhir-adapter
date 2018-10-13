@@ -35,7 +35,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e-0655-46
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e-0655-46db-8111-0a3370970125', 'DATE_TIME');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('b06c9036-006b-4043-9c6f-57dd7286098b', 0, '3ddfc83e-0655-46db-8111-0a3370970125',
-'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'NAME:Birth date', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('8cddd857-d510-472c-835a-d9454ffe1d39', 0, '3ddfc83e-0655-46db-8111-0a3370970125',
 'age', 'INTEGER', TRUE, FALSE, '1', 'The person must be younger than the this amount of time (in specified units).');
@@ -57,7 +57,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'ENROLLMENT');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
 VALUES ('363ed415-be4a-4311-a7bf-780a304d6f8c', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3',
-'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'NAME:Birth date', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('f45aed60-5208-430e-869e-f0b87f5a6321', 0, '60e83e18-5f66-40a1-9c9d-1d993e5ccdb3', 'enrollment.setIncidentDate(trackedEntityInstance.getValue(args[''birthDateAttribute'']))', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
@@ -76,6 +76,20 @@ VALUES ('4c074c85-be49-4b9d-8973-9e16b9615dad', 0, 'Birth', 'NAME:Birth', '45e61
 -- Tracker Program Child Programme, Stage Baby Postnatal
 INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled)
 VALUES ('526b4e01-7747-47ef-a25d-f32ccd739e87', 0, 'Baby Postnatal', 'NAME:Baby Postnatal', '45e61665-754d-4861-891e-a2064fc0ae7d', TRUE, TRUE);
+
+-- Tracker Program Child Programme, Birth: Weight
+INSERT INTO fhir_executable_script (id, script_id, code, name)
+VALUES ('4a326b89-4961-4b69-8021-8d5285c2b0a7', 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'CP: Birth Weight', 'CP_BIRTH_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('70684c93-b22a-4fff-86bb-604683c27fdd', 0, '4a326b89-4961-4b69-8021-8d5285c2b0a7', '07679199-59ae-4530-9411-ac5814102372', 'CODE:DE_2005736');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('6e29a09d-94f8-48b6-863e-976fc3c58568', 0, '4a326b89-4961-4b69-8021-8d5285c2b0a7', '3d15bf81-343c-45bc-9c28-1e87a8da6fa5', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Birth: Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
+VALUES ('097d9ee0-bdb3-44ae-b961-3b4584bad1db', 0, 'Child Programme: Birth Weight', NULL, TRUE, 0, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', '3b60104b-7e5d-4464-abd4-9f5b0b836f89', '4a326b89-4961-4b69-8021-8d5285c2b0a7');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('097d9ee0-bdb3-44ae-b961-3b4584bad1db','4c074c85-be49-4b9d-8973-9e16b9615dad');
 
 -- Tracker Program Child Programme, Birth: OPV Dose
 INSERT INTO fhir_executable_script (id, script_id, code, name)

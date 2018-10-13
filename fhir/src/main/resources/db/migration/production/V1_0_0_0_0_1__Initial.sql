@@ -328,13 +328,13 @@ CREATE TABLE fhir_resource_mapping (
   created_at                        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by                   VARCHAR(11),
   last_updated_at                   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  tei_lookup_script_id              UUID                           NOT NULL,
-  enrollment_org_lookup_script_id   UUID                           NOT NULL,
-  event_org_lookup_script_id        UUID                           NOT NULL,
-  enrollment_date_lookup_script_id  UUID                           NOT NULL,
-  event_date_lookup_script_id       UUID                           NOT NULL,
-  enrollment_loc_lookup_script_id   UUID                           NOT NULL,
-  event_loc_lookup_script_id        UUID                           NOT NULL,
+  tei_lookup_script_id              UUID,
+  enrollment_org_lookup_script_id   UUID,
+  event_org_lookup_script_id        UUID,
+  enrollment_date_lookup_script_id  UUID,
+  event_date_lookup_script_id       UUID,
+  enrollment_loc_lookup_script_id   UUID,
+  event_loc_lookup_script_id        UUID,
   CONSTRAINT fhir_resource_mapping_pk PRIMARY KEY (id),
   CONSTRAINT fhir_resource_mapping_uk1 UNIQUE (fhir_resource_type),
   CONSTRAINT fhir_resource_mapping_fk1 FOREIGN KEY (tei_lookup_script_id) REFERENCES fhir_executable_script (id),
@@ -373,6 +373,7 @@ CREATE TABLE fhir_remote_subscription (
   description                   TEXT,
   fhir_version                  VARCHAR(30)                    NOT NULL,
   web_hook_authorization_header VARCHAR(200)                   NOT NULL,
+  dhis_username                 VARCHAR(200)                   NOT NULL,
   dhis_authorization_header     VARCHAR(200)                   NOT NULL,
   remote_base_url               VARCHAR(200)                   NOT NULL,
   support_includes              BOOLEAN                        NOT NULL DEFAULT FALSE,
@@ -401,7 +402,7 @@ CREATE TABLE fhir_remote_subscription_system (
   last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   remote_subscription_id        UUID                           NOT NULL,
   fhir_resource_type            VARCHAR(30)                    NOT NULL,
-  system_id                     UUID NOT NULL,
+  system_id                     UUID                           NOT NULL,
   CONSTRAINT fhir_remote_subscription_system_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_system_uk1 UNIQUE (remote_subscription_id , fhir_resource_type ),
   CONSTRAINT fhir_remote_subscription_system_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE,
@@ -439,13 +440,21 @@ VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378', 0, 'CVX (Vaccine Administered)',
 'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
 -- Attention: Copyright notice according to http://www.hl7.org/fhir/loinc.html
 INSERT INTO fhir_system (id, version, name, code, system_uri, description_protected, description)
-VALUES ('f6e720a2-e9ff-43a8-a2fd-d5636106297b', 0, 'LOINC', 'SYSTEM_LOINC', 'LOINC', TRUE,
-'Available at http://loinc.org/, the terms of use apply to all the codes and mappings that are associated with this system. This copyright notice must neither be changed nor removed.
+VALUES ('f6e720a2-e9ff-43a8-a2fd-d5636106297b', 0, 'LOINC', 'SYSTEM_LOINC', 'http://loinc.org', TRUE,
+'Available at http://loinc.org/, the terms of use apply to all the codes and filterings/mappings (i.e. rules and transformations) that are associated with this system. This copyright notice must neither be changed nor removed.
 This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.');
 -- Attention: Please refer to the license before using this system. See http://www.hl7.org/fhir/snomedct.html for further information.
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('20f6d869-a767-461e-8c68-aa46a76ec5c4', 0, 'SNOMED CT', 'SYSTEM_SCT', 'http://snomed.info/sct',
 'SNOMED CT can be used to represent clinically relevant information consistently, reliably and comprehensively as an integral part of producing electronic health information.');
+
+-- Definition of vital signs
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('1197b27e-3956-43dd-a75c-bfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('0d78f5e3-c9fd-4859-9768-fb7c898a4142', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight measured', 'VS_BODY_WEIGHT_MEASURED', 'Body weight measured');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('a748a35e-00e6-4926-abc6-8cde3bb30ee4', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight', 'VS_BODY_WEIGHT', 'Body weight (no specific method).');
 
 -- Definition of vaccines
 INSERT INTO fhir_code_category (id, version, name, code, description)
@@ -646,7 +655,7 @@ INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VA
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('c645352b-b84a-47a2-963c-32a22fe18926', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'meningococcal AC polysaccharide (non-US)', 'VACCINE_192', 'meningococcal AC polysaccharide vaccine (non-US)');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('1ad0b939-6a40-4ba2-82d5-55ef913ee8fe', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'Hep A-Hep B, pediatric/adolescent', 'VACCINE_193', 'hepatitis A and hepatitis B vaccine, pediatric/adolescent (non-US)');
 
--- Definitions of vaccines by systemAuthentication
+-- Definitions of vaccines by system
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('c513935c-9cd2-4357-a679-60f0c79bfacb', 0, '5d40c358-0111-4472-b3fb-350fdd060b23', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '54');
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('ee68d40d-734b-4369-95c4-6dd67b571bbc', 0, '8e170216-deda-47a2-985b-7d2fcf5e40d0', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '55');
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('3161188c-7f4a-4763-b74d-0b874b439b75', 0, 'a6f3cccc-8f2c-49e7-b451-80c79ccfc83a', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '82');
@@ -849,7 +858,10 @@ INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUE
 -- This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('cbb25e78-9a9e-4e62-a0ea-1bae99d489ea', 0, '0d78f5e3-c9fd-4859-9768-fb7c898a4142', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '3141-9');
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('d88ff0fe-6f76-456e-9785-94859bd63069', 0, 'a748a35e-00e6-4926-abc6-8cde3bb30ee4', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '29463-7');
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- END LOINC Codes
@@ -921,7 +933,7 @@ VALUES ('0a7c26cb-7bd3-4394-9d47-a610ac231f8a', 0, 'ea887943-5e94-4e31-9441-c766
 'The reference of the tracked entity attribute that contains the last name of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('b41dd571-a129-4fa6-a807-35ea5663e8e3', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:First name',
+'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'CODE:MMD_PER_NAM',
 'The reference of the tracked entity attribute that contains the first name of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('90b3c110-38e4-4291-934c-e2569e8af1ba', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
@@ -963,11 +975,110 @@ INSERT INTO fhir_executable_script (id, script_id, name, code, description)
 VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 'ea887943-5e94-4e31-9441-c7661fe1063e',
 'Transforms FHIR Patient to DHIS Person', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'Transforms FHIR Patient to DHIS Person.');
 INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'NAME:Birth date');
+VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'CODE:MMD_PER_DOB');
 INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
 VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
 INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'NAME:City');
+VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'CODE:City');
+
+-- Script that performs the lookup of TEI FHIR Resource from FHIR Observation
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 0, 'Observation TEI Lookup', 'OBSERVATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Observation.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_OBSERVATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'input.subject.getResource()', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 'DSTU3');
+INSERT INTO fhir_executable_script (id,script_id, name, code, description)
+VALUES ('1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36', '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017',
+'Observation TEI Lookup', 'OBSERVATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Observation.');
+
+-- Script that extracts GEO location from Observation
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('efb7fa7a-df45-4c6a-9096-0bc38f08c067', 0, 'GEO Location from Observation', 'EXTRACT_FHIR_OBSERVATION_GEO_LOCATION',
+'Extracts the GEO location form FHIR Observation.',
+'EVALUATE', 'LOCATION', 'FHIR_OBSERVATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('efb7fa7a-df45-4c6a-9096-0bc38f08c067', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('efb7fa7a-df45-4c6a-9096-0bc38f08c067', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('2e0565a0-ecde-4ce2-b313-b0f786105385', 0, 'efb7fa7a-df45-4c6a-9096-0bc38f08c067',
+'null', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('2e0565a0-ecde-4ce2-b313-b0f786105385', 'DSTU3');
+INSERT INTO fhir_executable_script (id, script_id, name, code, description)
+VALUES ('bb070631-46b3-42ec-83b2-00ea219bcf50', 'efb7fa7a-df45-4c6a-9096-0bc38f08c067',  'GEO Location from Observation', 'EXTRACT_FHIR_OBSERVATION_GEO_LOCATION',
+'Extracts the GEO location form FHIR Observation.');
+
+-- Script that gets the exact date from FHIR Observation
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('49d35701-2979-4b36-a9ba-4269c1572cfd', 0, 'Observation Date Lookup', 'OBSERVATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Observation.', 'EVALUATE', 'DATE_TIME', 'FHIR_OBSERVATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('49d35701-2979-4b36-a9ba-4269c1572cfd', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('49d35701-2979-4b36-a9ba-4269c1572cfd', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('630cd838-3506-410b-9b66-8785682d5e0c', 0, '49d35701-2979-4b36-a9ba-4269c1572cfd',
+'var date = null;
+if (input.hasEffectiveDateTimeType())
+  date = dateTimeUtils.getPreciseDate(input.getEffectiveDateTimeType());
+else if (input.hasEffectivePeriod())
+  date = dateTimeUtils.getPreciseDate(input.getEffectivePeriod().hasStart() ? input.getEffectivePeriod().getStartElement() : null);
+else if (input.hasIssued())
+  date = dateTimeUtils.getPreciseDate(input.getIssuedElement());
+date', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('630cd838-3506-410b-9b66-8785682d5e0c', 'DSTU3');
+INSERT INTO fhir_executable_script (id,script_id, name, code, description)
+VALUES ('a7b60436-9fa7-4fe4-8bf7-f5e22123a980', '49d35701-2979-4b36-a9ba-4269c1572cfd',
+'Observation Date Lookup', 'OBSERVATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Observation.');
+
+-- FHIR resource mapping for FHIR Observation
+INSERT INTO fhir_resource_mapping (id,version,fhir_resource_type,tei_lookup_script_id,enrollment_org_lookup_script_id,event_org_lookup_script_id,
+enrollment_date_lookup_script_id,event_date_lookup_script_id,enrollment_loc_lookup_script_id,event_loc_lookup_script_id)
+VALUES ('f1cbd84f-a3db-4aa7-a9f2-a5e547e60bed', 0, 'OBSERVATION', '1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36',
+'a52945b5-94b9-48d4-9c49-f67b43d9dfbc', 'a52945b5-94b9-48d4-9c49-f67b43d9dfbc',
+'a7b60436-9fa7-4fe4-8bf7-f5e22123a980', 'a7b60436-9fa7-4fe4-8bf7-f5e22123a980',
+'bb070631-46b3-42ec-83b2-00ea219bcf50', 'bb070631-46b3-42ec-83b2-00ea219bcf50');
+
+-- Script that checks if given FHIR Observation is applicable
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('73175d8e-faad-458f-b38f-14ff87032720', 0, 'FHIR Observation Applicable', 'FHIR_OBSERVATION_APPLICABLE', 'Checks if given FHIR Observation is applicable.', 'EVALUATE', 'BOOLEAN', 'FHIR_OBSERVATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('73175d8e-faad-458f-b38f-14ff87032720', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('73175d8e-faad-458f-b38f-14ff87032720', 'INPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('f08bc5b3-0aef-4707-8959-65d7cf690134', 0, '73175d8e-faad-458f-b38f-14ff87032720',
+'mappedObservationCodes', 'CODE', TRUE, TRUE, NULL, 'Mapped observation codes that define if the FHIR Observation is applicable for processing.');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 0, '73175d8e-faad-458f-b38f-14ff87032720', 'codeUtils.containsMappedCode(input.code, args[''mappedObservationCodes''])', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 'DSTU3');
+
+-- Executable script that checks if FHIR Observation contains the body weight
+INSERT INTO fhir_executable_script (id,script_id, name, code, description)
+VALUES ('3b60104b-7e5d-4464-abd4-9f5b0b836f89', '73175d8e-faad-458f-b38f-14ff87032720',
+'Observation Body Weight Applicable', 'OB_BODY_WEIGHT_APPLICABLE', 'Checks if given FHIR Observation contains the Body Weight and is therefore applicable.');
+INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
+VALUES ('69d49d59-2e6b-41c0-b12f-938389facabb', 0, '3b60104b-7e5d-4464-abd4-9f5b0b836f89', 'f08bc5b3-0aef-4707-8959-65d7cf690134', 'VS_BODY_WEIGHT_MEASURED|VS_BODY_WEIGHT');
+
+-- Script that sets for a data element the body weight with a specific weight unit
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 0, 'TRANSFORM_FHIR_OB_BODY_WEIGHT', 'Transforms FHIR Observation Body Weight', 'Transforms FHIR Observation Body Weight to a data element and performs weight unit conversion.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937-e2fe-47a4-b0f3-8bbff7818ee1', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('07679199-59ae-4530-9411-ac5814102372', 0, 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element on which the body weight must be set.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('3d15bf81-343c-45bc-9c28-1e87a8da6fa5', 0, 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1',
+'weightUnit', 'WEIGHT_UNIT', TRUE, 'KILO_GRAM', 'The resulting weight unit in which the value will be set on the data element.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('d8cd0e7d-7780-45d1-8094-b448b480e6b8', 0, 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1',
+'round', 'BOOLEAN', TRUE, 'true', 'Specifies if the resulting value should be rounded.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('8d26fe6a-d9ac-40ab-abc8-5a87ab340762', 0, 'f1da6937-e2fe-47a4-b0f3-8bbff7818ee1',
+'output.setValue(args[''dataElement''], vitalSignUtils.getWeight(input.value, args[''weightUnit''], args[''round'']), null, context.getFhirRequest().getLastUpdated())', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('8d26fe6a-d9ac-40ab-abc8-5a87ab340762', 'DSTU3');
 
 -- Script that performs the lookup of TEI FHIR Resource from FHIR Immunization
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1100,7 +1211,7 @@ VALUES ('cf6c3462-1396-435b-ab07-f515d92a1ab2', 0, '1f4e3e5e-1287-48fa-b4cd-e936
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref, tracked_entity_identifier_fq)
-VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'NAME:National identifier', FALSE);
+VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier', FALSE);
 
 -- Executable script that checks if the FHIR Immunization contains a Yellow Fever vaccine and is therefore applicable for processing
 INSERT INTO fhir_executable_script (id, script_id, name, code, description)

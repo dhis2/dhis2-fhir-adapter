@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,23 +29,30 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
-import java.time.ZonedDateTime;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @Scriptable
-public interface DataValue
+public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    String getDataElementId();
+    private static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
 
-    Object getValue();
+    protected AbstractVitalSignFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
 
-    boolean isProvidedElsewhere();
+    @Nonnull
+    @Override
+    public final String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
 
-    ZonedDateTime getLastUpdated();
-
-    String getStoredBy();
-
-    boolean isModified();
-
-    boolean isNewResource();
+    @Nullable
+    public abstract Double getWeight( @Nullable ICompositeType value, @Nullable Object weightUnit, boolean round ) throws TransformerDataException;
 }

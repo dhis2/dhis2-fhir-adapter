@@ -63,5 +63,14 @@ public interface FhirToDhisTransformerContext
     boolean isCreationDisabled();
 
     @Nonnull
-    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerException;
+    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerDataException;
+
+    /**
+     * Ends the execution of the script with the specified message. This method can be used if the
+     * received data does not match any expectations.
+     *
+     * @param message the message that includes the reason why the transformations failed.
+     * @throws TransformerDataException the thrown exception with the specified message.
+     */
+    void fail( @Nonnull String message ) throws TransformerDataException;
 }

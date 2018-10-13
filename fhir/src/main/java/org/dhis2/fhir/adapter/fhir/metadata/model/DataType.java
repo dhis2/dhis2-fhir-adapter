@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.model.DateUnit;
+import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.core.convert.converter.Converter;
 
@@ -61,6 +62,7 @@ public enum DataType
     DOUBLE( Double.class, new StringToDoubleConverter() ),
     DATE_TIME( ZonedDateTime.class, new StringToZonedDateTimeConverter() ),
     DATE_UNIT( DateUnit.class, new StringToEnumConverter<>( DateUnit.class ) ),
+    WEIGHT_UNIT( WeightUnit.class, new StringToEnumConverter<>( WeightUnit.class ) ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),
     LOCATION( Location.class, new StringToLocationConverter() ),

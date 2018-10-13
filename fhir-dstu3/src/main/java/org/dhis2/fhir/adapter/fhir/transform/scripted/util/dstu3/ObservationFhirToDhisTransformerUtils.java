@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.model;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,46 +29,46 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractObservationTransformUtils;
+import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
+import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
+import java.util.Set;
 
+@Component
 @Scriptable
-public interface FhirRequest
+public class ObservationFhirToDhisTransformerUtils extends AbstractObservationTransformUtils
 {
-    @Nullable
-    FhirRequestMethod getRequestMethod();
+    private final CodeFhirToDhisTransformerUtils codeTransformerUtils;
 
-    FhirResourceType getResourceType();
-
-    @Nullable
-    String getResourceId();
-
-    @Nullable
-    String getResourceVersionId();
-
-    @Nullable
-    ZonedDateTime getLastUpdated();
+    public ObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeFhirToDhisTransformerUtils codeTransformerUtils )
+    {
+        super( scriptExecutionContext );
+        this.codeTransformerUtils = codeTransformerUtils;
+    }
 
     @Nonnull
-    FhirVersion getVersion();
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
+    }
 
-    boolean isRemoteSubscription();
-
+    @Override
     @Nullable
-    UUID getRemoteSubscriptionRequestId();
-
-    @Nullable
-    String getDhisUsername();
-
-    @Nullable
-    ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType );
-
-    @Nonnull
-    Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
+    public IBaseBackboneElement getBackboneElement( @Nullable List<? extends IBaseBackboneElement> backboneElements, @Nonnull String system, @Nonnull String code )
+    {
+        if ( backboneElements == null )
+        {
+            return null;
+        }
+        return backboneElements.stream().map( ObservationComponentComponent.class::cast ).filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
+            .findFirst().orElse( new ObservationComponentComponent() );
+    }
 }

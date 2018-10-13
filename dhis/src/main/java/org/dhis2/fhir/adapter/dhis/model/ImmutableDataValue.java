@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 public class ImmutableDataValue implements DataValue, Serializable
 {
@@ -58,6 +59,18 @@ public class ImmutableDataValue implements DataValue, Serializable
     public boolean isProvidedElsewhere()
     {
         return delegate.isProvidedElsewhere();
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
+    }
+
+    @Override
+    public String getStoredBy()
+    {
+        return delegate.getStoredBy();
     }
 
     @Override

@@ -241,6 +241,19 @@ public class TestClient
         imm5.addVaccinationProtocol().setDoseSequence( 2 )
             .setSeries( "2" );
 
+        //////////////
+        // Body Weight
+        //////////////
+
+        Observation bw = new Observation();
+        bw.setId( IdType.newRandomUuid() );
+        bw.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "29463-7" ) ) );
+        bw.getSubject().setReference( child.getId() );
+        bw.setEffective( new DateTimeType( new Date(), TemporalPrecisionEnum.DAY ) );
+        bw.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
+
         ////////////////////////
         // Last Menstrual Period
         ////////////////////////
@@ -330,6 +343,12 @@ public class TestClient
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( bw )
+            .setFullUrl( bw.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
         bundle.addEntry()
             .setResource( lmp )
             .setFullUrl( lmp.getId() )

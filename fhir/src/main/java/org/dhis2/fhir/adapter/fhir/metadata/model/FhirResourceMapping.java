@@ -144,8 +144,8 @@ public class FhirResourceMapping implements Serializable
         this.lastUpdatedAt = lastUpdatedAt;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "tei_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "tei_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getTeiLookupScript()
     {
         return teiLookupScript;
@@ -156,8 +156,8 @@ public class FhirResourceMapping implements Serializable
         this.teiLookupScript = teiLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "enrollment_org_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "enrollment_org_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEnrollmentOrgLookupScript()
     {
         return enrollmentOrgLookupScript;
@@ -168,8 +168,8 @@ public class FhirResourceMapping implements Serializable
         this.enrollmentOrgLookupScript = enrollmentOrgLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "enrollment_date_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "enrollment_date_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEnrollmentDateLookupScript()
     {
         return enrollmentDateLookupScript;
@@ -179,9 +179,9 @@ public class FhirResourceMapping implements Serializable
     {
         this.enrollmentDateLookupScript = enrollmentDateLookupScript;
     }
-    
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id", nullable = false )
+
+    @ManyToOne
+    @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEventOrgLookupScript()
     {
         return eventOrgLookupScript;
@@ -192,8 +192,8 @@ public class FhirResourceMapping implements Serializable
         this.eventOrgLookupScript = eventOrgLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "event_date_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "event_date_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEventDateLookupScript()
     {
         return eventDateLookupScript;
@@ -204,8 +204,8 @@ public class FhirResourceMapping implements Serializable
         this.eventDateLookupScript = eventDateLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "enrollment_loc_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "enrollment_loc_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEnrollmentLocationLookupScript()
     {
         return enrollmentLocationLookupScript;
@@ -216,8 +216,8 @@ public class FhirResourceMapping implements Serializable
         this.enrollmentLocationLookupScript = enrollmentLocationLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "event_loc_lookup_script_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "event_loc_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getEventLocationLookupScript()
     {
         return eventLocationLookupScript;

@@ -94,6 +94,13 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     }
 
     @Override
+    @Nullable
+    public String getDhisUsername()
+    {
+        return delegate.getDhisUsername();
+    }
+
+    @Override
     public boolean isRemoteSubscription()
     {
         return delegate.isRemoteSubscription();

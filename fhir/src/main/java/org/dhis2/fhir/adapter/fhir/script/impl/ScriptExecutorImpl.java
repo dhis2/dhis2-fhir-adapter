@@ -90,7 +90,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
     @Nullable
     @Override
-    public <T> T execute( @Nonnull ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
+    public <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
         @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
     {
         return execute( executableScript, fhirVersion, variables, Collections.emptyMap(), resultClass );
@@ -98,9 +98,14 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
     @Nullable
     @Override
-    public <T> T execute( @Nonnull ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
+    public <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
         @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
     {
+        if ( executableScript == null )
+        {
+            return null;
+        }
+
         if ( !resultClass.isAssignableFrom( executableScript.getScript().getReturnType().getJavaType() ) )
         {
             throw new ScriptPreparationException(

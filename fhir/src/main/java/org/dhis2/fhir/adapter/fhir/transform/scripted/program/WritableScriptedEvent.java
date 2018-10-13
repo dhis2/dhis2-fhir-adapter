@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
+import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
@@ -59,14 +60,17 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 {
     private static final long serialVersionUID = 3407593545422372222L;
 
+    private final FhirToDhisTransformerContext transformerContext;
+
     private final ProgramStage programStage;
 
     private final Event event;
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEvent( @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEvent( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull ValueConverter valueConverter )
     {
+        this.transformerContext = transformerContext;
         this.programStage = programStage;
         this.event = event;
         this.valueConverter = valueConverter;
@@ -179,9 +183,13 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     public boolean setValue( @Nonnull Reference dataElementReference, @Nullable Object value, @Nullable Boolean providedElsewhere ) throws TransformerException
     {
+        return setValue( dataElementReference, value, providedElsewhere, null );
+    }
+
+    public boolean setValue( @Nonnull Reference dataElementReference, @Nullable Object value, @Nullable Boolean providedElsewhere, @Nullable Object lastUpdated ) throws TransformerException
+    {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
-        setValue( dataElement, value, providedElsewhere );
-        return true;
+        return setValue( dataElement, value, providedElsewhere, ScriptedDateTimeUtils.toZonedDateTime( lastUpdated, valueConverter ) );
     }
 
     public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, boolean decrementAllowed, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
@@ -214,7 +222,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
                 }
             }
         }
-        setValue( dataElement, newCode, providedElsewhere );
+        setValue( dataElement, newCode, providedElsewhere, null );
         return true;
     }
 
@@ -226,7 +234,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
                 "\" does not include data element \"" + dataElementReference + "\"" ) );
     }
 
-    protected void setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere )
+    protected boolean setValue( @Nonnull ProgramStageDataElement dataElement, Object value, Boolean providedElsewhere, @Nullable ZonedDateTime lastUpdated )
     {
         final Object convertedValue;
         try
@@ -247,6 +255,13 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         }
 
         final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+        // if last update has been done on behalf of the adapter last update timestamp cannot be used since timestamps may be far behind of the timestamp of data processing
+        if ( (lastUpdated != null) && (dataValue.getLastUpdated() != null) && dataValue.getLastUpdated().isAfter( lastUpdated ) &&
+            !Objects.equals( dataValue.getStoredBy(), transformerContext.getFhirRequest().getDhisUsername() ) )
+        {
+            return false;
+        }
+
         if ( !Objects.equals( convertedValue, dataValue.getValue() ) )
         {
             dataValue.setModified();
@@ -261,6 +276,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
             }
             dataValue.setProvidedElsewhere( providedElsewhere );
         }
+        return true;
     }
 
     public boolean isAnyDataValueModified()

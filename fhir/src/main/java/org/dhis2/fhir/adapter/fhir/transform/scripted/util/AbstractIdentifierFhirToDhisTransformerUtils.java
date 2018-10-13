@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
@@ -121,7 +120,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         }
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
         final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
-            .orElseThrow( () -> new TransformerDataException( "No system has been defined for resource type " + resourceType + "." ) );
+            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
         return getResourceIdentifier( resource, fhirResourceType, resourceSystem.getSystem() );
     }
 

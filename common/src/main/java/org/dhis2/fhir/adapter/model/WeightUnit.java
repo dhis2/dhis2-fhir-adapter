@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,47 +28,55 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractObservationTransformUtils;
-import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
-import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
-import org.springframework.stereotype.Component;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Component
-@Scriptable
-public class ObservationTransformUtils extends AbstractObservationTransformUtils
+/**
+ * The units of weight and their conversion.
+ *
+ * @author volsch
+ */
+public enum WeightUnit
 {
-    private final CodeFhirToDhisTransformerUtils codeTransformerUtils;
+    GRAM( 1.0, "g" ), KILO_GRAM( 1_000.0, "kg" ), OUNCE( 28.349523125, "[oz_av]" ), POUND( 453.59237, "[lb_av]" );
 
-    public ObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeFhirToDhisTransformerUtils codeTransformerUtils )
-    {
-        super( scriptExecutionContext );
-        this.codeTransformerUtils = codeTransformerUtils;
-    }
+    private final double gramFactor;
 
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.DSTU3_ONLY;
-    }
+    private final String ucumCode;
 
-    @Override
+    private static final Map<String, WeightUnit> weightUnitByUcumCode = Arrays.stream( WeightUnit.values() ).collect( Collectors.toMap( WeightUnit::getUcumCode, v -> v ) );
+
     @Nullable
-    public IBaseBackboneElement getBackboneElement( @Nullable List<? extends IBaseBackboneElement> backboneElements, @Nonnull String system, @Nonnull String code )
+    public static WeightUnit getByUcumCode( @Nullable String ucumCode )
     {
-        if ( backboneElements == null )
+        return weightUnitByUcumCode.get( ucumCode );
+    }
+
+    WeightUnit( double gramFactor, String ucumCode )
+    {
+        this.gramFactor = gramFactor;
+        this.ucumCode = ucumCode;
+    }
+
+    public double getGramFactor()
+    {
+        return gramFactor;
+    }
+
+    public String getUcumCode()
+    {
+        return ucumCode;
+    }
+
+    public double convertTo( double value, @Nonnull WeightUnit unit )
+    {
+        if ( unit == this )
         {
-            return null;
+            return value;
         }
-        return backboneElements.stream().map( ObservationComponentComponent.class::cast ).filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
-            .findFirst().orElse( new ObservationComponentComponent() );
+        return (value * gramFactor) / unit.gramFactor;
     }
 }
