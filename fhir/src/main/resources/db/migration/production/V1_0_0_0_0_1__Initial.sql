@@ -178,16 +178,17 @@ CREATE INDEX fhir_code_i1
   ON fhir_code (code_category_id);
 
 CREATE TABLE fhir_system (
-  id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
-  version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name            VARCHAR(230)                   NOT NULL,
-  code            VARCHAR(50)                    NOT NULL,
-  system_uri      VARCHAR(140)                   NOT NULL,
-  enabled         BOOLEAN                        NOT NULL DEFAULT TRUE,
-  description     TEXT,
+  id                    UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
+  version               BIGINT                         NOT NULL,
+  created_at            TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by       VARCHAR(11),
+  last_updated_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name                  VARCHAR(230)                   NOT NULL,
+  code                  VARCHAR(50)                    NOT NULL,
+  system_uri            VARCHAR(140)                   NOT NULL,
+  enabled               BOOLEAN                        NOT NULL DEFAULT TRUE,
+  description           TEXT,
+  description_protected BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_system_pk PRIMARY KEY (id),
   CONSTRAINT fhir_system_uk1 UNIQUE (name),
   CONSTRAINT fhir_system_uk2 UNIQUE (code),
@@ -436,6 +437,15 @@ VALUES ('1ded2081-8836-43dd-a5e1-7cb9562c93ef', 0, 'GENDER', 'Gender Male', 'GEN
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('2601edcb-f7bc-4710-ab64-0f4edd9a2378', 0, 'CVX (Vaccine Administered)', 'SYSTEM_CVX', 'http://hl7.org/fhir/sid/cvx',
 'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
+-- Attention: Copyright notice according to http://www.hl7.org/fhir/loinc.html
+INSERT INTO fhir_system (id, version, name, code, system_uri, description_protected, description)
+VALUES ('f6e720a2-e9ff-43a8-a2fd-d5636106297b', 0, 'LOINC', 'SYSTEM_LOINC', 'LOINC', TRUE,
+'Available at http://loinc.org/, the terms of use apply to all the codes and mappings that are associated with this system. This copyright notice must neither be changed nor removed.
+This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.');
+-- Attention: Please refer to the license before using this system. See http://www.hl7.org/fhir/snomedct.html for further information.
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('20f6d869-a767-461e-8c68-aa46a76ec5c4', 0, 'SNOMED CT', 'SYSTEM_SCT', 'http://snomed.info/sct',
+'SNOMED CT can be used to represent clinically relevant information consistently, reliably and comprehensively as an integral part of producing electronic health information.');
 
 -- Definition of vaccines
 INSERT INTO fhir_code_category (id, version, name, code, description)
@@ -832,6 +842,18 @@ INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUE
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('9a18ea6e-c950-40cf-9f0c-2b91722405c8', 0, '8fd5083f-986d-43b6-b732-04d4b5edbd7b', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '191');
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('f15fd0c3-97f3-488b-a736-140bd6d10111', 0, 'c645352b-b84a-47a2-963c-32a22fe18926', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '192');
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code) VALUES ('97faac0d-c0a6-4b14-a5f9-51558e0439c4', 0, '1ad0b939-6a40-4ba2-82d5-55ef913ee8fe', '2601edcb-f7bc-4710-ab64-0f4edd9a2378', '193');
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- BEGIN LOINC Codes
+-- The following copyright applies to the following section that contains LOINC Codes:
+-- This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- END LOINC Codes
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Script that returns boolean value true every time
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
