@@ -169,5 +169,11 @@
         <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/sample</db.flyway.locations>
       </properties>
     </profile>
+    <profile>
+      <id>executable-war</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
   </profiles>
 </project>

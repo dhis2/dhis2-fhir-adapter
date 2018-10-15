@@ -48,6 +48,8 @@
     <dhis2.password>district</dhis2.password>
     <dhis2.url>http://localhost:8080</dhis2.url>
     <dhis2.apiVersion>29</dhis2.apiVersion>
+
+    <tomcat.scope>provided</tomcat.scope>
   </properties>
 
   <dependencies>
@@ -65,7 +67,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
+      <scope>${tomcat.scope}</scope>
     </dependency>
   </dependencies>
 
@@ -94,4 +96,24 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>executable-war</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <tomcat.scope>compile</tomcat.scope>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
