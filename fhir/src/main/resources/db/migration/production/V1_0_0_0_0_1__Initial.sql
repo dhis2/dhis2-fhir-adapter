@@ -322,6 +322,8 @@ CREATE TABLE fhir_program_stage_rule (
   id                              UUID         NOT NULL,
   program_stage_id                UUID         NOT NULL,
   update_event_date               BOOLEAN      NOT NULL DEFAULT FALSE,
+  enrollment_creation_enabled     BOOLEAN      NOT NULL DEFAULT FALSE,
+  event_creation_enabled          BOOLEAN      NOT NULL DEFAULT FALSE,
   before_period_day_type          VARCHAR(20),
   before_period_days              INTEGER,
   after_period_day_type           VARCHAR(20),

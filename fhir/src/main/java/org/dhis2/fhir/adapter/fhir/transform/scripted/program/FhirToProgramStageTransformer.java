@@ -283,12 +283,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( context.isCreationDisabled() )
-        {
-            return null;
-        }
-
-        if ( !rule.getProgramStage().isCreationEnabled() )
+        if ( context.isCreationDisabled() || !rule.isEventCreationEnabled() || !rule.getProgramStage().isCreationEnabled() )
         {
             return null;
         }
@@ -426,7 +421,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected Enrollment createEnrollment( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables )
     {
-        if ( context.isCreationDisabled() )
+        if ( context.isCreationDisabled() || !rule.isEnrollmentCreationEnabled() )
         {
             return null;
         }

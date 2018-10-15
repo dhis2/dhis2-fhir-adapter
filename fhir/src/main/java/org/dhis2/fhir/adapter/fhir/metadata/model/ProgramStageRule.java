@@ -54,8 +54,10 @@ public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;
 
-    private boolean updateEventDate;
     private MappedTrackerProgramStage programStage;
+    private boolean enrollmentCreationEnabled;
+    private boolean eventCreationEnabled;
+    private boolean updateEventDate;
     private EventPeriodDayType beforePeriodDayType;
     private Integer beforePeriodDays;
     private EventPeriodDayType afterPeriodDayType;
@@ -63,6 +65,30 @@ public class ProgramStageRule extends AbstractRule
     private ApplicableEnrollmentStatus applicableEnrollmentStatus;
     private ApplicableEventStatus applicableEventStatus;
     private EventStatusUpdate eventStatusUpdate;
+
+    @Basic
+    @Column( name = "enrollment_creation_enabled", nullable = false )
+    public boolean isEnrollmentCreationEnabled()
+    {
+        return enrollmentCreationEnabled;
+    }
+
+    public void setEnrollmentCreationEnabled( boolean enrollmentCreationEnabled )
+    {
+        this.enrollmentCreationEnabled = enrollmentCreationEnabled;
+    }
+
+    @Basic
+    @Column( name = "event_creation_enabled", nullable = false )
+    public boolean isEventCreationEnabled()
+    {
+        return eventCreationEnabled;
+    }
+
+    public void setEventCreationEnabled( boolean eventCreationEnabled )
+    {
+        this.eventCreationEnabled = eventCreationEnabled;
+    }
 
     @Basic
     @Column( name = "update_event_date", nullable = false )
@@ -75,6 +101,7 @@ public class ProgramStageRule extends AbstractRule
     {
         this.updateEventDate = updateEventDate;
     }
+
 
     @ManyToOne( optional = false )
     @JoinColumn( name = "program_stage_id", referencedColumnName = "id", nullable = false )
