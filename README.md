@@ -92,7 +92,11 @@ container.
 
 After successfully building the application also Maven can be used to run the application. Enter the following command in folder app in the console:
 
-    mvn -Psample jetty:run 
+    mvn -Psample jetty:run
+    
+Since the created WAR file is an executable WAR file (can also be disabled when building), also the following command can be entered in folder app/target in the console:
+
+    java -jar dhis2-fhir-adapter.war    
 
 The project contains a sample test FHIR client that enrolls a new born child into Child Programme. The main class is named org.dhis2.fhir.adapter.DemoClient and expects three arguments. The first argument must be the code of an existing organization 
 unit in which the enrollments should take place (tracker programs must have been assigned to these organization unit in maintenance section of DHIS2). The second argument is the new national identifier that will be assigned to the mother and the third 

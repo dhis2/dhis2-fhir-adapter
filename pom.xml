@@ -172,7 +172,7 @@
     <profile>
       <id>executable-war</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
       </activation>
     </profile>
   </profiles>
