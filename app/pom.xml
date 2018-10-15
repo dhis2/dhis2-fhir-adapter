@@ -101,7 +101,7 @@
     <profile>
       <id>executable-war</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
         <tomcat.scope>compile</tomcat.scope>
