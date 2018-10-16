@@ -34,6 +34,12 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
+/**
+ * Information to create one WWW authenticate header. The included information is
+ * validated when using instantiation with Spring Boot.
+ *
+ * @author volsch
+ */
 @Validated
 public class WwwAuthenticate implements Serializable
 {
@@ -77,6 +83,9 @@ public class WwwAuthenticate implements Serializable
         this.realm = realm;
     }
 
+    /**
+     * @return the value of the WWW authenticate header.
+     */
     @Nonnull
     public String toString()
     {

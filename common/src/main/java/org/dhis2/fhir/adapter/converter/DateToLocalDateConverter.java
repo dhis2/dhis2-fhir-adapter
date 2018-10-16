@@ -34,6 +34,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * Converts a date to a local date with system time zone.
+ *
+ * @author volsch
+ */
 public class DateToLocalDateConverter extends TypedConverter<Date, LocalDate>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();

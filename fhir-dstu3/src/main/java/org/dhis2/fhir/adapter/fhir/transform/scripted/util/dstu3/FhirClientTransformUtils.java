@@ -30,10 +30,15 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util.dstu3;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractFhirClientTransformUtils;
 import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
+import org.hl7.fhir.dstu3.model.Bundle.BundleLinkComponent;
+import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,15 +46,18 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Component
 @Scriptable
 public class FhirClientTransformUtils extends AbstractFhirClientTransformUtils
 {
-    public FhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext )
+    public FhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
+        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext, fhirContext );
+        super( scriptExecutionContext, fhirContext, subscriptionResourceRepository, systemCodeRepository );
     }
 
     @Nonnull
@@ -66,11 +74,31 @@ public class FhirClientTransformUtils extends AbstractFhirClientTransformUtils
         return Bundle.class;
     }
 
+    @Override
+    protected boolean hasNextLink( @Nonnull IBaseBundle bundle )
+    {
+        final BundleLinkComponent link = ((Bundle) bundle).getLink( Bundle.LINK_NEXT );
+        return (link != null) && !link.isEmpty();
+    }
+
     @Nullable
     @Override
     protected IBaseResource getFirstRep( @Nonnull IBaseBundle bundle )
     {
         final Bundle b = (Bundle) bundle;
         return (b.getEntry().isEmpty() ? null : b.getEntryFirstRep().getResource());
+    }
+
+    @Override
+    @Nonnull
+    protected List<? extends IBaseResource> getEntries( @Nonnull IBaseBundle bundle )
+    {
+        final Bundle b = (Bundle) bundle;
+        final List<Resource> resources = new ArrayList<>();
+        for ( final BundleEntryComponent entry : b.getEntry() )
+        {
+            resources.add( entry.getResource() );
+        }
+        return resources;
     }
 }

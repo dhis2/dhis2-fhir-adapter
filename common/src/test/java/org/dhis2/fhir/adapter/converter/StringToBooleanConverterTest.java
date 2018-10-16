@@ -33,6 +33,8 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link StringToBooleanConverter}.
+ *
+ * @author volsch
  */
 public class StringToBooleanConverterTest
 {

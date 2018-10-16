@@ -87,6 +87,13 @@ and includes the configuration with sample data.
 The project can also be imported into an IDE like IntelliJ IDEA ULTIMATE where it can be built automatically.
 
 ### Running
+Since the database scripts are not yet versioned for every check-in into the source code repository, the application will not start when there is a database change and the database must be cleaned (just for development version). Cleaning of the database 
+can be done by executing the following command in folder fhir in the console:
+
+    mvn -Psample flyway:clean
+    
+The database will be reinitialized when starting the adapter.
+
 The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). In IntelliJ IDEA ULTIMATE also class org.dhis2.fhir.adapter.App can be used to start the Adapter as Spring Boot application without an external servlet 
 container.
 

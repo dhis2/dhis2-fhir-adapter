@@ -49,11 +49,11 @@ public interface RemoteSubscriptionResourceRepository extends JpaRepository<Remo
 {
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE r.id=:resourceId" )
     @Nonnull
-    Optional<RemoteSubscriptionResource> getOneForWebHookEvaluation( @Param( "resourceId" ) @Nonnull UUID resourceId );
+    Optional<RemoteSubscriptionResource> findOneForWebHookEvaluation( @Param( "resourceId" ) @Nonnull UUID resourceId );
 
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s LEFT JOIN FETCH s.remoteHeaders WHERE r.id=:resourceId" )
     @Nonnull
-    Optional<RemoteSubscriptionResource> getOneForSubscriptionProcessing( @Param( "resourceId" ) @Nonnull UUID resourceId );
+    Optional<RemoteSubscriptionResource> findOneForSubscriptionProcessing( @Param( "resourceId" ) @Nonnull UUID resourceId );
 
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType" )
     @Nonnull

@@ -28,32 +28,33 @@ package org.dhis2.fhir.adapter.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.springframework.stereotype.Component;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-@Component
-@ConvertedValueTypes( types = { ValueType.TEXT, ValueType.NUMBER } )
-public class DoubleToTextStringConverter extends TypedConverter<Double, String>
+/**
+ * Unit test for {@link BooleanToStringConverter}.
+ *
+ * @author volsch
+ */
+public class BooleanToStringConverterTest
 {
-    public static final String SKIPPED_FLOATING_POINT_EXTENSION = ".0";
+    private BooleanToStringConverter converter = new BooleanToStringConverter();
 
-    public DoubleToTextStringConverter()
+    @Test
+    public void doConvertTrue()
     {
-        super( Double.class, String.class );
+        Assert.assertEquals( "true", converter.convert( true ) );
     }
 
-    @Nullable
-    @Override
-    public String doConvert( @Nonnull Double source ) throws ConversionException
+    @Test
+    public void doConvertFalse()
     {
-        final String result = source.toString();
-        if ( result.endsWith( SKIPPED_FLOATING_POINT_EXTENSION ) )
-        {
-            return result.substring( 0, result.length() - SKIPPED_FLOATING_POINT_EXTENSION.length() );
-        }
-        return result;
+        Assert.assertEquals( "false", converter.convert( false ) );
+    }
+
+    @Test
+    public void doConvertNull()
+    {
+        Assert.assertNull( "true", converter.convert( null ) );
     }
 }

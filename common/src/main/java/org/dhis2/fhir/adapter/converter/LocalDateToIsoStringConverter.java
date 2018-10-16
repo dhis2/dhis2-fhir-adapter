@@ -34,6 +34,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Converts a local date to a ISO local date string with system time zone.
+ *
+ * @author volsch
+ */
 public class LocalDateToIsoStringConverter extends TypedConverter<LocalDate, String>
 {
     private final ZoneId zoneId = ZoneId.systemDefault();

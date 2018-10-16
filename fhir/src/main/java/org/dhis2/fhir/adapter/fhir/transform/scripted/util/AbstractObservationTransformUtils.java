@@ -31,6 +31,9 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,9 +44,18 @@ public abstract class AbstractObservationTransformUtils extends AbstractFhirToDh
 {
     private static final String SCRIPT_ATTR_NAME = "observationUtils";
 
-    protected AbstractObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    public static final String COMPONENT_SEPARATOR = "\n";
+
+    private final AbstractFhirClientTransformUtils clientTransformUtils;
+
+    private final AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils;
+
+    protected AbstractObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull AbstractFhirClientTransformUtils clientTransformUtils, @Nonnull AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils )
     {
         super( scriptExecutionContext );
+        this.clientTransformUtils = clientTransformUtils;
+        this.codeTransformerUtils = codeTransformerUtils;
     }
 
     @Nonnull
@@ -53,7 +65,32 @@ public abstract class AbstractObservationTransformUtils extends AbstractFhirToDh
         return SCRIPT_ATTR_NAME;
     }
 
+    @Nonnull
+    protected AbstractCodeFhirToDhisTransformerUtils getCodeTransformerUtils()
+    {
+        return codeTransformerUtils;
+    }
+
+    @Nonnull
+    public abstract String getResourceName();
+
+    @Nullable
+    public abstract ICompositeType getCodes( @Nullable IBaseResource resource );
+
+    @Nullable
+    public abstract String getComponentText( @Nullable IBaseResource resource );
+
     @Nullable
     public abstract IBaseBackboneElement getBackboneElement( @Nullable List<? extends IBaseBackboneElement> backboneElements,
         @Nonnull String system, @Nonnull String code );
+
+    @Nullable
+    public IBaseResource queryLatestPrioritizedByMappedCodes(
+        @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId,
+        @Nullable Object mappedCodes, @Nullable Integer maxCount, String... filter )
+    {
+        return clientTransformUtils.queryLatestPrioritizedByMappedCodes( getResourceName(),
+            referencedResourceParameter, referencedResourceType, referencedResourceId, "code",
+            mappedCodes, r -> codeTransformerUtils.getSystemCodeValues( getCodes( r ) ), maxCount, filter );
+    }
 }

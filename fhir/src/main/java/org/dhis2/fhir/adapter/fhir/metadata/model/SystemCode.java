@@ -28,8 +28,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,6 +41,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -81,7 +86,7 @@ public class SystemCode implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {
@@ -163,5 +168,13 @@ public class SystemCode implements Serializable
     public void setSystem( System system )
     {
         this.system = system;
+    }
+
+    @Transient
+    @JsonIgnore
+    @Nonnull
+    public SystemCodeValue getSystemCodeValue()
+    {
+        return new SystemCodeValue( getSystem().getSystemUri(), getSystemCode() );
     }
 }

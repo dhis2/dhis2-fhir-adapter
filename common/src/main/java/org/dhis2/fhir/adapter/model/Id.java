@@ -32,8 +32,14 @@ import javax.annotation.Nullable;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 
+/**
+ * Contains a single string ID. The purpose of this class is mainly for serializing and
+ * de-serializing JSON where the sub structure includes only one ID.
+ *
+ * @author volsch
+ */
 @Embeddable
-public class Id implements Identifiable, Serializable
+public class Id implements Identifiable<String>, Serializable
 {
     private static final long serialVersionUID = -7860335236215947653L;
 

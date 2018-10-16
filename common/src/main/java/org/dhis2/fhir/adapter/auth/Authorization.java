@@ -31,17 +31,28 @@ package org.dhis2.fhir.adapter.auth;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 
+/**
+ * Instances hold the authorization header.
+ *
+ * @author volsch
+ */
 public class Authorization implements Serializable
 {
     private static final long serialVersionUID = 2988328765039307855L;
 
     private final String authorization;
 
-    public Authorization( @Nullable String authentication )
+    /**
+     * @param authorization the authorization header.
+     */
+    public Authorization( @Nullable String authorization )
     {
-        this.authorization = authentication;
+        this.authorization = authorization;
     }
 
+    /**
+     * @return the authorization header or <code>null</code> if no authorization header should be used.
+     */
     @Nullable
     public String getAuthorization()
     {

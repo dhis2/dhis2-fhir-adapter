@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.model.Identifiable;
 
 import javax.annotation.Nonnull;
 
-public interface DhisResource extends Identifiable
+public interface DhisResource extends Identifiable<String>
 {
     @Nonnull
     DhisResourceType getResourceType();

@@ -30,13 +30,13 @@ package org.dhis2.fhir.adapter.fhir.transform.remote.dstu3;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
-import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteWebHookProcessor;
+import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Immunization;
@@ -153,14 +153,14 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     {
         final Date fromLastUpdated = Date.from( subscriptionResource.getRemoteLastUpdate().minusMinutes(
             subscriptionResource.getRemoteSubscription().getToleranceMinutes() ).atZone( ZoneId.systemDefault() ).toInstant() );
-        final IGenericClient client = createFhirClient( subscriptionResource );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription() );
 
         final Set<ProcessedResource> currentProcessedResources = new HashSet<>();
         final LocalDateTime lastUpdated = LocalDateTime.now();
         logger.info( "Querying for resource type {} of subscription resource {}.", resourceType, subscriptionResource.getId() );
         IQuery<IBaseBundle> query = addAllIncludes( client.search().forResource( resourceClass ), includes );
-        Bundle result = (Bundle) query.count( 1000 ).lastUpdated( new DateRangeParam( fromLastUpdated, null ) )
-            .sort().ascending( "_lastUpdated" ).execute();
+        Bundle result = (Bundle) query.cacheControl( new CacheControlDirective().setNoCache( true ) ).count( 1000 )
+            .lastUpdated( new DateRangeParam( fromLastUpdated, null ) ).sort().ascending( "_lastUpdated" ).execute();
         do
         {
             logger.info( "Queried {} entries for resource type {} of subscription resource {}.", result.getEntry().size(), resourceType, subscriptionResource.getId() );
@@ -212,22 +212,6 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         processedResourcesByResourceId.put( subscriptionResource.getId(), currentProcessedResources );
 
         return lastUpdated;
-    }
-
-    @Nonnull
-    protected IGenericClient createFhirClient( @Nonnull RemoteSubscriptionResource subscriptionResource )
-    {
-        final IGenericClient client = fhirContext.newRestfulGenericClient( subscriptionResource.getRemoteSubscription().getRemoteBaseUrl() );
-        if ( subscriptionResource.getRemoteSubscription().isLogging() )
-        {
-            client.registerInterceptor( new LoggingInterceptor( subscriptionResource.getRemoteSubscription().isVerboseLogging() ) );
-        }
-
-        final AdditionalRequestHeadersInterceptor requestHeadersInterceptor = new AdditionalRequestHeadersInterceptor();
-        subscriptionResource.getRemoteSubscription().getRemoteHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );
-        client.registerInterceptor( requestHeadersInterceptor );
-
-        return client;
     }
 
     @Nonnull

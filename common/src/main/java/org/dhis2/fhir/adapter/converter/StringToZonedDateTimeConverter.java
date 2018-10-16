@@ -37,6 +37,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Converts a ISO date time string into a zoned date time.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.DATETIME )
 public class StringToZonedDateTimeConverter extends TypedConverter<String, ZonedDateTime>

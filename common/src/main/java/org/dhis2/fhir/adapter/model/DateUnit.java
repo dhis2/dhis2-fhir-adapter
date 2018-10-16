@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
 import java.time.temporal.ChronoUnit;
 
 /**
- * The units of a date.
+ * The units of a date, which are mapped to chrono units.
  *
  * @author volsch
  */

@@ -172,10 +172,41 @@ CREATE TABLE fhir_code (
   code             VARCHAR(50)                    NOT NULL,
   description      TEXT,
   CONSTRAINT fhir_code_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_code_fk1 FOREIGN KEY (code_category_id) REFERENCES fhir_code_category (id)
+  CONSTRAINT fhir_code_fk1 FOREIGN KEY (code_category_id) REFERENCES fhir_code_category (id),
+  CONSTRAINT fhir_code_uk1 UNIQUE (name),
+  CONSTRAINT fhir_code_uk2 UNIQUE (code)
 );
 CREATE INDEX fhir_code_i1
   ON fhir_code (code_category_id);
+
+CREATE TABLE fhir_code_set (
+  id               UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
+  version          BIGINT                         NOT NULL,
+  created_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by  VARCHAR(11),
+  last_updated_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  code_category_id UUID                           NOT NULL,
+  name             VARCHAR(230)                   NOT NULL,
+  code             VARCHAR(50)                    NOT NULL,
+  description      TEXT,
+  CONSTRAINT fhir_code_set_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_code_set_fk1 FOREIGN KEY (code_category_id) REFERENCES fhir_code_category (id),
+  CONSTRAINT fhir_code_set_uk1 UNIQUE (name),
+  CONSTRAINT fhir_code_set_uk2 UNIQUE (code)
+);
+CREATE INDEX fhir_code_set_i1
+  ON fhir_code_set (code_category_id);
+
+CREATE TABLE fhir_code_set_value (
+  code_set_id      UUID    NOT NULL,
+  code_id          UUID    NOT NULL,
+  enabled          BOOLEAN NOT NULL DEFAULT TRUE,
+  CONSTRAINT fhir_code_set_value_pk PRIMARY KEY (code_set_id, code_id),
+  CONSTRAINT fhir_code_set_value_fk1 FOREIGN KEY (code_set_id) REFERENCES fhir_code_set (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_code_set_value_fk2 FOREIGN KEY (code_id) REFERENCES fhir_code (id) ON DELETE CASCADE
+);
+CREATE INDEX fhir_code_set_value_i1
+  ON fhir_code_set_value (code_id);
 
 CREATE TABLE fhir_system (
   id                    UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -227,15 +258,19 @@ CREATE TABLE fhir_rule (
   fhir_resource_type      VARCHAR(30)                    NOT NULL,
   dhis_resource_type      VARCHAR(30)                    NOT NULL,
   applicable_in_script_id UUID,
+  applicable_code_set_id  UUID,
   transform_in_script_id  UUID                           NOT NULL,
   CONSTRAINT fhir_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_rule_uk1 UNIQUE (name),
   CONSTRAINT fhir_rule_fk1 FOREIGN KEY (applicable_in_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_rule_fk2 FOREIGN KEY (transform_in_script_id) REFERENCES fhir_executable_script (id)
+  CONSTRAINT fhir_rule_fk2 FOREIGN KEY (applicable_code_set_id) REFERENCES fhir_code_set (id),
+  CONSTRAINT fhir_rule_fk3 FOREIGN KEY (transform_in_script_id) REFERENCES fhir_executable_script (id)
 );
 CREATE INDEX fhir_rule_i1
   ON fhir_rule (applicable_in_script_id);
 CREATE INDEX fhir_rule_i2
+  ON fhir_rule (applicable_code_set_id);
+CREATE INDEX fhir_rule_i3
   ON fhir_rule (transform_in_script_id);
 
 CREATE TABLE fhir_tracked_entity_rule (
@@ -477,6 +512,9 @@ This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LO
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('20f6d869-a767-461e-8c68-aa46a76ec5c4', 0, 'SNOMED CT', 'SYSTEM_SCT', 'http://snomed.info/sct',
 'SNOMED CT can be used to represent clinically relevant information consistently, reliably and comprehensively as an integral part of producing electronic health information.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('02d5719e-8859-445a-a815-5980d418b4e6', 0, 'RxNorm', 'SYSTEM_RXNORM', ' http://www.nlm.nih.gov/research/umls/rxnorm',
+'RxNorm is made available by the US National Library of Medicine at http://www.nlm.nih.gov/research/umls/rxnorm.');
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- BEGIN LOINC Code Descriptions
@@ -484,9 +522,12 @@ VALUES ('20f6d869-a767-461e-8c68-aa46a76ec5c4', 0, 'SNOMED CT', 'SYSTEM_SCT', 'h
 -- This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--- Definition of vital signs - body weight
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('1197b27e-3956-43dd-a75c-bfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('616e470e-fe84-46ac-a523-b23bbc526ae2', 0, 'Survey', 'SURVEY', 'Survey.');
+
+-- Definition of vital signs - body weight
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
 VALUES ('0d78f5e3-c9fd-4859-9768-fb7c898a4142', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight measured', 'VS_BODY_WEIGHT_MEASURED', 'Body weight measured');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
@@ -509,6 +550,16 @@ INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
 VALUES ('160ab849-ec01-42d3-81dc-056f28faf14d', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight NVSS', 'VS_BIRTH_WEIGHT_NVSS', 'Birth weight NVSS.');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
 VALUES ('644b6a02-160d-4021-b379-dcd8d8044684', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight reported', 'VS_BIRTH_WEIGHT_REPORTED', 'Birth weight reported.');
+
+-- Definition of survey - apgar score
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('5662bc32-974e-4d18-bddc-b10f510439e6', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '1 minute Apgar Score', 'SV_1M_APGAR_SCORE', '1 minute Apgar Score.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('41578332-0130-486a-bd61-82e85e521a79', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '2 minute Apgar Score', 'SV_2M_APGAR_SCORE', '2 minute Apgar Score.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('7b87fde7-7a3a-4124-aa63-06dbe26551b4', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '5 minute Apgar Score', 'SV_5M_APGAR_SCORE', '5 minute Apgar Score.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
+VALUES ('9e64ae16-17c5-4fb0-97aa-eaca42c70c12', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '10 minute Apgar Score', 'SV_10M_APGAR_SCORE', '10 minute Apgar Score.');
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- END LOINC Code Descriptions
@@ -939,9 +990,67 @@ VALUES ('208ea7e0-0a54-4c6a-a7a8-38020f832706', 0, '160ab849-ec01-42d3-81dc-056f
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
 VALUES ('b5f8e621-7b10-4a75-b7ef-94f39b2da575', 0, '644b6a02-160d-4021-b379-dcd8d8044684', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '56056-5');
 
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('7e41f1d3-8b47-490b-8288-c2da5a3c6e66', 0, '5662bc32-974e-4d18-bddc-b10f510439e6', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '9272-6');
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('f02c011e-804e-4986-8c9f-160cb7f35fb8', 0, '41578332-0130-486a-bd61-82e85e521a79', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '9273-4');
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('3360df97-4c4b-447a-9cc4-7f877a21bb15', 0, '7b87fde7-7a3a-4124-aa63-06dbe26551b4', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '9274-2');
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code)
+VALUES ('ea64a79f-4ad6-4f02-89e9-179549241425', 0, '9e64ae16-17c5-4fb0-97aa-eaca42c70c12', 'f6e720a2-e9ff-43a8-a2fd-d5636106297b', '9271-8');
+
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- END LOINC Codes
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Code set with all BCG vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('7348c790-136f-4b4b-a974-f241fb5dbb55', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'All BCG', 'ALL_BCG', 'All BCG vaccines.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT '7348c790-136f-4b4b-a974-f241fb5dbb55', id FROM fhir_code WHERE code IN ('VACCINE_19');
+
+-- Code set with all DTP/DTaP vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('bb66ee91-8e86-422c-bb00-5a90ac95a558', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'All DTP/DTaP', 'ALL_DTP_DTAP', 'All DTP/DTaP vaccines.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'bb66ee91-8e86-422c-bb00-5a90ac95a558', id FROM fhir_code WHERE code IN ('VACCINE_01', 'VACCINE_102', 'VACCINE_106', 'VACCINE_107', 'VACCINE_110', 'VACCINE_120', 'VACCINE_130', 'VACCINE_132', 'VACCINE_146', 'VACCINE_170', 'VACCINE_20', 'VACCINE_22', 'VACCINE_50');
+
+-- Code set with all OPV vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('bf62319c-d93c-444d-a47c-b91133b3f99a', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'All OPV', 'ALL_OPV', 'All OPV vaccines.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'bf62319c-d93c-444d-a47c-b91133b3f99a', id FROM fhir_code WHERE code IN ('VACCINE_02', 'VACCINE_179', 'VACCINE_178', 'VACCINE_182');
+
+-- Code set with all Measles vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('31c6b008-eb0d-48a3-970d-70725b92bd24', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'All Measles', 'ALL_MEASLES', 'All Measles vaccines.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT '31c6b008-eb0d-48a3-970d-70725b92bd24', id FROM fhir_code WHERE code IN ('VACCINE_03', 'VACCINE_04', 'VACCINE_05', 'VACCINE_94');
+
+-- Code set with all Yellow Fever vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('f3769ff6-e994-4182-8d56-572a23b48312', 0, '7090561e-f45b-411e-99c0-65fa1d145018', 'All Yellow Fever', 'ALL_YELLOW_FEVER', 'All Yellow Fever vaccines.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'f3769ff6-e994-4182-8d56-572a23b48312', id FROM fhir_code WHERE code IN ('VACCINE_37', 'VACCINE_183', 'VACCINE_184');
+
+-- Code set with all Birth Weight Observations
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('d4aa72e9-b57e-4d5c-8856-860ebdf460af', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'All Birth Weight Observations', 'ALL_OB_BIRTH_WEIGHT', 'All Birth Weight Observations.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'd4aa72e9-b57e-4d5c-8856-860ebdf460af', id FROM fhir_code WHERE code IN ('VS_BIRTH_WEIGHT_GNWCH', 'VS_BIRTH_WEIGHT_MEASURED', 'VS_BIRTH_WEIGHT_NVSS', 'VS_BIRTH_WEIGHT_REPORTED');
+
+-- Code set with all Apgar Score Observations
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('39457ebd-308c-4a44-9302-6fa47aa57b3b', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', 'All Apgar Score Observations', 'ALL_OB_APGAR_SCORE', 'All Apgar Score Observations.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT '39457ebd-308c-4a44-9302-6fa47aa57b3b', id FROM fhir_code WHERE code IN ('SV_10M_APGAR_SCORE', 'SV_5M_APGAR_SCORE', 'SV_2M_APGAR_SCORE', 'SV_1M_APGAR_SCORE');
+
+-- Code set with all Body Weight Observations
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('d37dfecb-ce88-4fa4-9a78-44ffe874c140', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'All Body Weight Observations', 'ALL_OB_BODY_WEIGHT', 'All Body Weight Observations.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'd37dfecb-ce88-4fa4-9a78-44ffe874c140', id FROM fhir_code WHERE code IN
+  ('VS_BODY_WEIGHT_MEASURED', 'VS_BODY_WEIGHT', 'VS_BODY_WEIGHT_REPORTED_USUAL', 'VS_BODY_WEIGHT_MEASURED_CLOTHES', 'VS_BODY_WEIGHT_MEASURED_WO_CLOTHES', 'VS_BODY_WEIGHT_ESTIMATED', 'VS_BODY_WEIGHT_STATED');
 
 -- Script that returns boolean value true every time
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1128,13 +1237,48 @@ VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 0, '73175d8e-faad-458f-b38f-14ff
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 'DSTU3');
 
--- Executable script that checks if FHIR Observation contains the birth weight
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('71f0f503-1400-492c-b016-f586e58805d0', '73175d8e-faad-458f-b38f-14ff87032720',
-'Observation Birth Weight Applicable', 'OB_BIRTH_WEIGHT_APPLICABLE', 'Checks if given FHIR Observation contains the Birth Weight and is therefore applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('385eb990-92c0-4a90-b068-658963285bd0', 0, '71f0f503-1400-492c-b016-f586e58805d0', 'f08bc5b3-0aef-4707-8959-65d7cf690134',
-'VS_BIRTH_WEIGHT_GNWCH|VS_BIRTH_WEIGHT_MEASURED|VS_BIRTH_WEIGHT_NVSS|VS_BIRTH_WEIGHT_REPORTED');
+-- Script that sets for a data element the Apgar Score
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('d69681b8-2e37-42d7-b229-9ed21ce76cf3', 0, 'TRANSFORM_FHIR_OB_APGAR_SCORE', 'Transforms FHIR Observation Apgar Score', 'Transforms FHIR Observation Apgar Score to a data element.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d69681b8-2e37-42d7-b229-9ed21ce76cf3', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d69681b8-2e37-42d7-b229-9ed21ce76cf3', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d69681b8-2e37-42d7-b229-9ed21ce76cf3', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('3fdad25a-63ce-4754-9a37-602b08bd8396', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element on which the apgar score must be set.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('e9587a64-9abb-484c-b054-d76ddf2e83d1', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
+'commentDataElement', 'DATA_ELEMENT_REF', FALSE, NULL, 'Data element on which the apgar score comment must be set.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, array_value, mandatory, default_value, description)
+VALUES ('65cefdfe-eaaa-4aa1-82d3-bbba005dc327', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
+'mappedApgarScoreCodes', 'CODE', TRUE, TRUE, 'SV_10M_APGAR_SCORE|SV_5M_APGAR_SCORE|SV_2M_APGAR_SCORE|SV_1M_APGAR_SCORE',
+'Mapped Apgar Score codes in order of their relevance. The first Apgar Score code is more relevant than the last one.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('2e378bc2-9ed6-42e5-8337-0ee8bbf22fbf', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
+'maxCommentApgarScore', 'INTEGER', FALSE, NULL, 'The maximum Apgar Score for which a comment is recorded.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('628348ae-9a40-4f0d-af78-5c6e0bfa1c6d', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
+'var updated = false; var latestApgarScore = observationUtils.queryLatestPrioritizedByMappedCodes(''subject'', ''Patient'', input.getSubject().getReferenceElement(), args[''mappedApgarScoreCodes''], null);
+if ((latestApgarScore != null) && latestApgarScore.hasValueQuantity())
+{
+  var apgarScore = latestApgarScore.getValueQuantity().getValue();
+  updated = output.setValue(args[''dataElement''], apgarScore, null, context.getFhirRequest().getLastUpdated());
+  if (updated && (args[''commentDataElement''] != null))
+  {
+    if ((args[''maxCommentApgarScore''] == null) || (apgarScore <= args[''maxCommentApgarScore'']))
+    {
+      output.setValue(args[''commentDataElement''], observationUtils.getComponentText(latestApgarScore));
+    }
+    else
+    {
+      output.setValue(args[''commentDataElement''], null);
+    }
+  }
+}
+updated', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('628348ae-9a40-4f0d-af78-5c6e0bfa1c6d', 'DSTU3');
 
 -- Script that sets for a data element the birth weight with a specific weight unit
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
@@ -1157,14 +1301,6 @@ VALUES ('05485e11-fb1f-4fc1-8518-f9322dfb7dbb', 0, '50a60c9b-d7f2-4cea-bbc7-b633
 'output.setValue(args[''dataElement''], vitalSignUtils.getWeight(input.value, args[''weightUnit''], args[''round'']), null, context.getFhirRequest().getLastUpdated())', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('05485e11-fb1f-4fc1-8518-f9322dfb7dbb', 'DSTU3');
-
--- Executable script that checks if FHIR Observation contains the body weight
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('3b60104b-7e5d-4464-abd4-9f5b0b836f89', '73175d8e-faad-458f-b38f-14ff87032720',
-'Observation Body Weight Applicable', 'OB_BODY_WEIGHT_APPLICABLE', 'Checks if given FHIR Observation contains the Body Weight and is therefore applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('69d49d59-2e6b-41c0-b12f-938389facabb', 0, '3b60104b-7e5d-4464-abd4-9f5b0b836f89', 'f08bc5b3-0aef-4707-8959-65d7cf690134',
-'VS_BODY_WEIGHT_MEASURED|VS_BODY_WEIGHT|VS_BODY_WEIGHT_REPORTED_USUAL|VS_BODY_WEIGHT_MEASURED_CLOTHES|VS_BODY_WEIGHT_MEASURED_WO_CLOTHES|VS_BODY_WEIGHT_ESTIMATED|VS_BODY_WEIGHT_STATED');
 
 -- Script that sets for a data element the body weight with a specific weight unit
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
@@ -1249,16 +1385,15 @@ VALUES ('44a6c99c-c83c-4061-acd2-39e4101de147', 0, 'IMMUNIZATION', 'a08caa8a-1cc
 
 -- Script that checks if given FHIR Immunization is applicable
 INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
-VALUES ('ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 0, 'FHIR Immunization Measles Applicable', 'FHIR_IMMUNIZATION_APPLICABLE', 'Checks if given FHIR Immunization is applicable for a data element.', 'EVALUATE', 'BOOLEAN', 'FHIR_IMMUNIZATION', NULL);
+VALUES ('ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 0, 'FHIR Immunization Applicable', 'FHIR_IMMUNIZATION_APPLICABLE', 'Checks if given FHIR Immunization is applicable since it has been given.', 'EVALUATE', 'BOOLEAN', 'FHIR_IMMUNIZATION', NULL);
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'INPUT');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
-VALUES ('bd1b72d1-a07a-4513-a0aa-6544a04fde6d', 0, 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0',
-'mappedVaccineCodes', 'CODE', TRUE, TRUE, NULL, 'Mapped vaccine codes that define if the FHIR Immunization is applicable for processing.');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('2f04a7c3-7041-4c12-aa75-748862271818', 0, 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', '!input.notGiven && codeUtils.containsMappedCode(input.vaccineCode, args[''mappedVaccineCodes''])', 'JAVASCRIPT');
+VALUES ('2f04a7c3-7041-4c12-aa75-748862271818', 0, 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', '!input.notGiven', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('2f04a7c3-7041-4c12-aa75-748862271818', 'DSTU3');
+INSERT INTO fhir_executable_script (id, script_id, name, code)
+VALUES ('a88b2c6a-508f-4d02-bcfd-bba0a804b340', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization Applicable', 'FHIR_IMMUNIZATION_APPLICABLE');
 
 -- Script that sets for a data element if a FHIR Immunization has been given
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
@@ -1294,39 +1429,8 @@ VALUES ('081c4642-bb83-44ab-b90f-aa206ad347aa', 0, 'f18acd12-bc85-4f79-935d-3539
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('081c4642-bb83-44ab-b90f-aa206ad347aa', 'DSTU3');
 
--- Executable script that checks if the FHIR Immunization contains any BCG vaccine and is therefore applicable for processing
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('c91a85ae-437b-455c-931d-0d64e0e4d29b', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization BCG Applicable', 'FHIR_IMMUNIZATION_BCG_APPLICABLE', 'Checks if given FHIR Immunization is a BCG vaccine and is applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('1c34271c-e759-4a40-a968-c036a8227828', 0, 'c91a85ae-437b-455c-931d-0d64e0e4d29b', 'bd1b72d1-a07a-4513-a0aa-6544a04fde6d', 'VACCINE_19');
-
--- Executable script that checks if the FHIR Immunization contains any DTP/DTaP vaccine and is therefore applicable for processing
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('ac0257b3-105d-4a63-85cc-7a2cc85b1130', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization DTP/DTaP Applicable', 'FHIR_IMMUNIZATION_DTP_APPLICABLE', 'Checks if given FHIR Immunization is a DTP/DTaP vaccine and is applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('f9055c09-3c35-425d-9ff0-0e7745b90be3', 0, 'ac0257b3-105d-4a63-85cc-7a2cc85b1130', 'bd1b72d1-a07a-4513-a0aa-6544a04fde6d',
-'VACCINE_01|VACCINE_102|VACCINE_106|VACCINE_107|VACCINE_110|VACCINE_120|VACCINE_130|VACCINE_132|VACCINE_146|VACCINE_170|VACCINE_20|VACCINE_22|VACCINE_50');
-
--- Executable script that checks if the FHIR Immunization contains a OPV vaccine and is therefore applicable for processing
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('d6a9cf3e-10a3-4d1c-951c-c677905f89ed', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization OPV Applicable', 'FHIR_IMMUNIZATION_OPV_APPLICABLE', 'Checks if given FHIR Immunization is a OPV vaccine and is applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('78da58e5-2fc8-467c-b6fe-087428ff84fc', 0, 'd6a9cf3e-10a3-4d1c-951c-c677905f89ed', 'bd1b72d1-a07a-4513-a0aa-6544a04fde6d', 'VACCINE_02|VACCINE_179|VACCINE_178|VACCINE_182');
-
--- Executable script that checks if the FHIR Immunization contains a measles vaccine and is therefore applicable for processing
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('1f4e3e5e-1287-48fa-b4cd-e936f59cc169', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization Measles Applicable', 'FHIR_IMMUNIZATION_MEASLES_APPLICABLE', 'Checks if given FHIR Immunization is a measles vaccine and is applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('cf6c3462-1396-435b-ab07-f515d92a1ab2', 0, '1f4e3e5e-1287-48fa-b4cd-e936f59cc169', 'bd1b72d1-a07a-4513-a0aa-6544a04fde6d', 'VACCINE_03|VACCINE_04|VACCINE_05|VACCINE_94');
-
 -- Rule FHIR Patient to tracked entity type Person
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref, tracked_entity_identifier_fq)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier', FALSE);
-
--- Executable script that checks if the FHIR Immunization contains a Yellow Fever vaccine and is therefore applicable for processing
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('6f3f556e-3bdb-4705-a962-5fc7d4e3cf66', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization Yellow Fever Applicable', 'FHIR_IMMUNIZATION_YELLOW_FEVER_APPLICABLE', 'Checks if given FHIR Immunization is a Yellow Fever vaccine and is applicable.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('3b0128d0-b4b9-4b40-a5c0-672bd3c087e0', 0, '6f3f556e-3bdb-4705-a962-5fc7d4e3cf66', 'bd1b72d1-a07a-4513-a0aa-6544a04fde6d', 'VACCINE_37|VACCINE_183|VACCINE_184');

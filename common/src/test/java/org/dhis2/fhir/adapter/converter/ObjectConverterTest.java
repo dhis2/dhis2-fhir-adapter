@@ -46,6 +46,7 @@ public class ObjectConverterTest
         Assert.assertNull( converter.convert( null ) );
     }
 
+    @Test
     public void doConvert()
     {
         final Object o = new Object();

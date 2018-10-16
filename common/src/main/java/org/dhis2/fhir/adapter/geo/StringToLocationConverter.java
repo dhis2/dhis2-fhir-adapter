@@ -38,10 +38,16 @@ import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Converts a string to a {@link Location}. The format of the string <code>[10.92,-24.212]</code> where the first
+ * value is the longitude and the second value is the latitude.
+ *
+ * @author volsch
+ */
 @ConvertedValueTypes( types = ValueType.COORDINATE )
 public class StringToLocationConverter extends TypedConverter<String, Location>
 {
-    private static final Pattern LOCATION_PATTERN = Pattern.compile( "\\s*\\[\\s*([\\d.eE]+)\\s*,\\s*([\\d.eE]+)\\s*]\\s*" );
+    private static final Pattern LOCATION_PATTERN = Pattern.compile( "\\s*\\[\\s*([+\\-\\d.eE]+)\\s*,\\s*([+\\-\\d.eE]+)\\s*]\\s*" );
 
     public StringToLocationConverter()
     {

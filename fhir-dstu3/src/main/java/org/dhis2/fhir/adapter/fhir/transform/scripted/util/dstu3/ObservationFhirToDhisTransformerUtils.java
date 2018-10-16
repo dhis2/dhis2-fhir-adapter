@@ -32,8 +32,12 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractObservationTransformUtils;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
+import org.hl7.fhir.dstu3.model.ResourceType;
 import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -45,12 +49,10 @@ import java.util.Set;
 @Scriptable
 public class ObservationFhirToDhisTransformerUtils extends AbstractObservationTransformUtils
 {
-    private final CodeFhirToDhisTransformerUtils codeTransformerUtils;
-
-    public ObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeFhirToDhisTransformerUtils codeTransformerUtils )
+    public ObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirClientTransformUtils clientTransformUtils,
+        @Nonnull CodeFhirToDhisTransformerUtils codeTransformerUtils )
     {
-        super( scriptExecutionContext );
-        this.codeTransformerUtils = codeTransformerUtils;
+        super( scriptExecutionContext, clientTransformUtils, codeTransformerUtils );
     }
 
     @Nonnull
@@ -58,6 +60,45 @@ public class ObservationFhirToDhisTransformerUtils extends AbstractObservationTr
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    public String getResourceName()
+    {
+        return ResourceType.Observation.name();
+    }
+
+    @Nullable
+    @Override
+    public ICompositeType getCodes( @Nullable IBaseResource resource )
+    {
+        return (resource == null) ? null : ((Observation) resource).getCode();
+    }
+
+    @Nullable
+    @Override
+    public String getComponentText( @Nullable IBaseResource resource )
+    {
+        final Observation observation = (Observation) resource;
+        if ( (observation == null) || !observation.hasComponent() )
+        {
+            return null;
+        }
+
+        final StringBuilder text = new StringBuilder();
+        for ( final ObservationComponentComponent component : observation.getComponent() )
+        {
+            if ( component.hasValueStringType() )
+            {
+                if ( text.length() > 0 )
+                {
+                    text.append( COMPONENT_SEPARATOR );
+                }
+                text.append( component.getValue().toString() );
+            }
+        }
+        return (text.length() == 0) ? null : text.toString();
     }
 
     @Override
@@ -68,7 +109,8 @@ public class ObservationFhirToDhisTransformerUtils extends AbstractObservationTr
         {
             return null;
         }
-        return backboneElements.stream().map( ObservationComponentComponent.class::cast ).filter( c -> codeTransformerUtils.containsCode( c.getCode(), system, code ) )
+        return backboneElements.stream().map( ObservationComponentComponent.class::cast )
+            .filter( c -> getCodeTransformerUtils().containsCode( c.getCode(), system, code ) )
             .findFirst().orElse( new ObservationComponentComponent() );
     }
 }

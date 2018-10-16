@@ -32,6 +32,12 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
+/**
+ * Contains the username and password for authentication. Neither the username nor the
+ * password must be blank. Both must be filled and validation may be performed.
+ *
+ * @author volsch
+ */
 public class UsernamePassword implements Serializable
 {
     private static final long serialVersionUID = 4203081035958199606L;

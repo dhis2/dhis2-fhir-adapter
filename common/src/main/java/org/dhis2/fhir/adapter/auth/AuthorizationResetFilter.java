@@ -37,10 +37,21 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.io.IOException;
 
+/**
+ * Servlet filter that resets the authorization safely after returning from the request.
+ *
+ * @author volsch
+ */
 public class AuthorizationResetFilter implements Filter
 {
+    /**
+     * The authorization context of the current scope.
+     */
     private final AuthorizationContext authorizationContext;
 
+    /**
+     * @param authorizationContext the authorization context of the current scope..
+     */
     public AuthorizationResetFilter( @Nonnull AuthorizationContext authorizationContext )
     {
         this.authorizationContext = authorizationContext;

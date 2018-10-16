@@ -29,16 +29,32 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Scriptable
 public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "codeUtils";
+
+    private static final List<String> GET_CODE_METHOD_NAMES = Collections.unmodifiableList( Arrays.asList( "getCode", "getVaccineCode" ) );
+
+    private volatile Map<Class<? extends IDomainResource>, Method> codeMethods = new HashMap<>();
 
     protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -52,10 +68,63 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
         return SCRIPT_ATTR_NAME;
     }
 
+    @Nonnull
+    public abstract List<SystemCodeValue> getSystemCodeValues( @Nullable ICompositeType codeableConcept );
+
     @Nullable
     public abstract String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system );
 
     public abstract boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes );
 
     public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
+
+    @Nullable
+    protected abstract List<SystemCodeValue> getSystemCodeValues( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod );
+
+    @Nullable
+    public List<SystemCodeValue> getResourceCodes( @Nullable IBaseResource baseResource ) throws TransformerException
+    {
+        if ( baseResource == null )
+        {
+            throw new TransformerMappingException( "Cannot get codes of undefined domain resource." );
+        }
+        if ( !(baseResource instanceof IDomainResource) )
+        {
+            return null;
+        }
+
+        final IDomainResource domainResource = (IDomainResource) baseResource;
+        final Method method = getCodeMethod( domainResource );
+        if ( method != null )
+        {
+            return getSystemCodeValues( domainResource, method );
+        }
+        return null;
+    }
+
+    @Nullable
+    private Method getCodeMethod( @Nonnull IDomainResource domainResource )
+    {
+        final Class<? extends IDomainResource> domainResourceClass = domainResource.getClass();
+        final Map<Class<? extends IDomainResource>, Method> codeMethods = this.codeMethods;
+        if ( codeMethods.containsKey( domainResourceClass ) )
+        {
+            return codeMethods.get( domainResourceClass );
+        }
+
+        Method method = null;
+        for ( final String methodName : GET_CODE_METHOD_NAMES )
+        {
+            method = ReflectionUtils.findMethod( domainResource.getClass(), methodName );
+            if ( method != null )
+            {
+                break;
+            }
+        }
+        final Map<Class<? extends IDomainResource>, Method> copiedCodeMethods = new HashMap<>( codeMethods );
+        copiedCodeMethods.put( domainResourceClass, method );
+        this.codeMethods = copiedCodeMethods;
+
+        return method;
+    }
 }

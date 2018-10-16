@@ -37,9 +37,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -67,6 +71,7 @@ public class Code implements Serializable
     private String code;
     private String description;
     private CodeCategory codeCategory;
+    private Collection<SystemCode> systemCodes;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -82,7 +87,7 @@ public class Code implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {
@@ -176,5 +181,31 @@ public class Code implements Serializable
     public void setCodeCategory( CodeCategory codeCategory )
     {
         this.codeCategory = codeCategory;
+    }
+
+    @OneToMany( mappedBy = "code" )
+    public Collection<SystemCode> getSystemCodes()
+    {
+        return systemCodes;
+    }
+
+    public void setSystemCodes( Collection<SystemCode> systemCodes )
+    {
+        this.systemCodes = systemCodes;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        Code that = (Code) o;
+        return Objects.equals( id, that.id ) && Objects.equals( name, that.name );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( id, name );
     }
 }

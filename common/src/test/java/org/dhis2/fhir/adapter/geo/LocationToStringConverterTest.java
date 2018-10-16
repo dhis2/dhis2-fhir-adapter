@@ -33,6 +33,8 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link LocationToStringConverter}.
+ *
+ * @author volsch
  */
 public class LocationToStringConverterTest
 {
@@ -42,5 +44,11 @@ public class LocationToStringConverterTest
     public void doConvert()
     {
         Assert.assertEquals( "[10.91,-67.124]", converter.convert( new Location( 10.91, -67.124 ) ) );
+    }
+
+    @Test
+    public void doConvertNull()
+    {
+        Assert.assertNull( converter.convert( null ) );
     }
 }

@@ -42,4 +42,5 @@
   </parent>
 
   <name>dhis2-fhir-adapter-common</name>
+  <description>Contains the common framework and utility classes that do neither depend on DHIS2 (except DHIS2 value type) nor on FHIR.</description>
 </project>

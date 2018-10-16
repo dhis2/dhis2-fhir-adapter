@@ -47,6 +47,7 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.codesystems.ObservationCategory;
 
 import java.math.BigDecimal;
@@ -279,6 +280,36 @@ public class DemoClient
             TemporalPrecisionEnum.DAY ) );
         bw3.setValue( new Quantity().setValue( 3100 ).setSystem( "http://unitsofmeasure.org" ).setCode( "g" ) );
 
+        //////////////
+        // Apgar Score
+        //////////////
+
+        Observation as10 = new Observation();
+        as10.setId( IdType.newRandomUuid() );
+        as10.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
+        as10.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9271-8" ) ) );
+        as10.getSubject().setReference( child.getId() );
+        as10.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        as10.addComponent().setCode( new CodeableConcept().addCoding(
+            new Coding().setSystem( "http://loinc.org/la" ).setCode( "LA6724-4" ).setDisplay( "Good color all over" ) ) )
+            .setValue( new StringType( "2. Good color all over" ) );
+        as10.addComponent().setCode( new CodeableConcept().addCoding(
+            new Coding().setSystem( "http://loinc.org/la" ).setCode( "LA6718-6" ).setDisplay( "At least 100 beats per minute" ) ) )
+            .setValue( new StringType( "2. At least 100 beats per minute" ) );
+        as10.setValue( new Quantity().setValue( 10 ).setCode( "{score}" ) );
+
+        Observation as2 = new Observation();
+        as2.setId( IdType.newRandomUuid() );
+        as2.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
+        as2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9273-4" ) ) );
+        as2.getSubject().setReference( child.getId() );
+        as2.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        as2.setValue( new Quantity().setValue( 4 ).setCode( "{score}" ) );
+
         ////////////////////////
         // Last Menstrual Period
         ////////////////////////
@@ -383,6 +414,18 @@ public class DemoClient
         bundle.addEntry()
             .setResource( bw3 )
             .setFullUrl( bw3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( as10 )
+            .setFullUrl( as10.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( as2 )
+            .setFullUrl( as2.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Observation" );

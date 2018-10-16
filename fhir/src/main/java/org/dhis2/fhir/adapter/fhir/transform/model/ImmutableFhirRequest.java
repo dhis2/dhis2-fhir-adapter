@@ -108,9 +108,9 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
 
     @Override
     @Nullable
-    public UUID getRemoteSubscriptionRequestId()
+    public UUID getRemoteSubscriptionResourceId()
     {
-        return delegate.getRemoteSubscriptionRequestId();
+        return delegate.getRemoteSubscriptionResourceId();
     }
 
     @Nullable

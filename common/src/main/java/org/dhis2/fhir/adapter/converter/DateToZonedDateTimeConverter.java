@@ -37,6 +37,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
+/**
+ * Converts a date to a zoned date time with system time zone.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.DATETIME )
 public class DateToZonedDateTimeConverter extends TypedConverter<Date, ZonedDateTime>

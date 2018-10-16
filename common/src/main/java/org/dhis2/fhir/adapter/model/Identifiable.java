@@ -28,7 +28,15 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public interface Identifiable
+/**
+ * Defines the method to retrieve the unique identifier of an object.
+ *
+ * @param <T> the concrete class of the identifier.
+ */
+public interface Identifiable<T>
 {
-    String getId();
+    /**
+     * @return the unique identifier of the object.
+     */
+    T getId();
 }
