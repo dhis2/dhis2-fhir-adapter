@@ -48,5 +48,5 @@ public interface ScriptSourceRepository extends JpaRepository<ScriptSource, UUID
 {
     @Query( "SELECT ss FROM #{#entityName} ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions" )
     @Nonnull
-    Optional<ScriptSource> getByScriptAndVersion( @Param( "script" ) @Nonnull Script script, @Param( "fhirVersion" ) @Nonnull FhirVersion fhirVersion );
+    Optional<ScriptSource> findByScriptAndFhirVersion( @Param( "script" ) @Nonnull Script script, @Param( "fhirVersion" ) @Nonnull FhirVersion fhirVersion );
 }

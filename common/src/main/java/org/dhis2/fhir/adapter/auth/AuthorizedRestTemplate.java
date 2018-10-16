@@ -41,6 +41,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Extension of REST Template that accesses the current authorization header from the
+ * {@linkplain AuthorizationContext} and uses it as authorization header for the current
+ * request. This is useful when using the incoming authentication as well for requests
+ * to a dependent system (which must use the same authentication).
+ *
+ * @author volsch
+ */
 public class AuthorizedRestTemplate extends RestTemplate
 {
     protected static final String AUTHORIZATION_HEADER_NAME = "Authorization";
@@ -51,11 +59,18 @@ public class AuthorizedRestTemplate extends RestTemplate
 
     private final List<WwwAuthenticate> wwwAuthenticates;
 
+    /**
+     * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
+     */
     public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext )
     {
         this( authorizationContext, Collections.emptyList() );
     }
 
+    /**
+     * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
+     * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a remote failure.
+     */
     public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates )
     {
         this.authorizationContext = authorizationContext;
@@ -67,7 +82,7 @@ public class AuthorizedRestTemplate extends RestTemplate
     protected ClientHttpRequest createRequest( @Nonnull URI url, @Nonnull HttpMethod method ) throws IOException
     {
         final ClientHttpRequest request = super.createRequest( url, method );
-        final Authorization authorization = authorizationContext.getAuthentication();
+        final Authorization authorization = authorizationContext.getAuthorization();
         if ( authorization.getAuthorization() == null )
         {
             throw new UnauthorizedException( "Authentication has failed.",
@@ -87,6 +102,11 @@ public class AuthorizedRestTemplate extends RestTemplate
             if ( (wwwAuthenticates != null) && !wwwAuthenticates.isEmpty() )
             {
                 throw new UnauthorizedException( "Authentication has failed.", wwwAuthenticates );
+            }
+            else
+            {
+                throw new UnauthorizedException( "Authentication has failed.",
+                    this.wwwAuthenticates.stream().map( WwwAuthenticate::toString ).collect( Collectors.toList() ) );
             }
         }
         else if ( httpStatus == HttpStatus.FORBIDDEN )

@@ -30,13 +30,19 @@ package org.dhis2.fhir.adapter.auth;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Implementation of {@link AuthorizationContext} that uses as scope the current thread
+ * where the authorization is stored in a thread local.
+ *
+ * @author volsch
+ */
 public class ThreadLocalAuthorizationContext implements AuthorizationContext
 {
     private static final ThreadLocal<Authorization> THREAD_LOCAL = new ThreadLocal<>();
 
     @Nonnull
     @Override
-    public Authorization getAuthentication()
+    public Authorization getAuthorization()
     {
         Authorization authorization = THREAD_LOCAL.get();
         if ( authorization == null )

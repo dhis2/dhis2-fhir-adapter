@@ -31,6 +31,11 @@ package org.dhis2.fhir.adapter.converter;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Unit tests for {@link StringToIntegerConverter}.
+ *
+ * @author volsch
+ */
 public class StringToIntegerConverterTest
 {
     private final StringToIntegerConverter converter = new StringToIntegerConverter();

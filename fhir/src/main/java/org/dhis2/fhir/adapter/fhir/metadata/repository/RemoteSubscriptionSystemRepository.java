@@ -31,8 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -45,6 +43,5 @@ import java.util.UUID;
  */
 public interface RemoteSubscriptionSystemRepository extends JpaRepository<RemoteSubscriptionSystem, UUID>
 {
-    @Query( "SELECT s FROM #{#entityName} s WHERE s.remoteSubscription=:subscription" )
-    Collection<RemoteSubscriptionSystem> findBySubscription( @Nonnull @Param( "subscription" ) RemoteSubscription subscription );
+    Collection<RemoteSubscriptionSystem> findByRemoteSubscription( @Nonnull RemoteSubscription subscription );
 }

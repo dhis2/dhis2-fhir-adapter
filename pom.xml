@@ -53,7 +53,7 @@
   </modules>
 
   <properties>
-    <db.flyway.locations>classpath:db/migration/production</db.flyway.locations>
+    <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/programs</db.flyway.locations>
     <db.url>jdbc:postgresql://localhost/dhis2-fhir</db.url>
     <db.username>dhis-fhir</db.username>
     <db.password>dhis-fhir</db.password>
@@ -166,7 +166,7 @@
     <profile>
       <id>sample</id>
       <properties>
-        <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/sample</db.flyway.locations>
+        <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/programs,classpath:db/migration/sample</db.flyway.locations>
       </properties>
     </profile>
     <profile>

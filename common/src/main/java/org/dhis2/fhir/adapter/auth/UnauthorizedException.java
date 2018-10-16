@@ -31,6 +31,12 @@ package org.dhis2.fhir.adapter.auth;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Thrown in case the remote server reported an unauthorized exception. A list of WWW authenticates
+ * can be specified that should be returned to the requesting client.
+ *
+ * @author volsch
+ */
 public class UnauthorizedException extends RuntimeException
 {
     private static final long serialVersionUID = 8164869894509712100L;
@@ -43,6 +49,10 @@ public class UnauthorizedException extends RuntimeException
         this.wwwAuthenticates = wwwAuthenticates;
     }
 
+    /**
+     * @return WWW authenticate headers that should be returned to the client
+     * (in case the same authorization was passed to the remote server).
+     */
     @Nonnull
     public List<String> getWwwAuthenticates()
     {

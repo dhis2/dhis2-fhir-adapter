@@ -576,7 +576,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Nonnull
     protected FhirResourceMapping getResourceMapping( @Nonnull ProgramStageRule rule )
     {
-        return resourceMappingRepository.getByFhirResourceType( rule.getFhirResourceType() )
+        return resourceMappingRepository.findByFhirResourceType( rule.getFhirResourceType() )
             .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
     }
 

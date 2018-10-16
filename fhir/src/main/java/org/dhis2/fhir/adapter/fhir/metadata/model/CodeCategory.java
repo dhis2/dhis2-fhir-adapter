@@ -36,6 +36,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -74,7 +75,7 @@ public class CodeCategory implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {

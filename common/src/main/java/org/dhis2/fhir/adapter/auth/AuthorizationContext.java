@@ -30,12 +30,27 @@ package org.dhis2.fhir.adapter.auth;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Context to set, reset and access the authorization in the current scope. The scope is
+ * defined by the implementation of this interface.
+ *
+ * @author volsch
+ */
 public interface AuthorizationContext
 {
+    /**
+     * @return the authentication in this scope or <code>null</code> if no authorization has been defined.
+     */
     @Nonnull
-    Authorization getAuthentication();
+    Authorization getAuthorization();
 
+    /**
+     * @param authorization the authorization in this scope.
+     */
     void setAuthorization( @Nonnull Authorization authorization );
 
+    /**
+     * Resets the authorization in this scope.
+     */
     void resetAuthorization();
 }

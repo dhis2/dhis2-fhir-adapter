@@ -61,7 +61,7 @@ public interface FhirRequest
     boolean isRemoteSubscription();
 
     @Nullable
-    UUID getRemoteSubscriptionRequestId();
+    UUID getRemoteSubscriptionResourceId();
 
     @Nullable
     String getDhisUsername();

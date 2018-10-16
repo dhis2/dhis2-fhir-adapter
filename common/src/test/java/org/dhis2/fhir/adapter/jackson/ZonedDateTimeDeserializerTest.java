@@ -43,6 +43,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+/**
+ * Unit tests for {@link ZonedDateTimeDeserializer}.
+ *
+ * @author volsch
+ */
 public class ZonedDateTimeDeserializerTest
 {
     @Mock

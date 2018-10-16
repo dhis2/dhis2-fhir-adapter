@@ -39,6 +39,12 @@ import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Converts an object to a zoned date time. The object is converted to a string and the first
+ * representation of an ISO date time is extracted as zoned date time.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.DATETIME )
 public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>

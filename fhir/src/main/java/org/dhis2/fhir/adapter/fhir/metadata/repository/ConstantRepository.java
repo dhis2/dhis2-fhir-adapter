@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Constant;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ConstantResolver;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
@@ -51,7 +50,6 @@ public interface ConstantRepository extends JpaRepository<Constant, UUID>, Const
      * @param code the code of the constant that should be resolved.
      * @return the constant with the specified code, or <code>null</code> if no such constant exists.
      */
-    @Query( "SELECT c FROM #{#entityName} c WHERE c.code=:code" )
     @Nonnull
-    Optional<Constant> getByCode( @Param( "code" ) @Nonnull String code );
+    Optional<Constant> findByCode( @Param( "code" ) @Nonnull String code );
 }

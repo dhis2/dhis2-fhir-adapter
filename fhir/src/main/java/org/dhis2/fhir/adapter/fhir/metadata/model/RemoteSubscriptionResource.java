@@ -37,6 +37,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -75,7 +76,7 @@ public class RemoteSubscriptionResource implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {

@@ -29,22 +29,36 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
-import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
-import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
+import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
+import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Scriptable
 public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhisTransformerUtils
@@ -53,21 +67,29 @@ public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhi
 
     private final FhirContext fhirContext;
 
-    private String remoteBaseUrl;
+    private final RemoteSubscriptionResourceRepository subscriptionResourceRepository;
 
-    private String remoteAuthorizationHeader;
+    private final SystemCodeRepository systemCodeRepository;
 
-    protected AbstractFhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext )
+    protected AbstractFhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
+        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
         this.fhirContext = fhirContext;
+        this.subscriptionResourceRepository = subscriptionResourceRepository;
+        this.systemCodeRepository = systemCodeRepository;
     }
 
     @Nonnull
     protected abstract Class<? extends IBaseBundle> getBundleClass();
 
+    protected abstract boolean hasNextLink( @Nonnull IBaseBundle bundle );
+
     @Nullable
     protected abstract IBaseResource getFirstRep( @Nonnull IBaseBundle bundle );
+
+    @Nonnull
+    protected abstract List<? extends IBaseResource> getEntries( @Nonnull IBaseBundle bundle );
 
     @Nonnull
     @Override
@@ -77,7 +99,80 @@ public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhi
     }
 
     @Nullable
-    public final IBaseResource queryLatest( @Nonnull String resourceName, String... filter )
+    public final IBaseResource queryLatest( @Nonnull String resourceName,
+        @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId,
+        String... filter )
+    {
+        final Map<String, List<String>> filterMap = createFilter( referencedResourceParameter, referencedResourceType, referencedResourceId );
+        final IBaseBundle bundle = createFhirClient().search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) ).count( 1 )
+            .whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
+        return getFirstRep( bundle );
+    }
+
+    @Nullable
+    protected IBaseResource queryLatestPrioritizedByMappedCodes( @Nonnull String resourceName,
+        @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId,
+        @Nonnull String codeParameter, @Nullable Object mappedCodes, @Nonnull Function<IBaseResource, Collection<SystemCodeValue>> systemCodeValuesMapper,
+        @Nullable Integer maxCount, String... filter )
+    {
+        final List<String> convertedMappedCodes = ScriptArgUtils.extractStringArray( mappedCodes );
+        if ( (convertedMappedCodes == null) || convertedMappedCodes.isEmpty() )
+        {
+            return null;
+        }
+        final Collection<SystemCode> systemCodes = systemCodeRepository.findAllByCodes( convertedMappedCodes );
+        final Map<SystemCodeValue, Integer> systemCodeValueIndexes = systemCodes.stream().collect(
+            Collectors.toMap( SystemCode::getSystemCodeValue, sc -> convertedMappedCodes.indexOf( sc.getCode().getCode() ) ) );
+
+        final int resultingMaxCount = (maxCount == null) ? systemCodes.size() : maxCount;
+        final Map<String, List<String>> filterMap = createFilter( referencedResourceParameter, referencedResourceType, referencedResourceId );
+        filterMap.put( codeParameter, Collections.singletonList(
+            String.join( ",", systemCodes.stream().map( sc -> sc.getSystemCodeValue().toString() ).collect( Collectors.toList() ) ) ) );
+
+        int processedResources = 0;
+        int foundMinIndex = Integer.MAX_VALUE;
+        IBaseResource foundResource = null;
+        final IGenericClient client = createFhirClient();
+        IBaseBundle bundle = client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
+            .count( resultingMaxCount ).whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
+        do
+        {
+            final List<? extends IBaseResource> resources = getEntries( bundle );
+            for ( final IBaseResource resource : resources )
+            {
+                for ( final SystemCodeValue systemCodeValue : systemCodeValuesMapper.apply( resource ) )
+                {
+                    final Integer index = systemCodeValueIndexes.get( systemCodeValue );
+                    if ( index != null )
+                    {
+                        if ( index < foundMinIndex )
+                        {
+                            foundMinIndex = index;
+                            foundResource = resource;
+                            if ( foundMinIndex == 0 )
+                            {
+                                return resource;
+                            }
+                        }
+                    }
+                }
+                processedResources++;
+            }
+            if ( processedResources >= resultingMaxCount )
+            {
+                bundle = null;
+            }
+            else
+            {
+                bundle = hasNextLink( bundle ) ? client.loadPage().next( bundle ).execute() : null;
+            }
+        }
+        while ( bundle != null );
+        return foundResource;
+    }
+
+    @Nonnull
+    protected Map<String, List<String>> createFilter( @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId, String... filter )
     {
         final Map<String, List<String>> filterMap = new HashMap<>();
         if ( filter.length % 2 != 0 )
@@ -89,21 +184,31 @@ public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhi
             filterMap.computeIfAbsent( filter[i], k -> new ArrayList<>() ).add( filter[i + 1] );
         }
 
-        final IBaseBundle result = createFhirClient().search().forResource( resourceName ).count( 1 )
-            .whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
-        return getFirstRep( result );
+        if ( referencedResourceId.hasResourceType() && !referencedResourceType.equals( referencedResourceId.getResourceType() ) )
+        {
+            throw new TransformerMappingException( "The referenced resource ID contains resource type " + referencedResourceId.getResourceType()
+                + ", but requested resource type is " + referencedResourceType );
+        }
+        if ( !referencedResourceId.hasIdPart() )
+        {
+            throw new TransformerMappingException( "The referenced resource ID does not contain an ID part." );
+        }
+        filterMap.put( referencedResourceParameter, Collections.singletonList( referencedResourceType + "/" + referencedResourceId.getIdPart() ) );
+
+        return filterMap;
     }
 
+    @Nonnull
     protected IGenericClient createFhirClient()
     {
-        final IGenericClient client = fhirContext.newRestfulGenericClient( remoteBaseUrl );
-        client.registerInterceptor( new LoggingInterceptor( true ) );
-        if ( StringUtils.isNotBlank( remoteAuthorizationHeader ) )
+        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+        final UUID resourceId = context.getFhirRequest().getRemoteSubscriptionResourceId();
+        if ( resourceId == null )
         {
-            final AdditionalRequestHeadersInterceptor requestHeadersInterceptor = new AdditionalRequestHeadersInterceptor();
-            requestHeadersInterceptor.addHeaderValue( "Authorization", remoteAuthorizationHeader );
-            client.registerInterceptor( requestHeadersInterceptor );
+            throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
         }
-        return client;
+        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findById( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
+        return FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription() );
     }
 }

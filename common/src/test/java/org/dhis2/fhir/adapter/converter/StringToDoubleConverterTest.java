@@ -31,6 +31,11 @@ package org.dhis2.fhir.adapter.converter;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Unit tests for {@link StringToDoubleConverter}.
+ *
+ * @author volsch
+ */
 public class StringToDoubleConverterTest
 {
     private final StringToDoubleConverter converter = new StringToDoubleConverter();

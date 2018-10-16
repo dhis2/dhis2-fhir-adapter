@@ -33,20 +33,26 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.util.AbstractCodeFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +65,8 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
 
     private final SystemCodeRepository systemCodeRepository;
 
-    public CodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull SystemCodeRepository systemCodeRepository )
+    public CodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
         this.systemCodeRepository = systemCodeRepository;
@@ -70,6 +77,22 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    public List<SystemCodeValue> getSystemCodeValues( @Nullable ICompositeType codeableConcept )
+    {
+        if ( codeableConcept == null )
+        {
+            return Collections.emptyList();
+        }
+        final List<SystemCodeValue> result = new ArrayList<>();
+        for ( final Coding coding : ((CodeableConcept) codeableConcept).getCoding() )
+        {
+            result.add( new SystemCodeValue( coding.getSystem(), coding.getCode() ) );
+        }
+        return result;
     }
 
     @Override
@@ -139,5 +162,17 @@ public class CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransf
         }
         return ((CodeableConcept) codeableConcept).getCoding().stream().anyMatch(
             coding -> system.equals( coding.getSystem() ) && code.equals( coding.getCode() ) );
+    }
+
+    @Nullable
+    @Override
+    protected List<SystemCodeValue> getSystemCodeValues( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod )
+    {
+        final ICompositeType codeableConcept = (ICompositeType) ReflectionUtils.invokeMethod( identifierMethod, domainResource );
+        if ( codeableConcept != null )
+        {
+            return getSystemCodeValues( codeableConcept );
+        }
+        return null;
     }
 }

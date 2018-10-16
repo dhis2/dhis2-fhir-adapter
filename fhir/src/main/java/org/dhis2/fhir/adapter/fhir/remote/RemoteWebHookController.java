@@ -102,7 +102,7 @@ public class RemoteWebHookController
     public void receive( @PathVariable UUID subscriptionId, @PathVariable UUID subscriptionResourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
     {
-        final RemoteSubscriptionResource subscriptionResource = resourceRepository.getOneForWebHookEvaluation( subscriptionResourceId )
+        final RemoteSubscriptionResource subscriptionResource = resourceRepository.findOneForWebHookEvaluation( subscriptionResourceId )
             .orElseThrow( () -> new RestResourceNotFoundException( "Remote subscription data for resource cannot be found: " + subscriptionResourceId ) );
         if ( !subscriptionResource.getRemoteSubscription().getId().equals( subscriptionId ) )
         {
@@ -158,7 +158,7 @@ public class RemoteWebHookController
                 try
                 {
                     final UUID resourceId = requestQueue.take();
-                    final RemoteSubscriptionResource subscriptionResource = resourceRepository.getOneForSubscriptionProcessing( resourceId ).orElse( null );
+                    final RemoteSubscriptionResource subscriptionResource = resourceRepository.findOneForSubscriptionProcessing( resourceId ).orElse( null );
                     if ( subscriptionResource == null )
                     {
                         logger.warn( "Remote subscription resource {} does no longer exist. Ignoring web hook processing request.", resourceId );

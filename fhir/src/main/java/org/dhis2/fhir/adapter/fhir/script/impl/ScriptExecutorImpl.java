@@ -113,7 +113,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     " and not requested " + resultClass.getSimpleName() + "." );
         }
 
-        final ScriptSource scriptSource = scriptSourceRepository.getByScriptAndVersion( executableScript.getScript(), fhirVersion ).orElseThrow( () ->
+        final ScriptSource scriptSource = scriptSourceRepository.findByScriptAndFhirVersion( executableScript.getScript(), fhirVersion ).orElseThrow( () ->
             new ScriptPreparationException( "Script \"" + executableScript.getScript().getName() + "\" does not include a source for FHIR version " + fhirVersion + "." ) );
         // performance optimization in case script is just a boolean value
         if ( Boolean.class.equals( resultClass ) )

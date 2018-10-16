@@ -43,6 +43,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -94,7 +95,7 @@ public class RemoteSubscription implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {

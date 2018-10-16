@@ -29,10 +29,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -46,7 +45,10 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -56,14 +58,21 @@ import java.util.UUID;
  *
  * @author volsch
  */
-@Entity
+@Entity( name = "AbstractRule" )
 @Table( name = "fhir_rule" )
 @Inheritance( strategy = InheritanceType.JOINED )
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
-@Cache( region = "rule", usage = CacheConcurrencyStrategy.READ_WRITE )
-public abstract class AbstractRule implements Serializable
+@NamedQueries( { @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
+    "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
+    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query = "SELECT r FROM AbstractRule r JOIN r.applicableCodeSet acs JOIN acs.codeSetValues csv ON csv.enabled=true JOIN csv.id.code c " +
+        "JOIN c.systemCodes sc ON sc.systemCode=:code JOIN sc.system s ON s.systemUri=:system AND s.enabled=true WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true" ) } )
+public abstract class AbstractRule implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
+
+    public static final String FIND_RULES_BY_TYPE_NAMED_QUERY = "findRulesByType";
+
+    public static final String FIND_RULES_BY_TYPE_CODES_NAMED_QUERY = "findRulesByTypeAndCodes";
 
     private UUID id;
     private Long version;
@@ -77,6 +86,7 @@ public abstract class AbstractRule implements Serializable
     private DhisResourceType dhisResourceType;
     private FhirResourceType fhirResourceType;
     private ExecutableScript applicableInScript;
+    private CodeSet applicableCodeSet;
     private ExecutableScript transformInScript;
 
     @GeneratedValue( generator = "uuid2" )
@@ -93,7 +103,7 @@ public abstract class AbstractRule implements Serializable
         this.id = id;
     }
 
-    @Basic
+    @Version
     @Column( name = "version", nullable = false )
     public Long getVersion()
     {
@@ -228,6 +238,18 @@ public abstract class AbstractRule implements Serializable
     }
 
     @ManyToOne
+    @JoinColumn( name = "applicable_code_set_id", referencedColumnName = "id" )
+    public CodeSet getApplicableCodeSet()
+    {
+        return applicableCodeSet;
+    }
+
+    public void setApplicableCodeSet( CodeSet applicableCodeSet )
+    {
+        this.applicableCodeSet = applicableCodeSet;
+    }
+
+    @ManyToOne
     @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id", nullable = false )
     public ExecutableScript getTransformInScript()
     {
@@ -237,6 +259,17 @@ public abstract class AbstractRule implements Serializable
     public void setTransformInScript( ExecutableScript transformInScript )
     {
         this.transformInScript = transformInScript;
+    }
+
+    @Override
+    public int compareTo( @Nonnull AbstractRule o )
+    {
+        int value = o.getEvaluationOrder() - getEvaluationOrder();
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return getId().compareTo( o.getId() );
     }
 
     @Override

@@ -37,7 +37,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Can be applied to a {@link TypedConverter typed converter} class in order to define for which value types the converter is applicable.
+ * Can be applied to a {@link TypedConverter typed converter} class in order to define
+ * for which value types the converter is applicable.
+ *
+ * @author volsch
  */
 @Target( { ElementType.TYPE } )
 @Retention( RetentionPolicy.RUNTIME )

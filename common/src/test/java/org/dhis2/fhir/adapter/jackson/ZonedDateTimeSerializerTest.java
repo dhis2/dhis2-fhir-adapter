@@ -43,7 +43,9 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * Unit tests for {@link ZonedDateTimeSerializer}
+ * Unit tests for {@link ZonedDateTimeSerializer}.
+ *
+ * @author volsch
  */
 public class ZonedDateTimeSerializerTest
 {

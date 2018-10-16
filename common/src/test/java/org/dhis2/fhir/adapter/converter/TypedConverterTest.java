@@ -35,6 +35,8 @@ import javax.annotation.Nonnull;
 
 /**
  * Unit tests for {@link TypedConverter}.
+ *
+ * @author volsch
  */
 public class TypedConverterTest
 {

@@ -137,7 +137,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
     protected void saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
     {
-        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findBySubscription( subscriptionResource.getRemoteSubscription() );
+        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( subscriptionResource.getRemoteSubscription() );
 
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
         fhirRequest.setDhisUsername( subscriptionResource.getRemoteSubscription().getDhisUsername() );
@@ -145,6 +145,7 @@ public class FhirRepositoryImpl implements FhirRepository
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setLastUpdated( getLastUpdated( resource ) );
         fhirRequest.setResourceVersionId( (resource.getMeta() == null) ? null : resource.getMeta().getVersionId() );
+        fhirRequest.setRemoteSubscriptionResourceId( subscriptionResource.getId() );
         fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
         fhirRequest.setResourceSystemsByType( systems.stream()

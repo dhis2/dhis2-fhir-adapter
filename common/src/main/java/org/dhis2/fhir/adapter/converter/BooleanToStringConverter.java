@@ -34,6 +34,11 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Converts a boolean value to string <code>true</code> and <code>false</code>.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.BOOLEAN )
 public class BooleanToStringConverter extends TypedConverter<Boolean, String>

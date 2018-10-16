@@ -37,6 +37,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+/**
+ * Converts a local date to a zoned date time with system time zone.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.DATETIME )
 public class LocalDateToZonedDateTimeConverter extends TypedConverter<LocalDate, ZonedDateTime>

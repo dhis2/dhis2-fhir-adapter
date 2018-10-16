@@ -30,6 +30,11 @@ package org.dhis2.fhir.adapter.auth;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Thrown in case the remote system reported a forbidden error.
+ *
+ * @author volsch
+ */
 public class ForbiddenException extends RuntimeException
 {
     private static final long serialVersionUID = -7003302110358695033L;

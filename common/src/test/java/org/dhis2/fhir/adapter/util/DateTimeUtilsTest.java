@@ -33,6 +33,8 @@ import org.junit.Test;
 
 /**
  * Unit tests of {@link DateTimeUtils}.
+ *
+ * @author volsch
  */
 public class DateTimeUtilsTest
 {
