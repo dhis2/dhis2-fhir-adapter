@@ -32,8 +32,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 
+/**
+ * @author volsch
+ */
 @SpringBootApplication
+@EnableCircuitBreaker
+@EnableCaching
 public class App extends SpringBootServletInitializer
 {
     @Override

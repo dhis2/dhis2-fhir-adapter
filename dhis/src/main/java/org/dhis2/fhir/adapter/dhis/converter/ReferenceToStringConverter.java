@@ -35,6 +35,13 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Converts a {@link Reference} to a string. The reference starts with the reference
+ * type that is separated by a colon from the reference value, e.g.:
+ * <code>CODE:DE_4711</code>.
+ *
+ * @author volsch
+ */
 public class ReferenceToStringConverter extends TypedConverter<Reference, String>
 {
     public static final String SEPARATOR = ":";

@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.model.ValueType;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -36,6 +38,7 @@ import javax.annotation.Nullable;
  *
  * @author volsch
  */
+@ConvertedValueTypes( types = { ValueType.INTEGER, ValueType.INTEGER_NEGATIVE, ValueType.INTEGER_POSITIVE, ValueType.INTEGER_ZERO_OR_POSITIVE } )
 public class StringToIntegerConverter extends TypedConverter<String, Integer>
 {
     public StringToIntegerConverter()

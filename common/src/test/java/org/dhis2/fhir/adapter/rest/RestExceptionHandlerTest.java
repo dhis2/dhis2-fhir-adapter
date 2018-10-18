@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.rest;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,35 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.WebRequest;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Unit tests of {@link RestExceptionHandler}.
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+public class RestExceptionHandlerTest
 {
-    @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    private RestExceptionHandler restExceptionHandler = new RestExceptionHandler();
+
+    @Mock
+    private WebRequest webRequest;
+
+    @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Test
+    public void test()
+    {
+        final ResponseEntity<String> entity = restExceptionHandler.handleResponseEntityException( new RestResourceNotFoundException( "This is a test." ), webRequest );
+        Assert.assertEquals( HttpStatus.NOT_FOUND, entity.getStatusCode() );
+        Assert.assertEquals( "This is a test.", entity.getBody() );
+    }
 }

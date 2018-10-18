@@ -34,6 +34,12 @@ import org.dhis2.fhir.adapter.converter.TypedConverter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Converter that throws a {@link ConversionException} on every conversion. This
+ * converter can be used when a conversion should not be possible.
+ *
+ * @param <B> the concrete type of the object to which a conversion should not be supported.
+ */
 public class StringToExceptionConverter<B> extends TypedConverter<String, B>
 {
     public static final String SEPARATOR = ":";
@@ -47,13 +53,13 @@ public class StringToExceptionConverter<B> extends TypedConverter<String, B>
     @Override
     public B doConvert( @Nonnull String source ) throws ConversionException
     {
-        throw new ConversionException( "Converting string to object is not supported." );
+        throw new ConversionException( "Converting string to " + getToClass().getSimpleName() + " is not supported." );
     }
 
     @Nullable
     @Override
     public B doConvertNull() throws ConversionException
     {
-        throw new ConversionException( "Converting string to object is not supported." );
+        throw new ConversionException( "Converting string to " + getToClass().getSimpleName() + " is not supported." );
     }
 }

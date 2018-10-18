@@ -40,6 +40,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
+/**
+ * Contains the endpoint configuration of the DHIS2 endpoint. This configuration
+ * contains also the system authentication that is used to authenticate on DHIS2
+ * when retrieving metadata. This authentication must have access to the complete
+ * organisation unit, tracked entity instance, program and data element metadata.
+ *
+ * @author volsch
+ */
 @Configuration
 @ConfigurationProperties( "dhis2.fhir-adapter.endpoint" )
 @Validated

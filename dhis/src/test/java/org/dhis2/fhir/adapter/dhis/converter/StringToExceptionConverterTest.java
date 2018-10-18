@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.dhis.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,27 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.junit.Test;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Unit tests for {@link StringToExceptionConverter}.
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+public class StringToExceptionConverterTest
 {
-    @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    private StringToExceptionConverter<Boolean> converter = new StringToExceptionConverter<>( Boolean.class );
+
+    @Test( expected = ConversionException.class )
+    public void doConvert()
+    {
+        converter.convert( "true" );
+    }
+
+    @Test( expected = ConversionException.class )
+    public void doConvertNull()
+    {
+        converter.convert( null );
+    }
 }

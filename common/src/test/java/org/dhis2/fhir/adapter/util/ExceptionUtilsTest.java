@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,37 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.regex.PatternSyntaxException;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Unit tests of {@link ExceptionUtils}.
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+public class ExceptionUtilsTest
 {
-    @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    @Test
+    public void findCauseItself()
+    {
+        final IllegalArgumentException exception = new IllegalArgumentException( "Test" );
+        Assert.assertSame( exception, ExceptionUtils.findCause( exception, IllegalArgumentException.class ) );
+    }
+
+    @Test
+    public void findCauseNotFound()
+    {
+        final IllegalArgumentException exception = new IllegalArgumentException( "Test", new PatternSyntaxException( "Test", "xxx", 1 ) );
+        Assert.assertNull( ExceptionUtils.findCause( exception, NumberFormatException.class ) );
+    }
+
+    @Test
+    public void findCauseFound()
+    {
+        final PatternSyntaxException found = new PatternSyntaxException( "Test", "xxx", 1 );
+        final IllegalArgumentException exception = new IllegalArgumentException( "Test", found );
+        Assert.assertSame( found, ExceptionUtils.findCause( exception, NumberFormatException.class, PatternSyntaxException.class ) );
+    }
 }

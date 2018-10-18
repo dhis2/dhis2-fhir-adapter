@@ -32,6 +32,12 @@ import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Thrown if a resource could not be found. The exception contains status code 401
+ * that should be returned to a client.
+ *
+ * @author volsch
+ */
 public class RestUnauthorizedException extends RestResponseEntityException
 {
     private static final long serialVersionUID = 320295220274858473L;

@@ -30,6 +30,11 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
 
 import java.io.Serializable;
 
+/**
+ * Contains the required information of a DHIS2 organization unit.
+ *
+ * @author volsch
+ */
 public class OrganisationUnit implements Serializable
 {
     private static final long serialVersionUID = 3976508569865955265L;

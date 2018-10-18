@@ -41,6 +41,9 @@ import org.springframework.validation.annotation.Validated;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @author volsch
+ */
 @Configuration
 @Validated
 public class AppConfig

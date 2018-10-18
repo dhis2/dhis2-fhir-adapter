@@ -32,6 +32,12 @@ import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Thrown if a resource could not be found. The exception contains status code 404
+ * that should be returned to a client.
+ *
+ * @author volsch
+ */
 public class RestResourceNotFoundException extends RestResponseEntityException
 {
     private static final long serialVersionUID = -7487909336857881610L;

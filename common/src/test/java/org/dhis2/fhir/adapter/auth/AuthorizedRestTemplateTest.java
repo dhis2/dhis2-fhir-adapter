@@ -83,7 +83,7 @@ public class AuthorizedRestTemplateTest
     private AuthorizedRestTemplate template;
 
     @Rule
-    public MockitoRule mockitoRule = MockitoJUnit.rule();
+    public MockitoRule mockitoRule = MockitoJUnit.rule().silent();
 
     @Before
     public void before() throws IOException

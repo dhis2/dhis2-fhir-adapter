@@ -32,6 +32,12 @@ import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Abstract base class of exception that contain a HTTP status code that should be
+ * returned to the client.
+ *
+ * @author volsch
+ */
 public abstract class RestResponseEntityException extends RuntimeException
 {
     private static final long serialVersionUID = -4938481310990060510L;

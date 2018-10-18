@@ -36,12 +36,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+/**
+ * Handles exception instances of {@link RestResponseEntityException}.
+ *
+ * @author volsch
+ */
 @ControllerAdvice( annotations = RestController.class )
 public class RestExceptionHandler extends ResponseEntityExceptionHandler
 {
     @ExceptionHandler( value = { RestResponseEntityException.class } )
     @ResponseBody
-    public ResponseEntity<String> handleResourceNotFoundException( RestResourceNotFoundException e, WebRequest request )
+    public ResponseEntity<String> handleResponseEntityException( RestResponseEntityException e, WebRequest request )
     {
         return new ResponseEntity<>( e.getMessage(), e.getHttpStatus() );
     }

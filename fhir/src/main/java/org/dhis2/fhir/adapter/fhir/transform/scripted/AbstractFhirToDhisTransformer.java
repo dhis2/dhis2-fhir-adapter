@@ -169,7 +169,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             return Optional.empty();
         }
 
-        final Optional<OrganisationUnit> organisationUnit = organisationUnitService.get( orgUnitReference );
+        final Optional<OrganisationUnit> organisationUnit = organisationUnitService.findOneByReference( orgUnitReference );
         if ( !organisationUnit.isPresent() )
         {
             logger.info( "Organization unit of extracted reference does not exist: " + orgUnitReference );

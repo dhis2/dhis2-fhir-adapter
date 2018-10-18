@@ -34,7 +34,7 @@ import org.junit.Test;
 /**
  * Unit tests of {@link WeightUnitTest}.
  *
- * 
+ * @author volsch
  */
 public class WeightUnitTest
 {

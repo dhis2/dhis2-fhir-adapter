@@ -35,23 +35,49 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nonnull;
+
+/**
+ * Configuration for access of DHIS2 endpoints.
+ *
+ * @author volsch
+ */
 @Configuration
 public class DhisConfig
 {
+    /**
+     * Creates a REST template that connects to DHIS2 with the authentication that is provided by {@link AuthorizationContext}
+     * in the current execution scope of the request.
+     *
+     * @param builder              the rest template builder to be used.
+     * @param endpointConfig       the endpoint configuration of the DHIS2 endpoint.
+     * @param authorizationContext the authorization context from which the REST template gets its authorization information dynamically.
+     * @return the generated user rest template that uses the specified authorization context for authorization.
+     */
     @Bean
-    public RestTemplate userDhis2RestTemplate( RestTemplateBuilder builder, DhisEndpointConfig endpointConfig, AuthorizationContext authorizationContext )
+    @Nonnull
+    public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext )
     {
         return builder.rootUri( getRootUri( endpointConfig ) ).configure( new AuthorizedRestTemplate( authorizationContext ) );
     }
 
+    /**
+     * Creates a REST template that connects to DHIS2 with the authentication that is included in the specified endpoint configuration.
+     *
+     * @param builder the rest template builder to be used.
+     * @param endpointConfig the endpoint configuration of the DHIS2 endpoint.
+     * @return the generated system rest template that uses the authorization that is included in the specified endpoint configuration
+     */
     @Bean
-    public RestTemplate systemDhis2RestTemplate( RestTemplateBuilder builder, DhisEndpointConfig endpointConfig )
+    @Nonnull
+    public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig )
     {
         return builder.rootUri( getRootUri( endpointConfig ) ).basicAuthorization(
             endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
     }
 
-    private String getRootUri( DhisEndpointConfig endpointConfig )
+    @Nonnull
+    private String getRootUri( @Nonnull DhisEndpointConfig endpointConfig )
     {
         return endpointConfig.getUrl() + "/api/" + endpointConfig.getApiVersion();
     }

@@ -30,6 +30,72 @@
 -- REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TABLE fhir_data_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_data_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_data_type_enum IS 'Enumeration values with supported data types for argument and return types.';
+INSERT INTO fhir_data_type_enum VALUES('BOOLEAN');
+INSERT INTO fhir_data_type_enum VALUES('STRING');
+INSERT INTO fhir_data_type_enum VALUES('INTEGER');
+INSERT INTO fhir_data_type_enum VALUES('DOUBLE');
+INSERT INTO fhir_data_type_enum VALUES('DATE_TIME');
+INSERT INTO fhir_data_type_enum VALUES('DATE_UNIT');
+INSERT INTO fhir_data_type_enum VALUES('WEIGHT_UNIT');
+INSERT INTO fhir_data_type_enum VALUES('CONSTANT');
+INSERT INTO fhir_data_type_enum VALUES('CODE');
+INSERT INTO fhir_data_type_enum VALUES('LOCATION');
+INSERT INTO fhir_data_type_enum VALUES('PATTERN');
+INSERT INTO fhir_data_type_enum VALUES('ORG_UNIT_REF');
+INSERT INTO fhir_data_type_enum VALUES('TRACKED_ENTITY_REF');
+INSERT INTO fhir_data_type_enum VALUES('TRACKED_ENTITY_ATTRIBUTE_REF');
+INSERT INTO fhir_data_type_enum VALUES('DATA_ELEMENT_REF');
+INSERT INTO fhir_data_type_enum VALUES('PROGRAM_REF');
+INSERT INTO fhir_data_type_enum VALUES('PROGRAM_STAGE_REF');
+INSERT INTO fhir_data_type_enum VALUES('FHIR_RESOURCE');
+
+CREATE TABLE fhir_transform_data_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_transform_data_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_transform_data_type_enum IS 'Enumeration values with supported transformation data types.';
+INSERT INTO fhir_transform_data_type_enum VALUES('DHIS_TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_transform_data_type_enum VALUES('DHIS_ENROLLMENT');
+INSERT INTO fhir_transform_data_type_enum VALUES('DHIS_EVENT');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_PATIENT');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_IMMUNIZATION');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_OBSERVATION');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_DIAGNOSTIC_REPORT');
+
+CREATE TABLE fhir_resource_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_resource_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_resource_type_enum IS 'Enumeration values with supported FHIR Resources.';
+INSERT INTO fhir_resource_type_enum VALUES('DIAGNOSTIC_REPORT');
+INSERT INTO fhir_resource_type_enum VALUES('IMMUNIZATION');
+INSERT INTO fhir_resource_type_enum VALUES('LOCATION');
+INSERT INTO fhir_resource_type_enum VALUES('MEDICATION_REQUEST');
+INSERT INTO fhir_resource_type_enum VALUES('OBSERVATION');
+INSERT INTO fhir_resource_type_enum VALUES('ORGANIZATION');
+INSERT INTO fhir_resource_type_enum VALUES('PATIENT');
+
+CREATE TABLE fhir_dhis_resource_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_dhis_resource_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_dhis_resource_type_enum IS 'Enumeration values with supported DHIS2 Resources.';
+INSERT INTO fhir_dhis_resource_type_enum VALUES('TRACKED_ENTITY');
+INSERT INTO fhir_dhis_resource_type_enum VALUES('ENROLLMENT');
+INSERT INTO fhir_dhis_resource_type_enum VALUES('PROGRAM_STAGE_EVENT');
+
+CREATE TABLE fhir_version_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_version_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_version_enum IS 'Enumeration values with supported FHIR versions.';
+INSERT INTO fhir_version_enum VALUES('DSTU3');
+
 CREATE TABLE fhir_constant (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
@@ -44,8 +110,21 @@ CREATE TABLE fhir_constant (
   value           VARCHAR(250),
   CONSTRAINT fhir_constant_pk PRIMARY KEY (id),
   CONSTRAINT fhir_constant_uk1 UNIQUE (name),
-  CONSTRAINT fhir_constant_uk2 UNIQUE (code)
+  CONSTRAINT fhir_constant_uk2 UNIQUE (code),
+  CONSTRAINT fhir_constant_fk1 FOREIGN KEY(data_type) REFERENCES fhir_data_type_enum(value)
 );
+COMMENT ON TABLE fhir_constant IS 'Contains mappings between a code and a value. The code may be GENDER_FEMALE and the value may be the option set value for female that has been configured in DHIS2. This can be used to map between the FHIR enumerations and frequently used DHIS2 option set values.';
+COMMENT ON COLUMN fhir_constant.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_constant.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_constant.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_constant.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_constant.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_constant.name IS 'The unique name of the constant.';
+COMMENT ON COLUMN fhir_constant.code IS 'The unique code of the constant. This is used in mappings to reference the constant.';
+COMMENT ON COLUMN fhir_constant.description IS 'An optional description text of the constant.';
+COMMENT ON COLUMN fhir_constant.category IS 'The category of the constant (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_constant.data_type IS 'The data type of the value of the constant (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_constant.value IS 'The value of the constant. The conversion of the value to the specified data type must be possible.';
 
 CREATE TABLE fhir_script (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -61,8 +140,25 @@ CREATE TABLE fhir_script (
   output_type     VARCHAR(30),
   description     TEXT,
   CONSTRAINT fhir_script_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_script_u1 UNIQUE (code)
+  CONSTRAINT fhir_script_u1 UNIQUE (code),
+  CONSTRAINT fhir_script_fk1 FOREIGN KEY(return_type) REFERENCES fhir_data_type_enum(value),
+  CONSTRAINT fhir_script_fk2 FOREIGN KEY(input_type) REFERENCES fhir_transform_data_type_enum(value),
+  CONSTRAINT fhir_script_fk3 FOREIGN KEY(output_type) REFERENCES fhir_transform_data_type_enum(value),
+  CONSTRAINT fhir_script_c1 CHECK(script_type IN ('TRANSFORM_TO_DHIS', 'EVALUATE'))
 );
+COMMENT ON TABLE fhir_script IS 'Contains scripts that are used for evaluations an d transformations. The script itself cannot be executed. To execute a script and executable script that references this script must be created.';
+COMMENT ON COLUMN fhir_script.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_script.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_script.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_script.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_script.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script.name IS 'The unique name of the script.';
+COMMENT ON COLUMN fhir_script.code IS 'The unique code of the script.';
+COMMENT ON COLUMN fhir_script.script_type IS 'The concrete type of the script, which describes its purpose (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_script.description IS 'An optional description text of the script. It should describe the detailed purpose of the script.';
+COMMENT ON COLUMN fhir_script.return_type IS 'The expected return or result value type of the script (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_script.input_type IS 'The type of the input data when the script is used for transformations (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_script.output_type IS 'The type of the output data when the script is used for transformations (enumeration value that is supported by the application).';
 
 CREATE TABLE fhir_script_source (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -74,24 +170,41 @@ CREATE TABLE fhir_script_source (
   source_text     TEXT                           NOT NULL,
   source_type     VARCHAR(30)                    NOT NULL,
   CONSTRAINT fhir_script_source_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_script_source_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE
+  CONSTRAINT fhir_script_source_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_script_c1 CHECK(source_type IN ('JAVASCRIPT'))
 );
 CREATE INDEX fhir_script_source_i1
   ON fhir_script_source (script_id);
+COMMENT ON TABLE fhir_script_source IS 'Contains the source code of a script. The source code of the script has the specified source type (programming language) and may be restricted to specific FHIR versions.';
+COMMENT ON COLUMN fhir_script_source.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_script_source.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_script_source.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_script_source.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_script_source.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script_source.source_text IS 'The script source code (may also be a reference to an existing Java method that can be invoked).';
+COMMENT ON COLUMN fhir_script_source.source_type IS 'The source type, i.e. programming language of the script (enumeration value that is supported by the application).';
 
 CREATE TABLE fhir_script_source_version (
   script_source_id UUID        NOT NULL,
   fhir_version     VARCHAR(30) NOT NULL,
   CONSTRAINT fhir_script_source_version_pk PRIMARY KEY (script_source_id, fhir_version),
-  CONSTRAINT fhir_script_source_version_fk1 FOREIGN KEY (script_source_id) REFERENCES fhir_script_source (id) ON DELETE CASCADE
+  CONSTRAINT fhir_script_source_version_fk1 FOREIGN KEY (script_source_id) REFERENCES fhir_script_source (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_script_source_version_fk2 FOREIGN KEY(fhir_version) REFERENCES fhir_version_enum(value)
 );
+COMMENT ON TABLE fhir_script_source_version IS 'Contains the reference to the script source table to which this entity belongs to. Multiple version can be assigned to as single script source.';
+COMMENT ON COLUMN fhir_script_source_version.script_source_id IS 'Contains the reference to the script source table to which this entity belongs to.';
+COMMENT ON COLUMN fhir_script_source_version.fhir_version IS 'Contains the FHIR version for which the referenced script source can be used ((enumeration value that is supported by the application).';
 
 CREATE TABLE fhir_script_variable (
   script_id UUID        NOT NULL,
   variable  VARCHAR(30) NOT NULL,
   CONSTRAINT fhir_script_variable_pk PRIMARY KEY (script_id, variable),
-  CONSTRAINT fhir_script_variable_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE
+  CONSTRAINT fhir_script_variable_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_script_variable_c1 CHECK(variable IN ('CONTEXT', 'INPUT', 'OUTPUT', 'TRACKED_ENTITY_ATTRIBUTES', 'TRACKED_ENTITY_TYPE', 'TRACKED_ENTITY_INSTANCE', 'PROGRAM', 'PROGRAM_STAGE', 'ENROLLMENT', 'EVENT', 'DATE_TIME'))
 );
+COMMENT ON TABLE fhir_script_variable IS 'Contains the variables that are required by a script.';
+COMMENT ON COLUMN fhir_script_variable.script_id IS 'The reference to the script that requires the variables.';
+COMMENT ON COLUMN fhir_script_variable.variable IS 'The variable that is required by the script (enumeration value that is supported by the application).';
 
 CREATE TABLE fhir_script_argument (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -108,10 +221,23 @@ CREATE TABLE fhir_script_argument (
   description     TEXT,
   CONSTRAINT fhir_script_argument_pk PRIMARY KEY (id),
   CONSTRAINT fhir_script_argument_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_script_argument_fk2 FOREIGN KEY (data_type) REFERENCES fhir_data_type_enum(value),
   CONSTRAINT fhir_script_argument_uk1 UNIQUE (script_id, name)
 );
 CREATE INDEX fhir_script_argument_i1
   ON fhir_script_argument (script_id);
+COMMENT ON TABLE fhir_script_argument IS 'Contains a single input argument of a script.';
+COMMENT ON COLUMN fhir_script_argument.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_script_argument.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_script_argument.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_script_argument.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_script_argument.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script_argument.name IS 'The name of the argument that is also used inside the script to access the argument value (e.g. args[''programRef'']).';
+COMMENT ON COLUMN fhir_script_argument.data_type IS 'The data type of the argument (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_script_argument.mandatory IS 'Specifies if the value of this argument is mandatory when executing a script. If an argument is mandatory and no value has been supplied when executing the script, the script cannot be executed.';
+COMMENT ON COLUMN fhir_script_argument.array_value IS 'Specifies if the argument is a single dimensional array. If an argument is an array, its values must be separated by a pipe character when specifying these.';
+COMMENT ON COLUMN fhir_script_argument.default_value IS 'Specifies the default value of this argument. This can be overridden when creating an executable script. If the executable script does not override this value, this value is used. The value must match the data type of this argument.';
+COMMENT ON COLUMN fhir_script_argument.description IS 'The detailed description of the purpose of this script argument.';
 
 CREATE TABLE fhir_executable_script (
   id          UUID NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -126,6 +252,11 @@ CREATE TABLE fhir_executable_script (
 );
 CREATE INDEX fhir_executable_script_i1
   ON fhir_executable_script (script_id);
+COMMENT ON TABLE fhir_executable_script IS 'Contains the executable script of a script. The executable script must provide all missing mandatory input argument values and may also override input argument values that has been defined by the script.';
+COMMENT ON COLUMN fhir_executable_script.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_executable_script.name IS 'The unique name of the executable script.';
+COMMENT ON COLUMN fhir_executable_script.code IS 'The unique code of the executable script.';
+COMMENT ON COLUMN fhir_executable_script.description IS 'The detailed description of the purpose of the executable script.';
 
 CREATE TABLE fhir_executable_script_argument (
   id                   UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -146,6 +277,16 @@ CREATE INDEX fhir_executable_script_argument_i1
   ON fhir_executable_script_argument (executable_script_id);
 CREATE INDEX fhir_executable_script_argument_i2
   ON fhir_executable_script_argument (script_argument_id);
+COMMENT ON TABLE fhir_executable_script_argument IS 'Contains the overridden input argument for an executable script. At least all mandatory input arguments of the script for which no default values have been provided must be overridden.';
+COMMENT ON COLUMN fhir_executable_script_argument.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_executable_script_argument.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_executable_script_argument.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_executable_script_argument.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_executable_script_argument.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_executable_script_argument.executable_script_id IS 'The reference to the executable script to which this overridden input argument value belongs to.';
+COMMENT ON COLUMN fhir_executable_script_argument.script_argument_id IS 'The reference to the overridden argument of the script.';
+COMMENT ON COLUMN fhir_executable_script_argument.override_value IS 'The override value of the script argument. The value must match the data type of this argument.';
+COMMENT ON COLUMN fhir_executable_script_argument.enabled IS 'Specifies if this overridden value should be used when executing the script. Otherwise the default input argument value is used.';
 
 CREATE TABLE fhir_code_category (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -264,7 +405,9 @@ CREATE TABLE fhir_rule (
   CONSTRAINT fhir_rule_uk1 UNIQUE (name),
   CONSTRAINT fhir_rule_fk1 FOREIGN KEY (applicable_in_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_rule_fk2 FOREIGN KEY (applicable_code_set_id) REFERENCES fhir_code_set (id),
-  CONSTRAINT fhir_rule_fk3 FOREIGN KEY (transform_in_script_id) REFERENCES fhir_executable_script (id)
+  CONSTRAINT fhir_rule_fk3 FOREIGN KEY (transform_in_script_id) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_rule_fk4 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum(value),
+  CONSTRAINT fhir_rule_fk5 FOREIGN KEY (dhis_resource_type) REFERENCES fhir_dhis_resource_type_enum(value)
 );
 CREATE INDEX fhir_rule_i1
   ON fhir_rule (applicable_in_script_id);
@@ -447,7 +590,8 @@ CREATE TABLE fhir_remote_subscription (
   verbose_logging               BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_uk1 UNIQUE (name),
-  CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code)
+  CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code),
+  CONSTRAINT fhir_remote_subscription_fk1 FOREIGN KEY (fhir_version) REFERENCES fhir_version_enum(value)
 );
 
 CREATE TABLE fhir_remote_subscription_header (
@@ -471,7 +615,8 @@ CREATE TABLE fhir_remote_subscription_system (
   CONSTRAINT fhir_remote_subscription_system_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_system_uk1 UNIQUE (remote_subscription_id , fhir_resource_type ),
   CONSTRAINT fhir_remote_subscription_system_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_remote_subscription_system_fk2 FOREIGN KEY (system_id) REFERENCES fhir_system (id)
+  CONSTRAINT fhir_remote_subscription_system_fk2 FOREIGN KEY (system_id) REFERENCES fhir_system (id),
+  CONSTRAINT fhir_remote_subscription_system_fk3 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum (value)
 );
 CREATE INDEX fhir_remote_subscription_system_i1 ON fhir_remote_subscription_system(system_id);
 
@@ -516,50 +661,52 @@ INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('02d5719e-8859-445a-a815-5980d418b4e6', 0, 'RxNorm', 'SYSTEM_RXNORM', ' http://www.nlm.nih.gov/research/umls/rxnorm',
 'RxNorm is made available by the US National Library of Medicine at http://www.nlm.nih.gov/research/umls/rxnorm.');
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- BEGIN LOINC Code Descriptions
--- The following copyright applies to the following section that contains description of LOINC codes:
--- This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('1197b27e-3956-43dd-a75c-bfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('616e470e-fe84-46ac-a523-b23bbc526ae2', 0, 'Survey', 'SURVEY', 'Survey.');
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- BEGIN LOINC Code Descriptions
+-- The following copyright applies to the following section that contains description of LOINC codes:
+-- This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use.
+--
+-- All descriptions must include: LOINC_NUM, COMPONENT, PROPERTY, TIME_ASPCT, SYSTEM, SCALE_TYP, METHOD_TYP, STATUS and SHORTNAME.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 -- Definition of vital signs - body weight
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('0d78f5e3-c9fd-4859-9768-fb7c898a4142', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight measured', 'VS_BODY_WEIGHT_MEASURED', 'Body weight measured');
+VALUES ('0d78f5e3-c9fd-4859-9768-fb7c898a4142', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight Measured', 'LOINC_3141-9', '3141-9 / Body weight / Mass / Pt / ^Patient / Qn / Measured / ACTIVE / Weight Measured / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('a748a35e-00e6-4926-abc6-8cde3bb30ee4', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight', 'VS_BODY_WEIGHT', 'Body weight (no specific method).');
+VALUES ('a748a35e-00e6-4926-abc6-8cde3bb30ee4', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight', 'LOINC_29463-7', '29463-7 / Body weight / Mass / Pt / ^Patient / Qn /  / ACTIVE / Weight / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('26bb2fe1-8c80-4f01-bfa2-ccca24ffabf7', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight reported usual', 'VS_BODY_WEIGHT_REPORTED_USUAL', 'Body weight reported usual.');
+VALUES ('26bb2fe1-8c80-4f01-bfa2-ccca24ffabf7', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight usual Reported', 'LOINC_75292-3', '75292-3 / Body weight^usual / Mass / Pt / ^Patient / Qn / Reported / ACTIVE / Weight usual Reported / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('34ab9dc2-4e28-4e2d-8dcb-99c78d24b0fa', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight measured with clothes', 'VS_BODY_WEIGHT_MEASURED_CLOTHES', 'Body weight measured with clothes.');
+VALUES ('34ab9dc2-4e28-4e2d-8dcb-99c78d24b0fa', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight W clothes Measured', 'LOINC_8350-1', '8350-1 / Body weight^with clothes / Mass / Pt / ^Patient / Qn / Measured / ACTIVE / Weight W clothes Measured / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('4b3d1fb0-2a66-4da4-a8e5-4e3ddcf8cf8c', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight measured without clothes', 'VS_BODY_WEIGHT_MEASURED_WO_CLOTHES', 'Body weight measured without clothes.');
+VALUES ('4b3d1fb0-2a66-4da4-a8e5-4e3ddcf8cf8c', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight WO clothes Measured', 'LOINC_8351-9', '8351-9 / Body weight^without clothes / Mass / Pt / ^Patient / Qn / Measured / ACTIVE / Weight WO clothes Measured / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('c03c0878-1896-4d05-8a6c-593892bdd5ba', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight estimated', 'VS_BODY_WEIGHT_ESTIMATED', 'Body weight estimated.');
+VALUES ('c03c0878-1896-4d05-8a6c-593892bdd5ba', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight Est', 'LOINC_8335-2', '8335-2 / Body weight / Mass / Pt / ^Patient / Qn / Estimated / ACTIVE / Weight Est / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('0139aaee-c988-4ba8-838c-bc26331a9c96', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Body weight stated', 'VS_BODY_WEIGHT_STATED', 'Body weight stated.');
+VALUES ('0139aaee-c988-4ba8-838c-bc26331a9c96', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Weight Stated', 'LOINC_3142-7', '3142-7 / Body weight / Mass / Pt / ^Patient / Qn / Stated / ACTIVE / Weight Stated / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('124b0bb5-d7cc-483b-a555-356fd3651b4f', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight GNWCH', 'VS_BIRTH_WEIGHT_GNWCH', 'Birth weight GNWCH.');
+VALUES ('124b0bb5-d7cc-483b-a555-356fd3651b4f', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight GNWCH', 'LOINC_56092-0', '56092-0 / Body weight^at birth / Mass / Pt / ^Patient / Qn / GNWCH / ACTIVE / Birth weight GNWCH / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('bcdc2c18-30ee-4860-9b79-2f810cbcb0f1', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight measured', 'VS_BIRTH_WEIGHT_MEASURED', 'Birth weight measured.');
+VALUES ('bcdc2c18-30ee-4860-9b79-2f810cbcb0f1', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight Measured', 'LOINC_8339-4', '8339-4 / Body weight^at birth / Mass / Pt / ^Patient / Qn / Measured / ACTIVE / Birth weight Measured / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('160ab849-ec01-42d3-81dc-056f28faf14d', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight NVSS', 'VS_BIRTH_WEIGHT_NVSS', 'Birth weight NVSS.');
+VALUES ('160ab849-ec01-42d3-81dc-056f28faf14d', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight NVSS', 'LOINC_56093-8', '56093-8 / Body weight^at birth / Mass / Pt / ^Patient / Qn / NVSS / ACTIVE / Birth weight NVSS / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('644b6a02-160d-4021-b379-dcd8d8044684', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight reported', 'VS_BIRTH_WEIGHT_REPORTED', 'Birth weight reported.');
+VALUES ('644b6a02-160d-4021-b379-dcd8d8044684', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'Birth weight Reported', 'LOINC_56056-5', '56056-5 / Body weight^at birth / Mass / Pt / ^Patient / Qn / Reported / ACTIVE / Birth weight Reported / LOINC®');
 
 -- Definition of survey - apgar score
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('5662bc32-974e-4d18-bddc-b10f510439e6', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '1 minute Apgar Score', 'SV_1M_APGAR_SCORE', '1 minute Apgar Score.');
+VALUES ('5662bc32-974e-4d18-bddc-b10f510439e6', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '1M Apgar Score', 'LOINC_9272-6', '9272-6 / Score^1M post birth / Fcn / Pt / ^Patient / Qn / Apgar / ACTIVE / 1M Apgar Score / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('41578332-0130-486a-bd61-82e85e521a79', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '2 minute Apgar Score', 'SV_2M_APGAR_SCORE', '2 minute Apgar Score.');
+VALUES ('41578332-0130-486a-bd61-82e85e521a79', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', 'Apgar Scor', 'LOINC_9273-4', '9273-4 / Score^2M post birth / Fcn / Pt / ^Patient / Qn / Apgar / ACTIVE / Apgar Score / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('7b87fde7-7a3a-4124-aa63-06dbe26551b4', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '5 minute Apgar Score', 'SV_5M_APGAR_SCORE', '5 minute Apgar Score.');
+VALUES ('7b87fde7-7a3a-4124-aa63-06dbe26551b4', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '5M Apgar Score', 'LOINC_9274-2', '9274-2 / Score^5M post birth / Fcn / Pt / ^Patient / Qn / Apgar / ACTIVE / 5M Apgar Score / LOINC®');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description)
-VALUES ('9e64ae16-17c5-4fb0-97aa-eaca42c70c12', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '10 minute Apgar Score', 'SV_10M_APGAR_SCORE', '10 minute Apgar Score.');
+VALUES ('9e64ae16-17c5-4fb0-97aa-eaca42c70c12', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', '10M Apgar Score', 'LOINC_9271-8', '9271-8 / Score^10M post birth / Fcn / Pt / ^Patient / Qn / Apgar / ACTIVE / 10M Apgar Score / LOINC®');
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- END LOINC Code Descriptions
@@ -1037,20 +1184,20 @@ INSERT INTO fhir_code_set_value(code_set_id, code_id)
 INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
 VALUES ('d4aa72e9-b57e-4d5c-8856-860ebdf460af', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'All Birth Weight Observations', 'ALL_OB_BIRTH_WEIGHT', 'All Birth Weight Observations.');
 INSERT INTO fhir_code_set_value(code_set_id, code_id)
-  SELECT 'd4aa72e9-b57e-4d5c-8856-860ebdf460af', id FROM fhir_code WHERE code IN ('VS_BIRTH_WEIGHT_GNWCH', 'VS_BIRTH_WEIGHT_MEASURED', 'VS_BIRTH_WEIGHT_NVSS', 'VS_BIRTH_WEIGHT_REPORTED');
+  SELECT 'd4aa72e9-b57e-4d5c-8856-860ebdf460af', id FROM fhir_code WHERE code IN ('LOINC_56092-0', 'LOINC_8339-4', 'LOINC_56093-8', 'LOINC_56056-5');
 
 -- Code set with all Apgar Score Observations
 INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
 VALUES ('39457ebd-308c-4a44-9302-6fa47aa57b3b', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', 'All Apgar Score Observations', 'ALL_OB_APGAR_SCORE', 'All Apgar Score Observations.');
 INSERT INTO fhir_code_set_value(code_set_id, code_id)
-  SELECT '39457ebd-308c-4a44-9302-6fa47aa57b3b', id FROM fhir_code WHERE code IN ('SV_10M_APGAR_SCORE', 'SV_5M_APGAR_SCORE', 'SV_2M_APGAR_SCORE', 'SV_1M_APGAR_SCORE');
+  SELECT '39457ebd-308c-4a44-9302-6fa47aa57b3b', id FROM fhir_code WHERE code IN ('LOINC_9271-8', 'LOINC_9274-2', 'LOINC_9273-4', 'LOINC_9272-6');
 
 -- Code set with all Body Weight Observations
 INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
 VALUES ('d37dfecb-ce88-4fa4-9a78-44ffe874c140', 0, '1197b27e-3956-43dd-a75c-bfc6808dc49d', 'All Body Weight Observations', 'ALL_OB_BODY_WEIGHT', 'All Body Weight Observations.');
 INSERT INTO fhir_code_set_value(code_set_id, code_id)
   SELECT 'd37dfecb-ce88-4fa4-9a78-44ffe874c140', id FROM fhir_code WHERE code IN
-  ('VS_BODY_WEIGHT_MEASURED', 'VS_BODY_WEIGHT', 'VS_BODY_WEIGHT_REPORTED_USUAL', 'VS_BODY_WEIGHT_MEASURED_CLOTHES', 'VS_BODY_WEIGHT_MEASURED_WO_CLOTHES', 'VS_BODY_WEIGHT_ESTIMATED', 'VS_BODY_WEIGHT_STATED');
+  ('LOINC_3141-9', 'LOINC_29463-7', 'LOINC_75292-3', 'LOINC_8350-1', 'LOINC_8351-9', 'LOINC_8335-2', 'LOINC_3142-7');
 
 -- Script that returns boolean value true every time
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1252,7 +1399,7 @@ VALUES ('e9587a64-9abb-484c-b054-d76ddf2e83d1', 0, 'd69681b8-2e37-42d7-b229-9ed2
 'commentDataElement', 'DATA_ELEMENT_REF', FALSE, NULL, 'Data element on which the apgar score comment must be set.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, array_value, mandatory, default_value, description)
 VALUES ('65cefdfe-eaaa-4aa1-82d3-bbba005dc327', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
-'mappedApgarScoreCodes', 'CODE', TRUE, TRUE, 'SV_10M_APGAR_SCORE|SV_5M_APGAR_SCORE|SV_2M_APGAR_SCORE|SV_1M_APGAR_SCORE',
+'mappedApgarScoreCodes', 'CODE', TRUE, TRUE, 'LOINC_9271-8|LOINC_9274-2|LOINC_9273-4|LOINC_9272-6',
 'Mapped Apgar Score codes in order of their relevance. The first Apgar Score code is more relevant than the last one.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('2e378bc2-9ed6-42e5-8337-0ee8bbf22fbf', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',

@@ -27,28 +27,9 @@
   ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <artifactId>dhis2-fhir-adapter-dhis</artifactId>
-  <packaging>jar</packaging>
-
-  <parent>
-    <groupId>org.dhis2.fhir.adapter</groupId>
-    <artifactId>dhis2-fhir-adapter</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
-  </parent>
-
-  <name>dhis2-fhir-adapter-dhis</name>
-  <description>Contains the classes to access DHIS2. No FHIR specific logic is included.</description>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.dhis2.fhir.adapter</groupId>
-      <artifactId>dhis2-fhir-adapter-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
-</project>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml" />
+  <logger name="org.hibernate" level="warn" />
+  <logger name="org.hibernate.cfg.AnnotationBinder" level="error" />
+  <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="error" />
+</configuration>

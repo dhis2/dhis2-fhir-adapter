@@ -55,6 +55,14 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * Connects to HAPI FHIR JPA Server at {@value #SERVER_BASE} and creates/updates
+ * resources.
+ * <p>
+ * This source code contains LOINC codes to which the following copright applies to:<br>
+ * This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the
+ * LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use
+ */
 public class DemoClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";

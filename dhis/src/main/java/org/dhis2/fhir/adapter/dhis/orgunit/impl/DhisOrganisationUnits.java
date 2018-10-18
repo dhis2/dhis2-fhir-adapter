@@ -30,17 +30,29 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Container object used for organization units.
+ *
+ * @author volsch
+ */
 public class DhisOrganisationUnits implements Serializable
 {
     private static final long serialVersionUID = -671810199580040339L;
 
     private List<OrganisationUnit> organisationUnits;
 
+    @Nonnull
     public List<OrganisationUnit> getOrganisationUnits()
     {
+        if ( organisationUnits == null )
+        {
+            organisationUnits = new ArrayList<>();
+        }
         return organisationUnits;
     }
 

@@ -33,16 +33,34 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * The cast utils provide helper methods to avoid that overloaded methods that receive a <code>null</code> value in JavaScript executions cannot be selected.
+ * The cast utils provide helper methods to avoid that overloaded methods that receive
+ * a <code>null</code> value in JavaScript executions cannot be selected.
  *
  * @author volsch
  */
 public abstract class CastUtils
 {
+    /**
+     * @param value the value that should be casted.
+     * @param c1    the first assumed type of the value.
+     * @param f1    the conversion function from the first assumed type to the returned type.
+     * @param c2    the second assumed type of the value.
+     * @param f2    the conversion function from the second assumed type to the returned type.
+     * @param <T>   the concrete return type of the cast.
+     * @param <V1>  the concrete type first assumed type of the specified value.
+     * @param <V2>  the concrete type second assumed type of the specified value.
+     * @return the casted value.
+     * @throws ClassCastException thrown if the value is neither <code>null</code>
+     *                            nor an instance of any specified class.
+     */
     @Nullable
-    public static <T, V1, V2> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2 )
+    public static <T, V1, V2> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2 ) throws ClassCastException
     {
-        if ( (value == null) || c1.isInstance( value ) )
+        if ( value == null )
+        {
+            return null;
+        }
+        if ( c1.isInstance( value ) )
         {
             return f1.apply( c1.cast( value ) );
         }
@@ -53,10 +71,30 @@ public abstract class CastUtils
         throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
     }
 
+    /**
+     * @param value the value that should be casted.
+     * @param c1 the first assumed type of the value.
+     * @param f1 the conversion function from the first assumed type to the returned type.
+     * @param c2 the second assumed type of the value.
+     * @param f2 the conversion function from the second assumed type to the returned type.
+     * @param c3 the third assumed type of the value.
+     * @param f3 the conversion function from the third assumed type to the returned type.
+     * @param <T> the concrete return type of the cast.
+     * @param <V1> the concrete type first assumed type of the specified value.
+     * @param <V2> the concrete type second assumed type of the specified value.
+     * @param <V3> the concrete type second assumed type of the specified value.
+     * @return the casted value.
+     * @throws ClassCastException thrown if the value is neither <code>null</code>
+     * nor an instance of any specified class.
+     */
     @Nullable
-    public static <T, V1, V2, V3> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3 )
+    public static <T, V1, V2, V3> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3 ) throws ClassCastException
     {
-        if ( (value == null) || c1.isInstance( value ) )
+        if ( value == null )
+        {
+            return null;
+        }
+        if ( c1.isInstance( value ) )
         {
             return f1.apply( c1.cast( value ) );
         }

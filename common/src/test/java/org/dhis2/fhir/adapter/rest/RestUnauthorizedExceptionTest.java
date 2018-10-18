@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.rest;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,20 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.http.HttpStatus;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Unit tests for {@link RestUnauthorizedException}.
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+public class RestUnauthorizedExceptionTest
 {
-    @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    @Test
+    public void getHttpStatus()
+    {
+        Assert.assertEquals( HttpStatus.UNAUTHORIZED, new RestUnauthorizedException( "Test" ).getHttpStatus() );
+    }
 }

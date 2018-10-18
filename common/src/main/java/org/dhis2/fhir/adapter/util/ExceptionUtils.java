@@ -33,8 +33,23 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Utility methods for extracting information from exceptions.
+ *
+ * @author volsch
+ */
 public abstract class ExceptionUtils
 {
+    /**
+     * Returns the first exception instance that is instance of one
+     * of the specified cause classes. Also the specified exception may be
+     * returned of it is an instance of one of the specified cause classes.
+     *
+     * @param exception    the exception for which a cause with the specified cause classes should be extracted.
+     * @param causeClasses the cause classes of which one of the causes must be instance of.
+     * @return the found cause that is instance of one of the specified cause classes or <code>null</code> if
+     * no such exception has been found.
+     */
     @Nullable
     public static Throwable findCause( @Nonnull Throwable exception, @Nonnull Class<?>... causeClasses )
     {

@@ -43,6 +43,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * Converts values using {@link ValueConverter}s. The converters are associated with a
+ * {@linkplain ValueType DHIS2 value type}. All converters that are annotated with
+ * {@link ConvertedValueTypes} annotation are taken to initialize this value converter.
+ * If there are multiple converters for one DHIS2 value type the most appropriate for
+ * the specified source type is used (sub-classes may have more information than
+ * super classes).
+ *
+ * @author volsch
+ */
 @Component
 public class ValueConverter
 {
@@ -74,9 +84,19 @@ public class ValueConverter
         }
     }
 
+    /**
+     * Converts the specified value to the specified value type with the specified result class.
+     *
+     * @param value       the value to be converted.
+     * @param valueType   the resulting value type.
+     * @param resultClass the resulting value class.
+     * @param <R>         the concrete type of the result.
+     * @return the converted value.
+     * @throws ConversionException thrown if a conversion error occurs.
+     */
     @SuppressWarnings( "unchecked" )
     @Nullable
-    public <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass )
+    public <R> R convert( @Nullable Object value, @Nonnull ValueType valueType, @Nonnull Class<R> resultClass ) throws ConversionException
     {
         if ( (value == null) || isResultValueType( value, resultClass ) )
         {
@@ -92,12 +112,6 @@ public class ValueConverter
             }
         }
         throw new ConversionException( ("No suitable converter for value type " + valueType + " and object type " + value.getClass().getSimpleName() + ".") );
-    }
-
-    @Nullable
-    public Object convert( @Nullable Object value, @Nonnull ValueType valueType )
-    {
-        return convert( value, valueType, Object.class );
     }
 
     private <R> boolean isResultValueType( @Nonnull Object value, @Nonnull Class<R> resultClass )

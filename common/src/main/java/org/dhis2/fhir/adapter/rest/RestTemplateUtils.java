@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.rest;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,41 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Utility class for processing rest template
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+public abstract class RestTemplateUtils
 {
-    @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    /**
+     * Checks if the specified client error exception could have been caused by an
+     * entity that has not been found. The error status code must be 404 and the
+     * content type must be a JSON content type.
+     *
+     * @param e the client error exception that should be checked.
+     * @return <code>true</code> if the client error indicates that an entity
+     * has not been found, <code>false</code> otherwise.
+     */
+    public static boolean isNotFound( @Nonnull HttpClientErrorException e )
+    {
+        if ( !HttpStatus.NOT_FOUND.equals( e.getStatusCode() ) )
+        {
+            return false;
+        }
+        final HttpHeaders headers = e.getResponseHeaders();
+        return (headers != null) && MediaType.APPLICATION_JSON.isCompatibleWith( headers.getContentType() );
+    }
+
+    private RestTemplateUtils()
+    {
+        super();
+    }
 }
