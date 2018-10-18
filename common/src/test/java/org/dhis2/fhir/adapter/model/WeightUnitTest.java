@@ -31,6 +31,11 @@ package org.dhis2.fhir.adapter.model;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Unit tests of {@link WeightUnitTest}.
+ *
+ * 
+ */
 public class WeightUnitTest
 {
     @Test
