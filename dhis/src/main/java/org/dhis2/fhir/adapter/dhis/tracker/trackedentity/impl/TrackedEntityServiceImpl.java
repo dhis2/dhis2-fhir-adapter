@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
@@ -36,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -53,6 +57,7 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -85,6 +90,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         this.metadataService = metadataService;
     }
 
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
     @Override
     public void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type, @Nonnull Map<RequiredValueType, String> requiredValues )
     {
@@ -115,25 +121,28 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         } );
     }
 
+    @HystrixCommand
     @Nonnull
     @Override
     public Optional<TrackedEntityInstance> getById( @Nonnull String id )
     {
-        TrackedEntityInstance instance = null;
+        TrackedEntityInstance instance;
         try
         {
-            instance = restTemplate.getForObject( ID_URI, TrackedEntityInstance.class, id );
+            instance = Objects.requireNonNull( restTemplate.getForObject( ID_URI, TrackedEntityInstance.class, id ) );
         }
         catch ( HttpClientErrorException e )
         {
-            if ( e.getStatusCode() != HttpStatus.NOT_FOUND )
+            if ( RestTemplateUtils.isNotFound( e ) )
             {
-                throw e;
+                return Optional.empty();
             }
+            throw e;
         }
-        return Optional.ofNullable( instance );
+        return Optional.of( instance );
     }
 
+    @HystrixCommand
     @Nonnull
     @Override
     public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
@@ -143,10 +152,11 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         {
             return Collections.emptyList();
         }
-        return restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
-            .getBody().getTrackedEntityInstances();
+        return Objects.requireNonNull( restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
+            .getBody() ).getTrackedEntityInstances();
     }
 
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
     @Nonnull
     @Override
     public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
@@ -165,15 +175,19 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         }
         catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Tracked tracked entity instance could not be created: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Tracked tracked entity instance could not be created: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final ImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
             (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
             (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
         {
-            throw new RuntimeException( "Tracked tracked entity instance could not be created." );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance." );
         }
         trackedEntityInstance.setNewResource( false );
         trackedEntityInstance.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
@@ -191,12 +205,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         }
         catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Tracked tracked entity instance could not be updated: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Tracked tracked entity instance could not be updated: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final ImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( result.getStatus() != Status.OK )
         {
-            throw new RuntimeException( "Tracked tracked entity instance could not be created." );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance: " + result.getStatus() );
         }
         return trackedEntityInstance;
     }
@@ -207,6 +225,6 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final UriComponentsBuilder builder = UriComponentsBuilder.fromUriString( GENERATE_URI ).queryParams( requiredValues );
         final HttpEntity<ReservedValue> response = restTemplate.exchange( builder.buildAndExpand( attributeId ).toUriString(),
             HttpMethod.GET, null, ReservedValue.class );
-        return response.getBody().getValue();
+        return Objects.requireNonNull( response.getBody() ).getValue();
     }
 }

@@ -96,6 +96,61 @@ CREATE TABLE fhir_version_enum (
 COMMENT ON TABLE fhir_version_enum IS 'Enumeration values with supported FHIR versions.';
 INSERT INTO fhir_version_enum VALUES('DSTU3');
 
+CREATE TABLE fhir_event_status_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_event_status_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_event_status_enum IS 'Enumeration values with available event status.';
+INSERT INTO fhir_event_status_enum VALUES('OVERDUE');
+INSERT INTO fhir_event_status_enum VALUES('ACTIVE');
+INSERT INTO fhir_event_status_enum VALUES('SCHEDULE');
+INSERT INTO fhir_event_status_enum VALUES('VISITED');
+INSERT INTO fhir_event_status_enum VALUES('COMPLETED');
+INSERT INTO fhir_event_status_enum VALUES('SKIPPED');
+
+CREATE TABLE fhir_script_source_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_script_source_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_script_source_type_enum IS 'Enumeration values with supported script source types (i.e. script labguages).';
+INSERT INTO fhir_script_source_type_enum VALUES('JAVASCRIPT');
+
+CREATE TABLE fhir_script_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_script_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_script_type_enum IS 'Enumeration values with supported script types.';
+INSERT INTO fhir_script_type_enum VALUES('TRANSFORM_TO_DHIS');
+INSERT INTO fhir_script_type_enum VALUES('EVALUATE');
+
+CREATE TABLE fhir_event_period_day_type_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_event_period_day_type_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_event_period_day_type_enum IS 'Enumeration values with supported event period day types.';
+INSERT INTO fhir_event_period_day_type_enum VALUES('EVENT_DATE');
+INSERT INTO fhir_event_period_day_type_enum VALUES('DUE_DATE');
+INSERT INTO fhir_event_period_day_type_enum VALUES('ORIG_DUE_DATE');
+INSERT INTO fhir_event_period_day_type_enum VALUES('EVENT_UPDATED_DATE');
+INSERT INTO fhir_event_period_day_type_enum VALUES('VALUE_UPDATED_DATE');
+
+CREATE TABLE fhir_script_variable_enum (
+  value VARCHAR(30) NOT NULL,
+  CONSTRAINT fhir_script_variable_enum_pk PRIMARY KEY(value)
+);
+COMMENT ON TABLE fhir_script_variable_enum IS 'Enumeration values with supported script variables.';
+INSERT INTO fhir_script_variable_enum VALUES('CONTEXT');
+INSERT INTO fhir_script_variable_enum VALUES('INPUT');
+INSERT INTO fhir_script_variable_enum VALUES('OUTPUT');
+INSERT INTO fhir_script_variable_enum VALUES('TRACKED_ENTITY_ATTRIBUTES');
+INSERT INTO fhir_script_variable_enum VALUES('TRACKED_ENTITY_TYPE');
+INSERT INTO fhir_script_variable_enum VALUES('TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_variable_enum VALUES('PROGRAM');
+INSERT INTO fhir_script_variable_enum VALUES('PROGRAM_STAGE');
+INSERT INTO fhir_script_variable_enum VALUES('ENROLLMENT');
+INSERT INTO fhir_script_variable_enum VALUES('EVENT');
+INSERT INTO fhir_script_variable_enum VALUES('DATE_TIME');
+
 CREATE TABLE fhir_constant (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
@@ -118,7 +173,7 @@ COMMENT ON COLUMN fhir_constant.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_constant.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
 COMMENT ON COLUMN fhir_constant.created_at IS 'The timestamp when the entity has been created.';
 COMMENT ON COLUMN fhir_constant.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_constant.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_constant.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_constant.name IS 'The unique name of the constant.';
 COMMENT ON COLUMN fhir_constant.code IS 'The unique code of the constant. This is used in mappings to reference the constant.';
 COMMENT ON COLUMN fhir_constant.description IS 'An optional description text of the constant.';
@@ -144,14 +199,14 @@ CREATE TABLE fhir_script (
   CONSTRAINT fhir_script_fk1 FOREIGN KEY(return_type) REFERENCES fhir_data_type_enum(value),
   CONSTRAINT fhir_script_fk2 FOREIGN KEY(input_type) REFERENCES fhir_transform_data_type_enum(value),
   CONSTRAINT fhir_script_fk3 FOREIGN KEY(output_type) REFERENCES fhir_transform_data_type_enum(value),
-  CONSTRAINT fhir_script_c1 CHECK(script_type IN ('TRANSFORM_TO_DHIS', 'EVALUATE'))
+  CONSTRAINT fhir_script_fk4 FOREIGN KEY(script_type) REFERENCES fhir_script_type_enum(value)
 );
 COMMENT ON TABLE fhir_script IS 'Contains scripts that are used for evaluations an d transformations. The script itself cannot be executed. To execute a script and executable script that references this script must be created.';
 COMMENT ON COLUMN fhir_script.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_script.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
 COMMENT ON COLUMN fhir_script.created_at IS 'The timestamp when the entity has been created.';
 COMMENT ON COLUMN fhir_script.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_script.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_script.name IS 'The unique name of the script.';
 COMMENT ON COLUMN fhir_script.code IS 'The unique code of the script.';
 COMMENT ON COLUMN fhir_script.script_type IS 'The concrete type of the script, which describes its purpose (enumeration value that is supported by the application).';
@@ -171,7 +226,7 @@ CREATE TABLE fhir_script_source (
   source_type     VARCHAR(30)                    NOT NULL,
   CONSTRAINT fhir_script_source_pk PRIMARY KEY (id),
   CONSTRAINT fhir_script_source_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_script_c1 CHECK(source_type IN ('JAVASCRIPT'))
+  CONSTRAINT fhir_script_source_fk2 FOREIGN KEY (source_type) REFERENCES fhir_script_source_type_enum (value)
 );
 CREATE INDEX fhir_script_source_i1
   ON fhir_script_source (script_id);
@@ -180,9 +235,10 @@ COMMENT ON COLUMN fhir_script_source.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_script_source.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
 COMMENT ON COLUMN fhir_script_source.created_at IS 'The timestamp when the entity has been created.';
 COMMENT ON COLUMN fhir_script_source.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_script_source.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script_source.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_script_source.source_text IS 'The script source code (may also be a reference to an existing Java method that can be invoked).';
 COMMENT ON COLUMN fhir_script_source.source_type IS 'The source type, i.e. programming language of the script (enumeration value that is supported by the application).';
+COMMENT ON COLUMN fhir_script_source.script_id IS 'The reference to the script to which this source belongs. A script can have more than one sources (maximum one for each FHIR Version).';
 
 CREATE TABLE fhir_script_source_version (
   script_source_id UUID        NOT NULL,
@@ -200,7 +256,7 @@ CREATE TABLE fhir_script_variable (
   variable  VARCHAR(30) NOT NULL,
   CONSTRAINT fhir_script_variable_pk PRIMARY KEY (script_id, variable),
   CONSTRAINT fhir_script_variable_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_script_variable_c1 CHECK(variable IN ('CONTEXT', 'INPUT', 'OUTPUT', 'TRACKED_ENTITY_ATTRIBUTES', 'TRACKED_ENTITY_TYPE', 'TRACKED_ENTITY_INSTANCE', 'PROGRAM', 'PROGRAM_STAGE', 'ENROLLMENT', 'EVENT', 'DATE_TIME'))
+  CONSTRAINT fhir_script_variable_fk2 FOREIGN KEY (variable) REFERENCES fhir_script_variable_enum(value)
 );
 COMMENT ON TABLE fhir_script_variable IS 'Contains the variables that are required by a script.';
 COMMENT ON COLUMN fhir_script_variable.script_id IS 'The reference to the script that requires the variables.';
@@ -231,13 +287,14 @@ COMMENT ON COLUMN fhir_script_argument.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_script_argument.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
 COMMENT ON COLUMN fhir_script_argument.created_at IS 'The timestamp when the entity has been created.';
 COMMENT ON COLUMN fhir_script_argument.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_script_argument.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_script_argument.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_script_argument.name IS 'The name of the argument that is also used inside the script to access the argument value (e.g. args[''programRef'']).';
 COMMENT ON COLUMN fhir_script_argument.data_type IS 'The data type of the argument (enumeration value that is supported by the application).';
 COMMENT ON COLUMN fhir_script_argument.mandatory IS 'Specifies if the value of this argument is mandatory when executing a script. If an argument is mandatory and no value has been supplied when executing the script, the script cannot be executed.';
 COMMENT ON COLUMN fhir_script_argument.array_value IS 'Specifies if the argument is a single dimensional array. If an argument is an array, its values must be separated by a pipe character when specifying these.';
 COMMENT ON COLUMN fhir_script_argument.default_value IS 'Specifies the default value of this argument. This can be overridden when creating an executable script. If the executable script does not override this value, this value is used. The value must match the data type of this argument.';
 COMMENT ON COLUMN fhir_script_argument.description IS 'The detailed description of the purpose of this script argument.';
+COMMENT ON COLUMN fhir_script_argument.script_id IS 'The reference to the script to which this argument belongs.';
 
 CREATE TABLE fhir_executable_script (
   id          UUID NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -254,6 +311,7 @@ CREATE INDEX fhir_executable_script_i1
   ON fhir_executable_script (script_id);
 COMMENT ON TABLE fhir_executable_script IS 'Contains the executable script of a script. The executable script must provide all missing mandatory input argument values and may also override input argument values that has been defined by the script.';
 COMMENT ON COLUMN fhir_executable_script.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_executable_script.script_id IS 'References the executable script on which this executable script is based on.';
 COMMENT ON COLUMN fhir_executable_script.name IS 'The unique name of the executable script.';
 COMMENT ON COLUMN fhir_executable_script.code IS 'The unique code of the executable script.';
 COMMENT ON COLUMN fhir_executable_script.description IS 'The detailed description of the purpose of the executable script.';
@@ -282,7 +340,7 @@ COMMENT ON COLUMN fhir_executable_script_argument.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_executable_script_argument.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
 COMMENT ON COLUMN fhir_executable_script_argument.created_at IS 'The timestamp when the entity has been created.';
 COMMENT ON COLUMN fhir_executable_script_argument.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_executable_script_argument.created_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_executable_script_argument.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_executable_script_argument.executable_script_id IS 'The reference to the executable script to which this overridden input argument value belongs to.';
 COMMENT ON COLUMN fhir_executable_script_argument.script_argument_id IS 'The reference to the overridden argument of the script.';
 COMMENT ON COLUMN fhir_executable_script_argument.override_value IS 'The override value of the script argument. The value must match the data type of this argument.';
@@ -301,6 +359,15 @@ CREATE TABLE fhir_code_category (
   CONSTRAINT fhir_code_category_uk1 UNIQUE (name),
   CONSTRAINT fhir_code_category_uk2 UNIQUE (code)
 );
+COMMENT ON TABLE fhir_code_category IS 'Contains a category for defined codes. The category is only required for grouping codes in order to finding and using them manually.';
+COMMENT ON COLUMN fhir_code_category.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_code_category.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_code_category.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_code_category.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_code_category.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_code_category.name IS 'The unique name of the code category.';
+COMMENT ON COLUMN fhir_code_category.code IS 'The unique code of the code category.';
+COMMENT ON COLUMN fhir_code_category.description IS 'The detailed description that describes for which purpose the code category is used.';
 
 CREATE TABLE fhir_code (
   id               UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -319,6 +386,16 @@ CREATE TABLE fhir_code (
 );
 CREATE INDEX fhir_code_i1
   ON fhir_code (code_category_id);
+COMMENT ON TABLE fhir_code IS 'Contains unique codes that can be used by rules, transformations and scripts to reference system dependent codes (e.g. vaccine CVX codes).';
+COMMENT ON COLUMN fhir_code.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_code.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_code.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_code.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_code.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_code.code_category_id IS 'References the code category to which the code belongs to.';
+COMMENT ON COLUMN fhir_code.name IS 'The unique name of the code.';
+COMMENT ON COLUMN fhir_code.code IS 'The unique code that can be used by rules, transformations and scripts.';
+COMMENT ON COLUMN fhir_code.description IS 'The detailed description that describes for which purpose the code is used. This may also contain details about the license that affects the code. In such a case the description must not be changed.';
 
 CREATE TABLE fhir_code_set (
   id               UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -337,6 +414,16 @@ CREATE TABLE fhir_code_set (
 );
 CREATE INDEX fhir_code_set_i1
   ON fhir_code_set (code_category_id);
+COMMENT ON TABLE fhir_code_set IS 'Defines a combination of codes (e.g. all vaccine codes that cover DTP/DTaP immunization).';
+COMMENT ON COLUMN fhir_code_set.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_code_set.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_code_set.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_code_set.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_code_set.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_code_set.name IS 'The unique name of the code set.';
+COMMENT ON COLUMN fhir_code_set.code IS 'The unique code of the code set.';
+COMMENT ON COLUMN fhir_code_set.description IS 'The detailed description that describes for which purpose the code set is used.';
+COMMENT ON COLUMN fhir_code_set.code_category_id IS 'References the code category to which this code set and its codes belongs to.';
 
 CREATE TABLE fhir_code_set_value (
   code_set_id      UUID    NOT NULL,
@@ -348,6 +435,10 @@ CREATE TABLE fhir_code_set_value (
 );
 CREATE INDEX fhir_code_set_value_i1
   ON fhir_code_set_value (code_id);
+COMMENT ON TABLE fhir_code_set_value IS 'Contains mapping between the code set and its assigned codes. The mapping for individual codes may be disabled.';
+COMMENT ON COLUMN fhir_code_set_value.code_set_id IS 'Contains the reference to the code set that owns this mapping.';
+COMMENT ON COLUMN fhir_code_set_value.code_id IS 'Contains the reference to the code that is assigned to the code set of this mapping..';
+COMMENT ON COLUMN fhir_code_set_value.enabled IS 'Disabling a code of the code set avoids that the code has to be removed from the code set. The mapping can be switched off temporarily or can be kept for historically reasons.';
 
 CREATE TABLE fhir_system (
   id                    UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -366,6 +457,18 @@ CREATE TABLE fhir_system (
   CONSTRAINT fhir_system_uk2 UNIQUE (code),
   CONSTRAINT fhir_system_uk3 UNIQUE (system_uri)
 );
+COMMENT ON TABLE fhir_system IS 'Contains the definition of all system URIs (e.g. system URI of vaccine CVS codes or also system URI for identifiers of patients) that are used by FHIR Resources.';
+COMMENT ON COLUMN fhir_system.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_system.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_system.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_system.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_system.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_system.name IS 'The unique name of the system URI.';
+COMMENT ON COLUMN fhir_system.code IS 'The unique code of the system URI.';
+COMMENT ON COLUMN fhir_system.enabled IS 'Defines if codes of this system are enabled. If codes of this system are not enabled these will not be used for processing of any rule, transformation or mapping.';
+COMMENT ON COLUMN fhir_system.description IS 'The detailed description that describes for which purpose the system URI is used. This may also contain details about the license that affects using codes of this system. In such a case the description must not be changed.';
+COMMENT ON COLUMN fhir_system.description_protected IS 'Defines if the description cannot be changed (e.g. contains mandatory details about license restrictions).';
+COMMENT ON COLUMN fhir_system.system_uri IS 'The system URI (e.g. http://hl7.org/fhir/sid/cvx) the system that is defined by this entity.';
 
 CREATE TABLE fhir_system_code (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -378,13 +481,21 @@ CREATE TABLE fhir_system_code (
   system_code     VARCHAR(120)                   NOT NULL,
   CONSTRAINT fhir_system_code_pk PRIMARY KEY (id),
   CONSTRAINT fhir_system_code_fk1 FOREIGN KEY (system_id) REFERENCES fhir_system (id),
-  CONSTRAINT fhir_system_code_fk2 FOREIGN KEY (code_id) REFERENCES fhir_code (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_system_code_uk1 UNIQUE (system_id, system_code)
+  CONSTRAINT fhir_system_code_fk2 FOREIGN KEY (code_id) REFERENCES fhir_code (id) ON DELETE CASCADE
 );
 CREATE INDEX fhir_system_code_i1
   ON fhir_system_code (system_id);
 CREATE INDEX fhir_system_code_i2
   ON fhir_system_code (code_id);
+COMMENT ON TABLE fhir_system_code IS 'Contains the mapping between a code and a system specific code (e.g. the internal code for a vaccine that is used by the adapter to the national vaccine code that is used by a specific country).';
+COMMENT ON COLUMN fhir_system_code.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_system_code.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_system_code.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_system_code.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_system_code.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_system_code.system_id IS 'References the system to which this code belongs to.';
+COMMENT ON COLUMN fhir_system_code.system_code IS 'The system specific code (e.g. a CVX vaccine code or country or region specific vaccine code).';
+COMMENT ON COLUMN fhir_system_code.code_id IS 'References the adapter internal code that is used by rules, transformations, mappings and in scripts.';
 
 CREATE TABLE fhir_rule (
   id                      UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
@@ -415,6 +526,21 @@ CREATE INDEX fhir_rule_i2
   ON fhir_rule (applicable_code_set_id);
 CREATE INDEX fhir_rule_i3
   ON fhir_rule (transform_in_script_id);
+COMMENT ON TABLE fhir_rule IS 'Contains the base information of a rule that defines the transformation from FHIR to DHIS2. Depending on the specified DHIS2 Resource Type also an additional record with the same ID must be created.';
+COMMENT ON COLUMN fhir_rule.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_rule.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_rule.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_rule.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_rule.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_rule.name IS 'The unique name of the rule.';
+COMMENT ON COLUMN fhir_rule.description IS 'The detailed description about the purpose of the rule.';
+COMMENT ON COLUMN fhir_rule.enabled IS 'Specifies if the rule has been enabled and is used for transformations.';
+COMMENT ON COLUMN fhir_rule.evaluation_order IS 'Defines the precedence of the evaluation. Higher numbers guarantees that a rule is being processed before other matching rules. If two matching rules have the same order, they may be executed in an undefined order (but remains deterministic for a configured adapter).';
+COMMENT ON COLUMN fhir_rule.fhir_resource_type IS 'The FHIR Resource Type of the FHIR Resource to be processed. This rule will only be used when the resource type matches.';
+COMMENT ON COLUMN fhir_rule.dhis_resource_type IS 'The resulting DHIS2 Resource Type of the transformation process. Depending on this value also other depending tables must be filled with data.';
+COMMENT ON COLUMN fhir_rule.applicable_in_script_id IS 'References the evaluation script that is used to evaluate if the input is applicable to be processed by this rule. If no script has been specified, the rule is applicable for further processing. The script will not be executed if the code set with applicable codes do not match.';
+COMMENT ON COLUMN fhir_rule.applicable_code_set_id IS 'References the code set that is used to evaluate if the input is applicable to be processed by this rule. If no code included in the input matches the code of the specified code set, the rule will not be applicable. If no code set is specified, the applicable set (if any) will be used to evaluate if the rule is applicable for further processing.';
+COMMENT ON COLUMN fhir_rule.transform_in_script_id IS 'References the transformation script that is used to transform the input to the DHIS2 Resource.';
 
 CREATE TABLE fhir_tracked_entity_rule (
   id                            UUID         NOT NULL,
@@ -432,6 +558,13 @@ CREATE INDEX fhir_tracked_entity_rule_i1
   ON fhir_tracked_entity_rule (org_lookup_script_id);
 CREATE INDEX fhir_tracked_entity_rule_i2
   ON fhir_tracked_entity_rule (loc_lookup_script_id);
+COMMENT ON TABLE fhir_tracked_entity_rule IS 'Contains rules for DHIS2 Tracked Entity Resource Types.';
+COMMENT ON COLUMN fhir_tracked_entity_rule.id IS 'References the rule to which this tracked entity rule belongs to.';
+COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_ref IS 'The reference of the DHIS2 Tracked Entity Type (e.g. "NAME:Person").';
+COMMENT ON COLUMN fhir_tracked_entity_rule.org_lookup_script_id IS 'References the executable lookup script for DHIS2 Organization Units.';
+COMMENT ON COLUMN fhir_tracked_entity_rule.loc_lookup_script_id IS 'References the executable lookup script for DHIS2 coordinates (longitude and latitude).';
+COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_ref IS 'The reference of the DHIS2 Tracked Entity Attribute that includes the identifier value that is also used by FHIR resources (e.g. NAME:National identifier).';
+COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_fq IS 'Specifies if the identifier that is stored in the DHIS2 Tracked Entity Attribute contains also the system URI.';
 
 CREATE TABLE fhir_tracker_program (
   id                            UUID                           NOT NULL,
@@ -461,6 +594,21 @@ CREATE INDEX fhir_tracker_program_i2
   ON fhir_tracker_program (creation_applicable_script_id);
 CREATE INDEX fhir_tracker_program_i3
   ON fhir_tracker_program (creation_script_id);
+COMMENT ON TABLE fhir_tracker_program IS 'Contains mappings of DHIS2 Tracker Programs.';
+COMMENT ON COLUMN fhir_tracker_program.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_tracker_program.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_tracker_program.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_tracker_program.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_tracker_program.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_tracker_program.name IS 'The unique name of the tracker program (just used by the adapter).';
+COMMENT ON COLUMN fhir_tracker_program.description IS 'The detailed description about the purpose of the tracker program and its mapping in the adapter.';
+COMMENT ON COLUMN fhir_tracker_program.program_ref IS 'The reference of the DHIS2 Tracker Program (e.g. "NAME:Child Programme")';
+COMMENT ON COLUMN fhir_tracker_program.enabled IS 'Defines if this DHIS2 Tracker Program has been enabled for processing. If this tracker program has not been enabled for processing, rules belonging to this tracker program will not be regarded as applicable.';
+COMMENT ON COLUMN fhir_tracker_program.creation_enabled IS 'Specifies if an enrollment of a tracked entity into this program can be made by the adapter.';
+COMMENT ON COLUMN fhir_tracker_program.creation_applicable_script_id IS 'References an evaluation script that evaluates if the enrollment is applicable. If the enrollment is not applicable, the executed rule is also not applicable for processing the input data. If no script has been specified, the creation is applicable.';
+COMMENT ON COLUMN fhir_tracker_program.creation_script_id IS 'References the creation script of an enrollment. If no creation script has been specified the default values for the data required by the enrollment is used.';
+COMMENT ON COLUMN fhir_tracker_program.enrollment_date_is_incident IS 'Specifies if the enrollment date should be used as the incident date. Otherwise the enrollment date that is calculated for the input FHIR Resource is used.';
+COMMENT ON COLUMN fhir_tracker_program.tracked_entity_rule_id IS 'References the tracked entity rule that is associated with the tracked entity that is handled by this program.';
 
 CREATE TABLE fhir_tracker_program_stage (
   id                            UUID                           NOT NULL,
@@ -487,7 +635,10 @@ CREATE TABLE fhir_tracker_program_stage (
   CONSTRAINT fhir_tracker_program_stage_uk2 UNIQUE (program_id, program_stage_ref),
   CONSTRAINT fhir_tracker_program_stage_fk1 FOREIGN KEY (program_id) REFERENCES fhir_tracker_program(id),
   CONSTRAINT fhir_tracker_program_stage_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
-  CONSTRAINT fhir_tracker_program_stage_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id)
+  CONSTRAINT fhir_tracker_program_stage_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_stage_fk4 FOREIGN KEY (creation_status) REFERENCES fhir_event_status_enum(value),
+  CONSTRAINT fhir_tracker_program_stage_fk5 FOREIGN KEY (before_period_day_type) REFERENCES fhir_event_period_day_type_enum(value),
+  CONSTRAINT fhir_tracker_program_stage_fk6 FOREIGN KEY (after_period_day_type) REFERENCES fhir_event_period_day_type_enum(value)
 );
 CREATE INDEX fhir_tracker_program_stage_i1
   ON fhir_tracker_program_stage (program_id);
@@ -495,6 +646,26 @@ CREATE INDEX fhir_tracker_program_stage_i2
   ON fhir_tracker_program_stage (creation_applicable_script_id);
 CREATE INDEX fhir_tracker_program_stage_i3
   ON fhir_tracker_program_stage (creation_script_id);
+COMMENT ON TABLE fhir_tracker_program_stage IS 'Contains mappings of DHIS2 Tracker Program Stages.';
+COMMENT ON COLUMN fhir_tracker_program_stage.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_tracker_program_stage.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_tracker_program_stage.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_tracker_program_stage.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_tracker_program_stage.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_tracker_program_stage.name IS 'The unique name of the tracker program stage (just used by the adapter).';
+COMMENT ON COLUMN fhir_tracker_program_stage.description IS 'The detailed description about the purpose of the tracker program stage and its mapping in the adapter.';
+COMMENT ON COLUMN fhir_tracker_program_stage.program_id IS 'References the tracker program to which this program stage belongs to.';
+COMMENT ON COLUMN fhir_tracker_program_stage.program_stage_ref IS 'The reference of the DHIS2 Tracker Program Stage (e.g. "NAME:Baby Postnatal")';
+COMMENT ON COLUMN fhir_tracker_program_stage.enabled IS 'Defines if this DHIS2 Tracker Program Stage has been enabled for processing. If this tracker program stage has not been enabled for processing, rules belonging to this tracker program stage will not be regarded as applicable.';
+COMMENT ON COLUMN fhir_tracker_program_stage.creation_enabled IS 'Specifies if the creation of an event of this program stage can be made by the adapter.';
+COMMENT ON COLUMN fhir_tracker_program_stage.creation_applicable_script_id IS 'References an evaluation script that evaluates if the creation is applicable. If the creation is not applicable, the execute rule is also not applicable for processing the input data. If no script has been specified, the creation is applicable.';
+COMMENT ON COLUMN fhir_tracker_program_stage.creation_status IS 'The status of the created event. The status can also be set by the creation script.';
+COMMENT ON COLUMN fhir_tracker_program_stage.event_date_is_incident IS 'Specifies if the incident date of the enrollment should be used for calculating the event date (based on minimum start days configured for the program stage in DHIS2). Otherwise the event date that is calculated for the input FHIR Resource is used.';
+COMMENT ON COLUMN fhir_tracker_program_stage.before_period_day_type IS 'Specifies the type of date that is used to evaluate the maximum number of days that the effective date of the incoming input data can be before this day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.before_period_days IS 'Specifies the maximum number of days that the effective date of the incoming input data can be before the specified period day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.after_period_day_type IS 'Specifies the type of date that is used to evaluate the maximum number of days that the effective date of the incoming input data can be after this day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.after_period_days IS 'Specifies the maximum number of days that the effective date of the incoming input data can be after the specified period day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.creation_script_id IS 'References a script that initializes the event on creation.';
 
 CREATE TABLE fhir_program_stage_rule (
   id                              UUID         NOT NULL,
@@ -520,10 +691,34 @@ CREATE TABLE fhir_program_stage_rule (
   completed_to_active_update      BOOLEAN      NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_program_stage_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_program_stage_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_program_stage_rule_fk2 FOREIGN KEY (program_stage_id) REFERENCES fhir_tracker_program_stage (id) ON DELETE CASCADE
+  CONSTRAINT fhir_program_stage_rule_fk2 FOREIGN KEY (program_stage_id) REFERENCES fhir_tracker_program_stage (id) ON DELETE CASCADE,
+  CONSTRAINT fhir_program_stage_rule_fk3 FOREIGN KEY (before_period_day_type) REFERENCES fhir_event_period_day_type_enum(value),
+  CONSTRAINT fhir_program_stage_rule_fk4 FOREIGN KEY (after_period_day_type) REFERENCES fhir_event_period_day_type_enum(value)
 );
 CREATE INDEX fhir_program_stage_rule_i1
   ON fhir_program_stage_rule (program_stage_id);
+COMMENT ON TABLE fhir_program_stage_rule IS 'Contains rules for DHIS2 Program Stage Resource Types.';
+COMMENT ON COLUMN fhir_program_stage_rule.id IS 'References the rule to which this program stage rule belongs to.';
+COMMENT ON COLUMN fhir_program_stage_rule.program_stage_id IS 'References the tracker program stage to which this program stage belongs to.';
+COMMENT ON COLUMN fhir_program_stage_rule.update_event_date IS 'Specifies if the event date should be updated to the effective date of the input data when processing this rule.';
+COMMENT ON COLUMN fhir_program_stage_rule.enrollment_creation_enabled IS 'Specifies if the creation of an enrollment of this program can be made by the adapter.';
+COMMENT ON COLUMN fhir_program_stage_rule.event_creation_enabled IS 'Specifies if the creation of an event of this program stage can be made by the adapter.';
+COMMENT ON COLUMN fhir_program_stage_rule.before_period_day_type IS 'Specifies the type of date that is used to evaluate the maximum number of days that the effective date of the incoming input data can be before this day in order that the input data can still be regarded as applicable for processing of this program stage. Otherwise the day type defined by the tracker program stage is used.';
+COMMENT ON COLUMN fhir_program_stage_rule.before_period_days IS 'Specifies the maximum number of days that the effective date of the incoming input data can be before the specified period day in order that the input data can still be regarded as applicable for processing of this program stage. Otherwise the days defined by the tracker program stage is used.';
+COMMENT ON COLUMN fhir_program_stage_rule.after_period_day_type IS 'Specifies the type of date that is used to evaluate the maximum number of days that the effective date of the incoming input data can be after this day in order that the input data can still be regarded as applicable for processing of this program stage. Otherwise the day type defined by the tracker program stage is used.';
+COMMENT ON COLUMN fhir_program_stage_rule.after_period_days IS 'Specifies the maximum number of days that the effective date of the incoming input data can be after the specified period day in order that the input data can still be regarded as applicable for processing of this program stage. Otherwise the days defined by the tracker program stage is used.';
+COMMENT ON COLUMN fhir_program_stage_rule.enrollment_active_applicable IS 'Specifies if the rule can be processed if the enrollment is active.';
+COMMENT ON COLUMN fhir_program_stage_rule.enrollment_completed_applicable IS 'Specifies if the rule can be processed if the enrollment is completed.';
+COMMENT ON COLUMN fhir_program_stage_rule.enrollment_cancelled_applicable IS 'Specifies if the rule can be processed if the enrollment is cancelled.';
+COMMENT ON COLUMN fhir_program_stage_rule.overdue_applicable IS 'Specifies if the rule can be processed if the event is in status overdue.';
+COMMENT ON COLUMN fhir_program_stage_rule.active_applicable IS 'Specifies if the rule can be processed if the event is in status active.';
+COMMENT ON COLUMN fhir_program_stage_rule.schedule_applicable IS 'Specifies if the rule can be processed if the event is in status schedule.';
+COMMENT ON COLUMN fhir_program_stage_rule.visited_applicable IS 'Specifies if the rule can be processed if the event is in status visited.';
+COMMENT ON COLUMN fhir_program_stage_rule.completed_applicable IS 'Specifies if the rule can be processed if the event is in status completed.';
+COMMENT ON COLUMN fhir_program_stage_rule.skipped_applicable IS 'Specifies if the rule can be processed if the event is in status skipped.';
+COMMENT ON COLUMN fhir_program_stage_rule.overdue_to_active_update IS 'Specifies if the event should be updated from overdue to active when processing the rule.';
+COMMENT ON COLUMN fhir_program_stage_rule.schedule_to_active_update IS 'Specifies if the event should be updated from schedule to active when processing the rule.';
+COMMENT ON COLUMN fhir_program_stage_rule.completed_to_active_update IS 'Specifies if the event should be updated from completed to active when processing the rule.';
 
 CREATE TABLE fhir_resource_mapping (
   id                                UUID                           NOT NULL,
@@ -565,8 +760,23 @@ CREATE INDEX fhir_resource_mapping_i6
   ON fhir_resource_mapping (enrollment_loc_lookup_script_id);
 CREATE INDEX fhir_resource_mapping_i7
   ON fhir_resource_mapping (event_loc_lookup_script_id);
-  CREATE INDEX fhir_resource_mapping_i8
+CREATE INDEX fhir_resource_mapping_i8
   ON fhir_resource_mapping (effective_date_lookup_script_id);
+COMMENT ON TABLE fhir_resource_mapping IS 'Contains mappings of DHIS2 Tracker Program Stages.';
+COMMENT ON COLUMN fhir_resource_mapping.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_resource_mapping.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_resource_mapping.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_resource_mapping.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_resource_mapping.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_resource_mapping.fhir_resource_type IS 'The FHIR Resource Type for which this mapping has been specified. For each FHIR Resource Type only one mapping can be created.';
+COMMENT ON COLUMN fhir_resource_mapping.tei_lookup_script_id IS 'References the evaluation script that looks up the DHIS2 Tracked Entity Instance from the processed input data.';
+COMMENT ON COLUMN fhir_resource_mapping.enrollment_org_lookup_script_id IS 'References the evaluation script that looks up the DHIS2 Organisation Unit from the processed input data when an enrollment into a DHIS2 Tracker Program should be made.';
+COMMENT ON COLUMN fhir_resource_mapping.event_org_lookup_script_id IS 'References the evaluation script that looks up the DHIS2 Organisation Unit from the processed input data when an event of a DHIS2 Tracker Program Stage should be created.';
+COMMENT ON COLUMN fhir_resource_mapping.enrollment_loc_lookup_script_id IS 'References the evaluation script that looks up the coordinates (longitude/latitude) from the processed input data when an enrollment into a DHIS2 Tracker Program should be made.';
+COMMENT ON COLUMN fhir_resource_mapping.event_loc_lookup_script_id IS 'References the evaluation script that looks up the coordinates (longitude/latitude) from the processed input data when an event of a DHIS2 Tracker Program Stage should be created.';
+COMMENT ON COLUMN fhir_resource_mapping.enrollment_date_lookup_script_id IS 'References the evaluation script that looks up the enrollment date from the processed input data when an enrollment into a DHIS2 Tracker Program should be made.';
+COMMENT ON COLUMN fhir_resource_mapping.event_date_lookup_script_id IS 'References the evaluation script that looks up the event date from the processed input data when an event of a DHIS2 Tracker Program Stage should be created.';
+COMMENT ON COLUMN fhir_resource_mapping.effective_date_lookup_script_id IS 'References the evaluation script that looks up the effective date from the processed input data. The effective date defines the day when the values of the input data were effective. This may be after the day when the values have been recorded.';
 
 CREATE TABLE fhir_remote_subscription (
   id                            UUID                           NOT NULL,
@@ -593,6 +803,26 @@ CREATE TABLE fhir_remote_subscription (
   CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code),
   CONSTRAINT fhir_remote_subscription_fk1 FOREIGN KEY (fhir_version) REFERENCES fhir_version_enum(value)
 );
+COMMENT ON TABLE fhir_remote_subscription IS 'Contains FHIR Services on which the adapter has one or more FHIR Subscriptions.';
+COMMENT ON COLUMN fhir_remote_subscription.id IS 'Unique ID of entity (also used as first part of web hook URI).';
+COMMENT ON COLUMN fhir_remote_subscription.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_remote_subscription.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_remote_subscription.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_remote_subscription.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_remote_subscription.name IS 'The unique name of the FHIR Service on which this adapter has FHIR Subscriptions.';
+COMMENT ON COLUMN fhir_remote_subscription.code IS 'The unique code of the FHIR Service on which this adapter has FHIR Subscriptions.';
+COMMENT ON COLUMN fhir_remote_subscription.enabled IS 'Specifies if the subscriptions of this remote FHIR Service are enabled for processing.';
+COMMENT ON COLUMN fhir_remote_subscription.locked IS 'Specifies if this remote FHIR Service has been locked and subscription web hook requests cannot be processed currently.';
+COMMENT ON COLUMN fhir_remote_subscription.description IS 'The detailed description about the purpose of the subscriptions on this FHIR Service.';
+COMMENT ON COLUMN fhir_remote_subscription.fhir_version IS 'The FHIR version that is used by the FHIR Service.';
+COMMENT ON COLUMN fhir_remote_subscription.web_hook_authorization_header IS 'The authorization header value that is expected in a web hook request from the FHIR Service. If the value differs the request is rejected.';
+COMMENT ON COLUMN fhir_remote_subscription.dhis_username IS 'The username of the DHIS2 user that is used to create, read and update data on DHIS2 when processing data of this FHIR Service.';
+COMMENT ON COLUMN fhir_remote_subscription.dhis_authorization_header IS 'The authorization header value (e.g. "Basic: dGVzdDp0ZXN0") that is used to authenticate at DHIS2 Web API in order to create, read and update data on DHIS2 when processing data of this FHIR Service.';
+COMMENT ON COLUMN fhir_remote_subscription.remote_base_url IS 'The base URL of the remote FHIR Service that provides access to the FHIR Endpoints.';
+COMMENT ON COLUMN fhir_remote_subscription.support_includes IS 'This value is not evaluated currently. It is expected that the remote FHIR Service supports includes.';
+COMMENT ON COLUMN fhir_remote_subscription.tolerance_minutes IS 'The number of minutes that is subtracted from the remote last updated timestamp when fetching the next data of a subscribed resource. This is useful in order to handle non-synchronized clocks on servers.';
+COMMENT ON COLUMN fhir_remote_subscription.logging IS 'Specifies if the FHIR client should log accesses to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
+COMMENT ON COLUMN fhir_remote_subscription.verbose_logging IS 'Specifies if the FHIR client should do verbose logging (all details) when accessing to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
 
 CREATE TABLE fhir_remote_subscription_header (
   remote_subscription_id UUID         NOT NULL,
@@ -602,6 +832,11 @@ CREATE TABLE fhir_remote_subscription_header (
   CONSTRAINT fhir_remote_subscription_header_pk PRIMARY KEY (remote_subscription_id, name, value),
   CONSTRAINT fhir_remote_subscription_header_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE
 );
+COMMENT ON TABLE fhir_remote_subscription_header IS 'Contains the header values that are sent to the remote FHIR Service when accessing its FHIR Endpoints.';
+COMMENT ON COLUMN fhir_remote_subscription_header.remote_subscription_id IS 'References the remote subscription to which this header belongs to.';
+COMMENT ON COLUMN fhir_remote_subscription_header.name IS 'The name of the header.';
+COMMENT ON COLUMN fhir_remote_subscription_header.value IS 'The value of the header.';
+COMMENT ON COLUMN fhir_remote_subscription_header.secured IS 'Specifies if the value contains secure content (e.g. authentication data) that must be protected.';
 
 CREATE TABLE fhir_remote_subscription_system (
   id                            UUID                           NOT NULL,
@@ -619,6 +854,15 @@ CREATE TABLE fhir_remote_subscription_system (
   CONSTRAINT fhir_remote_subscription_system_fk3 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum (value)
 );
 CREATE INDEX fhir_remote_subscription_system_i1 ON fhir_remote_subscription_system(system_id);
+COMMENT ON TABLE fhir_remote_subscription_system IS 'Contains the system URIs that are used by the remote FHIR Service for specific FHIR Resources (e.g. system URI for national patient identifier).';
+COMMENT ON COLUMN fhir_remote_subscription_system.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_remote_subscription_system.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_remote_subscription_system.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_remote_subscription_system.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_remote_subscription_system.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_remote_subscription_system.remote_subscription_id IS 'References the remote subscription to which this system URI belongs to.';
+COMMENT ON COLUMN fhir_remote_subscription_system.fhir_resource_type IS 'The FHIR Resource Type for which this system URI is used.';
+COMMENT ON COLUMN fhir_remote_subscription_system.system_id IS 'References the system of which the system URI should be used.';
 
 CREATE TABLE fhir_remote_subscription_resource (
   id                       UUID                           NOT NULL,
@@ -633,10 +877,22 @@ CREATE TABLE fhir_remote_subscription_resource (
   remote_last_update       TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fhir_remote_subscription_resource_pk PRIMARY KEY (id),
   -- do not enable cascading delete since remote last update date may get lost by mistake
-  CONSTRAINT fhir_remote_subscription_resource_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id)
+  CONSTRAINT fhir_remote_subscription_resource_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id),
+  CONSTRAINT fhir_remote_subscription_resource_fk2 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum(value)
 );
 CREATE INDEX fhir_remote_subscription_resource_i1
   ON fhir_remote_subscription_resource (remote_subscription_id);
+COMMENT ON TABLE fhir_remote_subscription_resource IS 'Contains the subscription that has been configured on the remote FHIR Service for a specific resource with a specific filter.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.remote_subscription_id IS 'References the remote subscription to which this subscribed resource belongs to.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_resource_type IS 'The FHIR Resource Type that has been described by this resource subscription.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_criteria_parameters IS 'The parameters that have been appended to the resource type when creation the subscription on the remote FHIR Service.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.description IS 'The detailed purpose of subscribing this resource with the specified criteria parameters.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.remote_last_update IS 'The timestamp of the last begin of fetching data from the remote FHIR Service for the subscribed resource.';
 
 -- Gender Constants (Adapter Gender Code to DHIS2 code as value)
 INSERT INTO fhir_constant (id, version, category, name, code, data_type, value)

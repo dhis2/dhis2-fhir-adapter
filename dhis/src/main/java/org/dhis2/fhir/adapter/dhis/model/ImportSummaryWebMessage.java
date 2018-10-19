@@ -28,6 +28,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * The web message that contains import summaries for creating and updating
+ * DHIS2 resources.
+ *
+ * @author volsch
+ */
 public class ImportSummaryWebMessage extends WebMessage
 {
     private static final long serialVersionUID = -7713823944527785249L;

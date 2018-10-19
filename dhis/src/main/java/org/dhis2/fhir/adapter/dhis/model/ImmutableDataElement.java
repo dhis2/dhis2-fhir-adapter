@@ -28,11 +28,20 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 
+/**
+ * Immutable implementation of {@link DataElement} that may delegate to a mutable
+ * instance. This can be used to disable write access from a scripted environment
+ * to the object.
+ *
+ * @author volsch
+ */
+@Scriptable
 public class ImmutableDataElement implements DataElement, Serializable
 {
     private static final long serialVersionUID = -7040983692879273412L;

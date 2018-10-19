@@ -32,10 +32,23 @@ import org.dhis2.fhir.adapter.model.Identifiable;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Base interface of DHIS2 Resources.
+ *
+ * @author volsch
+ */
 public interface DhisResource extends Identifiable<String>
 {
+    /**
+     * @return the concrete resource type of the resource.
+     */
     @Nonnull
     DhisResourceType getResourceType();
 
+    /**
+     * @return <code>true</code> if the resource is new and must be created,
+     * <code>false</code> if this resource is an existing resource that already
+     * contains a unique ID.
+     */
     boolean isNewResource();
 }

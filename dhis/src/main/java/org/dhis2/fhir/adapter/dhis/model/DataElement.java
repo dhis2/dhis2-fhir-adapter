@@ -31,6 +31,13 @@ package org.dhis2.fhir.adapter.dhis.model;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.model.ValueType;
 
+/**
+ * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
+ * that in read-only implementations only read-only dependent/includes object instances
+ * are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface DataElement
 {

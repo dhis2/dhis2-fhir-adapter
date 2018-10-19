@@ -36,5 +36,5 @@ import java.util.Optional;
 public interface ProgramMetadataService
 {
     @Nonnull
-    Optional<WritableProgram> getProgram( @Nonnull Reference reference );
+    Optional<? extends Program> findOneByReference( @Nonnull Reference reference );
 }

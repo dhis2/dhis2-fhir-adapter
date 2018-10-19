@@ -32,7 +32,9 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 /**
- * Converts between a {@linkplain Reference reference} and a string. The string has the format <code>TYPE:VALUE</code>. {@value ReferenceAttributeConverter#SEPARATOR} is used as separator for these two values.
+ * Converts between a {@linkplain Reference reference} and a string. The string has
+ * the format <code>TYPE:VALUE</code>. {@value ReferenceAttributeConverter#SEPARATOR}
+ * is used as separator for these two values.
  *
  * @author volsch
  */

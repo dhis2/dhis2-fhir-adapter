@@ -30,6 +30,11 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import java.io.Serializable;
 
+/**
+ * Contains information about a DHIS2 attribute.
+ *
+ * @author volsch
+ */
 public class Attribute implements Serializable
 {
     private static final long serialVersionUID = 8716896028280890377L;

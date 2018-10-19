@@ -28,6 +28,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * The status for a complete create and update request on DHIS2 resources. The
+ * response may contain further status value for single DHIS2 resources.
+ *
+ * @author volsch
+ */
 public enum Status
 {
     OK, WARNING, ERROR

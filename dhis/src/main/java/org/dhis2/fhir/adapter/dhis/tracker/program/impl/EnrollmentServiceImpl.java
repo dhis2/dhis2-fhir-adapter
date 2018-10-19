@@ -28,31 +28,45 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Implementation of {@link EnrollmentService}.
+ *
+ * @author volsch
+ */
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService
 {
     protected static final String ENROLLMENTS_URI = "/enrollments.json";
 
+    protected static final String ENROLLMENT_UPDATE_URI = "/enrollments/{id}.json?mergeMode=MERGE";
+
     protected static final String LATEST_ACTIVE_URI = "/enrollments.json?" +
         "program={programId}&programStatus=ACTIVE&trackedEntityInstance={trackedEntityInstanceId}&" +
         "ouMode=ACCESSIBLE&fields=:all&order=lastUpdated:desc&pageSize=1";
-
-    protected static final String ENROLLMENT_STATUS_URI = "/enrollments/{enrollmentId}/{enrollmentStatus}";
 
     private final RestTemplate restTemplate;
 
@@ -62,42 +76,88 @@ public class EnrollmentServiceImpl implements EnrollmentService
         this.restTemplate = restTemplate;
     }
 
+    @HystrixCommand
     @Nonnull
     @Override
     public Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
     {
-        final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity( LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
-        return result.getBody().getEnrollments().stream().findFirst();
+        final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity(
+            LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
+        return Objects.requireNonNull( result.getBody() ).getEnrollments().stream().findFirst();
     }
 
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @Nonnull
     @Override
-    public Enrollment create( Enrollment enrollment )
+    public Enrollment create( @Nonnull Enrollment enrollment )
     {
-        final ResponseEntity<EnrollmentImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummaryWebMessage> response;
         try
         {
-            response = restTemplate.postForEntity( ENROLLMENTS_URI, enrollment, EnrollmentImportSummaryWebMessage.class );
+            response = restTemplate.postForEntity( ENROLLMENTS_URI, enrollment, ImportSummaryWebMessage.class );
         }
-        catch (
-            HttpClientErrorException e )
+        catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Enrollment could not be created: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Enrollment could not be created: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final EnrollmentImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
             (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
             (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
         {
-            throw new RuntimeException( "MappedEnrollment could not be created" );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import." );
         }
+
         enrollment.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
+        if ( (enrollment.getEvents() != null) && !enrollment.getEvents().isEmpty() )
+        {
+            final ImportSummaries eventImportSummaries = result.getResponse().getImportSummaries().get( 0 ).getEvents();
+            if ( eventImportSummaries == null )
+            {
+                throw new DhisImportUnsuccessfulException( "Enrollment contains events but response did not." );
+            }
+            final int size = enrollment.getEvents().size();
+            for ( int i = 0; i < size; i++ )
+            {
+                enrollment.getEvents().get( i ).setId( eventImportSummaries.getImportSummaries().get( i ).getReference() );
+            }
+        }
         return enrollment;
     }
 
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @Nonnull
     @Override
-    public void update( String id, EnrollmentStatus status )
+    public Enrollment update( @Nonnull Enrollment enrollment )
     {
-        restTemplate.put( ENROLLMENT_STATUS_URI, null, id, status.name().toLowerCase() );
+        // update of included events is not supported
+        enrollment.setEvents( new ArrayList<>() );
+
+        final ResponseEntity<ImportSummaryWebMessage> response;
+        try
+        {
+            response = restTemplate.exchange( ENROLLMENT_UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( enrollment ),
+                ImportSummaryWebMessage.class, enrollment.getId() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Enrollment could not be updated: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
+        }
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        if ( result.getStatus() != Status.OK )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful enrollment import: " +
+                result.getStatus() );
+        }
+        return enrollment;
     }
 }

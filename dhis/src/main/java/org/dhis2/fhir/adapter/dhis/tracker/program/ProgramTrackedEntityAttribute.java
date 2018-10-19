@@ -32,6 +32,13 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
 import org.dhis2.fhir.adapter.model.ValueType;
 
+/**
+ * Contains read-only access to a Tracked Entity Attribute that belongs to a DHIS2
+ * Program. Implementations must guarantee that in read-only implementations only
+ * read-only dependent/includes object instances are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface ProgramTrackedEntityAttribute
 {

@@ -33,6 +33,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Container object used for DHIS2 programs.
+ *
+ * @author volsch
+ */
 public class DhisPrograms implements Serializable
 {
     private static final long serialVersionUID = 1084527285362478422L;

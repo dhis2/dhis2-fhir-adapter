@@ -28,6 +28,10 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * The import status that is used by DHIS2 responses when creating and updating
+ * DHIS2 resources.
+ */
 public enum ImportStatus
 {
     SUCCESS, WARNING, ERROR

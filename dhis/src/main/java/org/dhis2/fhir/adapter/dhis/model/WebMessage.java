@@ -30,6 +30,12 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import java.io.Serializable;
 
+/**
+ * The bae class of all web messages that are returned for create and update
+ * on DHIS2 resources.
+ *
+ * @author volsch
+ */
 public abstract class WebMessage implements Serializable
 {
     private static final long serialVersionUID = 1738408476621179433L;

@@ -29,7 +29,8 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 /**
- * A reference type of an entity that is stored in DHIS. The reference can be by a unique code ore a unique name (unique in scope of a specific entity).
+ * A reference type of an entity that is stored in DHIS. The reference can be by a
+ * unique code ore a unique name (unique in scope of a specific entity).
  *
  * @author volsch
  */

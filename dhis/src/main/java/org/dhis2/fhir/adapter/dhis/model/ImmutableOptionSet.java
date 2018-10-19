@@ -33,6 +33,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Immutable implementation of {@link OptionSet} that may delegate to a mutable
+ * instance. This can be used to disable write access from a scripted environment
+ * to the object.
+ *
+ * @author volsch
+ */
 public class ImmutableOptionSet implements OptionSet, Serializable
 {
     private static final long serialVersionUID = -5542523378884979052L;

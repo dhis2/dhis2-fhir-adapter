@@ -36,6 +36,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Contains the update data of a single data value of a DHIS2 event.
+ *
+ * @author volsch
+ */
 public class MinimalEvent implements Serializable
 {
     private static final long serialVersionUID = 1560261589980305347L;

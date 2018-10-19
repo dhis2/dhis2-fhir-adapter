@@ -30,6 +30,12 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import java.io.Serializable;
 
+/**
+ * Writable implementation of {@link Option} that can also be used for
+ * JSON serialization and deserialization.
+ *
+ * @author volsch
+ */
 public class WritableOption implements Option, Serializable
 {
     private static final long serialVersionUID = 8156313545024110741L;
@@ -37,6 +43,17 @@ public class WritableOption implements Option, Serializable
     private String code;
 
     private String name;
+
+    public WritableOption()
+    {
+        super();
+    }
+
+    public WritableOption( String code, String name )
+    {
+        this.code = code;
+        this.name = name;
+    }
 
     @Override
     public String getCode()

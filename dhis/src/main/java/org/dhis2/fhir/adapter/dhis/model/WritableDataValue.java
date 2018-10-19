@@ -36,6 +36,12 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
+/**
+ * Writable implementation of {@link DataValue} that can also be used for
+ * JSON serialization and deserialization.
+ *
+ * @author volsch
+ */
 public class WritableDataValue implements DataValue, Serializable
 {
     private static final long serialVersionUID = 1337075669483267688L;

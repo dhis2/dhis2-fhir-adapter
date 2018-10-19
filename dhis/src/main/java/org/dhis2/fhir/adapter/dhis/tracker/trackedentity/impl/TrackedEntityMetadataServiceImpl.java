@@ -28,29 +28,39 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityType;
+import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataService
 {
-    protected static final String TRACKED_ENTITY_TYPE_URI = "/trackedEntityTypes.json?paging=false&" +
-        "fields=id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code,valueType,generated]]";
+    protected static final String TRACKED_ENTITY_TYPE_FIELDS = "id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[id,name,code,valueType,generated]]";
 
-    protected static final String TRACKED_ENTITY_ATTRIBUTES_URI = "/trackedEntityAttributes.json?paging=false&fields=id,name,code,valueType,generated";
+    protected static final String TRACKED_ENTITY_ATTRIBUTE_FIELDS = "id,name,code,valueType,generated";
+
+    protected static final String TRACKED_ENTITY_TYPE_BY_ID_URI = "/trackedEntityTypes/{id}.json?fields=" + TRACKED_ENTITY_TYPE_FIELDS;
+
+    protected static final String TRACKED_ENTITY_TYPE_BY_NAME_URI = "/trackedEntityTypes.json?" +
+        "paging=false&filter=name:eq:{name}&fields=" + TRACKED_ENTITY_TYPE_FIELDS;
+
+    protected static final String TRACKED_ENTITY_ATTRIBUTES_URI = "/trackedEntityAttributes.json?fields=" + TRACKED_ENTITY_ATTRIBUTE_FIELDS;
 
     protected static final String REQUIRED_VALUE_URI = "/trackedEntityAttributes/{attributeId}/requiredValues.json";
 
@@ -62,26 +72,32 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
         this.restTemplate = restTemplate;
     }
 
+    @HystrixCommand
+    @Cacheable( "trackedEntityTypes" )
     @Nonnull
     @Override
-    public Optional<TrackedEntityType> getTypeById( @Nonnull String id )
-    {
-        return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), id ) )
-            .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
-    }
-
-    @Nonnull
-    @Override
-    public Optional<TrackedEntityType> getType( @Nonnull Reference reference )
+    public Optional<? extends TrackedEntityType> getType( @Nonnull Reference reference )
     {
         switch ( reference.getType() )
         {
             case NAME:
-                return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getName(), reference.getValue() ) )
-                    .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
+                return Objects.requireNonNull( restTemplate.getForEntity( TRACKED_ENTITY_TYPE_BY_NAME_URI, TrackedEntityTypes.class, reference.getValue() ).getBody() )
+                    .getTrackedEntityTypes().stream().map( ImmutableTrackedEntityType::new ).findFirst();
             case ID:
-                return getTrackedEntityTypes().stream().filter( tet -> Objects.equals( tet.getId(), reference.getValue() ) )
-                    .map( tet -> (TrackedEntityType) new ImmutableTrackedEntityType( tet ) ).findFirst();
+                try
+                {
+                    return Optional.of( Objects.requireNonNull( restTemplate.getForEntity(
+                        TRACKED_ENTITY_TYPE_BY_ID_URI, WritableTrackedEntityType.class, reference.getValue() ).getBody() ) )
+                        .map( ImmutableTrackedEntityType::new );
+                }
+                catch ( HttpClientErrorException e )
+                {
+                    if ( RestTemplateUtils.isNotFound( e ) )
+                    {
+                        return Optional.empty();
+                    }
+                    throw e;
+                }
             case CODE:
                 // tracked entity type does not have a code
                 return Optional.empty();
@@ -90,24 +106,23 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
         }
     }
 
+    @HystrixCommand
+    @Cacheable( "trackedEntityAttributes" )
     @Nonnull
     @Override
     public TrackedEntityAttributes getAttributes()
     {
-        final ResponseEntity<TrackedEntityAttributes> result = restTemplate.getForEntity( TRACKED_ENTITY_ATTRIBUTES_URI, TrackedEntityAttributes.class );
-        return result.getBody();
+        final ResponseEntity<TrackedEntityAttributes> result =
+            restTemplate.getForEntity( TRACKED_ENTITY_ATTRIBUTES_URI, TrackedEntityAttributes.class );
+        return Objects.requireNonNull( result.getBody() );
     }
 
+    @HystrixCommand
+    @Cacheable( "requiredValues" )
     @Override
     @Nonnull
     public RequiredValues getRequiredValues( @Nonnull String attributeId )
     {
-        return restTemplate.getForObject( REQUIRED_VALUE_URI, RequiredValues.class, attributeId );
-    }
-
-    protected List<? extends TrackedEntityType> getTrackedEntityTypes()
-    {
-        final ResponseEntity<TrackedEntityTypes> result = restTemplate.getForEntity( TRACKED_ENTITY_TYPE_URI, TrackedEntityTypes.class );
-        return result.getBody().getTrackedEntityTypes();
+        return Objects.requireNonNull( restTemplate.getForObject( REQUIRED_VALUE_URI, RequiredValues.class, attributeId ) );
     }
 }

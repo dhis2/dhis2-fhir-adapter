@@ -30,6 +30,13 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import org.dhis2.fhir.adapter.Scriptable;
 
+/**
+ * Contains read-only access to a DHIS2 Option that belong to a DHIS2 Option Set.
+ * Implementations must guarantee that in read-only implementations only read-only
+ * dependent/includes object instances are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface Option
 {

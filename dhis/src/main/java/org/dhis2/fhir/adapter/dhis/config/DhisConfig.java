@@ -64,7 +64,7 @@ public class DhisConfig
     /**
      * Creates a REST template that connects to DHIS2 with the authentication that is included in the specified endpoint configuration.
      *
-     * @param builder the rest template builder to be used.
+     * @param builder        the rest template builder to be used.
      * @param endpointConfig the endpoint configuration of the DHIS2 endpoint.
      * @return the generated system rest template that uses the authorization that is included in the specified endpoint configuration
      */

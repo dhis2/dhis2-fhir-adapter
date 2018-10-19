@@ -31,6 +31,13 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataElement;
 
+/**
+ * Contains read-only access to the DHIS2 Program Stage Data Element. Implementations
+ * must guarantee that in read-only implementations only read-only dependent/includes
+ * object instances are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface ProgramStageDataElement
 {

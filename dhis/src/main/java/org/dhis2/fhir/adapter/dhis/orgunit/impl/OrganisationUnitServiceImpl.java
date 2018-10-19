@@ -63,8 +63,6 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
 
     protected static final String ORGANISATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json&fields=" + FIELDS;
 
-    protected static final String ALL_ORGANISATION_UNITS_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS;
-
     private final RestTemplate restTemplate;
 
     @Autowired

@@ -31,6 +31,12 @@ package org.dhis2.fhir.adapter.dhis.model;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * The import summaries that are returned by DHIS2 resources when creating and
+ * updating DHIS2 resources.
+ *
+ * @author volsch
+ */
 public class ImportSummaries implements Serializable
 {
     private static final long serialVersionUID = -4592285848452531247L;

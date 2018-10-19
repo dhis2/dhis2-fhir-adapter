@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Container object used for organization units.
+ * Container object used for DHIS2 organization units.
  *
  * @author volsch
  */

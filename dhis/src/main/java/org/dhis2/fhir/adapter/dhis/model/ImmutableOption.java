@@ -31,6 +31,13 @@ package org.dhis2.fhir.adapter.dhis.model;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 
+/**
+ * Immutable implementation of {@link Option} that may delegate to a mutable
+ * instance. This can be used to disable write access from a scripted environment
+ * to the object.
+ *
+ * @author volsch
+ */
 public class ImmutableOption implements Option, Serializable
 {
     private static final long serialVersionUID = -4836329163657710844L;

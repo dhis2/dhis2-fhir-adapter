@@ -33,6 +33,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Container object used for DHIS2 events.
+ *
+ * @author volsch
+ */
 public class DhisEvents implements Serializable
 {
     private static final long serialVersionUID = -5314790768013264322L;

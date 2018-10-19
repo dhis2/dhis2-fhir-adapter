@@ -32,6 +32,13 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
+/**
+ * Immutable implementation of {@link DataValue} that may delegate to a mutable
+ * instance. This can be used to disable write access from a scripted environment
+ * to the object.
+ *
+ * @author volsch
+ */
 public class ImmutableDataValue implements DataValue, Serializable
 {
     private static final long serialVersionUID = 5577400306112844124L;

@@ -36,7 +36,9 @@ public interface EnrollmentService
     @Nonnull
     Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
 
-    Enrollment create( Enrollment enrollment );
+    @Nonnull
+    Enrollment create( @Nonnull Enrollment enrollment );
 
-    void update( String id, EnrollmentStatus status );
+    @Nonnull
+    Enrollment update( @Nonnull Enrollment enrollment );
 }

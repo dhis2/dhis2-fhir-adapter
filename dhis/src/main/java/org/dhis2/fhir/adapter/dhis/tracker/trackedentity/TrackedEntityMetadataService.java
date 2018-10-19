@@ -37,10 +37,7 @@ import java.util.Optional;
 public interface TrackedEntityMetadataService
 {
     @Nonnull
-    Optional<TrackedEntityType> getTypeById( @Nonnull String id );
-
-    @Nonnull
-    Optional<TrackedEntityType> getType( @Nonnull Reference reference );
+    Optional<? extends TrackedEntityType> getType( @Nonnull Reference reference );
 
     @Nonnull
     TrackedEntityAttributes getAttributes();

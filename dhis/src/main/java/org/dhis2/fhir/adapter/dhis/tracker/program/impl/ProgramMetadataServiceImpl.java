@@ -28,30 +28,49 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ImmutableProgram;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
+import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Implementation of a {@link ProgramMetadataService}.
+ *
+ * @author volsch
+ */
 @Service
+@CacheConfig( cacheNames = "programMetadata" )
 public class ProgramMetadataServiceImpl implements ProgramMetadataService
 {
-    protected static final String PROGRAM_URI = "/programs.json?paging=false&" +
-        "fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
-        "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
-        "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute[id,name,code,valueType,generated]]," +
-        "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
-        "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
-        "dataElement[id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
+    protected static final String FIELDS =
+        "id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
+            "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
+            "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate," +
+            "trackedEntityAttribute[id,name,code,valueType,generated]]," +
+            "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
+            "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
+            "dataElement[id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
+
+    protected static final String PROGRAM_BY_CODE_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
+
+    protected static final String PROGRAM_BY_NAME_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
+
+    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json&fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
 
@@ -61,33 +80,39 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
         this.restTemplate = restTemplate;
     }
 
+    @HystrixCommand
+    @Cacheable
     @Nonnull
     @Override
-    public Optional<WritableProgram> getProgram( @Nonnull Reference reference )
+    public Optional<? extends Program> findOneByReference( @Nonnull Reference reference )
     {
-        return getPrograms().stream().filter( p -> {
-            final String value;
-            switch ( reference.getType() )
-            {
-                case CODE:
-                    value = p.getCode();
-                    break;
-                case NAME:
-                    value = p.getName();
-                    break;
-                case ID:
-                    value = p.getId();
-                    break;
-                default:
-                    throw new AssertionError( "Unhandled reference type: " + reference.getType() );
-            }
-            return Objects.equals( value, reference.getValue() );
-        } ).findFirst();
-    }
-
-    public List<WritableProgram> getPrograms()
-    {
-        final ResponseEntity<DhisPrograms> result = restTemplate.getForEntity( PROGRAM_URI, DhisPrograms.class );
-        return Optional.ofNullable( result.getBody() ).orElse( new DhisPrograms() ).toModel();
+        final ResponseEntity<DhisPrograms> result;
+        switch ( reference.getType() )
+        {
+            case CODE:
+                result = restTemplate.getForEntity( PROGRAM_BY_CODE_URI, DhisPrograms.class, reference.getValue() );
+                break;
+            case NAME:
+                result = restTemplate.getForEntity( PROGRAM_BY_NAME_URI, DhisPrograms.class, reference.getValue() );
+                break;
+            case ID:
+                try
+                {
+                    return Optional.of( Objects.requireNonNull( restTemplate.getForEntity(
+                        PROGRAM_BY_ID_URI, WritableProgram.class, reference.getValue() ).getBody() ) )
+                        .map( ImmutableProgram::new );
+                }
+                catch ( HttpClientErrorException e )
+                {
+                    if ( RestTemplateUtils.isNotFound( e ) )
+                    {
+                        return Optional.empty();
+                    }
+                    throw e;
+                }
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
+        }
+        return Objects.requireNonNull( result.getBody() ).getPrograms().stream().map( ImmutableProgram::new ).findFirst();
     }
 }

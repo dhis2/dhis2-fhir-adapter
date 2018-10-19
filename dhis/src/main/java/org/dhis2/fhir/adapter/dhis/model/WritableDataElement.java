@@ -32,6 +32,12 @@ import org.dhis2.fhir.adapter.model.ValueType;
 
 import java.io.Serializable;
 
+/**
+ * Writable implementation of {@link DataElement} that can also be used for
+ * JSON serialization and deserialization.
+ *
+ * @author volsch
+ */
 public class WritableDataElement implements DataElement, Serializable
 {
     private static final long serialVersionUID = -3933887626350878763L;

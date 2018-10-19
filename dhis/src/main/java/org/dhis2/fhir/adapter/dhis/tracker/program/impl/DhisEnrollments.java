@@ -33,6 +33,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Container object used for DHIS2 enrollments.
+ *
+ * @author volsch
+ */
 public class DhisEnrollments implements Serializable
 {
     private static final long serialVersionUID = -1277703889288254765L;

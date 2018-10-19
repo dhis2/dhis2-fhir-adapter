@@ -33,6 +33,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
+/**
+ * Contains the value of a DHIS2 attribute.
+ *
+ * @author volsch
+ */
 public class AttributeValue implements Serializable
 {
     private static final long serialVersionUID = 8716896028280890377L;

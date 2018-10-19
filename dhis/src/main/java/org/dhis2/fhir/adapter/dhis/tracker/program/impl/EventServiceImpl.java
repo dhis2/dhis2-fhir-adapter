@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
@@ -38,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -45,8 +49,14 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link EventService}.
+ *
+ * @author volsch
+ */
 @Service
 public class EventServiceImpl implements EventService
 {
@@ -71,6 +81,7 @@ public class EventServiceImpl implements EventService
         this.restTemplate = restTemplate;
     }
 
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
     @Nonnull
     @Override
     public Event createOrMinimalUpdate( @Nonnull Event event )
@@ -78,18 +89,19 @@ public class EventServiceImpl implements EventService
         return event.isNewResource() ? create( event ) : minimalUpdate( event );
     }
 
+    @HystrixCommand
     @Nonnull
     @Override
     public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_URI, DhisEvents.class, programId, trackedEntityInstanceId );
-        return result.getBody().getEvents().stream().filter( e -> enrollmentId.equals( e.getEnrollmentId() ) && programStageId.equals( e.getProgramStageId() ) )
-            .collect( Collectors.toList() );
+        return Objects.requireNonNull( result.getBody() ).getEvents().stream().filter( e -> enrollmentId.equals( e.getEnrollmentId() ) &&
+            programStageId.equals( e.getProgramStageId() ) ).collect( Collectors.toList() );
     }
 
     @Nonnull
-    public Event create( @Nonnull Event event )
+    protected Event create( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
@@ -98,22 +110,26 @@ public class EventServiceImpl implements EventService
         }
         catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Event could not be created: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Event could not be created: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final ImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( (result.getStatus() != Status.OK) ||
             (result.getResponse().getImportSummaries().size() != 1) ||
             (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
             (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
         {
-            throw new RuntimeException( "Event could not be created" );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import." );
         }
         event.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
         return event;
     }
 
     @Nonnull
-    public Event update( @Nonnull Event event )
+    protected Event update( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
@@ -123,17 +139,22 @@ public class EventServiceImpl implements EventService
         }
         catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final ImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( result.getStatus() != Status.OK )
         {
-            throw new RuntimeException( "Event could not be updated" );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import: " +
+                result.getStatus() );
         }
         return event;
     }
 
-    public void update( @Nonnull MinimalEvent event )
+    protected void update( @Nonnull MinimalEvent event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
@@ -143,17 +164,22 @@ public class EventServiceImpl implements EventService
         }
         catch ( HttpClientErrorException e )
         {
-            throw new RuntimeException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+            if ( HttpStatus.CONFLICT.equals( e.getStatusCode() ) )
+            {
+                throw new DhisConflictException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
+            }
+            throw e;
         }
-        final ImportSummaryWebMessage result = response.getBody();
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( result.getStatus() != Status.OK )
         {
-            throw new RuntimeException( "Event could not be updated" );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful event import: " +
+                result.getStatus() );
         }
     }
 
     @Nonnull
-    public Event minimalUpdate( @Nonnull Event event )
+    protected Event minimalUpdate( @Nonnull Event event )
     {
         if ( event.isModified() || event.getDataValues().stream().anyMatch( DataValue::isNewResource ) )
         {

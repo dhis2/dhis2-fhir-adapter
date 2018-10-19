@@ -36,6 +36,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Contains read-only access to the DHIS2 Program Stage. Implementations must
+ * guarantee that in read-only implementations only read-only dependent/includes
+ * object instances are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface ProgramStage
 {

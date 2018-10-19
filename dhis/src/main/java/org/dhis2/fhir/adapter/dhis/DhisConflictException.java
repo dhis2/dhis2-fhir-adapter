@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
+package org.dhis2.fhir.adapter.dhis;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,9 +28,22 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
-
-public class EnrollmentImportSummaryWebMessage extends ImportSummaryWebMessage
+/**
+ * Thrown if DHIS2 reported a conflict.
+ *
+ * @author volsch
+ */
+public class DhisConflictException extends RuntimeException
 {
-    private static final long serialVersionUID = -2417991405024781980L;
+    private static final long serialVersionUID = -3411514499212373008L;
+
+    public DhisConflictException( String message )
+    {
+        super( message );
+    }
+
+    public DhisConflictException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

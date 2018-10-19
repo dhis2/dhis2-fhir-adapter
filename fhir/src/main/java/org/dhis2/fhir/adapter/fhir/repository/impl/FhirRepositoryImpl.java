@@ -60,6 +60,7 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -172,17 +173,25 @@ public class FhirRepositoryImpl implements FhirRepository
                         trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
                         logger.info( "Persisted tracked entity instance {}.", event.getTrackedEntityInstance().getId() );
                     }
-                    // Creation of enrollment and event can be made at the
-                    // same time. This will be simplified.
                     if ( event.getEnrollment().isNewResource() )
                     {
-                        logger.info( "Persisting new enrollment." );
-                        event.setEnrollment( enrollmentService.create( event.getEnrollment() ) );
-                        logger.info( "Persisted new enrollment {}.", event.getEnrollment().getId() );
+                        logger.info( "Creating new enrollment." );
+                        event.getEnrollment().setEvents( Collections.singletonList( event ) );
+                        dhisResource = enrollmentService.create( event.getEnrollment() ).getEvents().get( 0 );
+                        logger.info( "Created new enrollment {} with new event.", event.getEnrollment().getId(), event.getId() );
                     }
-                    logger.info( "Persisting event." );
-                    dhisResource = eventService.createOrMinimalUpdate( event );
-                    logger.info( "Persisting event {}.", event.getId() );
+                    else
+                    {
+                        if ( event.getEnrollment().isModified() )
+                        {
+                            logger.info( "Updating existing enrollment." );
+                            event.setEnrollment( enrollmentService.update( event.getEnrollment() ) );
+                            logger.info( "Updated existing enrollment {}.", event.getEnrollment().getId() );
+                        }
+                        logger.info( "Persisting event." );
+                        dhisResource = eventService.createOrMinimalUpdate( event );
+                        logger.info( "Persisting event {}.", event.getId() );
+                    }
                     break;
                 default:
                     throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );

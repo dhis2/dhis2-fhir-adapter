@@ -28,7 +28,25 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Contains the different types of DHIS2 Resources that are can be created.
+ *
+ * @author volsch
+ */
 public enum DhisResourceType
 {
-    TRACKED_ENTITY, ENROLLMENT, PROGRAM_STAGE_EVENT
+    /**
+     * Resource is a tracked entity instance.
+     */
+    TRACKED_ENTITY,
+
+    /**
+     * Resource is a program instance (aka enrollment).
+     */
+    ENROLLMENT,
+
+    /**
+     * Resource is a program stage instance (aka event of a program instance).
+     */
+    PROGRAM_STAGE_EVENT
 }

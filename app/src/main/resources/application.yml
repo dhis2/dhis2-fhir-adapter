@@ -63,3 +63,4 @@ dhis2.fhir-adapter:
       password: @dhis2.password@
   transformation:
     script-engine-name: nashorn
+

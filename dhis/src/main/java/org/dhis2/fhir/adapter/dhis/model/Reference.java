@@ -33,7 +33,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A reference of an entity that is stored in DHIS. The reference can be by a unique code ore a unique name (unique in scope of a specific entity).
+ * A reference of an entity that is stored in DHIS. The reference can be by a unique
+ * code, a unique name (unique in scope of a specific entity) or a unique ID
+ * (unique in scope of a specific entity).
  *
  * @author volsch
  */

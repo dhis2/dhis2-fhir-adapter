@@ -32,6 +32,13 @@ import org.dhis2.fhir.adapter.Scriptable;
 
 import java.util.List;
 
+/**
+ * Contains read-only access to a DHIS2 Option Set contains DHIS2 Options.
+ * Implementations must guarantee that in read-only implementations only read-only
+ * dependent/includes object instances are returned.
+ *
+ * @author volsch
+ */
 @Scriptable
 public interface OptionSet
 {

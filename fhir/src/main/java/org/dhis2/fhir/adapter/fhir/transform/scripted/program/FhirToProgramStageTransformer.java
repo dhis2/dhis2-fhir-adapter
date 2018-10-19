@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
@@ -44,7 +45,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramTrackedEntityAttribute;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
@@ -211,17 +211,18 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull ProgramStageRule rule ) throws TransformerException
     {
-        final Program program = programMetadataService.getProgram( rule.getProgramStage().getProgram().getProgramReference() ).map( ImmutableProgram::new )
+        final Program program = programMetadataService.findOneByReference( rule.getProgramStage().getProgram().getProgramReference() ).map( ImmutableProgram::new )
             .orElseThrow( () -> new TransformerMappingException( "Mapping " + rule + " requires program \"" +
                 rule.getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
         variables.put( ScriptVariable.PROGRAM.getVariableName(), program );
 
         final TrackedEntityAttributes attributes = trackedEntityMetadataService.getAttributes();
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getTypeById( program.getTrackedEntityTypeId() )
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService
+            .getType( new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerMappingException( "Program \"" + program.getName() +
                 "\" references tracked entity type " + program.getTrackedEntityTypeId() + " that does not exist." ) );
         variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), attributes );
-        variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), new ImmutableTrackedEntityType( trackedEntityType ) );
+        variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
     }
 
     protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull ProgramStageRule rule, @Nonnull TrackedEntityInstance trackedEntityInstance ) throws TransformerException
