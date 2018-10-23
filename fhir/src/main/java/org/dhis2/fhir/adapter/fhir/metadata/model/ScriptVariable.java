@@ -47,7 +47,9 @@ public enum ScriptVariable
     EVENT( "event" ),
     DATE_TIME( "dateTime" ),
     IDENTIFIER_UTILS( "identifierUtils" ),
-    CODE_UTILS( "codeUtils" );
+    CODE_UTILS( "codeUtils" ),
+    PROGRAM_STAGE_EVENTS( "programStageEvents" ),
+    ORGANIZATION_UNIT_ID( "organizationUnitId" );
 
     private final String variableName;
 

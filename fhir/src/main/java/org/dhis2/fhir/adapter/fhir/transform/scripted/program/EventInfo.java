@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.trackedentity.ScriptedTrac
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 class EventInfo
@@ -51,21 +52,18 @@ class EventInfo
 
     private final Enrollment enrollment;
 
-    private final Event event;
-
-    private final boolean completedEvents;
+    private final Collection<Event> events;
 
     public EventInfo( @Nonnull Program program, @Nonnull ProgramStage programStage,
         @Nonnull TrackedEntityType trackedEntityType, @Nonnull ScriptedTrackedEntityInstance trackedEntityInstance,
-        @Nullable Enrollment enrollment, @Nullable Event event, boolean completedEvents )
+        @Nullable Enrollment enrollment, @Nonnull Collection<Event> events )
     {
         this.program = program;
         this.programStage = programStage;
         this.trackedEntityType = trackedEntityType;
         this.trackedEntityInstance = trackedEntityInstance;
         this.enrollment = enrollment;
-        this.event = event;
-        this.completedEvents = completedEvents;
+        this.events = events;
     }
 
     @Nonnull
@@ -99,13 +97,8 @@ class EventInfo
     }
 
     @Nonnull
-    public Optional<Event> getEvent()
+    public Collection<Event> getEvents()
     {
-        return Optional.ofNullable( event );
-    }
-
-    public boolean isCompletedEvents()
-    {
-        return completedEvents;
+        return events;
     }
 }

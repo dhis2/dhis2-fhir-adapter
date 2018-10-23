@@ -296,7 +296,7 @@ public class DemoClient
         as10.setId( IdType.newRandomUuid() );
         as10.addCategory( new CodeableConcept().addCoding(
             new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
-        as10.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9271-8" ) ) );
+        as10.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9273-4" ) ) );
         as10.getSubject().setReference( child.getId() );
         as10.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY ) );
@@ -312,7 +312,7 @@ public class DemoClient
         as2.setId( IdType.newRandomUuid() );
         as2.addCategory( new CodeableConcept().addCoding(
             new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
-        as2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9273-4" ) ) );
+        as2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9271-8" ) ) );
         as2.getSubject().setReference( child.getId() );
         as2.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY ) );

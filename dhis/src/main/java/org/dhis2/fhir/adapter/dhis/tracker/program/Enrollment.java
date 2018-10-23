@@ -42,6 +42,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains a DHIS2 Program Instance (aka enrollment).
+ *
+ * @author volsch
+ */
 public class Enrollment implements DhisResource, Serializable
 {
     private static final long serialVersionUID = 6528591138270821481L;

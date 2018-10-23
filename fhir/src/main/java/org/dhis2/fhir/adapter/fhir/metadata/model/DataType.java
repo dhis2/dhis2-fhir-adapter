@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.converter.StringToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToExceptionConverter;
 import org.dhis2.fhir.adapter.dhis.converter.StringToReferenceConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.fhir.model.EventDecisionType;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.model.DateUnit;
@@ -73,7 +74,8 @@ public enum DataType
     DATA_ELEMENT_REF( Reference.class, new StringToReferenceConverter() ),
     PROGRAM_REF( Reference.class, new StringToReferenceConverter() ),
     PROGRAM_STAGE_REF( Reference.class, new StringToReferenceConverter() ),
-    FHIR_RESOURCE( IBaseResource.class, new StringToExceptionConverter<>( IBaseResource.class ) );
+    FHIR_RESOURCE( IBaseResource.class, new StringToExceptionConverter<>( IBaseResource.class ) ),
+    EVENT_DECISION_TYPE( EventDecisionType.class, new StringToEnumConverter<>( EventDecisionType.class ) );
 
     private final Class<?> javaType;
 

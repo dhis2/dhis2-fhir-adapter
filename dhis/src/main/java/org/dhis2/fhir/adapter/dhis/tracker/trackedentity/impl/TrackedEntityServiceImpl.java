@@ -29,6 +29,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
+import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
@@ -142,10 +145,11 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return Optional.of( instance );
     }
 
-    @HystrixCommand
+    @CacheResult( cacheKeyMethod = "getFindByAttrValueCacheKey" )
+    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
     @Nonnull
     @Override
-    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
+    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
     {
         // filtering by values with a colon inside is not supported by DHIS2 Web API
         if ( value.contains( ":" ) )
@@ -154,6 +158,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         }
         return Objects.requireNonNull( restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
             .getBody() ).getTrackedEntityInstances();
+    }
+
+    @Nonnull
+    public String getFindByAttrValueCacheKey( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
+    {
+        return "TrackedEntityService.findByAttrValue|" + typeId + "|" + attributeId + "|" + value + "|" + maxResult;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )

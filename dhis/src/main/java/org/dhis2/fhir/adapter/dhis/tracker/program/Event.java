@@ -45,6 +45,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Contains a DHIS2 Program Stage Instance (aka event).
+ */
 public class Event implements DhisResource, Serializable, Comparable<Event>
 {
     private static final long serialVersionUID = 4966183580394235575L;

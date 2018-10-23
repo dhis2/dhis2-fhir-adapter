@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis;
+package org.dhis2.fhir.adapter.fhir.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,22 +29,24 @@ package org.dhis2.fhir.adapter.dhis;
  */
 
 /**
- * Thrown if the data import (create or update operation) returns no conflict but
- * the status was not successful.
+ * Result of a script that is executed before an event is processed.
  *
  * @author volsch
  */
-public class DhisImportUnsuccessfulException extends RuntimeException
+public enum EventDecisionType
 {
-    private static final long serialVersionUID = -3143573501666423852L;
+    /**
+     * Continue with processing the event (equals <code>true</code> in other scripts).
+     */
+    CONTINUE,
 
-    public DhisImportUnsuccessfulException( String message )
-    {
-        super( message );
-    }
+    /**
+     * Create a new event (only when program stage is a repeatable).
+     */
+    NEW_EVENT,
 
-    public DhisImportUnsuccessfulException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    /**
+     * Break the execution of the event (equals <code>false</code> in other scripts).
+     */
+    BREAK
 }

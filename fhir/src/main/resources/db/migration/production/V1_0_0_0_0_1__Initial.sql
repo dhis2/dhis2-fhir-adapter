@@ -53,6 +53,7 @@ INSERT INTO fhir_data_type_enum VALUES('DATA_ELEMENT_REF');
 INSERT INTO fhir_data_type_enum VALUES('PROGRAM_REF');
 INSERT INTO fhir_data_type_enum VALUES('PROGRAM_STAGE_REF');
 INSERT INTO fhir_data_type_enum VALUES('FHIR_RESOURCE');
+INSERT INTO fhir_data_type_enum VALUES('EVENT_DECISION_TYPE');
 
 CREATE TABLE fhir_transform_data_type_enum (
   value VARCHAR(30) NOT NULL,
@@ -150,6 +151,8 @@ INSERT INTO fhir_script_variable_enum VALUES('PROGRAM_STAGE');
 INSERT INTO fhir_script_variable_enum VALUES('ENROLLMENT');
 INSERT INTO fhir_script_variable_enum VALUES('EVENT');
 INSERT INTO fhir_script_variable_enum VALUES('DATE_TIME');
+INSERT INTO fhir_script_variable_enum VALUES('ORGANIZATION_UNIT_ID');
+INSERT INTO fhir_script_variable_enum VALUES('PROGRAM_STAGE_EVENT');
 
 CREATE TABLE fhir_constant (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -581,12 +584,16 @@ CREATE TABLE fhir_tracker_program (
   creation_applicable_script_id UUID,
   creation_script_id            UUID,
   enrollment_date_is_incident   BOOLEAN                        NOT NULL DEFAULT FALSE,
+  before_script_id              UUID,
+  after_script_id               UUID,
   CONSTRAINT fhir_tracker_program_pk PRIMARY KEY (id),
   CONSTRAINT fhir_tracker_program_uk1 UNIQUE (name),
   CONSTRAINT fhir_tracker_program_uk2 UNIQUE (program_ref),
   CONSTRAINT fhir_tracker_program_fk1 FOREIGN KEY (tracked_entity_rule_id) REFERENCES fhir_tracked_entity_rule(id),
   CONSTRAINT fhir_tracker_program_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
-  CONSTRAINT fhir_tracker_program_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id)
+  CONSTRAINT fhir_tracker_program_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_fk4 FOREIGN KEY (before_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_fk5 FOREIGN KEY (after_script_id) REFERENCES fhir_executable_script(id)
 );
 CREATE INDEX fhir_tracker_program_i1
   ON fhir_tracker_program (tracked_entity_rule_id);
@@ -594,6 +601,10 @@ CREATE INDEX fhir_tracker_program_i2
   ON fhir_tracker_program (creation_applicable_script_id);
 CREATE INDEX fhir_tracker_program_i3
   ON fhir_tracker_program (creation_script_id);
+CREATE INDEX fhir_tracker_program_i4
+  ON fhir_tracker_program (before_script_id);
+CREATE INDEX fhir_tracker_program_i5
+  ON fhir_tracker_program (after_script_id);
 COMMENT ON TABLE fhir_tracker_program IS 'Contains mappings of DHIS2 Tracker Programs.';
 COMMENT ON COLUMN fhir_tracker_program.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_tracker_program.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
@@ -607,6 +618,8 @@ COMMENT ON COLUMN fhir_tracker_program.enabled IS 'Defines if this DHIS2 Tracker
 COMMENT ON COLUMN fhir_tracker_program.creation_enabled IS 'Specifies if an enrollment of a tracked entity into this program can be made by the adapter.';
 COMMENT ON COLUMN fhir_tracker_program.creation_applicable_script_id IS 'References an evaluation script that evaluates if the enrollment is applicable. If the enrollment is not applicable, the executed rule is also not applicable for processing the input data. If no script has been specified, the creation is applicable.';
 COMMENT ON COLUMN fhir_tracker_program.creation_script_id IS 'References the creation script of an enrollment. If no creation script has been specified the default values for the data required by the enrollment is used.';
+COMMENT ON COLUMN fhir_tracker_program.before_script_id IS 'References the script of an enrollment that is executed before processing the received data (only when enrollment has not been created for the incoming data).';
+COMMENT ON COLUMN fhir_tracker_program.after_script_id IS 'References the script of an enrollment that is executed after processing the received data.';
 COMMENT ON COLUMN fhir_tracker_program.enrollment_date_is_incident IS 'Specifies if the enrollment date should be used as the incident date. Otherwise the enrollment date that is calculated for the input FHIR Resource is used.';
 COMMENT ON COLUMN fhir_tracker_program.tracked_entity_rule_id IS 'References the tracked entity rule that is associated with the tracked entity that is handled by this program.';
 
@@ -625,6 +638,8 @@ CREATE TABLE fhir_tracker_program_stage (
   creation_applicable_script_id UUID,
   creation_script_id            UUID,
   creation_status               VARCHAR(20),
+  before_script_id              UUID,
+  after_script_id               UUID,
   event_date_is_incident        BOOLEAN                        NOT NULL DEFAULT FALSE,
   before_period_day_type        VARCHAR(20),
   before_period_days            INTEGER                        NOT NULL DEFAULT 0,
@@ -638,7 +653,9 @@ CREATE TABLE fhir_tracker_program_stage (
   CONSTRAINT fhir_tracker_program_stage_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id),
   CONSTRAINT fhir_tracker_program_stage_fk4 FOREIGN KEY (creation_status) REFERENCES fhir_event_status_enum(value),
   CONSTRAINT fhir_tracker_program_stage_fk5 FOREIGN KEY (before_period_day_type) REFERENCES fhir_event_period_day_type_enum(value),
-  CONSTRAINT fhir_tracker_program_stage_fk6 FOREIGN KEY (after_period_day_type) REFERENCES fhir_event_period_day_type_enum(value)
+  CONSTRAINT fhir_tracker_program_stage_fk6 FOREIGN KEY (after_period_day_type) REFERENCES fhir_event_period_day_type_enum(value),
+  CONSTRAINT fhir_tracker_program_stage_fk7 FOREIGN KEY (before_script_id) REFERENCES fhir_executable_script(id),
+  CONSTRAINT fhir_tracker_program_stage_fk8 FOREIGN KEY (after_script_id) REFERENCES fhir_executable_script(id)
 );
 CREATE INDEX fhir_tracker_program_stage_i1
   ON fhir_tracker_program_stage (program_id);
@@ -646,6 +663,10 @@ CREATE INDEX fhir_tracker_program_stage_i2
   ON fhir_tracker_program_stage (creation_applicable_script_id);
 CREATE INDEX fhir_tracker_program_stage_i3
   ON fhir_tracker_program_stage (creation_script_id);
+CREATE INDEX fhir_tracker_program_stage_i4
+  ON fhir_tracker_program_stage (before_script_id);
+CREATE INDEX fhir_tracker_program_stage_i5
+  ON fhir_tracker_program_stage (after_script_id);
 COMMENT ON TABLE fhir_tracker_program_stage IS 'Contains mappings of DHIS2 Tracker Program Stages.';
 COMMENT ON COLUMN fhir_tracker_program_stage.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_tracker_program_stage.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
@@ -666,6 +687,8 @@ COMMENT ON COLUMN fhir_tracker_program_stage.before_period_days IS 'Specifies th
 COMMENT ON COLUMN fhir_tracker_program_stage.after_period_day_type IS 'Specifies the type of date that is used to evaluate the maximum number of days that the effective date of the incoming input data can be after this day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
 COMMENT ON COLUMN fhir_tracker_program_stage.after_period_days IS 'Specifies the maximum number of days that the effective date of the incoming input data can be after the specified period day in order that the input data can still be regarded as applicable for processing of this program stage. These number of days can be overridden by a program stage rule.';
 COMMENT ON COLUMN fhir_tracker_program_stage.creation_script_id IS 'References a script that initializes the event on creation.';
+COMMENT ON COLUMN fhir_tracker_program_stage.before_script_id IS 'References the script of an event that is executed before processing the received data (only when the event has not been created for the incoming data). The script must return either CONTINUE (continue execution), NEW_EVENT (create a new event in case of repeatable program stages) or BREAK (the current rule is not appropriate to process the incoming data). If a repeatable program stage is processed, the script gets as input variable also "organisationUnitId" that contains the selected organisation unit.';
+COMMENT ON COLUMN fhir_tracker_program_stage.after_script_id IS 'References the script of an event that is executed after processing the received data.';
 
 CREATE TABLE fhir_program_stage_rule (
   id                              UUID         NOT NULL,
@@ -1446,7 +1469,7 @@ INSERT INTO fhir_code_set_value(code_set_id, code_id)
 INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
 VALUES ('39457ebd-308c-4a44-9302-6fa47aa57b3b', 0, '616e470e-fe84-46ac-a523-b23bbc526ae2', 'All Apgar Score Observations', 'ALL_OB_APGAR_SCORE', 'All Apgar Score Observations.');
 INSERT INTO fhir_code_set_value(code_set_id, code_id)
-  SELECT '39457ebd-308c-4a44-9302-6fa47aa57b3b', id FROM fhir_code WHERE code IN ('LOINC_9271-8', 'LOINC_9274-2', 'LOINC_9273-4', 'LOINC_9272-6');
+  SELECT '39457ebd-308c-4a44-9302-6fa47aa57b3b', id FROM fhir_code WHERE code IN ('LOINC_9272-6', 'LOINC_9273-4', 'LOINC_9274-2', 'LOINC_9271-8');
 
 -- Code set with all Body Weight Observations
 INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
@@ -1655,7 +1678,7 @@ VALUES ('e9587a64-9abb-484c-b054-d76ddf2e83d1', 0, 'd69681b8-2e37-42d7-b229-9ed2
 'commentDataElement', 'DATA_ELEMENT_REF', FALSE, NULL, 'Data element on which the apgar score comment must be set.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, array_value, mandatory, default_value, description)
 VALUES ('65cefdfe-eaaa-4aa1-82d3-bbba005dc327', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',
-'mappedApgarScoreCodes', 'CODE', TRUE, TRUE, 'LOINC_9271-8|LOINC_9274-2|LOINC_9273-4|LOINC_9272-6',
+'mappedApgarScoreCodes', 'CODE', TRUE, TRUE, 'LOINC_9272-6|LOINC_9273-4|LOINC_9274-2|LOINC_9271-8',
 'Mapped Apgar Score codes in order of their relevance. The first Apgar Score code is more relevant than the last one.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('2e378bc2-9ed6-42e5-8337-0ee8bbf22fbf', 0, 'd69681b8-2e37-42d7-b229-9ed21ce76cf3',

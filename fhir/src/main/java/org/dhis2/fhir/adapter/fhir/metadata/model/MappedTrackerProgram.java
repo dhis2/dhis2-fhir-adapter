@@ -70,6 +70,8 @@ public class MappedTrackerProgram implements Serializable
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationScript;
+    private ExecutableScript beforeScript;
+    private ExecutableScript afterScript;
     private boolean enrollmentDateIsIncident;
 
     @GeneratedValue( generator = "uuid2" )
@@ -241,5 +243,29 @@ public class MappedTrackerProgram implements Serializable
     public void setEnrollmentDateIsIncident( boolean enrollmentDateIsIncident )
     {
         this.enrollmentDateIsIncident = enrollmentDateIsIncident;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "before_script_id", referencedColumnName = "id" )
+    public ExecutableScript getBeforeScript()
+    {
+        return beforeScript;
+    }
+
+    public void setBeforeScript( ExecutableScript beforeScript )
+    {
+        this.beforeScript = beforeScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "after_script_id", referencedColumnName = "id" )
+    public ExecutableScript getAfterScript()
+    {
+        return afterScript;
+    }
+
+    public void setAfterScript( ExecutableScript afterScript )
+    {
+        this.afterScript = afterScript;
     }
 }

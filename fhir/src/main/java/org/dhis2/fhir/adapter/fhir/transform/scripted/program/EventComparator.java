@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,23 +28,41 @@ package org.dhis2.fhir.adapter.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+
+import java.util.Comparator;
+
 /**
- * Thrown if the data import (create or update operation) returns no conflict but
- * the status was not successful.
+ * Compares events for sorting them. The following list contains the order of comparison:
+ * <ol>
+ * <li>Status</li>
+ * <li>Event Date</li>
+ * <li>Last Updated</li>
+ * <li>ID</li>
+ * </ol>
  *
  * @author volsch
  */
-public class DhisImportUnsuccessfulException extends RuntimeException
+public class EventComparator implements Comparator<Event>
 {
-    private static final long serialVersionUID = -3143573501666423852L;
-
-    public DhisImportUnsuccessfulException( String message )
+    @Override
+    public int compare( Event o1, Event o2 )
     {
-        super( message );
-    }
-
-    public DhisImportUnsuccessfulException( String message, Throwable cause )
-    {
-        super( message, cause );
+        int value = o1.getStatus().compareTo( o2.getStatus() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        value = o1.getEventDate().compareTo( o2.getEventDate() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        value = o1.getLastUpdated().compareTo( o2.getLastUpdated() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return o1.getId().compareTo( o2.getId() );
     }
 }

@@ -68,6 +68,8 @@ public class MappedTrackerProgramStage implements Serializable
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;
     private ExecutableScript creationScript;
+    private ExecutableScript beforeScript;
+    private ExecutableScript afterScript;
     private EventStatus creationStatus;
     private boolean eventDateIsIncident;
     private EventPeriodDayType beforePeriodDayType;
@@ -244,6 +246,30 @@ public class MappedTrackerProgramStage implements Serializable
     public void setCreationStatus( EventStatus creationStatus )
     {
         this.creationStatus = creationStatus;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "before_script_id", referencedColumnName = "id" )
+    public ExecutableScript getBeforeScript()
+    {
+        return beforeScript;
+    }
+
+    public void setBeforeScript( ExecutableScript beforeScript )
+    {
+        this.beforeScript = beforeScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "after_script_id", referencedColumnName = "id" )
+    public ExecutableScript getAfterScript()
+    {
+        return afterScript;
+    }
+
+    public void setAfterScript( ExecutableScript afterScript )
+    {
+        this.afterScript = afterScript;
     }
 
     @Basic

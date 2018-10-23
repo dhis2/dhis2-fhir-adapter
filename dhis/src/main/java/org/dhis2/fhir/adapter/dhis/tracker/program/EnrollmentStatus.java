@@ -28,6 +28,11 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Status of a DHIS2 Program Instance (aka enrollment).
+ *
+ * @author volsch
+ */
 public enum EnrollmentStatus
 {
     ACTIVE, COMPLETED, CANCELLED

@@ -54,6 +54,21 @@ spring:
     caffeine:
       spec: expireAfterAccess=60s,maximumSize=10000
 
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: SEMAPHORE
+          semaphore:
+            maxConcurrentRequests: 100000
+        timeout:
+          enabled: false
+      circuitBreaker:
+        enabled: true
+      fallback:
+        enabled: true
+
 dhis2.fhir-adapter:
   endpoint:
     url: @dhis2.url@

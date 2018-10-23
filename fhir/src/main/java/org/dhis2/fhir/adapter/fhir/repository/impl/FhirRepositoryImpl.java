@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  */
 
 import com.google.common.collect.ArrayListMultimap;
+import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
@@ -62,6 +63,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -136,6 +138,7 @@ public class FhirRepositoryImpl implements FhirRepository
         throw new RuntimeException( "Could not resolve DHIS2 reported Conflict after " + MAX_CONFLICT_RETRIES + " retries.", lastException );
     }
 
+    @SuppressWarnings( "unchecked" )
     protected void saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
     {
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( subscriptionResource.getRemoteSubscription() );
@@ -153,51 +156,90 @@ public class FhirRepositoryImpl implements FhirRepository
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
-        final FhirToDhisTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.transform(
-            fhirToDhisTransformerService.createContext( fhirRequest ), resource );
+        final FhirToDhisTransformOutcome<? extends DhisResource> outcome;
+        final HystrixRequestContext context = HystrixRequestContext.initializeContext();
+        try
+        {
+            outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), resource );
+        }
+        finally
+        {
+            context.shutdown();
+        }
+
         if ( outcome != null )
         {
             final DhisResource dhisResource;
             switch ( outcome.getResource().getResourceType() )
             {
                 case TRACKED_ENTITY:
-                    logger.info( "Persisting tracked entity instance." );
-                    dhisResource = trackedEntityService.createOrUpdate( (TrackedEntityInstance) outcome.getResource() );
-                    logger.info( "Persisted tracked entity instance {}.", dhisResource.getId() );
+                    dhisResource = persistTrackedEntityOutcome( (FhirToDhisTransformOutcome<TrackedEntityInstance>) outcome );
                     break;
                 case PROGRAM_STAGE_EVENT:
-                    final Event event = (Event) outcome.getResource();
-                    if ( (event.getTrackedEntityInstance() != null) && event.getTrackedEntityInstance().isModified() )
-                    {
-                        logger.info( "Persisting tracked entity instance." );
-                        trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
-                        logger.info( "Persisted tracked entity instance {}.", event.getTrackedEntityInstance().getId() );
-                    }
-                    if ( event.getEnrollment().isNewResource() )
-                    {
-                        logger.info( "Creating new enrollment." );
-                        event.getEnrollment().setEvents( Collections.singletonList( event ) );
-                        dhisResource = enrollmentService.create( event.getEnrollment() ).getEvents().get( 0 );
-                        logger.info( "Created new enrollment {} with new event.", event.getEnrollment().getId(), event.getId() );
-                    }
-                    else
-                    {
-                        if ( event.getEnrollment().isModified() )
-                        {
-                            logger.info( "Updating existing enrollment." );
-                            event.setEnrollment( enrollmentService.update( event.getEnrollment() ) );
-                            logger.info( "Updated existing enrollment {}.", event.getEnrollment().getId() );
-                        }
-                        logger.info( "Persisting event." );
-                        dhisResource = eventService.createOrMinimalUpdate( event );
-                        logger.info( "Persisting event {}.", event.getId() );
-                    }
+                    dhisResource = persistProgramStageEventOutcome( (FhirToDhisTransformOutcome<Event>) outcome );
                     break;
                 default:
                     throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
             }
             resource.setId( dhisResource.getId() );
         }
+    }
+
+    @Nonnull
+    private DhisResource persistTrackedEntityOutcome( @Nonnull FhirToDhisTransformOutcome<TrackedEntityInstance> outcome )
+    {
+        DhisResource dhisResource;
+        logger.info( "Persisting tracked entity instance." );
+        dhisResource = trackedEntityService.createOrUpdate( outcome.getResource() );
+        logger.info( "Persisted tracked entity instance {}.", dhisResource.getId() );
+        return dhisResource;
+    }
+
+    @Nonnull
+    private DhisResource persistProgramStageEventOutcome( @Nonnull FhirToDhisTransformOutcome<Event> outcome )
+    {
+        DhisResource dhisResource = null;
+        final Event event = outcome.getResource();
+        if ( (event.getTrackedEntityInstance() != null) && event.getTrackedEntityInstance().isModified() )
+        {
+            logger.info( "Persisting tracked entity instance." );
+            trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
+            logger.info( "Persisted tracked entity instance {}.", event.getTrackedEntityInstance().getId() );
+        }
+        if ( event.getEnrollment().isNewResource() )
+        {
+            logger.info( "Creating new enrollment." );
+            event.getEnrollment().setEvents( Collections.singletonList( event ) );
+            dhisResource = enrollmentService.create( event.getEnrollment() ).getEvents().get( 0 );
+            logger.info( "Created new enrollment {} with new event.", event.getEnrollment().getId(), event.getId() );
+        }
+        else
+        {
+            final List<Event> events = event.getEnrollment().getEvents();
+            if ( event.getEnrollment().isModified() )
+            {
+                logger.info( "Updating existing enrollment." );
+                event.setEnrollment( enrollmentService.update( event.getEnrollment() ) );
+                logger.info( "Updated existing enrollment {}.", event.getEnrollment().getId() );
+            }
+            logger.info( "Persisting event." );
+            for ( final Event e : events )
+            {
+                if ( e.isModified() )
+                {
+                    logger.info( "Persisting event." );
+                    dhisResource = eventService.createOrMinimalUpdate( event );
+                    logger.info( "Persisted event {}.", dhisResource.getId() );
+                }
+            }
+            if ( dhisResource == null )
+            {
+                logger.info( "Persisting event." );
+                dhisResource = eventService.createOrMinimalUpdate( event );
+                logger.info( "Persisted event {}.", dhisResource.getId() );
+            }
+        }
+        return dhisResource;
     }
 
     @Nullable

@@ -288,6 +288,11 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return true;
     }
 
+    public boolean isModified()
+    {
+        return event.isModified();
+    }
+
     public boolean isAnyDataValueModified()
     {
         return (event.getDataValues() != null) && event.getDataValues().stream().anyMatch( DataValue::isModified );

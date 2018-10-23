@@ -30,10 +30,10 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 public enum EventStatus
 {
-    OVERDUE,
-    ACTIVE,
-    SCHEDULE,
+    SKIPPED,
     VISITED,
     COMPLETED,
-    SKIPPED
+    SCHEDULE,
+    OVERDUE,
+    ACTIVE
 }

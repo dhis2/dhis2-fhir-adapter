@@ -31,6 +31,12 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * Service to create, update and read DHIS2 Program Stage Instances (aka events)
+ * on DHIS2.
+ *
+ * @author volsch
+ */
 public interface EventService
 {
     @Nonnull
