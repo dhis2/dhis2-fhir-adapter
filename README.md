@@ -57,6 +57,19 @@ Creating Subscription for FHIR Resource Observation:
                     "payload": "application/fhir+json"
                 }, "status": "requested"}'    
                 
+Creating Subscription for FHIR Resource Medication Requests:
+
+    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
+        '{
+                "resourceType": "Subscription",
+                "criteria": "MedicationRequest?",
+                "channel": {
+                    "type": "rest-hook",
+                    "endpoint": "http://localhost:8081/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/0b732310-1cca-4b0a-9510-432d4f93f582",
+                    "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
+                    "payload": "application/fhir+json"
+                }, "status": "requested"}'                
+                               
 #### PostgreSQL Database
 The Adapter requires a PostgresSQL 10.0 database. 
 

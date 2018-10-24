@@ -177,6 +177,9 @@ public class RemoteWebHookController
                         case OBSERVATION:
                             remoteLastUpdate = processor.processObservations( subscriptionResource );
                             break;
+                        case MEDICATION_REQUEST:
+                            remoteLastUpdate = processor.processObservations( subscriptionResource );
+                            break;
                         default:
                             throw new AssertionError( "Unhandled FHIR resource type: " + subscriptionResource.getFhirResourceType() );
                     }

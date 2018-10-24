@@ -40,6 +40,8 @@ INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_
 VALUES ('a756ef2a-1bf4-43f4-a991-fbb48ad358ac', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'IMMUNIZATION', '_format=json', 'Subscription for all Immunizations.');
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
 VALUES ('b32b4098-f8e1-426a-8dad-c5c4d8e0fab6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'OBSERVATION', '_format=json', 'Subscription for all Observations.');
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
+VALUES ('0b732310-1cca-4b0a-9510-432d4f93f582', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'MEDICATION_REQUEST', '_format=json', 'Subscription for all Medication Requests.');
 
 -- Definition of systemAuthentication URIs that are used for unique business identifiers for FHIR resources.
 INSERT INTO fhir_system (id, version, name, code, system_uri)
@@ -49,7 +51,7 @@ VALUES ('c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3', 0, 'Sierra Leone Organization', 
 INSERT INTO fhir_system (id, version, name, code, system_uri)
 VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Sierra Leone Patient', 'SYSTEM_SL_PATIENT', 'http://example.sl/national-patient-id');
 
--- Assignment of systemAuthentication URIs of unique business identifiers for FHIR resources to the subscription.
+-- Assignment of system authentication URIs of unique business identifiers for FHIR resources to the subscription.
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
 VALUES ('ea9804a3-9e82-4d0d-9cd2-e417b32b1c0c', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', 'c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3');
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)

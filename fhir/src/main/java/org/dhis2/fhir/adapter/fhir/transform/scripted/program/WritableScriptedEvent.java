@@ -32,7 +32,6 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted.program;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
-import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -295,7 +294,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     public boolean isAnyDataValueModified()
     {
-        return (event.getDataValues() != null) && event.getDataValues().stream().anyMatch( DataValue::isModified );
+        return event.isAnyDataValueModified();
     }
 
     @Override

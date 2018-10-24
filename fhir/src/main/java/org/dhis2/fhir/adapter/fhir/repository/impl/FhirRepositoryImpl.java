@@ -225,7 +225,7 @@ public class FhirRepositoryImpl implements FhirRepository
             logger.info( "Persisting event." );
             for ( final Event e : events )
             {
-                if ( e.isModified() )
+                if ( e.isModified() || e.isAnyDataValueModified() )
                 {
                     logger.info( "Persisting event." );
                     dhisResource = eventService.createOrMinimalUpdate( event );

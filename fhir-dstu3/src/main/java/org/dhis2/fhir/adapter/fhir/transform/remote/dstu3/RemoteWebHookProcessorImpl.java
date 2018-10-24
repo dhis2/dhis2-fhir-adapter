@@ -40,10 +40,12 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.ResourceType;
 import org.hl7.fhir.dstu3.model.codesystems.ResourceTypes;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -93,7 +95,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     public LocalDateTime processPatients( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
         return processResource( subscriptionResource, Patient.class, ResourceType.Patient, Collections.singletonList( Patient.INCLUDE_ORGANIZATION ), ( p, resourcesById ) -> {
-            if ( p.hasManagingOrganization() )
+            if ( p.hasManagingOrganization() && (p.getManagingOrganization().getResource() == null) )
             {
                 p.getManagingOrganization().setResource(
                     resourcesById.get( p.getManagingOrganization().getReferenceElement().toUnqualifiedVersionless() ) );
@@ -106,19 +108,19 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     public LocalDateTime processImmunizations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
         return processResource( subscriptionResource, Immunization.class, ResourceType.Immunization, Arrays.asList( Immunization.INCLUDE_PATIENT, Immunization.INCLUDE_LOCATION, Immunization.INCLUDE_PRACTITIONER ), ( i, resourcesById ) -> {
-            if ( i.hasPatient() )
+            if ( i.hasPatient() && (i.getPatient().getResource() == null) )
             {
                 i.getPatient().setResource(
                     resourcesById.get( i.getPatient().getReferenceElement().toUnqualifiedVersionless() ) );
             }
-            if ( i.hasLocation() )
+            if ( i.hasLocation() && (i.getLocation().getResource() == null) )
             {
                 i.getLocation().setResource(
                     resourcesById.get( i.getLocation().getReferenceElement().toUnqualifiedVersionless() ) );
             }
             if ( i.hasPractitioner() )
             {
-                i.getPractitioner().forEach( p ->
+                i.getPractitioner().stream().filter( p -> (p.getActor().getResource() == null) ).forEach( p ->
                     p.getActor().setResource( resourcesById.get( p.getActor().getReferenceElement().toUnqualifiedVersionless() ) ) );
             }
             return Boolean.TRUE;
@@ -129,7 +131,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
     public LocalDateTime processObservations( @Nonnull RemoteSubscriptionResource subscriptionResource )
     {
         return processResource( subscriptionResource, Observation.class, ResourceType.Observation, Arrays.asList( Observation.INCLUDE_SUBJECT, Observation.INCLUDE_PERFORMER ), ( i, resourcesById ) -> {
-            if ( i.hasSubject() )
+            if ( i.hasSubject() && (i.getSubject().getResource() == null) )
             {
                 if ( !ResourceTypes.PATIENT.toCode().equals( i.getSubject().getReferenceElement().getResourceType() ) )
                 {
@@ -140,11 +142,58 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
             }
             if ( i.hasPerformer() )
             {
-                i.getPerformer().forEach( p ->
+                i.getPerformer().stream().filter( p -> (p.getResource() == null) ).forEach( p ->
                     p.setResource( resourcesById.get( p.getReferenceElement().toUnqualifiedVersionless() ) ) );
             }
             return Boolean.TRUE;
         } );
+    }
+
+    @Nonnull
+    public LocalDateTime processMedicationRequests( @Nonnull RemoteSubscriptionResource subscriptionResource )
+    {
+        return processResource( subscriptionResource, MedicationRequest.class, ResourceType.MedicationRequest, Arrays.asList(
+            MedicationRequest.INCLUDE_SUBJECT, MedicationRequest.INCLUDE_MEDICATION, MedicationRequest.INCLUDE_REQUESTER ),
+            ( i,
+                resourcesById ) -> {
+                if ( i.hasSubject() && (i.getSubject().getResource() == null) )
+                {
+                    if ( !ResourceTypes.PATIENT.toCode().equals( i.getSubject().getReferenceElement().getResourceType() ) )
+                    {
+                        return Boolean.FALSE;
+                    }
+                    i.getSubject().setResource(
+                        resourcesById.get( i.getSubject().getReferenceElement().toUnqualifiedVersionless() ) );
+                }
+                if ( i.hasMedicationReference() )
+                {
+                    try
+                    {
+                        if ( i.getMedicationReference().getResource() == null )
+                        {
+                            i.getMedicationReference().setResource( resourcesById.get( i.getMedicationReference().getReferenceElement().toUnqualifiedVersionless() ) );
+                        }
+                    }
+                    catch ( FHIRException e )
+                    {
+                        throw new IllegalStateException( "Unexpected internal value.", e );
+                    }
+                }
+                if ( i.hasRequester() )
+                {
+                    if ( i.getRequester().hasAgent() && (i.getRequester().getAgent().getResource() == null) )
+                    {
+                        i.getRequester().getAgent().setResource(
+                            resourcesById.get( i.getRequester().getAgent().getReferenceElement().toUnqualifiedVersionless() ) );
+                    }
+                    if ( i.getRequester().hasOnBehalfOf() && (i.getRequester().getOnBehalfOf().getResource() == null) )
+                    {
+                        i.getRequester().getOnBehalfOf().setResource(
+                            resourcesById.get( i.getRequester().getOnBehalfOf().getReferenceElement().toUnqualifiedVersionless() ) );
+                    }
+                }
+                return Boolean.TRUE;
+            } );
     }
 
     @SuppressWarnings( "unchecked" )

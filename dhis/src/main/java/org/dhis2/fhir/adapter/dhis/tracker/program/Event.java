@@ -294,6 +294,12 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         return dataValue;
     }
 
+    @JsonIgnore
+    public boolean isAnyDataValueModified()
+    {
+        return (getDataValues() != null) && getDataValues().stream().anyMatch( DataValue::isModified );
+    }
+
 
     @Override
     public int compareTo( @Nonnull Event o )
