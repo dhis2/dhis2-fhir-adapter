@@ -28,23 +28,18 @@ package org.dhis2.fhir.adapter.fhir.remote;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-
 import javax.annotation.Nonnull;
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
- * Important Note: This class will be split into several components that allow distributed message processing
- * and provide support for locking and/or retries.
+ * Processes incoming web hook requests in two steps. First the web hook request
+ * is added to a queue (if there are not yet any web hook requests). Then the web
+ * hook request is consumed, the relevant data is collected and put into another
+ * queue for rule and transformation processing.
+ *
+ * @author volsch
  */
 public interface RemoteWebHookProcessor
 {
-    @Nonnull
-    LocalDateTime processPatients( @Nonnull RemoteSubscriptionResource subscriptionResource );
-
-    @Nonnull
-    LocalDateTime processImmunizations( @Nonnull RemoteSubscriptionResource subscriptionResource );
-
-    @Nonnull
-    LocalDateTime processObservations( @Nonnull RemoteSubscriptionResource subscriptionResource );
+    void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId );
 }

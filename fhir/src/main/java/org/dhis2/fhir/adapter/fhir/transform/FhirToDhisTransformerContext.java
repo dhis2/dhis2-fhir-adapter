@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.fhir.transform;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -51,5 +51,5 @@ public interface ConstantRepository extends JpaRepository<Constant, UUID>, Const
      * @return the constant with the specified code, or <code>null</code> if no such constant exists.
      */
     @Nonnull
-    Optional<Constant> findByCode( @Param( "code" ) @Nonnull String code );
+    Optional<Constant> findOneByCode( @Param( "code" ) @Nonnull String code );
 }

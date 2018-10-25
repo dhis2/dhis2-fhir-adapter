@@ -570,7 +570,7 @@ COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_ref IS 'The
 COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_fq IS 'Specifies if the identifier that is stored in the DHIS2 Tracked Entity Attribute contains also the system URI.';
 
 CREATE TABLE fhir_tracker_program (
-  id                            UUID                           NOT NULL,
+  id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
@@ -624,7 +624,7 @@ COMMENT ON COLUMN fhir_tracker_program.enrollment_date_is_incident IS 'Specifies
 COMMENT ON COLUMN fhir_tracker_program.tracked_entity_rule_id IS 'References the tracked entity rule that is associated with the tracked entity that is handled by this program.';
 
 CREATE TABLE fhir_tracker_program_stage (
-  id                            UUID                           NOT NULL,
+  id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
@@ -744,7 +744,7 @@ COMMENT ON COLUMN fhir_program_stage_rule.schedule_to_active_update IS 'Specifie
 COMMENT ON COLUMN fhir_program_stage_rule.completed_to_active_update IS 'Specifies if the event should be updated from completed to active when processing the rule.';
 
 CREATE TABLE fhir_resource_mapping (
-  id                                UUID                           NOT NULL,
+  id                                UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                           BIGINT                         NOT NULL,
   fhir_resource_type                VARCHAR(30)                    NOT NULL,
   created_at                        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -802,7 +802,7 @@ COMMENT ON COLUMN fhir_resource_mapping.event_date_lookup_script_id IS 'Referenc
 COMMENT ON COLUMN fhir_resource_mapping.effective_date_lookup_script_id IS 'References the evaluation script that looks up the effective date from the processed input data. The effective date defines the day when the values of the input data were effective. This may be after the day when the values have been recorded.';
 
 CREATE TABLE fhir_remote_subscription (
-  id                            UUID                           NOT NULL,
+  id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
@@ -817,7 +817,6 @@ CREATE TABLE fhir_remote_subscription (
   dhis_username                 VARCHAR(200)                   NOT NULL,
   dhis_authorization_header     VARCHAR(200)                   NOT NULL,
   remote_base_url               VARCHAR(200)                   NOT NULL,
-  support_includes              BOOLEAN                        NOT NULL DEFAULT FALSE,
   tolerance_minutes             INTEGER                        NOT NULL DEFAULT 0,
   logging                       BOOLEAN                        NOT NULL DEFAULT FALSE,
   verbose_logging               BOOLEAN                        NOT NULL DEFAULT FALSE,
@@ -842,7 +841,6 @@ COMMENT ON COLUMN fhir_remote_subscription.web_hook_authorization_header IS 'The
 COMMENT ON COLUMN fhir_remote_subscription.dhis_username IS 'The username of the DHIS2 user that is used to create, read and update data on DHIS2 when processing data of this FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription.dhis_authorization_header IS 'The authorization header value (e.g. "Basic: dGVzdDp0ZXN0") that is used to authenticate at DHIS2 Web API in order to create, read and update data on DHIS2 when processing data of this FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription.remote_base_url IS 'The base URL of the remote FHIR Service that provides access to the FHIR Endpoints.';
-COMMENT ON COLUMN fhir_remote_subscription.support_includes IS 'This value is not evaluated currently. It is expected that the remote FHIR Service supports includes.';
 COMMENT ON COLUMN fhir_remote_subscription.tolerance_minutes IS 'The number of minutes that is subtracted from the remote last updated timestamp when fetching the next data of a subscribed resource. This is useful in order to handle non-synchronized clocks on servers.';
 COMMENT ON COLUMN fhir_remote_subscription.logging IS 'Specifies if the FHIR client should log accesses to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
 COMMENT ON COLUMN fhir_remote_subscription.verbose_logging IS 'Specifies if the FHIR client should do verbose logging (all details) when accessing to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
@@ -862,7 +860,7 @@ COMMENT ON COLUMN fhir_remote_subscription_header.value IS 'The value of the hea
 COMMENT ON COLUMN fhir_remote_subscription_header.secured IS 'Specifies if the value contains secure content (e.g. authentication data) that must be protected.';
 
 CREATE TABLE fhir_remote_subscription_system (
-  id                            UUID                           NOT NULL,
+  id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
   created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by               VARCHAR(11),
@@ -888,7 +886,7 @@ COMMENT ON COLUMN fhir_remote_subscription_system.fhir_resource_type IS 'The FHI
 COMMENT ON COLUMN fhir_remote_subscription_system.system_id IS 'References the system of which the system URI should be used.';
 
 CREATE TABLE fhir_remote_subscription_resource (
-  id                       UUID                           NOT NULL,
+  id                       UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                  BIGINT                         NOT NULL,
   created_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   last_updated_by          VARCHAR(11),
@@ -897,9 +895,9 @@ CREATE TABLE fhir_remote_subscription_resource (
   fhir_resource_type       VARCHAR(30)                    NOT NULL,
   fhir_criteria_parameters VARCHAR(200),
   description              TEXT,
-  remote_last_update       TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  remote_last_updated      TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fhir_remote_subscription_resource_pk PRIMARY KEY (id),
-  -- do not enable cascading delete since remote last update date may get lost by mistake
+  -- do not enable cascading dequeued since remote last update date may get lost by mistake
   CONSTRAINT fhir_remote_subscription_resource_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id),
   CONSTRAINT fhir_remote_subscription_resource_fk2 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum(value)
 );
@@ -915,7 +913,47 @@ COMMENT ON COLUMN fhir_remote_subscription_resource.remote_subscription_id IS 'R
 COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_resource_type IS 'The FHIR Resource Type that has been described by this resource subscription.';
 COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_criteria_parameters IS 'The parameters that have been appended to the resource type when creation the subscription on the remote FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription_resource.description IS 'The detailed purpose of subscribing this resource with the specified criteria parameters.';
-COMMENT ON COLUMN fhir_remote_subscription_resource.remote_last_update IS 'The timestamp of the last begin of fetching data from the remote FHIR Service for the subscribed resource.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.remote_last_updated IS 'The timestamp of the last begin of fetching data from the remote FHIR Service for the subscribed resource.';
+
+CREATE TABLE fhir_queued_remote_subscription_request (
+  id         UUID                           NOT NULL,
+  request_id VARCHAR(50)                    NOT NULL,
+  queued_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fhir_queued_remote_subscription_request_pk PRIMARY KEY(id),
+  CONSTRAINT fhir_queued_remote_subscription_request_fk1 FOREIGN KEY(id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_queued_remote_subscription_request IS 'Contains queued remote subscription requests.';
+COMMENT ON COLUMN fhir_queued_remote_subscription_request.id IS 'References the remote subscription resource request.';
+COMMENT ON COLUMN fhir_queued_remote_subscription_request.request_id IS 'ID of the web hook request on which this request has been added to the queue.';
+COMMENT ON COLUMN fhir_queued_remote_subscription_request.queued_at IS 'The timestamp when the data has been queued last time.';
+
+CREATE TABLE fhir_processed_remote_resource (
+  remote_subscription_resource_id   UUID         NOT NULL,
+  versioned_fhir_resource_id        VARCHAR(120) NOT NULL,
+  processed_at                      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fhir_processed_remote_resource_pk PRIMARY KEY (remote_subscription_resource_id, versioned_fhir_resource_id),
+  CONSTRAINT fhir_processed_remote_resource_fk1 FOREIGN KEY(remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
+);
+CREATE INDEX fhir_processed_remote_resource_i1
+  ON fhir_processed_remote_resource(remote_subscription_resource_id, processed_at);
+COMMENT ON TABLE fhir_processed_remote_resource IS 'Contains the versioned FHIR resource IDs that have been processed in the last few hours.';
+COMMENT ON COLUMN fhir_processed_remote_resource.remote_subscription_resource_id IS 'References the remote subscription resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_processed_remote_resource.versioned_fhir_resource_id IS 'The unique string that identifies a distinct version of a remote FHIR resource.';
+COMMENT ON COLUMN fhir_processed_remote_resource.processed_at IS 'Timestamp when the resource has been processed. Used for deleting the data after some hours mainly.';
+
+CREATE TABLE fhir_queued_remote_resource (
+  remote_subscription_resource_id   UUID                           NOT NULL,
+  fhir_resource_id                  VARCHAR(80)                    NOT NULL,
+  request_id                        VARCHAR(50)                    NOT NULL,
+  queued_at                         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fhir_queued_remote_resource_pk PRIMARY KEY(remote_subscription_resource_id, fhir_resource_id ),
+  CONSTRAINT fhir_queued_remote_resource_fk1 FOREIGN KEY(remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_queued_remote_resource IS 'Contains queued remote FHIR resources that should be processed.';
+COMMENT ON COLUMN fhir_queued_remote_resource.remote_subscription_resource_id IS 'References the remote subscription resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_queued_remote_resource.fhir_resource_id IS 'The ID (only the ID part without resource name and version) of the FHIR Resource that has been queued.';
+COMMENT ON COLUMN fhir_queued_remote_resource.queued_at IS 'The timestamp when the data has been queued last time.';
+COMMENT ON COLUMN fhir_queued_remote_resource.request_id IS 'ID of the enqueue request on which this resource has been added to the queue.';
 
 -- Gender Constants (Adapter Gender Code to DHIS2 code as value)
 INSERT INTO fhir_constant (id, version, category, name, code, data_type, value)
@@ -1598,7 +1636,7 @@ VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 0, 'Observation TEI Lookup', 'OB
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'input.subject.getResource()', 'JAVASCRIPT');
+VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'referenceUtils.getResource(input.subject)', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 'DSTU3');
 INSERT INTO fhir_executable_script (id,script_id, name, code, description)
@@ -1759,7 +1797,7 @@ VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 0, 'Immunization TEI Lookup', 'I
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'input.patient.getResource()', 'JAVASCRIPT');
+VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'referenceUtils.getResource(input.patient)', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 'DSTU3');
 INSERT INTO fhir_executable_script (id,script_id, name, code, description)
@@ -1775,9 +1813,10 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830-f04c-45
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830-f04c-4575-af5d-1d6fa0bf844b', 'INPUT');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('6427e6de-8426-4ab1-b66a-edd5b0e5f410', 0, 'a5079830-f04c-4575-af5d-1d6fa0bf844b',
 'var location = null;
-if ((input.getLocation().getResource() != null) && input.getLocation().getResource().hasPosition())
+var locationResource = referenceUtils.getResource(input.getLocation());
+if ((locationResource != null) && locationResource.hasPosition())
 {
-  var position = input.getLocation().getResource().getPosition();
+  var position = locationResource.getPosition();
   location = geoUtils.create(position.getLongitude(), position.getLatitude());
 }
 location', 'JAVASCRIPT');

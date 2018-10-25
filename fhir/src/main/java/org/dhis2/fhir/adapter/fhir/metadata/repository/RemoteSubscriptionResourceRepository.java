@@ -36,7 +36,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,18 +44,14 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>
+public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>, CustomRemoteSubscriptionResourceRepository
 {
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE r.id=:resourceId" )
     @Nonnull
-    Optional<RemoteSubscriptionResource> findOneForWebHookEvaluation( @Param( "resourceId" ) @Nonnull UUID resourceId );
+    Optional<RemoteSubscriptionResource> findOne( @Param( "resourceId" ) @Nonnull UUID resourceId );
 
-    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s LEFT JOIN FETCH s.remoteHeaders WHERE r.id=:resourceId" )
+    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType ORDER BY r.id" )
     @Nonnull
-    Optional<RemoteSubscriptionResource> findOneForSubscriptionProcessing( @Param( "resourceId" ) @Nonnull UUID resourceId );
-
-    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType" )
-    @Nonnull
-    Collection<RemoteSubscriptionResource> findForWebHookEvaluation(
+    Optional<RemoteSubscriptionResource> findFirst(
         @Param( "subscription" ) @Nonnull RemoteSubscription remoteSubscription, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 }

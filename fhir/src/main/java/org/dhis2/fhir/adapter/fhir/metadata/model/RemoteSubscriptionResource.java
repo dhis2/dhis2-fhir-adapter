@@ -61,7 +61,7 @@ public class RemoteSubscriptionResource implements Serializable
     private FhirResourceType fhirResourceType;
     private String fhirCriteriaParameters;
     private String description;
-    private LocalDateTime remoteLastUpdate;
+    private LocalDateTime remoteLastUpdated;
     private RemoteSubscription remoteSubscription;
 
     @Id
@@ -162,15 +162,15 @@ public class RemoteSubscriptionResource implements Serializable
     }
 
     @Basic
-    @Column( name = "remote_last_update", nullable = false )
-    public LocalDateTime getRemoteLastUpdate()
+    @Column( name = "remote_last_updated", nullable = false )
+    public LocalDateTime getRemoteLastUpdated()
     {
-        return remoteLastUpdate;
+        return remoteLastUpdated;
     }
 
-    public void setRemoteLastUpdate( LocalDateTime remoteLastUpdate )
+    public void setRemoteLastUpdated( LocalDateTime remoteLastUpdate )
     {
-        this.remoteLastUpdate = remoteLastUpdate;
+        this.remoteLastUpdated = remoteLastUpdate;
     }
 
     @ManyToOne( optional = false )

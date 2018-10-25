@@ -26,56 +26,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-server:
-  port: 8081
-
 spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
-  flyway:
-    locations: @db.flyway.locations@
-  datasource:
-    url: @db.url@
-    username: @db.username@
-    password: @db.password@
-    driver-class-name: @db.driver@
   jpa:
     generate-ddl: false
     hibernate:
       ddl-auto: none
     open-in-view: false
-  mvc:
-    logResolvedException: false
   application:
     name: DHIS2 FHIR Adapter
-  cache:
-    type: caffeine
-    caffeine:
-      spec: expireAfterAccess=60s,maximumSize=10000
-
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          strategy: SEMAPHORE
-          semaphore:
-            maxConcurrentRequests: 100000
-        timeout:
-          enabled: false
-      circuitBreaker:
-        enabled: true
-      fallback:
-        enabled: true
-
-dhis2.fhir-adapter:
-  endpoint:
-    url: @dhis2.url@
-    api-version: @dhis2.apiVersion@
-    system-authentication:
-      username: @dhis2.username@
-      password: @dhis2.password@
-  transformation:
-    script-engine-name: nashorn
-

@@ -28,16 +28,55 @@ package org.dhis2.fhir.adapter.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirVersionEnum;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Enumeration with supported FHIR versions and their mapping to the FHIR client API.
+ *
+ * @author volsch
+ */
 public enum FhirVersion
 {
-    DSTU3;
+    DSTU3( FhirVersionEnum.DSTU3 );
 
     public static final Set<FhirVersion> ALL = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( FhirVersion.values() ) ) );
 
     public static final Set<FhirVersion> DSTU3_ONLY = Collections.singleton( DSTU3 );
+
+    @Nullable
+    public static FhirVersion get( @Nullable FhirVersionEnum fhirVersionEnum )
+    {
+        if ( fhirVersionEnum == null )
+        {
+            return null;
+        }
+        for ( FhirVersion fv : values() )
+        {
+            if ( fv.getFhirVersionEnum() == fhirVersionEnum )
+            {
+                return fv;
+            }
+        }
+        return null;
+    }
+
+    private final FhirVersionEnum fhirVersionEnum;
+
+    FhirVersion( FhirVersionEnum fhirVersionEnum )
+    {
+        this.fhirVersionEnum = fhirVersionEnum;
+    }
+
+    @Nonnull
+    public FhirVersionEnum getFhirVersionEnum()
+    {
+        return fhirVersionEnum;
+    }
 }

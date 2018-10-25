@@ -33,7 +33,7 @@ import java.io.Serializable;
 
 /**
  * Immutable implementation of {@link Option} that may delegate to a mutable
- * instance. This can be used to disable write access from a scripted environment
+ * instance. This can be used to disable write access from a impl environment
  * to the object.
  *
  * @author volsch

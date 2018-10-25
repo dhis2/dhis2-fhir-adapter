@@ -76,7 +76,6 @@ public class RemoteSubscription implements Serializable
     private String dhisAuthorizationHeader;
     private String remoteBaseUrl;
     private FhirVersion fhirVersion;
-    private boolean supportIncludes;
     private int toleranceMinutes;
     private boolean logging;
     private boolean verboseLogging;
@@ -249,18 +248,6 @@ public class RemoteSubscription implements Serializable
     public void setRemoteBaseUrl( String remoteBaseUrl )
     {
         this.remoteBaseUrl = remoteBaseUrl;
-    }
-
-    @Basic
-    @Column( name = "support_includes", nullable = false )
-    public boolean isSupportIncludes()
-    {
-        return supportIncludes;
-    }
-
-    public void setSupportIncludes( boolean supportIncludes )
-    {
-        this.supportIncludes = supportIncludes;
     }
 
     @Basic

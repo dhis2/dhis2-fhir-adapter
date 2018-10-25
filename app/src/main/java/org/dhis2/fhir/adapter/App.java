@@ -28,19 +28,26 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.spring.YamlPropertySourceFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.jms.annotation.EnableJms;
 
 /**
+ * Main application entry point.
+ *
  * @author volsch
  */
 @SpringBootApplication
 @EnableCircuitBreaker
 @EnableCaching
+@EnableJms
+@PropertySource( value = { "classpath:default-application.yml", "file:///${dhis2.home}/services/fhir-adapter/application.yml" }, factory = YamlPropertySourceFactory.class )
 public class App extends SpringBootServletInitializer
 {
     @Override

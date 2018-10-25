@@ -34,7 +34,7 @@ import java.time.ZonedDateTime;
 
 /**
  * Immutable implementation of {@link DataValue} that may delegate to a mutable
- * instance. This can be used to disable write access from a scripted environment
+ * instance. This can be used to disable write access from a impl environment
  * to the object.
  *
  * @author volsch

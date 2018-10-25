@@ -43,4 +43,12 @@
 
   <name>dhis2-fhir-adapter-common</name>
   <description>Contains the common framework and utility classes that do neither depend on DHIS2 (except DHIS2 value type) nor on FHIR.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-jms-server</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 </project>

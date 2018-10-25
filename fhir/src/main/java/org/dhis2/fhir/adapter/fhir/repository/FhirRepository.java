@@ -33,6 +33,11 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 
+/**
+ * The repository that is used to store FHIR Resources.
+ *
+ * @author volsch
+ */
 public interface FhirRepository
 {
     void save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource );

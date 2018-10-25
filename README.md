@@ -107,6 +107,9 @@ can be done by executing the following command in folder fhir in the console:
     
 The database will be reinitialized when starting the adapter.
 
+The application has its configuration directory below $DHIS2_HOME/services/fhir-adapter. This sub-directory structure must be created below $DHIS2_HOME and an empty configuration file named application.yml must be placed inside this directory. The Adapter 
+may create further sub-directories below this directory (e.g. directory containing message queue files). The environment variable DHIS2_HOME must have been set when running the Adapter application.
+
 The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). In IntelliJ IDEA ULTIMATE also class org.dhis2.fhir.adapter.App can be used to start the Adapter as Spring Boot application without an external servlet 
 container.
 

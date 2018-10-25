@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 /**
  * Immutable implementation of {@link OptionSet} that may delegate to a mutable
- * instance. This can be used to disable write access from a scripted environment
+ * instance. This can be used to disable write access from a impl environment
  * to the object.
  *
  * @author volsch

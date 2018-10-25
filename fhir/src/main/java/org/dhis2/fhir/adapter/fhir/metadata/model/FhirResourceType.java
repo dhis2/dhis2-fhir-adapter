@@ -51,13 +51,13 @@ import java.util.stream.Collectors;
  */
 public enum FhirResourceType
 {
-    DIAGNOSTIC_REPORT( "DiagnosticReport" ),
-    IMMUNIZATION( "Immunization" ),
-    LOCATION( "Location" ),
-    MEDICATION_REQUEST( "MedicationRequest" ),
-    OBSERVATION( "Observation" ),
-    ORGANIZATION( "Organization" ),
-    PATIENT( "Patient" );
+    DIAGNOSTIC_REPORT( "DiagnosticReport", "DiagnosticReport" ),
+    IMMUNIZATION( "Immunization", "Immunization" ),
+    LOCATION( "Location", "Location" ),
+    MEDICATION_REQUEST( "MedicationRequest", "MedicationRequest" ),
+    OBSERVATION( "Observation", "Observation" ),
+    ORGANIZATION( "Organization", "Organization" ),
+    PATIENT( "Patient", "Patient" );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
@@ -83,11 +83,20 @@ public enum FhirResourceType
         return frt;
     }
 
+    private final String resourceTypeName;
+
     private final Set<String> simpleClassNames;
 
-    FhirResourceType( String... simpleClassNames )
+    FhirResourceType( String resourceTypeName, String... simpleClassNames )
     {
+        this.resourceTypeName = resourceTypeName;
         this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( simpleClassNames ) ) );
+    }
+
+    @Nonnull
+    public String getResourceTypeName()
+    {
+        return resourceTypeName;
     }
 
     @Nonnull
