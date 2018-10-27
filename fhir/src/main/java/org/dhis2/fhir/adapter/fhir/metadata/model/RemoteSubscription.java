@@ -76,7 +76,7 @@ public class RemoteSubscription implements Serializable
     private String dhisAuthorizationHeader;
     private String remoteBaseUrl;
     private FhirVersion fhirVersion;
-    private int toleranceMinutes;
+    private int toleranceMillis;
     private boolean logging;
     private boolean verboseLogging;
     private Set<RequestHeader> remoteHeaders;
@@ -251,15 +251,15 @@ public class RemoteSubscription implements Serializable
     }
 
     @Basic
-    @Column( name = "tolerance_minutes", nullable = false )
-    public int getToleranceMinutes()
+    @Column( name = "tolerance_millis", nullable = false )
+    public int getToleranceMillis()
     {
-        return toleranceMinutes;
+        return toleranceMillis;
     }
 
-    public void setToleranceMinutes( int toleranceMinutes )
+    public void setToleranceMillis( int toleranceMillis )
     {
-        this.toleranceMinutes = toleranceMinutes;
+        this.toleranceMillis = toleranceMillis;
     }
 
     @ElementCollection( fetch = FetchType.EAGER )

@@ -33,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -48,14 +50,14 @@ public class SubscriptionResourceInfo implements Serializable
 
     private final String id;
 
-    private final ZonedDateTime lastUpdated;
+    private final long lastUpdated;
 
     private final String version;
 
     public SubscriptionResourceInfo( @Nonnull String id, @Nullable ZonedDateTime lastUpdated, @Nullable String version )
     {
-        this.lastUpdated = lastUpdated;
         this.id = id;
+        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toInstant().toEpochMilli();
         this.version = version;
     }
 
@@ -68,7 +70,7 @@ public class SubscriptionResourceInfo implements Serializable
     @Nullable
     public ZonedDateTime getLastUpdated()
     {
-        return lastUpdated;
+        return (lastUpdated == 0) ? null : ZonedDateTime.ofInstant( Instant.ofEpochMilli( lastUpdated ), ZoneId.systemDefault() );
     }
 
     @Nullable
@@ -84,7 +86,7 @@ public class SubscriptionResourceInfo implements Serializable
         if ( o == null || getClass() != o.getClass() ) return false;
         SubscriptionResourceInfo that = (SubscriptionResourceInfo) o;
         return Objects.equals( id, that.id ) &&
-            Objects.equals( lastUpdated, that.lastUpdated ) &&
+            (lastUpdated == that.lastUpdated) &&
             Objects.equals( version, that.version );
     }
 
@@ -97,7 +99,6 @@ public class SubscriptionResourceInfo implements Serializable
     @Nonnull
     public String toVersionString( @Nonnull ZonedDateTime defaultLastUpdated )
     {
-        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) + "|" +
-            ((getLastUpdated() == null) ? ("X" + defaultLastUpdated.toInstant().toEpochMilli()) : getLastUpdated().toInstant().toEpochMilli());
+        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) + "|" + lastUpdated;
     }
 }

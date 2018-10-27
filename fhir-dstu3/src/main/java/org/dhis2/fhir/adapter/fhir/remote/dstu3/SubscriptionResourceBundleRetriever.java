@@ -95,4 +95,13 @@ public class SubscriptionResourceBundleRetriever extends AbstractSubscriptionRes
         final Bundle.BundleLinkComponent link = b.getLink( Bundle.LINK_NEXT );
         return ((link != null) && !link.isEmpty()) ? client.loadPage().next( bundle ).execute() : null;
     }
+
+    @Nullable
+    @Override
+    protected IBaseBundle loadPreviousPage( @Nonnull IGenericClient client, @Nonnull IBaseBundle bundle )
+    {
+        final Bundle b = (Bundle) bundle;
+        final Bundle.BundleLinkComponent link = b.getLink( Bundle.LINK_PREV );
+        return ((link != null) && !link.isEmpty()) ? client.loadPage().previous( bundle ).execute() : null;
+    }
 }

@@ -160,14 +160,14 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                 ", but no bundle retriever is available for that version." );
         }
 
-        final ZonedDateTime lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, processorConfig.getMaxSearchCount(), infoBundle -> {
+        final ZonedDateTime lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, processorConfig.getMaxSearchCount(), resources -> {
             final String requestId = getCurrentRequestId();
             final ZonedDateTime zonedProcessedAt = ZonedDateTime.now();
             final Set<String> processedVersionedIds = processedRemoteFhirResourceRepository.findByVersionedIds( remoteSubscriptionResource,
-                infoBundle.getSubscriptionResources().stream().map( sr -> sr.toVersionString( zonedProcessedAt ) ).collect( Collectors.toList() ) );
+                resources.stream().map( sr -> sr.toVersionString( zonedProcessedAt ) ).collect( Collectors.toList() ) );
 
             final LocalDateTime processedAt = zonedProcessedAt.toLocalDateTime();
-            infoBundle.getSubscriptionResources().forEach( sr -> {
+            resources.forEach( sr -> {
                 final String versionedId = sr.toVersionString( zonedProcessedAt );
                 if ( !processedVersionedIds.contains( versionedId ) )
                 {
@@ -188,11 +188,6 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                     } );
                 }
             } );
-
-            if ( infoBundle.getMaxLastUpdated() != null )
-            {
-                remoteSubscriptionResourceRepository.updateRemoteLastUpdated( remoteSubscriptionResource, infoBundle.getMaxLastUpdated().toLocalDateTime() );
-            }
         } );
         remoteSubscriptionResourceRepository.updateRemoteLastUpdated( remoteSubscriptionResource, lastUpdated.toLocalDateTime() );
 

@@ -52,8 +52,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -84,20 +87,28 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
     }
 
     @Nonnull
-    public ZonedDateTime poll( @Nonnull RemoteSubscriptionResource subscriptionResource, int maxSearchCount, @Nonnull Consumer<SubscriptionResourceInfoBundle> consumer )
+    public ZonedDateTime poll( @Nonnull RemoteSubscriptionResource subscriptionResource, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
     {
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription() );
-        ZonedDateTime lastUpdated;
+        ZonedDateTime lastUpdated = null;
         LocalDateTime fromLastUpdated = subscriptionResource.getRemoteLastUpdated()
-            .minusMinutes( subscriptionResource.getRemoteSubscription().getToleranceMinutes() );
+            .minus( subscriptionResource.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
 
+        final Set<SubscriptionResourceInfo> allResources = new HashSet<>();
+        final List<SubscriptionResourceInfo> orderedAllResources = new ArrayList<>();
         Set<SubscriptionResourceInfo> previousResources = null;
+        boolean paging = false;
+        boolean backwardPaging = false;
         boolean moreAvailable;
         final String resourceName = subscriptionResource.getFhirResourceType().getResourceTypeName();
         do
         {
             logger.debug( "Loading next since {} for remote subscription resource with maximum count {}.", fromLastUpdated, subscriptionResource.getId(), maxSearchCount );
-            lastUpdated = ZonedDateTime.now();
+            if ( lastUpdated == null )
+            {
+                // last updated must only bet set on the first search invocation
+                lastUpdated = ZonedDateTime.now();
+            }
             IBaseBundle bundle = client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
                 .whereMap( getQuery( subscriptionResource ) ).count( maxSearchCount ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated.atZone( zoneId ).toInstant() ), null ) )
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
@@ -110,6 +121,13 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                         (resource.getMeta().getLastUpdated() == null) ? null : ZonedDateTime.ofInstant( resource.getMeta().getLastUpdated().toInstant(), zoneId ),
                         resource.getIdElement().getVersionIdPart() ) );
                 }
+                resources.forEach( r -> {
+                    if ( allResources.add( r ) )
+                    {
+                        // list must contain only unique items
+                        orderedAllResources.add( r );
+                    }
+                } );
 
                 final Long totalCount = getBundleTotalCount( bundle );
                 if ( (previousResources != null) && !resources.isEmpty() && previousResources.containsAll( resources ) && (previousResources.size() >= resources.size()) &&
@@ -120,16 +138,23 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                 }
                 previousResources = new HashSet<>( resources );
 
-                final SubscriptionResourceInfoBundle infoBundle = new SubscriptionResourceInfoBundle( resources );
-                consumer.accept( infoBundle );
-
                 moreAvailable = false;
                 if ( !resources.isEmpty() )
                 {
-                    bundle = loadNextPage( client, bundle );
+                    final IBaseBundle currentBundle = bundle;
+                    bundle = backwardPaging ? loadPreviousPage( client, currentBundle ) : loadNextPage( client, currentBundle );
                     if ( bundle == null )
                     {
-                        if ( totalCount == null )
+                        if ( paging )
+                        {
+                            if ( !backwardPaging )
+                            {
+                                // page backwards in order to prevent loss of data when paging is not stable
+                                bundle = loadPreviousPage( client, currentBundle );
+                                backwardPaging = true;
+                            }
+                        }
+                        else if ( totalCount == null )
                         {
                             logger.warn( "Remote subscription resource {} does not support total count in search result.", subscriptionResource.getId() );
                         }
@@ -137,13 +162,15 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                         {
                             logger.debug( "Returned {} of {} for remote subscription resource {} with maximum requested {}.",
                                 resources.size(), totalCount, subscriptionResource.getId(), maxSearchCount );
-                            if ( infoBundle.getMaxLastUpdated() == null )
+                            final ZonedDateTime maxLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
+                                .filter( lu -> (lu != null) ).max( Comparator.naturalOrder() ).orElse( null );
+                            if ( maxLastUpdated == null )
                             {
                                 logger.warn( "Remote subscription resource {} does not support last updated timestamps.", subscriptionResource.getId() );
                             }
                             else
                             {
-                                final LocalDateTime newFromLastUpdated = infoBundle.getMaxLastUpdated().toLocalDateTime();
+                                final LocalDateTime newFromLastUpdated = maxLastUpdated.toLocalDateTime();
                                 if ( newFromLastUpdated.equals( fromLastUpdated ) )
                                 {
                                     throw new RemoteWebHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
@@ -157,12 +184,18 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                             }
                         }
                     }
+                    else
+                    {
+                        paging = true;
+                    }
                 }
             }
             while ( bundle != null );
         }
         while ( moreAvailable );
 
+        // resources should not be consumed inside the loop above since paging may take longer
+        consumer.accept( orderedAllResources );
         return lastUpdated;
     }
 
@@ -174,6 +207,9 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
 
     @Nullable
     protected abstract Long getBundleTotalCount( @Nonnull IBaseBundle bundle );
+
+    @Nullable
+    protected abstract IBaseBundle loadPreviousPage( @Nonnull IGenericClient client, @Nonnull IBaseBundle bundle );
 
     @Nullable
     protected abstract IBaseBundle loadNextPage( @Nonnull IGenericClient client, @Nonnull IBaseBundle bundle );

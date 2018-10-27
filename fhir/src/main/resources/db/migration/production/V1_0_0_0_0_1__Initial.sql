@@ -817,7 +817,7 @@ CREATE TABLE fhir_remote_subscription (
   dhis_username                 VARCHAR(200)                   NOT NULL,
   dhis_authorization_header     VARCHAR(200)                   NOT NULL,
   remote_base_url               VARCHAR(200)                   NOT NULL,
-  tolerance_minutes             INTEGER                        NOT NULL DEFAULT 0,
+  tolerance_millis              INTEGER                        NOT NULL DEFAULT 0,
   logging                       BOOLEAN                        NOT NULL DEFAULT FALSE,
   verbose_logging               BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_pk PRIMARY KEY (id),
@@ -841,7 +841,7 @@ COMMENT ON COLUMN fhir_remote_subscription.web_hook_authorization_header IS 'The
 COMMENT ON COLUMN fhir_remote_subscription.dhis_username IS 'The username of the DHIS2 user that is used to create, read and update data on DHIS2 when processing data of this FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription.dhis_authorization_header IS 'The authorization header value (e.g. "Basic: dGVzdDp0ZXN0") that is used to authenticate at DHIS2 Web API in order to create, read and update data on DHIS2 when processing data of this FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription.remote_base_url IS 'The base URL of the remote FHIR Service that provides access to the FHIR Endpoints.';
-COMMENT ON COLUMN fhir_remote_subscription.tolerance_minutes IS 'The number of minutes that is subtracted from the remote last updated timestamp when fetching the next data of a subscribed resource. This is useful in order to handle non-synchronized clocks on servers.';
+COMMENT ON COLUMN fhir_remote_subscription.tolerance_millis IS 'The number of millis that is subtracted from the remote last updated timestamp when fetching the next data of a subscribed resource. This is useful in order to handle non-synchronized clocks on servers.';
 COMMENT ON COLUMN fhir_remote_subscription.logging IS 'Specifies if the FHIR client should log accesses to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
 COMMENT ON COLUMN fhir_remote_subscription.verbose_logging IS 'Specifies if the FHIR client should do verbose logging (all details) when accessing to the remote FHIR Service. Logging personal related health data to a log file may be a legal issue.';
 
