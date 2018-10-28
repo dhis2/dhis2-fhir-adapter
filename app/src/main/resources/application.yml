@@ -37,3 +37,6 @@ spring:
     open-in-view: false
   application:
     name: DHIS2 FHIR Adapter
+
+logging:
+  file: ${dhis2.home}/services/fhir-adapter/logs/dhis2-fhir-adapter.log

@@ -59,6 +59,7 @@ import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -165,11 +166,14 @@ public class FhirRepositoryImpl implements FhirRepository
             remoteSubscriptionResource.getRemoteSubscription(), remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getFhirResourceId() );
         if ( resource.isPresent() )
         {
-            logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
-                resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
-            save( remoteSubscriptionResource, resource.get() );
-            logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
-                resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+            try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
+            {
+                logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
+                    resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+                save( remoteSubscriptionResource, resource.get() );
+                logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
+                    resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+            }
         }
         else
         {
@@ -301,7 +305,6 @@ public class FhirRepositoryImpl implements FhirRepository
                     default:
                         throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
                 }
-                resource.setId( dhisResource.getId() );
             }
         }
         return (outcome != null);

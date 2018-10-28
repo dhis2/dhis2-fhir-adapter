@@ -50,6 +50,7 @@ spring:
       persistent: true
       data-directory: ${dhis2.home}/services/fhir-adapter/artemis
 
+
 hystrix:
   command:
     default:
@@ -102,4 +103,3 @@ dhis2.fhir-adapter:
         max-redelivery-delay: 1800000
   transformation:
     script-engine-name: nashorn
-
