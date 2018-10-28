@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
@@ -35,16 +36,23 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractCodeFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.BeanTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.FhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
+import org.dhis2.fhir.adapter.lock.LockContext;
+import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
@@ -53,10 +61,17 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerService
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final LockManager lockManager;
+
+    private final RemoteFhirRepository remoteFhirRepository;
+
     private final RuleRepository ruleRepository;
 
     private final Map<FhirVersionedValue<DhisResourceType>, FhirToDhisTransformer<?, ?>> transformers = new HashMap<>();
@@ -65,11 +80,14 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     private final ScriptExecutor scriptExecutor;
 
-    public FhirToDhisTransformerServiceImpl( @Nonnull RuleRepository ruleRepository,
+    public FhirToDhisTransformerServiceImpl( @Nonnull LockManager lockManager,
+        @Nonnull RemoteFhirRepository remoteFhirRepository, @Nonnull RuleRepository ruleRepository,
         @Nonnull ObjectProvider<List<FhirToDhisTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<FhirToDhisTransformerUtils>> transformUtilsProvider,
         @Nonnull ScriptExecutor scriptExecutor )
     {
+        this.lockManager = lockManager;
+        this.remoteFhirRepository = remoteFhirRepository;
         this.ruleRepository = ruleRepository;
         this.scriptExecutor = scriptExecutor;
 
@@ -104,8 +122,12 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input ) throws TransformerException
+    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource originalInput ) throws TransformerException
     {
+        final FhirContext fhirContext = remoteFhirRepository.findFhirContext( context.getFhirRequest().getVersion() )
+            .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
+        final IBaseResource input = Objects.requireNonNull( BeanTransformerUtils.clone( fhirContext, originalInput ) );
+
         final Map<String, FhirToDhisTransformerUtils> transformerUtils = this.transformerUtils.get( context.getFhirRequest().getVersion() );
         if ( transformerUtils == null )
         {
@@ -136,10 +158,14 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
                 final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( context, input, rule, scriptVariables );
                 if ( outcome != null )
                 {
+                    logger.info( "Rule {} used successfully for transformation of {}.", rule, input.getIdElement() );
                     return outcome;
                 }
+                // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
+                lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
             }
         }
+        logger.info( "No matching rule for {}.", input.getIdElement() );
         return null;
     }
 

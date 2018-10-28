@@ -122,26 +122,46 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final String id = getDhisId( context, rule );
-        return Optional.ofNullable( getResourceById( id ).orElseGet( () -> getResourceByIdentifier( context, rule, scriptVariables )
-            .orElseGet( () -> getActiveResource( context, rule, scriptVariables ).orElseGet( () -> createResource( context, rule, id, scriptVariables ) ) ) ) );
+        R resource = getResourceById( id ).orElse( null );
+        if ( resource != null )
+        {
+            return Optional.of( resource );
+        }
+
+        resource = getActiveResource( context, rule, scriptVariables, false ).orElse( null );
+        if ( resource != null )
+        {
+            return Optional.of( resource );
+        }
+
+        resource = createResource( context, rule, id, scriptVariables, false );
+        if ( (resource != null) && isSyncRequired( context, rule, scriptVariables ) )
+        {
+            // the active resource may have been created in the meantime
+            resource = getActiveResource( context, rule, scriptVariables, true ).orElse( null );
+            if ( resource != null )
+            {
+                return Optional.of( resource );
+            }
+            resource = createResource( context, rule, id, scriptVariables, true );
+        }
+
+        return Optional.ofNullable( resource );
     }
+
+    protected abstract boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nonnull
     protected abstract Optional<R> getResourceById( @Nullable String id ) throws TransformerException;
 
     @Nonnull
-    protected abstract Optional<R> getResourceByIdentifier(
-        @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
-
-    @Nonnull
     protected abstract Optional<R> getActiveResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule,
-        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
 
     @Nullable
-    protected abstract R createResource(
-        @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+    protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule,
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
 
     @Nullable
     protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule )
@@ -180,7 +200,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     @Nonnull
     protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
-        @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables )
+        @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
         final IBaseResource baseResource = getTrackedEntityInstanceResource( context, resourceMapping, scriptVariables );
         if ( baseResource == null )
@@ -189,7 +209,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             return Optional.empty();
         }
         final TrackedEntityInstance trackedEntityInstance =
-            getTrackedEntityInstanceByIdentifier( context, rule, baseResource, scriptVariables )
+            getTrackedEntityInstanceByIdentifier( context, rule, baseResource, scriptVariables, sync )
                 .orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) );
         return Optional.of( trackedEntityInstance );
     }
@@ -203,7 +223,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     @Nonnull
     protected Optional<TrackedEntityInstance> getTrackedEntityInstanceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull IBaseResource baseResource,
-        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         final String identifier = getIdentifier( context, baseResource, rule.isTrackedEntityIdentifierFq(), scriptVariables );
         if ( identifier == null )
@@ -216,8 +236,17 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) );
 
         final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
-        final Collection<TrackedEntityInstance> result = getTrackedEntityService().findByAttrValue(
-            trackedEntityType.getId(), identifierAttribute.getId(), Objects.requireNonNull( identifier ), 2 );
+        final Collection<TrackedEntityInstance> result;
+        if ( sync )
+        {
+            result = getTrackedEntityService().findByAttrValueRefreshed(
+                trackedEntityType.getId(), identifierAttribute.getId(), Objects.requireNonNull( identifier ), 2 );
+        }
+        else
+        {
+            result = getTrackedEntityService().findByAttrValue(
+                trackedEntityType.getId(), identifierAttribute.getId(), Objects.requireNonNull( identifier ), 2 );
+        }
         if ( result.size() > 1 )
         {
             throw new TransformerMappingException( "Filtering with identifier of rule " + rule +

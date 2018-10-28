@@ -37,6 +37,8 @@ spring:
     username: @db.username@
     password: @db.password@
     driver-class-name: @db.driver@
+    hikari:
+      maximum-pool-size: 50
   cache:
     type: caffeine
     caffeine:
@@ -91,7 +93,7 @@ dhis2.fhir-adapter:
     fhir-resource-queue:
       queue-name: jms.queue.remoteFhirResourceQueue
       listener:
-        concurrency: 1-1
+        concurrency: 1-10
       embedded-address-settings:
         dead-letter-address: jms.queue.remoteFhirResourceDlQueue
         max-delivery-attempts: 100

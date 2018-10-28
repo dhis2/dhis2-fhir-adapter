@@ -65,6 +65,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.AbstractFhirToDhisTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.impl.trackedentity.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.impl.trackedentity.WritableScriptedTrackedEntityInstance;
+import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
@@ -94,6 +95,8 @@ import java.util.stream.Stream;
 @Component
 public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer<Event, ProgramStageRule>
 {
+    private final LockManager lockManager;
+
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
     private final ProgramMetadataService programMetadataService;
@@ -108,12 +111,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
-    public FhirToProgramStageTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganisationUnitService organisationUnitService,
+    public FhirToProgramStageTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganisationUnitService organisationUnitService, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService,
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutor, organisationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.enrollmentService = enrollmentService;
@@ -159,7 +163,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         addBasicScriptVariables( variables, rule );
         final FhirResourceMapping resourceMapping = getResourceMapping( rule );
         final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context,
-            rule.getProgramStage().getProgram().getTrackedEntityRule(), resourceMapping, variables ).orElse( null );
+            rule.getProgramStage().getProgram().getTrackedEntityRule(), resourceMapping, variables, false ).orElse( null );
         if ( trackedEntityInstance == null )
         {
             return null;
@@ -269,6 +273,12 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
     }
 
+    @Override
+    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        return true;
+    }
+
     @Nonnull
     @Override
     protected Optional<Event> getResourceById( @Nullable String id ) throws TransformerException
@@ -279,20 +289,10 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     @Nonnull
     @Override
-    protected Optional<Event> getResourceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
-        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
-    {
-        // resolving resources by business identifier is not supported currently
-        return Optional.empty();
-    }
-
-
-    @Nonnull
-    @Override
     protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
-        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        final EventInfo eventInfo = getEventInfo( scriptVariables );
+        final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
         if ( eventInfo.getEvents().isEmpty() )
         {
             return Optional.empty();
@@ -320,11 +320,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
                 variables, EventDecisionType.class );
             if ( (eventDecisionType == null) || (eventDecisionType == EventDecisionType.BREAK) )
             {
-                logger.info( "Processing of event for program stage \"{}\" has been cancelled by event script after execution.", programStage.getName() );
+                logger.info( "Processing of event for program stage \"{}\" has been cancelled by event script after execution. " +
+                    "It will be tried to create a new one.", programStage.getName() );
                 return Optional.empty();
             }
             if ( (eventDecisionType == EventDecisionType.NEW_EVENT) && programStage.isRepeatable() )
             {
+                // it will be tried to create a new one
                 return Optional.empty();
             }
 
@@ -339,19 +341,14 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Nullable
     @Override
     protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         if ( context.isCreationDisabled() || !rule.isEventCreationEnabled() || !rule.getProgramStage().isCreationEnabled() )
         {
             return null;
         }
 
-        final EventInfo eventInfo = getEventInfo( scriptVariables );
-        if ( !eventInfo.getEvents().isEmpty() )
-        {
-            return eventInfo.getEvents().stream().findFirst().orElse( null );
-        }
-
+        final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
         // creation of event may not be applicable
         if ( (rule.getProgramStage().getCreationApplicableScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute(
             rule.getProgramStage().getCreationApplicableScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) ) )
@@ -704,18 +701,32 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected EventInfo getEventInfo( @Nonnull Map<String, Object> scriptVariables )
+    protected EventInfo getEventInfo( @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
         final Program program = getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ProgramStage programStage = getScriptVariable( scriptVariables, ScriptVariable.PROGRAM_STAGE, ProgramStage.class );
         final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final ScriptedTrackedEntityInstance trackedEntityInstance = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
 
-        final Enrollment enrollment = enrollmentService.getLatestActive( program.getId(),
-            Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
+        // Since the lock is required for modifying events, the lock must not be created conditionally for the enrollment.
+        // Creating this lock conditionally may result in a deadlock (due to possible reverse order of locking).
+        lockManager.getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
+            .lock( "tei:" + trackedEntityInstance.getId() );
+
+        final Enrollment enrollment;
+        if ( sync )
+        {
+            enrollment = enrollmentService.findLatestActiveRefreshed( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
+        }
+        else
+        {
+            enrollment = enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
+        }
+
         List<Event> events = Collections.emptyList();
         if ( enrollment != null )
         {
+            // find method must not return cached data (if it would, data must be refreshed when invoked in a synchronized call)
             final List<Event> foundEvents = eventService.find( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
             events = foundEvents.stream().peek( e -> e.setEnrollment( enrollment ) ).sorted( Collections.reverseOrder( new EventComparator() ) ).collect( Collectors.toList() );
             enrollment.setEvents( events );

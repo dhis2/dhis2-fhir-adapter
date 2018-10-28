@@ -39,7 +39,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -96,7 +95,6 @@ public class ZonedDateTimeDeserializerTest
     {
         Mockito.when( jsonParser.getText() ).thenReturn( "2018-09-05T17:18:23.123" );
 
-        final ZoneOffset zoneOffset = OffsetDateTime.now().getOffset();
         final ZonedDateTime zonedDateTime = deserializer.deserialize( jsonParser, deserializationContext );
         Assert.assertNotNull( zonedDateTime );
         Assert.assertEquals( 2018, zonedDateTime.getYear() );
@@ -106,7 +104,6 @@ public class ZonedDateTimeDeserializerTest
         Assert.assertEquals( 18, zonedDateTime.getMinute() );
         Assert.assertEquals( 23, zonedDateTime.getSecond() );
         Assert.assertEquals( 123000000, zonedDateTime.getNano() );
-        Assert.assertEquals( zoneOffset, zonedDateTime.getOffset() );
 
         Mockito.verify( jsonParser ).getText();
         Mockito.verifyNoMoreInteractions( jsonParser );

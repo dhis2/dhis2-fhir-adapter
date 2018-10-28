@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.lock;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,26 +29,34 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  */
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 
-public interface TrackedEntityService
+/**
+ * Provides the ability to request a distributed lock on a name. After requesting
+ * a lock context, the lock context is available in the current thread until it
+ * will be closed. The lock context must be closed in order to release the lock
+ * and free all resources.
+ *
+ * @author volsch
+ */
+public interface LockManager
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
-
+    /**
+     * Returns a new lock context. The lock context is valid in the current thread
+     * only and must be closed when it is no longer used.
+     *
+     * @return a new lock context.
+     */
     @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
+    LockContext begin();
 
+    /**
+     * Returns the current lock context that is associated with the current thread.
+     * The returned optional may be empty if there is no lock context associated with
+     * the current thread.
+     *
+     * @return the lock context that is associated with the current thread.
+     */
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    Optional<LockContext> getCurrentLockContext();
 }

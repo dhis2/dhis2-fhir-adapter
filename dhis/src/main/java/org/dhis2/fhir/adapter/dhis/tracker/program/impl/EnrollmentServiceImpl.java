@@ -79,21 +79,29 @@ public class EnrollmentServiceImpl implements EnrollmentService
         this.restTemplate = restTemplate;
     }
 
-    @CacheResult( cacheKeyMethod = "getLatestActiveCacheKey" )
-    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
+    @HystrixCommand
     @Nonnull
     @Override
-    public Optional<Enrollment> getLatestActive( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
+    public Optional<Enrollment> findLatestActiveRefreshed( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity(
             LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
         return Objects.requireNonNull( result.getBody() ).getEnrollments().stream().findFirst();
     }
 
+    @CacheResult( cacheKeyMethod = "getLatestActiveCacheKey" )
+    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
+    @Nonnull
+    @Override
+    public Optional<Enrollment> findLatestActive( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
+    {
+        return findLatestActiveRefreshed( programId, trackedEntityInstanceId );
+    }
+
     @Nonnull
     public String getLatestActiveCacheKey( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
     {
-        return "EnrollmentService.getLatestActive|" + programId + "|" + trackedEntityInstanceId;
+        return "EnrollmentService.findLatestActive|" + programId + "|" + trackedEntityInstanceId;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )

@@ -79,6 +79,13 @@ public class RemoteFhirRepositoryImpl implements RemoteFhirRepository
             .collect( Collectors.toMap( fc -> FhirVersion.get( fc.getVersion().getVersion() ), fc -> fc ) );
     }
 
+    @Nonnull
+    @Override
+    public Optional<FhirContext> findFhirContext( @Nonnull FhirVersion fhirVersion )
+    {
+        return Optional.ofNullable( fhirContexts.get( fhirVersion ) );
+    }
+
     @HystrixCommand
     @CachePut( key = "{#remoteSubscription.id, #resourceType, #resourceId}", unless = "#result==null" )
     @Nonnull

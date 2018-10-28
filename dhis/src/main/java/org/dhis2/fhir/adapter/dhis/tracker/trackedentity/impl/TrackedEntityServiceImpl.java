@@ -145,11 +145,10 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return Optional.of( instance );
     }
 
-    @CacheResult( cacheKeyMethod = "getFindByAttrValueCacheKey" )
-    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
+    @HystrixCommand
     @Nonnull
     @Override
-    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
+    public Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
     {
         // filtering by values with a colon inside is not supported by DHIS2 Web API
         if ( value.contains( ":" ) )
@@ -158,6 +157,15 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         }
         return Objects.requireNonNull( restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
             .getBody() ).getTrackedEntityInstances();
+    }
+
+    @CacheResult( cacheKeyMethod = "getFindByAttrValueCacheKey" )
+    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
+    @Nonnull
+    @Override
+    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
+    {
+        return findByAttrValueRefreshed( typeId, attributeId, value, maxResult );
     }
 
     @Nonnull

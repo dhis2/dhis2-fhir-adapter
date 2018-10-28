@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.fhir.transform.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,27 +28,35 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+import javax.annotation.Nullable;
 
-public interface TrackedEntityService
+/**
+ * Transformer utilities that clone a bean (cached instances must not be modified
+ * by several thread, e.g. HAPI FHIR objects).
+ *
+ * @author volsch
+ */
+public abstract class BeanTransformerUtils
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    @Nullable
+    @SuppressWarnings( { "unchecked" } )
+    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
+    {
+        if ( object == null )
+        {
+            return null;
+        }
+        final IParser parser = fhirContext.newJsonParser();
+        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
+    }
 
-    @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    private BeanTransformerUtils()
+    {
+        super();
+    }
 }

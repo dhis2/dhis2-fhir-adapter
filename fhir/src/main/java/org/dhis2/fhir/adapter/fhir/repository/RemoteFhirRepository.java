@@ -28,7 +28,9 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -42,6 +44,9 @@ import java.util.UUID;
  */
 public interface RemoteFhirRepository
 {
+    @Nonnull
+    Optional<FhirContext> findFhirContext( @Nonnull FhirVersion fhirVersion );
+
     @Nonnull
     Optional<IBaseResource> findRefreshed( @Nonnull RemoteSubscription remoteSubscription, @Nonnull String resourceType, @Nonnull String resourceId );
 

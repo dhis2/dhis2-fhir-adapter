@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.lock;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,26 +29,28 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  */
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
 
-public interface TrackedEntityService
+/**
+ * The lock context to obtain distributed locks on names. All locks will be
+ * released when the context is closed. The context must be closed to release all
+ * resources that are associated with the context.
+ */
+public interface LockContext extends AutoCloseable
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    /**
+     * Locks the specified key. The method may block until the key can be locked.
+     *
+     * @param key the key that should be locked.
+     */
+    void lock( @Nonnull String key );
 
-    @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
+    /**
+     * Unlocks all keys that have been locked with this lock context.
+     */
+    void unlockAll();
 
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    /**
+     * Closes the lock context and releases all locks and all resources.
+     */
+    void close();
 }

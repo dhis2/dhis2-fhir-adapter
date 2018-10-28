@@ -47,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.AbstractFhirToDhisTransformer;
+import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.stereotype.Component;
@@ -61,15 +62,18 @@ import java.util.Optional;
 @Component
 public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransformer<TrackedEntityInstance, TrackedEntityRule>
 {
+    private final LockManager lockManager;
+
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
     private final ValueConverter valueConverter;
 
-    public FhirToTrackedEntityTransformer( @Nonnull ScriptExecutor scriptExecutor,
+    public FhirToTrackedEntityTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull OrganisationUnitService organisationUnitService, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutor, organisationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        this.lockManager = lockManager;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.valueConverter = valueConverter;
     }
@@ -158,6 +162,12 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         return true;
     }
 
+    @Override
+    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        return true;
+    }
+
     @Nonnull
     @Override
     protected Optional<TrackedEntityInstance> getResourceById( @Nullable String id ) throws TransformerException
@@ -167,26 +177,22 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     @Nonnull
     @Override
-    protected Optional<TrackedEntityInstance> getResourceByIdentifier(
-        @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         final IBaseResource baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
-        return getTrackedEntityInstanceByIdentifier( context, rule, baseResource, scriptVariables );
-    }
-
-    @Nonnull
-    @Override
-    protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
-        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
-    {
-        return Optional.empty();
+        if ( sync )
+        {
+            lockManager.getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
+                .lock( "tei-fhir-resource-id:" + baseResource.getIdElement().toUnqualifiedVersionless() );
+        }
+        return getTrackedEntityInstanceByIdentifier( context, rule, baseResource, scriptVariables, sync );
     }
 
     @Nullable
     @Override
-    protected TrackedEntityInstance createResource(
-        @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected TrackedEntityInstance createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         if ( context.isCreationDisabled() )
         {

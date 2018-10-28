@@ -92,7 +92,7 @@ public class EnrollmentServiceImplTest
         mockServer.expect( requestTo( "http://localhost:8080/api/enrollments.json?program=93783&programStatus=ACTIVE&trackedEntityInstance=88737&ouMode=ACCESSIBLE&fields=:all&order=lastUpdated:desc&pageSize=1" ) )
             .andExpect( method( HttpMethod.GET ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/enrollments.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Enrollment> ou = service.getLatestActive( "93783", "88737" );
+        Optional<? extends Enrollment> ou = service.findLatestActive( "93783", "88737" );
         Assert.assertTrue( ou.isPresent() );
 
         Assert.assertEquals( "N4cVHaUjfJO", ou.get().getId() );

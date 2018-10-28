@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.lock.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,27 +28,64 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.lock.LockContext;
+import org.dhis2.fhir.adapter.lock.LockManager;
+import org.springframework.stereotype.Service;
+
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
+import javax.sql.DataSource;
 import java.util.Optional;
 
-public interface TrackedEntityService
+/**
+ * Lock manager that creates a lock context that uses the PostgreSQL Advisory Lock
+ * to implement a distributed lock.
+ *
+ * @author volsch
+ */
+@Service
+public class LockManagerImpl implements LockManager
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private final ThreadLocal<LockContext> threadLocal = new ThreadLocal<>();
+
+    private final DataSource dataSource;
+
+    public LockManagerImpl( @Nonnull DataSource dataSource )
+    {
+        this.dataSource = dataSource;
+    }
 
     @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
+    @Override
+    public LockContext begin()
+    {
+        if ( threadLocal.get() != null )
+        {
+            throw new IllegalStateException( "The current thread already owns a lock context." );
+        }
+        final LockContext lockContext = new LockContextImpl( this );
+        threadLocal.set( lockContext );
+        return lockContext;
+    }
 
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    @Override
+    public Optional<LockContext> getCurrentLockContext()
+    {
+        return Optional.ofNullable( threadLocal.get() );
+    }
 
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    DataSource getDataSource()
+    {
+        return dataSource;
+    }
 
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    void removeFromThread( @Nonnull LockContextImpl lockContext )
+    {
+        if ( threadLocal.get() == null )
+        {
+            throw new IllegalStateException( "Current thread does not own a lock context." );
+        }
+        threadLocal.set( null );
+    }
 }

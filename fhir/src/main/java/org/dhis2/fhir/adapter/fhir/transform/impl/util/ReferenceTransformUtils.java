@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -35,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourc
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -143,10 +145,13 @@ public class ReferenceTransformUtils extends AbstractFhirToDhisTransformerUtils
         final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findById( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
 
+        final FhirContext fhirContext = remoteFhirRepository.findFhirContext( context.getFhirRequest().getVersion() )
+            .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
         final Optional<IBaseResource> optionalResource = refreshed ?
             remoteFhirRepository.findRefreshed( subscriptionResource.getRemoteSubscription(), reference.getReferenceElement().getResourceType(), reference.getReferenceElement().getIdPart() ) :
             remoteFhirRepository.find( subscriptionResource.getRemoteSubscription(), reference.getReferenceElement().getResourceType(), reference.getReferenceElement().getIdPart() );
-        final IBaseResource resource = optionalResource.orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for remote subscription resource " + resourceId ) );
+        final IBaseResource resource = optionalResource.map( r -> BeanTransformerUtils.clone( fhirContext, r ) )
+            .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for remote subscription resource " + resourceId ) );
         reference.setResource( resource );
         return resource;
     }

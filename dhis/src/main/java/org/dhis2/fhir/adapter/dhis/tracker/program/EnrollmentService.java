@@ -40,7 +40,10 @@ import java.util.Optional;
 public interface EnrollmentService
 {
     @Nonnull
-    Optional<Enrollment> getLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+
+    @Nonnull
+    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
 
     @Nonnull
     Enrollment create( @Nonnull Enrollment enrollment );

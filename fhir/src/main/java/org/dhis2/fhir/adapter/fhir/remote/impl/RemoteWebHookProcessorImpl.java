@@ -140,7 +140,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         concurrency = "#{@fhirRemoteConfig.webHookRequestQueue.listener.concurrency}" )
     public void receive( @Nonnull RemoteWebHookRequest remoteWebHookRequest )
     {
-        logger.debug( "Processing queued web hook request {}.", remoteWebHookRequest.getRemoteSubscriptionResourceId() );
+        logger.info( "Processing queued web hook request {}.", remoteWebHookRequest.getRemoteSubscriptionResourceId() );
         queuedRemoteSubscriptionRequestRepository.dequeued( remoteWebHookRequest.getRemoteSubscriptionResourceId() );
 
         final RemoteSubscriptionResource remoteSubscriptionResource =
@@ -160,6 +160,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                 ", but no bundle retriever is available for that version." );
         }
 
+        final AtomicLong count = new AtomicLong();
         final ZonedDateTime lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, processorConfig.getMaxSearchCount(), resources -> {
             final String requestId = getCurrentRequestId();
             final ZonedDateTime zonedProcessedAt = ZonedDateTime.now();
@@ -179,6 +180,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
                                 new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
                             logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
                                 sr.getId(), remoteSubscriptionResource.getId() );
+                            count.incrementAndGet();
                         }
                         else
                         {
@@ -196,7 +198,8 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         // timestamp of the remote subscription resource must be updated by processing the complete FHIR resources that
         // belong to the remote subscription resource.
         purgeOldestProcessed( remoteSubscriptionResource );
-        logger.debug( "Processed queued web hook request {}.", remoteWebHookRequest.getRemoteSubscriptionResourceId() );
+        logger.info( "Processed queued web hook request {} with {} enqueued FHIR resources.",
+            remoteWebHookRequest.getRemoteSubscriptionResourceId(), count.longValue() );
     }
 
     @Nonnull

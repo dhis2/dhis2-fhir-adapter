@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.lock;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,27 +28,17 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-
-public interface TrackedEntityService
+/**
+ * Thrown if there is any error when locking a key.
+ *
+ * @author volsch
+ */
+public class LockException extends RuntimeException
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private static final long serialVersionUID = -750361961656386245L;
 
-    @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    public LockException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }
