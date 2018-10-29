@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
@@ -115,6 +116,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         } );
     }
 
+    @HystrixCommand
     @Transactional
     @Override
     public void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId )
@@ -135,6 +137,7 @@ public class RemoteWebHookProcessorImpl implements RemoteWebHookProcessor
         logger.info( "Enqueued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
     }
 
+    @HystrixCommand
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     @JmsListener( destination = "#{@fhirRemoteConfig.webHookRequestQueue.queueName}",
         concurrency = "#{@fhirRemoteConfig.webHookRequestQueue.listener.concurrency}" )

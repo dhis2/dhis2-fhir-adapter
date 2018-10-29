@@ -128,7 +128,9 @@ public class FhirQueueConfig
         final DefaultJmsListenerContainerFactory listenerFactory = new DefaultJmsListenerContainerFactory();
         configurer.configure( listenerFactory, connectionFactory );
         listenerFactory.setSessionTransacted( false );
+        listenerFactory.setTransactionManager( null );
         listenerFactory.setSessionAcknowledgeMode( JmsProperties.AcknowledgeMode.CLIENT.getMode() );
+        listenerFactory.setErrorHandler( new QueueListenerErrorHandler() );
         return listenerFactory;
     }
 

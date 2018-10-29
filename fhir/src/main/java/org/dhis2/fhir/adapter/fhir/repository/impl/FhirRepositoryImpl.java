@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  */
 
 import com.google.common.collect.ArrayListMultimap;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
@@ -143,6 +144,7 @@ public class FhirRepositoryImpl implements FhirRepository
         }
     }
 
+    @HystrixCommand
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     @JmsListener( destination = "#{@fhirRepositoryConfig.fhirResourceQueue.queueName}",
         concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
@@ -293,14 +295,13 @@ public class FhirRepositoryImpl implements FhirRepository
 
             if ( outcome != null )
             {
-                final DhisResource dhisResource;
                 switch ( outcome.getResource().getResourceType() )
                 {
                     case TRACKED_ENTITY:
-                        dhisResource = persistTrackedEntityOutcome( (FhirToDhisTransformOutcome<TrackedEntityInstance>) outcome );
+                        persistTrackedEntityOutcome( (FhirToDhisTransformOutcome<TrackedEntityInstance>) outcome );
                         break;
                     case PROGRAM_STAGE_EVENT:
-                        dhisResource = persistProgramStageEventOutcome( (FhirToDhisTransformOutcome<Event>) outcome );
+                        persistProgramStageEventOutcome( (FhirToDhisTransformOutcome<Event>) outcome );
                         break;
                     default:
                         throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
