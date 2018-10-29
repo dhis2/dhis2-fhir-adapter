@@ -41,6 +41,8 @@
   <logger name="org.hibernate" level="warn" />
   <logger name="org.hibernate.cfg.AnnotationBinder" level="error" />
   <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="error" />
+  <logger name="org.springframework.data.repository.config.RepositoryConfigurationDelegate" level="warn" />
+  <logger name="org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport" level="warn" />
 
   <springProfile name="dev">
     <root level="INFO">

@@ -52,7 +52,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Service
-@CacheConfig( cacheNames = "organisationUnit" )
+@CacheConfig( cacheNames = "organisationUnit", cacheManager = "dhisCacheManager" )
 public class OrganisationUnitServiceImpl implements OrganisationUnitService
 {
     protected static final String FIELDS = "id,code";

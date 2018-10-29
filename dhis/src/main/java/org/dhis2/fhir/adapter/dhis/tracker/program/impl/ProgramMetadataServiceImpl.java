@@ -54,7 +54,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Service
-@CacheConfig( cacheNames = "programMetadata" )
+@CacheConfig( cacheNames = "programMetadata", cacheManager = "dhisCacheManager" )
 public class ProgramMetadataServiceImpl implements ProgramMetadataService
 {
     protected static final String FIELDS =

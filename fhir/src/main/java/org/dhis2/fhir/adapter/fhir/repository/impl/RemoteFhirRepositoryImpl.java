@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Component
-@CacheConfig( cacheNames = "fhirResources" )
+@CacheConfig( cacheNames = "fhirResources", cacheManager = "fhirCacheManager" )
 public class RemoteFhirRepositoryImpl implements RemoteFhirRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -74,7 +74,6 @@ public class RemoteFhirRepositoryImpl implements RemoteFhirRepository
     public RemoteFhirRepositoryImpl( @Nonnull RemoteSubscriptionRepository repository, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
     {
         this.repository = repository;
-
         this.fhirContexts = fhirContexts.getIfAvailable( Collections::emptyList ).stream().filter( fc -> (FhirVersion.get( fc.getVersion().getVersion() ) != null) )
             .collect( Collectors.toMap( fc -> FhirVersion.get( fc.getVersion().getVersion() ), fc -> fc ) );
     }

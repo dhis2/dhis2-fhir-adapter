@@ -73,7 +73,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     }
 
     @HystrixCommand
-    @Cacheable( "trackedEntityTypes" )
+    @Cacheable( value = "trackedEntityTypes", cacheManager = "dhisCacheManager" )
     @Nonnull
     @Override
     public Optional<? extends TrackedEntityType> getType( @Nonnull Reference reference )
@@ -107,7 +107,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     }
 
     @HystrixCommand
-    @Cacheable( "trackedEntityAttributes" )
+    @Cacheable( value = "trackedEntityAttributes", cacheManager = "dhisCacheManager" )
     @Nonnull
     @Override
     public TrackedEntityAttributes getAttributes()
@@ -118,7 +118,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     }
 
     @HystrixCommand
-    @Cacheable( "requiredValues" )
+    @Cacheable( value = "requiredValues", cacheManager = "dhisCacheManager" )
     @Override
     @Nonnull
     public RequiredValues getRequiredValues( @Nonnull String attributeId )
