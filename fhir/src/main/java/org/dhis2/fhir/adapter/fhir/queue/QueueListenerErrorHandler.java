@@ -68,6 +68,10 @@ public class QueueListenerErrorHandler implements ErrorHandler
                     break;
             }
         }
+        else if ( t instanceof RetryQueueDeliveryException )
+        {
+            logger.debug( "The delivery of the processed JMS message should be retried when possible.", t.getCause() );
+        }
         else
         {
             logger.error( "An error occurred when processing JMS message.", t );

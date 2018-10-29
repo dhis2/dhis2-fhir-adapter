@@ -46,12 +46,15 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
+import org.dhis2.fhir.adapter.fhir.queue.RetryQueueDeliveryException;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.TrackedEntityInstanceNotFoundException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
@@ -144,7 +147,7 @@ public class FhirRepositoryImpl implements FhirRepository
         }
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = RetryQueueDeliveryException.class )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     @JmsListener( destination = "#{@fhirRepositoryConfig.fhirResourceQueue.queueName}",
         concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
@@ -172,7 +175,19 @@ public class FhirRepositoryImpl implements FhirRepository
             {
                 logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
                     resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
-                save( remoteSubscriptionResource, resource.get() );
+                try
+                {
+                    save( remoteSubscriptionResource, resource.get() );
+                }
+                catch ( DhisConflictException e )
+                {
+                    logger.warn( "Processing of data of FHIR resource caused a conflict on DHIS2. Skipping FHIR resource because of the occurred conflict: {}", e.getMessage() );
+                }
+                catch ( TransformerDataException | TransformerMappingException e )
+                {
+                    logger.warn( "Processing of data of FHIR resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
+                    throw new RetryQueueDeliveryException( e );
+                }
                 logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
                     resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
             }
