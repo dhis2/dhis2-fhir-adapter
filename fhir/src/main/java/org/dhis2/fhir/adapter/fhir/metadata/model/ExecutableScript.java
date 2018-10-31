@@ -40,9 +40,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -62,7 +63,7 @@ public class ExecutableScript implements Serializable
     private String name;
     private String code;
     private String description;
-    private Collection<ExecutableScriptArg> overrideArguments;
+    private List<ExecutableScriptArg> overrideArguments;
 
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
@@ -127,12 +128,13 @@ public class ExecutableScript implements Serializable
     }
 
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
-    public Collection<ExecutableScriptArg> getOverrideArguments()
+    @OrderBy( "id" )
+    public List<ExecutableScriptArg> getOverrideArguments()
     {
         return overrideArguments;
     }
 
-    public void setOverrideArguments( Collection<ExecutableScriptArg> overrideArguments )
+    public void setOverrideArguments( List<ExecutableScriptArg> overrideArguments )
     {
         this.overrideArguments = overrideArguments;
     }

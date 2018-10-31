@@ -28,18 +28,21 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.UUID;
 
 @Entity
@@ -57,7 +60,7 @@ public class CodeSet implements Serializable
     private String name;
     private String code;
     private String description;
-    private Set<CodeSetValue> codeSetValues;
+    private SortedSet<CodeSetValue> codeSetValues;
 
     @Id
     @Column( name = "id", nullable = false )
@@ -97,6 +100,7 @@ public class CodeSet implements Serializable
 
     @Basic
     @Column( name = "last_updated_by", length = 11 )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     public String getLastUpdatedBy()
     {
         return lastUpdatedBy;
@@ -155,13 +159,15 @@ public class CodeSet implements Serializable
         this.description = description;
     }
 
+    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @OneToMany( orphanRemoval = true, mappedBy = "id.codeSet", cascade = CascadeType.ALL )
-    public Set<CodeSetValue> getCodeSetValues()
+    @OrderBy( "id.codeSet.id,id.code.id" )
+    public SortedSet<CodeSetValue> getCodeSetValues()
     {
         return codeSetValues;
     }
 
-    public void setCodeSetValues( Set<CodeSetValue> codeSetValues )
+    public void setCodeSetValues( SortedSet<CodeSetValue> codeSetValues )
     {
         this.codeSetValues = codeSetValues;
     }

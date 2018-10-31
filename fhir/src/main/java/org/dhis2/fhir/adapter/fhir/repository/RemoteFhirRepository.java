@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -48,13 +48,13 @@ public interface RemoteFhirRepository
     Optional<FhirContext> findFhirContext( @Nonnull FhirVersion fhirVersion );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshed( @Nonnull RemoteSubscription remoteSubscription, @Nonnull String resourceType, @Nonnull String resourceId );
+    Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
     Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
-    Optional<IBaseResource> find( @Nonnull RemoteSubscription remoteSubscription, @Nonnull String resourceType, @Nonnull String resourceId );
+    Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
     Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId );

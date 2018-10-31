@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
@@ -41,55 +44,65 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
 {
     private static final long serialVersionUID = 6563663856499434307L;
 
-    private final ProgramStage delegate;
+    @JsonProperty
+    private final WritableProgramStage delegate;
 
-    public ImmutableProgramStage( @Nonnull ProgramStage delegate )
+    @JsonCreator
+    public ImmutableProgramStage( @Nonnull @JsonProperty( "delegate" ) WritableProgramStage delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public boolean isRepeatable()
     {
         return delegate.isRepeatable();
     }
 
+    @JsonIgnore
     @Override
     public boolean isCaptureCoordinates()
     {
         return delegate.isCaptureCoordinates();
     }
 
+    @JsonIgnore
     @Override
     public boolean isGeneratedByEnrollmentDate()
     {
         return delegate.isGeneratedByEnrollmentDate();
     }
 
+    @JsonIgnore
     @Override
     public int getMinDaysFromStart()
     {
         return delegate.getMinDaysFromStart();
     }
 
+    @JsonIgnore
     @Override
     public List<? extends ProgramStageDataElement> getDataElements()
     {
         return (delegate.getDataElements() == null) ? null : delegate.getDataElements().stream().map( ImmutableProgramStageDataElement::new ).collect( Collectors.toList() );
     }
 
+    @JsonIgnore
     @Override
     @Nonnull
     public Optional<? extends ProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference )
@@ -97,6 +110,7 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
         return delegate.getOptionalDataElement( reference ).map( ImmutableProgramStageDataElement::new );
     }
 
+    @JsonIgnore
     @Override
     @Nullable
     public ProgramStageDataElement getDataElement( @Nonnull Reference reference )

@@ -30,10 +30,19 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,7 +50,52 @@ import java.util.UUID;
  *
  * @author volsch
  */
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionSystem" )
+@RepositoryRestResource
 public interface RemoteSubscriptionSystemRepository extends JpaRepository<RemoteSubscriptionSystem, UUID>
 {
-    Collection<RemoteSubscriptionSystem> findByRemoteSubscription( @Nonnull RemoteSubscription subscription );
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.remoteSubscription=:subscription" )
+    @Cacheable( key = "{#root.methodName, #a0.id}" )
+    Collection<RemoteSubscriptionSystem> findByRemoteSubscription( @Param( "subscription" ) @Nonnull RemoteSubscription subscription );
+
+    @Override
+    @Nonnull
+    @CacheEvict( allEntries = true )
+    <S extends RemoteSubscriptionSystem> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    <S extends RemoteSubscriptionSystem> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    <S extends RemoteSubscriptionSystem> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<RemoteSubscriptionSystem> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull RemoteSubscriptionSystem entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends RemoteSubscriptionSystem> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

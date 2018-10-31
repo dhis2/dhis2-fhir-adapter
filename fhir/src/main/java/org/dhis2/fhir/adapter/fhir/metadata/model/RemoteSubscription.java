@@ -28,27 +28,25 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Version;
+import javax.persistence.Transient;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Contains all required information to handle the remote subscription of a FHIR server.
@@ -57,90 +55,24 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_remote_subscription" )
-public class RemoteSubscription implements Serializable
+@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
+public class RemoteSubscription extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private String name;
     private String code;
     private boolean enabled;
     private boolean locked;
     private String description;
-    private String webHookAuthorizationHeader;
-    private String dhisUsername;
-    private String dhisAuthorizationHeader;
-    private String remoteBaseUrl;
     private FhirVersion fhirVersion;
     private int toleranceMillis;
-    private boolean logging;
-    private boolean verboseLogging;
-    private Set<RequestHeader> remoteHeaders;
-    private Collection<RemoteSubscriptionSystem> systems;
-
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
+    private SubscriptionDhisEndpoint dhisEndpoint;
+    private SubscriptionFhirEndpoint fhirEndpoint;
+    private SubscriptionAdapterEndpoint adapterEndpoint;
+    private List<RemoteSubscriptionResource> resources;
+    private List<RemoteSubscriptionSystem> systems;
+    private Set<FhirResourceType> autoCreatedSubscriptionResources;
 
     @Basic
     @Column( name = "name", nullable = false, length = 50 )
@@ -203,54 +135,6 @@ public class RemoteSubscription implements Serializable
     }
 
     @Basic
-    @Column( name = "web_hook_authorization_header", nullable = false, length = 200 )
-    public String getWebHookAuthorizationHeader()
-    {
-        return webHookAuthorizationHeader;
-    }
-
-    public void setWebHookAuthorizationHeader( String webHookAuthorizationHeader )
-    {
-        this.webHookAuthorizationHeader = webHookAuthorizationHeader;
-    }
-
-    @Basic
-    @Column( name = "dhis_username", nullable = false, length = 200 )
-    public String getDhisUsername()
-    {
-        return dhisUsername;
-    }
-
-    public void setDhisUsername( String dhisUsername )
-    {
-        this.dhisUsername = dhisUsername;
-    }
-
-    @Basic
-    @Column( name = "dhis_authorization_header", nullable = false, length = 200 )
-    public String getDhisAuthorizationHeader()
-    {
-        return dhisAuthorizationHeader;
-    }
-
-    public void setDhisAuthorizationHeader( String dhisAuthorizationHeader )
-    {
-        this.dhisAuthorizationHeader = dhisAuthorizationHeader;
-    }
-
-    @Basic
-    @Column( name = "remote_base_url", nullable = false, length = 200 )
-    public String getRemoteBaseUrl()
-    {
-        return remoteBaseUrl;
-    }
-
-    public void setRemoteBaseUrl( String remoteBaseUrl )
-    {
-        this.remoteBaseUrl = remoteBaseUrl;
-    }
-
-    @Basic
     @Column( name = "tolerance_millis", nullable = false )
     public int getToleranceMillis()
     {
@@ -260,18 +144,6 @@ public class RemoteSubscription implements Serializable
     public void setToleranceMillis( int toleranceMillis )
     {
         this.toleranceMillis = toleranceMillis;
-    }
-
-    @ElementCollection( fetch = FetchType.EAGER )
-    @CollectionTable( name = "fhir_remote_subscription_header", joinColumns = @JoinColumn( name = "remote_subscription_id" ) )
-    public Set<RequestHeader> getRemoteHeaders()
-    {
-        return remoteHeaders;
-    }
-
-    public void setRemoteHeaders( Set<RequestHeader> remoteHeaders )
-    {
-        this.remoteHeaders = remoteHeaders;
     }
 
     @Basic
@@ -288,37 +160,71 @@ public class RemoteSubscription implements Serializable
     }
 
     @OneToMany( mappedBy = "remoteSubscription", cascade = CascadeType.ALL, orphanRemoval = true )
-    public Collection<RemoteSubscriptionSystem> getSystems()
+    @OrderBy( "id" )
+    public List<RemoteSubscriptionResource> getResources()
+    {
+        return resources;
+    }
+
+    public void setResources( List<RemoteSubscriptionResource> resources )
+    {
+        this.resources = resources;
+    }
+
+    @OneToMany( mappedBy = "remoteSubscription", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OrderBy( "id" )
+    public List<RemoteSubscriptionSystem> getSystems()
     {
         return systems;
     }
 
-    public void setSystems( Collection<RemoteSubscriptionSystem> systems )
+    public void setSystems( List<RemoteSubscriptionSystem> systems )
     {
         this.systems = systems;
     }
 
-    @Basic
-    @Column( name = "logging", nullable = false )
-    public boolean isLogging()
+    @Embedded
+    public SubscriptionDhisEndpoint getDhisEndpoint()
     {
-        return logging;
+        return dhisEndpoint;
     }
 
-    public void setLogging( boolean logging )
+    public void setDhisEndpoint( SubscriptionDhisEndpoint dhisEndpoint )
     {
-        this.logging = logging;
+        this.dhisEndpoint = dhisEndpoint;
     }
 
-    @Basic
-    @Column( name = "verbose_logging", nullable = false )
-    public boolean isVerboseLogging()
+    @Embedded
+    public SubscriptionFhirEndpoint getFhirEndpoint()
     {
-        return verboseLogging;
+        return fhirEndpoint;
     }
 
-    public void setVerboseLogging( boolean verboseLogging )
+    public void setFhirEndpoint( SubscriptionFhirEndpoint fhirEndpoint )
     {
-        this.verboseLogging = verboseLogging;
+        this.fhirEndpoint = fhirEndpoint;
+    }
+
+    @Embedded
+    public SubscriptionAdapterEndpoint getAdapterEndpoint()
+    {
+        return adapterEndpoint;
+    }
+
+    public void setAdapterEndpoint( SubscriptionAdapterEndpoint adapterEndpoint )
+    {
+        this.adapterEndpoint = adapterEndpoint;
+    }
+
+    @Transient
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
+    public Set<FhirResourceType> getAutoCreatedSubscriptionResources()
+    {
+        return autoCreatedSubscriptionResources;
+    }
+
+    public void setAutoCreatedSubscriptionResources( Set<FhirResourceType> autoCreatedSubscriptionResources )
+    {
+        this.autoCreatedSubscriptionResources = autoCreatedSubscriptionResources;
     }
 }

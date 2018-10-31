@@ -30,6 +30,10 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  data:
+    rest:
+      basePath: /api/1.00
+      detection-strategy: annotated
   jpa:
     generate-ddl: false
     hibernate:

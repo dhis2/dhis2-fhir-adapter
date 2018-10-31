@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter;
 import org.dhis2.fhir.adapter.spring.YamlPropertySourceFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
@@ -43,7 +44,7 @@ import org.springframework.jms.annotation.EnableJms;
  *
  * @author volsch
  */
-@SpringBootApplication
+@SpringBootApplication( exclude = { UserDetailsServiceAutoConfiguration.class } )
 @EnableCircuitBreaker
 @EnableCaching
 @EnableJms

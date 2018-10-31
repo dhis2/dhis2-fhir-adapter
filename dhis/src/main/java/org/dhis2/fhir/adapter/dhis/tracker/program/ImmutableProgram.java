@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
@@ -41,85 +44,100 @@ public class ImmutableProgram implements Program, Serializable
 {
     private static final long serialVersionUID = 4157706296470781519L;
 
-    private final Program delegate;
+    @JsonProperty
+    private final WritableProgram delegate;
 
-    public ImmutableProgram( @Nonnull Program delegate )
+    @JsonCreator
+    public ImmutableProgram( @Nonnull @JsonProperty( "delegate" ) WritableProgram delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public String getCode()
     {
         return delegate.getCode();
     }
 
+    @JsonIgnore
     @Override
     public String getTrackedEntityTypeId()
     {
         return delegate.getTrackedEntityTypeId();
     }
 
+    @JsonIgnore
     @Override
     public boolean isSelectIncidentDatesInFuture()
     {
         return delegate.isSelectIncidentDatesInFuture();
     }
 
+    @JsonIgnore
     @Override
     public boolean isSelectEnrollmentDatesInFuture()
     {
         return delegate.isSelectEnrollmentDatesInFuture();
     }
 
+    @JsonIgnore
     @Override
     public boolean isDisplayIncidentDate()
     {
         return delegate.isDisplayIncidentDate();
     }
 
+    @JsonIgnore
     @Override
     public boolean isRegistration()
     {
         return delegate.isRegistration();
     }
 
+    @JsonIgnore
     @Override
     public boolean isWithoutRegistration()
     {
         return delegate.isWithoutRegistration();
     }
 
+    @JsonIgnore
     @Override
     public boolean isCaptureCoordinates()
     {
         return delegate.isCaptureCoordinates();
     }
 
+    @JsonIgnore
     @Override
     public List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes()
     {
         return (delegate.getTrackedEntityAttributes() == null) ? null : delegate.getTrackedEntityAttributes().stream().map( ImmutableProgramTrackedEntityAttribute::new ).collect( Collectors.toList() );
     }
 
+    @JsonIgnore
     @Override
     public List<? extends ProgramStage> getStages()
     {
         return (delegate.getStages() == null) ? null : delegate.getStages().stream().map( ImmutableProgramStage::new ).collect( Collectors.toList() );
     }
 
+    @JsonIgnore
     @Override
     @Nonnull
     public Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference )
@@ -127,6 +145,7 @@ public class ImmutableProgram implements Program, Serializable
         return delegate.getOptionalStage( reference ).map( ImmutableProgramStage::new );
     }
 
+    @JsonIgnore
     @Override
     @Nullable
     public ProgramStage getStageByName( @Nonnull String name )

@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
@@ -38,16 +37,12 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.UUID;
+import java.util.SortedSet;
 
 /**
  * Contains the physical script that may support multiple FHIR versions.
@@ -56,81 +51,14 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_script_source" )
-public class ScriptSource implements Serializable
+public class ScriptSource extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6002604151209645784L;
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private String sourceText;
     private ScriptSourceType sourceType;
     private Script script;
-    private Set<FhirVersion> fhirVersions;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
+    private SortedSet<FhirVersion> fhirVersions;
 
     @Basic
     @Column( name = "source_text", nullable = false, length = -1 )
@@ -169,16 +97,18 @@ public class ScriptSource implements Serializable
         this.script = script;
     }
 
+    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_source_version", joinColumns = @JoinColumn( name = "script_source_id" ) )
     @Column( name = "fhir_version" )
     @Enumerated( EnumType.STRING )
-    public Set<FhirVersion> getFhirVersions()
+    @OrderBy
+    public SortedSet<FhirVersion> getFhirVersions()
     {
         return fhirVersions;
     }
 
-    public void setFhirVersions( Set<FhirVersion> fhirVersions )
+    public void setFhirVersions( SortedSet<FhirVersion> fhirVersions )
     {
         this.fhirVersions = fhirVersions;
     }

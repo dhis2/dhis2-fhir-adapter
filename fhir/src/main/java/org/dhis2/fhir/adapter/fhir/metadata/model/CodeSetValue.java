@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -38,7 +39,7 @@ import java.util.Objects;
 
 @Entity
 @Table( name = "fhir_code_set_value" )
-public class CodeSetValue implements Serializable
+public class CodeSetValue implements Serializable, Comparable<CodeSetValue>
 {
     private static final long serialVersionUID = 8365594386802303061L;
 
@@ -111,5 +112,16 @@ public class CodeSetValue implements Serializable
     public int hashCode()
     {
         return Objects.hash( id );
+    }
+
+    @Override
+    public int compareTo( @Nonnull CodeSetValue o )
+    {
+        int value = getCodeSet().getId().compareTo( o.getCodeSet().getId() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return getCode().getId().compareTo( o.getCode().getId() );
     }
 }

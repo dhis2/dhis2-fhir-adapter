@@ -28,8 +28,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -39,17 +37,13 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
+import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Defines a script that may be implemented for several FHIR versions and in various programming languages. The script
@@ -60,15 +54,10 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_script" )
-public class Script implements Serializable
+public class Script extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private String name;
     private String description;
     private String code;
@@ -76,71 +65,9 @@ public class Script implements Serializable
     private DataType returnType;
     private TransformDataType inputType;
     private TransformDataType outputType;
-    private Collection<ScriptArg> arguments;
-    private Set<ScriptVariable> variables;
-    private Collection<ScriptSource> sources;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
+    private List<ScriptArg> arguments;
+    private SortedSet<ScriptVariable> variables;
+    private List<ScriptSource> sources;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -231,37 +158,41 @@ public class Script implements Serializable
     }
 
     @OneToMany( mappedBy = "script" )
-    public Collection<ScriptArg> getArguments()
+    @OrderBy( "id" )
+    public List<ScriptArg> getArguments()
     {
         return arguments;
     }
 
-    public void setArguments( Collection<ScriptArg> scriptVariables )
+    public void setArguments( List<ScriptArg> scriptVariables )
     {
         this.arguments = scriptVariables;
     }
 
+    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection( fetch = FetchType.EAGER )
     @CollectionTable( name = "fhir_script_variable", joinColumns = @JoinColumn( name = "script_id" ) )
     @Column( name = "variable" )
     @Enumerated( EnumType.STRING )
-    public Set<ScriptVariable> getVariables()
+    @OrderBy
+    public SortedSet<ScriptVariable> getVariables()
     {
         return variables;
     }
 
-    public void setVariables( Set<ScriptVariable> variables )
+    public void setVariables( SortedSet<ScriptVariable> variables )
     {
         this.variables = variables;
     }
 
     @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER )
-    public Collection<ScriptSource> getSources()
+    @OrderBy( "id" )
+    public List<ScriptSource> getSources()
     {
         return sources;
     }
 
-    public void setSources( Collection<ScriptSource> sources )
+    public void setSources( List<ScriptSource> sources )
     {
         this.sources = sources;
     }

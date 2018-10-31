@@ -37,7 +37,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
-import org.dhis2.fhir.adapter.fhir.remote.RemoteWebHookProcessorException;
+import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessorException;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -87,11 +87,11 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
     }
 
     @Nonnull
-    public ZonedDateTime poll( @Nonnull RemoteSubscriptionResource subscriptionResource, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
+    public ZonedDateTime poll( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull LocalDateTime remoteLastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
     {
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription().getFhirEndpoint() );
         ZonedDateTime lastUpdated = null;
-        LocalDateTime fromLastUpdated = subscriptionResource.getRemoteLastUpdated()
+        LocalDateTime fromLastUpdated = remoteLastUpdated
             .minus( subscriptionResource.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
 
         final Set<SubscriptionResourceInfo> allResources = new HashSet<>();
@@ -133,7 +133,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                 if ( (previousResources != null) && !resources.isEmpty() && previousResources.containsAll( resources ) && (previousResources.size() >= resources.size()) &&
                     ((totalCount == null) || (resources.size() < totalCount)) )
                 {
-                    throw new RemoteWebHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " returned same result for last updated  " +
+                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " returned same result for last updated  " +
                         fromLastUpdated + " (count " + resources.size() + " of maximum " + maxSearchCount + ")." );
                 }
                 previousResources = new HashSet<>( resources );
@@ -173,7 +173,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                                 final LocalDateTime newFromLastUpdated = maxLastUpdated.toLocalDateTime();
                                 if ( newFromLastUpdated.equals( fromLastUpdated ) )
                                 {
-                                    throw new RemoteWebHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
+                                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
                                         fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
                                 }
                                 else
@@ -237,7 +237,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         }
         catch ( URISyntaxException e )
         {
-            throw new RemoteWebHookProcessorException( "FHIR criteria parameters of remote subscription resource " + subscriptionResource.getId() + " are no valid query string.", e );
+            throw new RemoteRestHookProcessorException( "FHIR criteria parameters of remote subscription resource " + subscriptionResource.getId() + " are no valid query string.", e );
         }
 
         final Map<String, List<String>> result = new LinkedHashMap<>();

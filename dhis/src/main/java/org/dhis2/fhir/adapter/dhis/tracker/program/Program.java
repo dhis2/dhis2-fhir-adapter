@@ -71,7 +71,7 @@ public interface Program
     List<? extends ProgramStage> getStages();
 
     @Nonnull
-    Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
 
     @Nullable
     ProgramStage getStageByName( @Nonnull String name );

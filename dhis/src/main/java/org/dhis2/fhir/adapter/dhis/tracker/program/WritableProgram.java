@@ -75,13 +75,13 @@ public class WritableProgram implements Program, Serializable
     private List<WritableProgramStage> stages;
 
     @JsonIgnore
-    private transient volatile Map<String, ProgramStage> stagesByName;
+    private transient volatile Map<String, WritableProgramStage> stagesByName;
 
     @JsonIgnore
-    private transient volatile Map<String, ProgramStage> stagesByCode;
+    private transient volatile Map<String, WritableProgramStage> stagesByCode;
 
     @JsonIgnore
-    private transient volatile Map<String, ProgramStage> stagesById;
+    private transient volatile Map<String, WritableProgramStage> stagesById;
 
     @Override
     public String getId()
@@ -217,7 +217,7 @@ public class WritableProgram implements Program, Serializable
     }
 
     @Nonnull
-    public Optional<ProgramStage> getOptionalStage( @Nonnull Reference reference )
+    public Optional<WritableProgramStage> getOptionalStage( @Nonnull Reference reference )
     {
         switch ( reference.getType() )
         {
@@ -234,9 +234,9 @@ public class WritableProgram implements Program, Serializable
     }
 
     @Nullable
-    public ProgramStage getStageByName( @Nonnull String name )
+    public WritableProgramStage getStageByName( @Nonnull String name )
     {
-        Map<String, ProgramStage> stagesByName = this.stagesByName;
+        Map<String, WritableProgramStage> stagesByName = this.stagesByName;
         if ( stagesByName == null )
         {
             this.stagesByName = stagesByName = stages.stream().collect( Collectors.toMap( WritableProgramStage::getName, s -> s ) );
@@ -245,9 +245,9 @@ public class WritableProgram implements Program, Serializable
     }
 
     @Nullable
-    public ProgramStage getStageById( @Nonnull String id )
+    public WritableProgramStage getStageById( @Nonnull String id )
     {
-        Map<String, ProgramStage> stagesById = this.stagesById;
+        Map<String, WritableProgramStage> stagesById = this.stagesById;
         if ( stagesById == null )
         {
             this.stagesById = stagesById = stages.stream().collect( Collectors.toMap( WritableProgramStage::getId, s -> s ) );

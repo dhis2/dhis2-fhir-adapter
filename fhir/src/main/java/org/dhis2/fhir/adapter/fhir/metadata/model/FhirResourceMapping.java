@@ -28,22 +28,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * General scripts to be used to extract and lookup information from FHIR resource types.
@@ -52,16 +45,12 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_resource_mapping" )
-public class FhirResourceMapping implements Serializable
+
+public class FhirResourceMapping extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7669881610498151697L;
 
-    private UUID id;
-    private Long version;
     private FhirResourceType fhirResourceType;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private ExecutableScript teiLookupScript;
     private ExecutableScript enrollmentOrgLookupScript;
     private ExecutableScript eventOrgLookupScript;
@@ -70,32 +59,6 @@ public class FhirResourceMapping implements Serializable
     private ExecutableScript enrollmentLocationLookupScript;
     private ExecutableScript eventLocationLookupScript;
     private ExecutableScript effectiveDateLookupScript;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -108,42 +71,6 @@ public class FhirResourceMapping implements Serializable
     public void setFhirResourceType( FhirResourceType fhirResourceType )
     {
         this.fhirResourceType = fhirResourceType;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
     }
 
     @ManyToOne

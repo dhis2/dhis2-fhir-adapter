@@ -36,7 +36,7 @@ import org.springframework.util.ErrorHandler;
 import javax.annotation.Nonnull;
 
 /**
- * Error handler that processes and outputs errors that occurred when processing
+ * Error listener that processes and outputs errors that occurred when processing
  * messages from the queues. It also processes Hystrix exceptions.
  *
  * @author volsch

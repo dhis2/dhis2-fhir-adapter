@@ -28,8 +28,13 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -58,8 +63,17 @@ public class AppConfig
                 .serializers(
                     new ZonedDateTimeSerializer(),
                     new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
-                .deserializers( new ZonedDateTimeDeserializer(),
+                .deserializers(
+                    new ZonedDateTimeDeserializer(),
                     new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+            jacksonObjectMapperBuilder.filters( new SimpleFilterProvider()
+                .addFilter( SecuredPropertyFilter.FILTER_NAME, new SecuredPropertyFilter() )
+                .addFilter( ToManyPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                {
+                } )
+                .addFilter( ToOnePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                {
+                } ) );
         };
     }
 }

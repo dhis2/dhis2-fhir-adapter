@@ -29,8 +29,19 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -38,6 +49,43 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscription, UUID>
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscription" )
+@RepositoryRestResource
+@PreAuthorize( "(authentication==null) or hasRole('ADMINISTRATION')" )
+public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscription, UUID>, CustomRemoteSubscriptionRepository
 {
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT rs FROM #{#entityName} rs WHERE rs.id=:id" )
+    @Cacheable( key = "#a0" )
+    Optional<RemoteSubscription> findOneByIdCached( @Param( "id" ) UUID id );
+
+    @Override
+    @Nonnull
+    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
+    <S extends RemoteSubscription> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
+    void deleteInBatch( @Nonnull Iterable<RemoteSubscription> entities );
+
+    @Override
+    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull RemoteSubscription entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends RemoteSubscription> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

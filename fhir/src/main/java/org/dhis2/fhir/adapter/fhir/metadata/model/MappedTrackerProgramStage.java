@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
@@ -117,6 +118,7 @@ public class MappedTrackerProgramStage implements Serializable
 
     @Basic
     @Column( name = "last_updated_by", length = 11 )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     public String getLastUpdatedBy()
     {
         return lastUpdatedBy;

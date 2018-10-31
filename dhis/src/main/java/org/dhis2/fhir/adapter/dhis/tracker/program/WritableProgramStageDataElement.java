@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataElement;
 
@@ -68,6 +69,7 @@ public class WritableProgramStageDataElement implements ProgramStageDataElement,
         this.element = element;
     }
 
+    @JsonIgnore
     @Override
     public String getElementId()
     {

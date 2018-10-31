@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
@@ -54,8 +54,8 @@ public class DhisMetadataCacheConfig extends AbstractSimpleCacheConfig
     @Primary
     @Bean
     @Nonnull
-    protected CacheManager dhisCacheManager( @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider )
+    protected CacheManager dhisCacheManager( @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull GenericJackson2JsonRedisSerializer redisSerializer )
     {
-        return createCacheManager( redisConnectionFactoryProvider, new JdkSerializationRedisSerializer() );
+        return createCacheManager( redisConnectionFactoryProvider, redisSerializer );
     }
 }

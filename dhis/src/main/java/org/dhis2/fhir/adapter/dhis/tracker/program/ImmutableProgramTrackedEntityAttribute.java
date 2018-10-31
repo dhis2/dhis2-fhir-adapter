@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.ImmutableTrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
 import org.dhis2.fhir.adapter.model.ValueType;
@@ -39,49 +42,58 @@ public class ImmutableProgramTrackedEntityAttribute implements ProgramTrackedEnt
 {
     private static final long serialVersionUID = -6094500152005916960L;
 
-    private final ProgramTrackedEntityAttribute delegate;
+    @JsonProperty
+    private final WritableProgramTrackedEntityAttribute delegate;
 
-    public ImmutableProgramTrackedEntityAttribute( @Nonnull ProgramTrackedEntityAttribute delegate )
+    @JsonCreator
+    public ImmutableProgramTrackedEntityAttribute( @Nonnull @JsonProperty( "delegate" ) WritableProgramTrackedEntityAttribute delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public ValueType getValueType()
     {
         return delegate.getValueType();
     }
 
+    @JsonIgnore
     @Override
     public boolean isMandatory()
     {
         return delegate.isMandatory();
     }
 
+    @JsonIgnore
     @Override
     public boolean isAllowFutureDate()
     {
         return delegate.isAllowFutureDate();
     }
 
+    @JsonIgnore
     @Override
     public String getAttributeId()
     {
         return delegate.getAttributeId();
     }
 
+    @JsonIgnore
     @Override
     public TrackedEntityAttribute getAttribute()
     {

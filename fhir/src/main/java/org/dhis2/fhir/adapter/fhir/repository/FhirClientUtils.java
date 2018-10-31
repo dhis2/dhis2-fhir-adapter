@@ -32,23 +32,23 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 
 import javax.annotation.Nonnull;
 
 public abstract class FhirClientUtils
 {
     @Nonnull
-    public static IGenericClient createClient( @Nonnull FhirContext fhirContext, @Nonnull RemoteSubscription remoteSubscription )
+    public static IGenericClient createClient( @Nonnull FhirContext fhirContext, @Nonnull SubscriptionFhirEndpoint fhirEndpoint )
     {
-        final IGenericClient client = fhirContext.newRestfulGenericClient( remoteSubscription.getRemoteBaseUrl() );
-        if ( remoteSubscription.isLogging() )
+        final IGenericClient client = fhirContext.newRestfulGenericClient( fhirEndpoint.getBaseUrl() );
+        if ( fhirEndpoint.isLogging() )
         {
-            client.registerInterceptor( new LoggingInterceptor( remoteSubscription.isVerboseLogging() ) );
+            client.registerInterceptor( new LoggingInterceptor( fhirEndpoint.isVerboseLogging() ) );
         }
 
         final AdditionalRequestHeadersInterceptor requestHeadersInterceptor = new AdditionalRequestHeadersInterceptor();
-        remoteSubscription.getRemoteHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );
+        fhirEndpoint.getHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );
         client.registerInterceptor( requestHeadersInterceptor );
 
         return client;

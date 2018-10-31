@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import javax.annotation.Nonnull;
@@ -37,43 +40,51 @@ public class ImmutableTrackedEntityTypeAttribute implements TrackedEntityTypeAtt
 {
     private static final long serialVersionUID = -6094500152005916960L;
 
-    private final TrackedEntityTypeAttribute delegate;
+    @JsonProperty
+    private final WritableTrackedEntityTypeAttribute delegate;
 
-    public ImmutableTrackedEntityTypeAttribute( @Nonnull TrackedEntityTypeAttribute delegate )
+    @JsonCreator
+    public ImmutableTrackedEntityTypeAttribute( @Nonnull @JsonProperty( "delegate" ) WritableTrackedEntityTypeAttribute delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public ValueType getValueType()
     {
         return delegate.getValueType();
     }
 
+    @JsonIgnore
     @Override
     public boolean isMandatory()
     {
         return delegate.isMandatory();
     }
 
+    @JsonIgnore
     @Override
     public String getAttributeId()
     {
         return delegate.getAttributeId();
     }
 
+    @JsonIgnore
     @Override
     public TrackedEntityAttribute getAttribute()
     {

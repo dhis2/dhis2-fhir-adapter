@@ -45,6 +45,11 @@ spring:
       server-id: 1
       persistent: true
       data-directory: ${dhis2.home}/services/fhir-adapter/artemis
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
 
 hystrix:
   command:
@@ -68,20 +73,35 @@ dhis2.fhir-adapter:
     system-authentication:
       username: @dhis2.username@
       password: @dhis2.password@
+  security:
+    authorities:
+      administration:
+      - F_SYSTEM_SETTING
+      code-mapping:
+      - F_SYSTEM_SETTING
+      data-mapping:
+      - F_SYSTEM_SETTING
   cache:
-    dhis:
+    metadata:
       type: caffeine
       caffeine:
         spec: expireAfterAccess=60s,maximumSize=10000
       redis:
         time-to-live: 60s
-        key-prefix: fhir-adapter:dhis
-    fhir:
+        key-prefix: fhir-adapter:metadata
+    dhis:
       type: caffeine
       caffeine:
         spec: expireAfterAccess=120s,maximumSize=10000
       redis:
         time-to-live: 120s
+        key-prefix: fhir-adapter:dhis
+    fhir:
+      type: caffeine
+      caffeine:
+        spec: expireAfterAccess=500s,maximumSize=10000
+      redis:
+        time-to-live: 500s
         key-prefix: fhir-adapter:fhir
   remote:
     processor:

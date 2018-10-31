@@ -28,19 +28,20 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Contains the subscription status of a single FHIR resource type.
@@ -49,80 +50,16 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_remote_subscription_resource" )
-public class RemoteSubscriptionResource implements Serializable
+public class RemoteSubscriptionResource extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private FhirResourceType fhirResourceType;
     private String fhirCriteriaParameters;
     private String description;
-    private LocalDateTime remoteLastUpdated;
     private RemoteSubscription remoteSubscription;
-
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
+    private RemoteSubscriptionResourceUpdate resourceUpdate;
+    private String fhirSubscriptionId;
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -161,18 +98,6 @@ public class RemoteSubscriptionResource implements Serializable
         this.description = description;
     }
 
-    @Basic
-    @Column( name = "remote_last_updated", nullable = false )
-    public LocalDateTime getRemoteLastUpdated()
-    {
-        return remoteLastUpdated;
-    }
-
-    public void setRemoteLastUpdated( LocalDateTime remoteLastUpdate )
-    {
-        this.remoteLastUpdated = remoteLastUpdate;
-    }
-
     @ManyToOne( optional = false )
     @JoinColumn( name = "remote_subscription_id", referencedColumnName = "id", nullable = false )
     public RemoteSubscription getRemoteSubscription()
@@ -183,5 +108,30 @@ public class RemoteSubscriptionResource implements Serializable
     public void setRemoteSubscription( RemoteSubscription remoteSubscription )
     {
         this.remoteSubscription = remoteSubscription;
+    }
+
+    @RestResource( exported = false )
+    @OneToOne( mappedBy = "remoteSubscriptionResource", cascade = { CascadeType.REMOVE, CascadeType.PERSIST } )
+    @JsonIgnore
+    public RemoteSubscriptionResourceUpdate getResourceUpdate()
+    {
+        return resourceUpdate;
+    }
+
+    public void setResourceUpdate( RemoteSubscriptionResourceUpdate resourceUpdate )
+    {
+        this.resourceUpdate = resourceUpdate;
+    }
+
+    @Basic
+    @Column( name = "fhir_subscription_id", length = 100 )
+    public String getFhirSubscriptionId()
+    {
+        return fhirSubscriptionId;
+    }
+
+    public void setFhirSubscriptionId( String fhirSubscriptionId )
+    {
+        this.fhirSubscriptionId = fhirSubscriptionId;
     }
 }

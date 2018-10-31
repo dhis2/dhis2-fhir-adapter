@@ -28,32 +28,42 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.ObjectUtils;
+import org.dhis2.fhir.adapter.jackson.ConditionallySecuredPropertyContainer;
+import org.dhis2.fhir.adapter.jackson.SecuredProperty;
+import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
+
 import javax.annotation.Nonnull;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+@JsonFilter( SecuredPropertyFilter.FILTER_NAME )
 @Embeddable
-public class RequestHeader implements Serializable
+public class RequestHeader implements Serializable, Comparable<RequestHeader>, ConditionallySecuredPropertyContainer
 {
     private static final long serialVersionUID = 9147646500873557921L;
 
     private String name;
 
+    @JsonProperty
+    @SecuredProperty
     private String value;
 
-    private boolean secured;
+    private boolean secure;
 
     public RequestHeader()
     {
         super();
     }
 
-    public RequestHeader( @Nonnull String name, @Nonnull String value, boolean secured )
+    public RequestHeader( @Nonnull String name, @Nonnull String value, boolean secure )
     {
         this.name = name;
         this.value = value;
-        this.secured = secured;
+        this.secure = secure;
     }
 
     public String getName()
@@ -76,14 +86,14 @@ public class RequestHeader implements Serializable
         this.value = value;
     }
 
-    public boolean isSecured()
+    public boolean isSecure()
     {
-        return secured;
+        return secure;
     }
 
-    public void setSecured( boolean secured )
+    public void setSecure( boolean secure )
     {
-        this.secured = secured;
+        this.secure = secure;
     }
 
     @Override
@@ -100,5 +110,16 @@ public class RequestHeader implements Serializable
     public int hashCode()
     {
         return Objects.hash( name, value );
+    }
+
+    @Override
+    public int compareTo( @Nonnull RequestHeader o )
+    {
+        int value = ObjectUtils.compare( getName(), o.getName() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return ObjectUtils.compare( getValue(), o.getValue() );
     }
 }

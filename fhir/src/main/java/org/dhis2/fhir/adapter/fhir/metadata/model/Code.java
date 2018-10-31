@@ -28,23 +28,17 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * FHIR allows to use code definitions of one or more systems. This code defines a unique code for the codes that are
@@ -58,82 +52,15 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_code" )
-public class Code implements Serializable
+public class Code extends BaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6376382638316116368L;
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private String name;
     private String code;
     private String description;
     private CodeCategory codeCategory;
-    private Collection<SystemCode> systemCodes;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
+    private List<SystemCode> systemCodes;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -184,12 +111,13 @@ public class Code implements Serializable
     }
 
     @OneToMany( mappedBy = "code" )
-    public Collection<SystemCode> getSystemCodes()
+    @OrderBy( "id" )
+    public List<SystemCode> getSystemCodes()
     {
         return systemCodes;
     }
 
-    public void setSystemCodes( Collection<SystemCode> systemCodes )
+    public void setSystemCodes( List<SystemCode> systemCodes )
     {
         this.systemCodes = systemCodes;
     }
@@ -200,12 +128,12 @@ public class Code implements Serializable
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
         Code that = (Code) o;
-        return Objects.equals( id, that.id ) && Objects.equals( name, that.name );
+        return Objects.equals( getId(), that.getId() ) && Objects.equals( name, that.name );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( id, name );
+        return Objects.hash( getId(), name );
     }
 }

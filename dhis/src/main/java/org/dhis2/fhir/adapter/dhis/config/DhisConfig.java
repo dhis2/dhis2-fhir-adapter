@@ -28,14 +28,36 @@ package org.dhis2.fhir.adapter.dhis.config;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.auth.AuthorizedRestTemplate;
+import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
+import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS;
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 
 /**
  * Configuration for access of DHIS2 endpoints.
@@ -58,7 +80,7 @@ public class DhisConfig
     @Nonnull
     public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext )
     {
-        return builder.rootUri( getRootUri( endpointConfig ) ).configure( new AuthorizedRestTemplate( authorizationContext ) );
+        return builder.rootUri( getRootUri( endpointConfig, false ) ).configure( new AuthorizedRestTemplate( authorizationContext ) );
     }
 
     /**
@@ -72,13 +94,48 @@ public class DhisConfig
     @Nonnull
     public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig )
     {
-        return builder.rootUri( getRootUri( endpointConfig ) ).basicAuthorization(
+        return builder.rootUri( getRootUri( endpointConfig, false ) ).basicAuthorization(
             endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
     }
 
-    @Nonnull
-    private String getRootUri( @Nonnull DhisEndpointConfig endpointConfig )
+    /**
+     * Creates a Redis serializer that ignores one to many relationships.
+     *
+     * @return the Redis serializer.
+     */
+    @Bean
+    public GenericJackson2JsonRedisSerializer cacheRedisSerializer()
     {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.enableDefaultTyping( ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY );
+        mapper.setFilterProvider( new SimpleFilterProvider()
+            .addFilter( ToManyPropertyFilter.FILTER_NAME, new ToManyPropertyFilter() )
+            .addFilter( ToOnePropertyFilter.FILTER_NAME, new ToOnePropertyFilter() )
+            .addFilter( SecuredPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+            {
+            } ) );
+        mapper.disable( FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS );
+        mapper.disable( WRITE_DATES_AS_TIMESTAMPS );
+
+        final SimpleModule module = new SimpleModule();
+        module.addSerializer( LocalDateTimeSerializer.INSTANCE );
+        module.addSerializer( new ZonedDateTimeSerializer() );
+        module.addSerializer( new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+        module.addDeserializer( LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE );
+        module.addDeserializer( ZonedDateTime.class, new ZonedDateTimeDeserializer() );
+        module.addDeserializer( LocalDate.class, new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+        mapper.registerModule( module );
+
+        return new GenericJackson2JsonRedisSerializer( mapper );
+    }
+
+    @Nonnull
+    public static String getRootUri( @Nonnull DhisEndpointConfig endpointConfig, boolean withoutVersion )
+    {
+        if ( withoutVersion )
+        {
+            return endpointConfig.getUrl() + "/api";
+        }
         return endpointConfig.getUrl() + "/api/" + endpointConfig.getApiVersion();
     }
 }

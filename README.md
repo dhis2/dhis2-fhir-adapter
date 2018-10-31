@@ -26,7 +26,7 @@ Creating Subscription for FHIR Resource Patient:
               "criteria": "Patient?",
               "channel": {
                   "type": "rest-hook",
-                  "endpoint": "http://localhost:8081/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/667bfa41-867c-4796-86b6-eb9f9ed4dc94",
+                  "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/667bfa41-867c-4796-86b6-eb9f9ed4dc94",
                   "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
                   "payload": "application/fhir+json"
               }, "status": "requested"}'
@@ -39,7 +39,7 @@ Creating Subscription for FHIR Resource Immunization:
                 "criteria": "Immunization?",
                 "channel": {
                     "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/a756ef2a-1bf4-43f4-a991-fbb48ad358ac",
+                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/a756ef2a-1bf4-43f4-a991-fbb48ad358ac",
                     "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
                     "payload": "application/fhir+json"
                 }, "status": "requested"}'
@@ -52,7 +52,7 @@ Creating Subscription for FHIR Resource Observation:
                 "criteria": "Observation?",
                 "channel": {
                     "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b32b4098-f8e1-426a-8dad-c5c4d8e0fab6",
+                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b32b4098-f8e1-426a-8dad-c5c4d8e0fab6",
                     "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
                     "payload": "application/fhir+json"
                 }, "status": "requested"}'    
@@ -65,7 +65,7 @@ Creating Subscription for FHIR Resource Medication Requests:
                 "criteria": "MedicationRequest?",
                 "channel": {
                     "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-web-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/0b732310-1cca-4b0a-9510-432d4f93f582",
+                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/0b732310-1cca-4b0a-9510-432d4f93f582",
                     "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
                     "payload": "application/fhir+json"
                 }, "status": "requested"}'                

@@ -40,7 +40,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ImmutableProgram;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
@@ -231,7 +230,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull ProgramStageRule rule ) throws TransformerException
     {
-        final Program program = programMetadataService.findOneByReference( rule.getProgramStage().getProgram().getProgramReference() ).map( ImmutableProgram::new )
+        final Program program = programMetadataService.findOneByReference( rule.getProgramStage().getProgram().getProgramReference() )
             .orElseThrow( () -> new TransformerMappingException( "Mapping " + rule + " requires program \"" +
                 rule.getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
         variables.put( ScriptVariable.PROGRAM.getVariableName(), program );

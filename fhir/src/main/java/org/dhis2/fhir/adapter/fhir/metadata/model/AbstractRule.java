@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Basic;
@@ -39,8 +38,6 @@ import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
@@ -48,10 +45,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * A rule defines a business rules and transformations from a FHIR resource to a DHIS2 resource and vice versa.
@@ -66,7 +60,7 @@ import java.util.UUID;
     "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query = "SELECT r FROM AbstractRule r JOIN r.applicableCodeSet acs JOIN acs.codeSetValues csv ON csv.enabled=true JOIN csv.id.code c " +
         "JOIN c.systemCodes sc ON sc.systemCode=:code JOIN sc.system s ON s.systemUri=:system AND s.enabled=true WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true" ) } )
-public abstract class AbstractRule implements Serializable, Comparable<AbstractRule>
+public abstract class AbstractRule extends BaseMetadata implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
@@ -74,11 +68,6 @@ public abstract class AbstractRule implements Serializable, Comparable<AbstractR
 
     public static final String FIND_RULES_BY_TYPE_CODES_NAMED_QUERY = "findRulesByTypeAndCodes";
 
-    private UUID id;
-    private Long version;
-    private LocalDateTime createdAt;
-    private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
     private String name;
     private String description;
     private boolean enabled;
@@ -88,68 +77,6 @@ public abstract class AbstractRule implements Serializable, Comparable<AbstractR
     private ExecutableScript applicableInScript;
     private CodeSet applicableCodeSet;
     private ExecutableScript transformInScript;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public LocalDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( LocalDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public LocalDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -275,6 +202,6 @@ public abstract class AbstractRule implements Serializable, Comparable<AbstractR
     @Override
     public String toString()
     {
-        return "[" + "id=" + id + ", version=" + version + ']';
+        return "[" + "id=" + getId() + ", version=" + getVersion() + ']';
     }
 }

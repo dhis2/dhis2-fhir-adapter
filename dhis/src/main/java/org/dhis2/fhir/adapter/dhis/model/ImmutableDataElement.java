@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.model.ValueType;
 
@@ -46,43 +49,51 @@ public class ImmutableDataElement implements DataElement, Serializable
 {
     private static final long serialVersionUID = -7040983692879273412L;
 
-    private final DataElement delegate;
+    @JsonProperty
+    private final WritableDataElement delegate;
 
-    public ImmutableDataElement( @Nonnull DataElement delegate )
+    @JsonCreator
+    public ImmutableDataElement( @Nonnull @JsonProperty( "delegate" ) WritableDataElement delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public String getCode()
     {
         return delegate.getCode();
     }
 
+    @JsonIgnore
     @Override
     public ValueType getValueType()
     {
         return delegate.getValueType();
     }
 
+    @JsonIgnore
     @Override
     public boolean isOptionSetValue()
     {
         return delegate.isOptionSetValue();
     }
 
+    @JsonIgnore
     @Override
     public OptionSet getOptionSet()
     {

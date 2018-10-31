@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.model.ValueType;
 
@@ -108,6 +109,7 @@ public class WritableTrackedEntityTypeAttribute implements TrackedEntityTypeAttr
         this.attribute = attribute;
     }
 
+    @JsonIgnore
     @Override
     public String getAttributeId()
     {

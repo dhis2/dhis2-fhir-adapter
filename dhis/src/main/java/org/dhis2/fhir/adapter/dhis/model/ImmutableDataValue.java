@@ -28,6 +28,10 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -43,49 +47,58 @@ public class ImmutableDataValue implements DataValue, Serializable
 {
     private static final long serialVersionUID = 5577400306112844124L;
 
-    private DataValue delegate;
+    @JsonProperty
+    private WritableDataValue delegate;
 
-    public ImmutableDataValue( @Nonnull DataValue delegate )
+    @JsonCreator
+    public ImmutableDataValue( @Nonnull @JsonProperty( "delegate" ) WritableDataValue delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getDataElementId()
     {
         return delegate.getDataElementId();
     }
 
+    @JsonIgnore
     @Override
     public Object getValue()
     {
         return delegate.getValue();
     }
 
+    @JsonIgnore
     @Override
     public boolean isProvidedElsewhere()
     {
         return delegate.isProvidedElsewhere();
     }
 
+    @JsonIgnore
     @Override
     public ZonedDateTime getLastUpdated()
     {
         return delegate.getLastUpdated();
     }
 
+    @JsonIgnore
     @Override
     public String getStoredBy()
     {
         return delegate.getStoredBy();
     }
 
+    @JsonIgnore
     @Override
     public boolean isModified()
     {
         return delegate.isModified();
     }
 
+    @JsonIgnore
     @Override
     public boolean isNewResource()
     {

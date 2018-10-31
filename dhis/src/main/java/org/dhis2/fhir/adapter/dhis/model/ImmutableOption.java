@@ -28,6 +28,10 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 
@@ -42,19 +46,23 @@ public class ImmutableOption implements Option, Serializable
 {
     private static final long serialVersionUID = -4836329163657710844L;
 
-    private final Option delegate;
+    @JsonProperty
+    private final WritableOption delegate;
 
-    public ImmutableOption( @Nonnull Option delegate )
+    @JsonCreator
+    public ImmutableOption( @Nonnull @JsonProperty( "delegate" ) WritableOption delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getCode()
     {
         return delegate.getCode();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {

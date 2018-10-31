@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
@@ -43,31 +46,37 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
 {
     private static final long serialVersionUID = 797154293863611491L;
 
-    private final TrackedEntityType delegate;
+    @JsonProperty
+    private final WritableTrackedEntityType delegate;
 
-    public ImmutableTrackedEntityType( @Nonnull TrackedEntityType delegate )
+    @JsonCreator
+    public ImmutableTrackedEntityType( @Nonnull @JsonProperty( "delegate" ) WritableTrackedEntityType delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public String getName()
     {
         return delegate.getName();
     }
 
+    @JsonIgnore
     @Override
     public List<TrackedEntityTypeAttribute> getAttributes()
     {
         return (delegate.getAttributes() == null) ? null : delegate.getAttributes().stream().map( ImmutableTrackedEntityTypeAttribute::new ).collect( Collectors.toList() );
     }
 
+    @JsonIgnore
     @Nonnull
     @Override
     public Optional<? extends TrackedEntityTypeAttribute> getOptionalTypeAttribute( @Nonnull Reference reference )
@@ -75,6 +84,7 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, Serializab
         return delegate.getOptionalTypeAttribute( reference );
     }
 
+    @JsonIgnore
     @Override
     @Nullable
     public TrackedEntityTypeAttribute getTypeAttribute( @Nonnull Reference reference )

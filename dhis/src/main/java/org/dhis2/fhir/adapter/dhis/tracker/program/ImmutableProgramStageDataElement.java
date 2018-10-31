@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataElement;
 
 import javax.annotation.Nonnull;
@@ -37,37 +40,44 @@ public class ImmutableProgramStageDataElement implements ProgramStageDataElement
 {
     private static final long serialVersionUID = -5845301607041878968L;
 
-    private final ProgramStageDataElement delegate;
+    @JsonProperty
+    private final WritableProgramStageDataElement delegate;
 
-    public ImmutableProgramStageDataElement( @Nonnull ProgramStageDataElement delegate )
+    @JsonCreator
+    public ImmutableProgramStageDataElement( @Nonnull @JsonProperty( "delegate" ) WritableProgramStageDataElement delegate )
     {
         this.delegate = delegate;
     }
 
+    @JsonIgnore
     @Override
     public String getId()
     {
         return delegate.getId();
     }
 
+    @JsonIgnore
     @Override
     public WritableDataElement getElement()
     {
         return delegate.getElement();
     }
 
+    @JsonIgnore
     @Override
     public String getElementId()
     {
         return delegate.getElementId();
     }
 
+    @JsonIgnore
     @Override
     public boolean isCompulsory()
     {
         return delegate.isCompulsory();
     }
 
+    @JsonIgnore
     @Override
     public boolean isAllowProvidedElsewhere()
     {
