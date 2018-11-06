@@ -46,8 +46,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler
 {
     @ExceptionHandler( value = { RestResponseEntityException.class } )
     @ResponseBody
-    public ResponseEntity<String> handleResponseEntityException( RestResponseEntityException e, WebRequest request )
+    public ResponseEntity<RestError> handleResponseEntityException( RestResponseEntityException e, WebRequest request )
     {
-        return new ResponseEntity<>( e.getMessage(), e.getHttpStatus() );
+        return new ResponseEntity<>( new RestError( e.getMessage() ), e.getHttpStatus() );
     }
 }

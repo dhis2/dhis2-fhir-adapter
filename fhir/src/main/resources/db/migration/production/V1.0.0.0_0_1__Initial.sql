@@ -315,11 +315,15 @@ COMMENT ON COLUMN fhir_script_argument.description IS 'The detailed description 
 COMMENT ON COLUMN fhir_script_argument.script_id IS 'The reference to the script to which this argument belongs.';
 
 CREATE TABLE fhir_executable_script (
-  id          UUID NOT NULL DEFAULT UUID_GENERATE_V4(),
-  script_id   UUID NOT NULL,
-  name        VARCHAR(230) NOT NULL,
-  code        VARCHAR(100) NOT NULL,
-  description TEXT,
+  id              UUID NOT NULL DEFAULT UUID_GENERATE_V4(),
+  version         BIGINT                         NOT NULL,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by VARCHAR(11),
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  script_id       UUID NOT NULL,
+  name            VARCHAR(230) NOT NULL,
+  code            VARCHAR(100) NOT NULL,
+  description     TEXT,
   CONSTRAINT fhir_executable_script_pk PRIMARY KEY (id),
   CONSTRAINT fhir_executable_script_uk1 UNIQUE (name),
   CONSTRAINT fhir_executable_script_uk2 UNIQUE (code),
@@ -329,6 +333,10 @@ CREATE INDEX fhir_executable_script_i1
   ON fhir_executable_script (script_id);
 COMMENT ON TABLE fhir_executable_script IS 'Contains the executable script of a script. The executable script must provide all missing mandatory input argument values and may also override input argument values that has been defined by the script.';
 COMMENT ON COLUMN fhir_executable_script.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_executable_script.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_executable_script.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_executable_script.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_executable_script.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_executable_script.script_id IS 'References the executable script on which this executable script is based on.';
 COMMENT ON COLUMN fhir_executable_script.name IS 'The unique name of the executable script.';
 COMMENT ON COLUMN fhir_executable_script.code IS 'The unique code of the executable script.';
@@ -336,10 +344,6 @@ COMMENT ON COLUMN fhir_executable_script.description IS 'The detailed descriptio
 
 CREATE TABLE fhir_executable_script_argument (
   id                   UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
-  version              BIGINT                         NOT NULL,
-  created_at           TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_updated_by      VARCHAR(11),
-  last_updated_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   executable_script_id UUID                           NOT NULL,
   script_argument_id   UUID                           NOT NULL,
   override_value       VARCHAR(1000),
@@ -355,10 +359,6 @@ CREATE INDEX fhir_executable_script_argument_i2
   ON fhir_executable_script_argument (script_argument_id);
 COMMENT ON TABLE fhir_executable_script_argument IS 'Contains the overridden input argument for an executable script. At least all mandatory input arguments of the script for which no default values have been provided must be overridden.';
 COMMENT ON COLUMN fhir_executable_script_argument.id IS 'Unique ID of entity.';
-COMMENT ON COLUMN fhir_executable_script_argument.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
-COMMENT ON COLUMN fhir_executable_script_argument.created_at IS 'The timestamp when the entity has been created.';
-COMMENT ON COLUMN fhir_executable_script_argument.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
-COMMENT ON COLUMN fhir_executable_script_argument.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 COMMENT ON COLUMN fhir_executable_script_argument.executable_script_id IS 'The reference to the executable script to which this overridden input argument value belongs to.';
 COMMENT ON COLUMN fhir_executable_script_argument.script_argument_id IS 'The reference to the overridden argument of the script.';
 COMMENT ON COLUMN fhir_executable_script_argument.override_value IS 'The override value of the script argument. The value must match the data type of this argument.';
@@ -1559,8 +1559,8 @@ INSERT INTO fhir_script_source (id , version, script_id, source_text, source_typ
 VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 0, '5b37861d-9442-4e13-ac9f-88a893e91ce9', 'true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('edcb402e-94b4-4953-8846-3a4d1c0dad6e', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('9299b82e-b90a-4542-8b78-200cadff3d7d', '5b37861d-9442-4e13-ac9f-88a893e91ce9', 'True', 'TRUE', 'Returns Boolean True.');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('9299b82e-b90a-4542-8b78-200cadff3d7d', 0, '5b37861d-9442-4e13-ac9f-88a893e91ce9', 'True', 'TRUE', 'Returns Boolean True.');
 
 -- Script that extracts Organisation Unit Reference from Patient
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1573,8 +1573,8 @@ INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type
 'context.createReference(identifierUtils.getReferenceIdentifier(input.managingOrganization, ''ORGANIZATION''), ''CODE'')', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('7b94feba-bcf6-4635-929a-01311b25d975', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'a250e109-a135-42b2-8bdb-1c050c1d384c', 'Org Unit Code from Patient Org', 'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c', 'Org Unit Code from Patient Org', 'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE',
 'Extracts the organization unit code reference from the business identifier that is specified by the FHIR Organization of the FHIR Patient.');
 
 -- Script that extracts GEO location from Patient
@@ -1588,8 +1588,8 @@ INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type
 'geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address))', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('039ac2e6-50f2-4e4a-9e4a-dc0515560273', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('ef90531f-4438-48bd-83b3-6370dd65875a', '2263b296-9d96-4698-bc1d-17930005eef3',  'GEO Location from Patient', 'EXTRACT_FHIR_PATIENT_GEO_LOCATION',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('ef90531f-4438-48bd-83b3-6370dd65875a', 0, '2263b296-9d96-4698-bc1d-17930005eef3',  'GEO Location from Patient', 'EXTRACT_FHIR_PATIENT_GEO_LOCATION',
 'Extracts the GEO location form FHIR Patient.');
 
 -- Script that extracts Organisation Unit Reference from Tracked Entity Instance
@@ -1602,8 +1602,8 @@ INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type
 'context.createReference(trackedEntityInstance.organizationUnitId, ''ID'')', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('0cd71988-e116-4c11-bed4-98ff608dbfb6', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('a52945b5-94b9-48d4-9c49-f67b43d9dfbc', '0e780e50-9a7e-4d4a-a9fd-1b8607d17fbb', 'Org Unit Reference Code from Patient Organization', 'EXTRACT_TEI_DHIS_ORG_UNIT_ID',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a52945b5-94b9-48d4-9c49-f67b43d9dfbc', 0, '0e780e50-9a7e-4d4a-a9fd-1b8607d17fbb', 'Org Unit Reference Code from Patient Organization', 'EXTRACT_TEI_DHIS_ORG_UNIT_ID',
 'Extracts the organization unit ID reference from the tracked entity instance.');
 
 -- Script that transforms Patient to Person
@@ -1656,15 +1656,15 @@ output.setOptionalValue(args[''countryAttribute''], addressUtils.getPrimaryAddre
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 'ea887943-5e94-4e31-9441-c7661fe1063e',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
 'Transforms FHIR Patient to DHIS Person', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'Transforms FHIR Patient to DHIS Person.');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'CODE:MMD_PER_DOB');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
-INSERT INTO fhir_executable_script_argument(id, version, executable_script_id, script_argument_id, override_value)
-VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', 0, '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'CODE:City');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'CODE:MMD_PER_DOB');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'CODE:City');
 
 -- Script that performs the lookup of TEI FHIR Resource from FHIR Observation
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1675,8 +1675,8 @@ INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'referenceUtils.getResource(input.subject)', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 'DSTU3');
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36', '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017',
 'Observation TEI Lookup', 'OBSERVATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Observation.');
 
 -- Script that extracts GEO location from Observation
@@ -1690,8 +1690,8 @@ INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type
 'null', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('2e0565a0-ecde-4ce2-b313-b0f786105385', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('bb070631-46b3-42ec-83b2-00ea219bcf50', 'efb7fa7a-df45-4c6a-9096-0bc38f08c067',  'GEO Location from Observation', 'EXTRACT_FHIR_OBSERVATION_GEO_LOCATION',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('bb070631-46b3-42ec-83b2-00ea219bcf50', 0, 'efb7fa7a-df45-4c6a-9096-0bc38f08c067',  'GEO Location from Observation', 'EXTRACT_FHIR_OBSERVATION_GEO_LOCATION',
 'Extracts the GEO location form FHIR Observation.');
 
 -- Script that gets the exact date from FHIR Observation
@@ -1711,8 +1711,8 @@ else if (input.hasIssued())
 date', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('630cd838-3506-410b-9b66-8785682d5e0c', 'DSTU3');
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('a7b60436-9fa7-4fe4-8bf7-f5e22123a980', '49d35701-2979-4b36-a9ba-4269c1572cfd',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a7b60436-9fa7-4fe4-8bf7-f5e22123a980', 0, '49d35701-2979-4b36-a9ba-4269c1572cfd',
 'Observation Date Lookup', 'OBSERVATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Observation.');
 
 -- FHIR resource mapping for FHIR Observation
@@ -1836,8 +1836,8 @@ INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'referenceUtils.getResource(input.patient)', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 'DSTU3');
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('a08caa8a-1cc9-4f51-b6b8-814af781a442', 'd4e2822a-4422-46a3-badc-cf5604c6e11f',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a08caa8a-1cc9-4f51-b6b8-814af781a442', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f',
 'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.');
 
 -- Script that extracts GEO location from Immunization
@@ -1858,8 +1858,8 @@ if ((locationResource != null) && locationResource.hasPosition())
 location', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('6427e6de-8426-4ab1-b66a-edd5b0e5f410', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code, description)
-VALUES ('298b4a72-94ce-4f4c-83ad-c8d73436a402', 'a5079830-f04c-4575-af5d-1d6fa0bf844b',  'GEO Location from Immunization', 'EXTRACT_FHIR_IMMUNIZATION_GEO_LOCATION',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('298b4a72-94ce-4f4c-83ad-c8d73436a402', 0, 'a5079830-f04c-4575-af5d-1d6fa0bf844b',  'GEO Location from Immunization', 'EXTRACT_FHIR_IMMUNIZATION_GEO_LOCATION',
 'Extracts the GEO location form FHIR Immunization.');
 
 -- Script that gets the exact date from FHIR Immunization
@@ -1871,8 +1871,8 @@ INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('71056dc1-6bd3-491d-908c-c1494090ed65', 0, '15c2a8b8-b8f0-443a-adda-cfb87a1a4378', 'dateTimeUtils.getPreciseDate(input.hasDateElement() ? input.getDateElement() : null)', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('71056dc1-6bd3-491d-908c-c1494090ed65', 'DSTU3');
-INSERT INTO fhir_executable_script (id,script_id, name, code, description)
-VALUES ('c0e2c559-ff88-4376-8063-031f971072dc', '15c2a8b8-b8f0-443a-adda-cfb87a1a4378',
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('c0e2c559-ff88-4376-8063-031f971072dc', 0, '15c2a8b8-b8f0-443a-adda-cfb87a1a4378',
 'Immunization Date Lookup', 'IMMUNIZATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Immunization.');
 
 -- FHIR resource mapping for FHIR Immunization
@@ -1893,8 +1893,8 @@ INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
 VALUES ('2f04a7c3-7041-4c12-aa75-748862271818', 0, 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', '!input.notGiven', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('2f04a7c3-7041-4c12-aa75-748862271818', 'DSTU3');
-INSERT INTO fhir_executable_script (id, script_id, name, code)
-VALUES ('a88b2c6a-508f-4d02-bcfd-bba0a804b340', 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization Applicable', 'FHIR_IMMUNIZATION_APPLICABLE');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('a88b2c6a-508f-4d02-bcfd-bba0a804b340', 0, 'ddaebe0a-8a88-4cb7-a5ca-632e86216be0', 'FHIR Immunization Applicable', 'FHIR_IMMUNIZATION_APPLICABLE');
 
 -- Script that sets for a data element if a FHIR Immunization has been given
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)

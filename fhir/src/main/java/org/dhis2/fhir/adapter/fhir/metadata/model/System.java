@@ -36,9 +36,13 @@ import java.io.Serializable;
 
 @Entity
 @Table( name = "fhir_system" )
-public class System extends BaseMetadata implements Serializable
+public class System extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1072841132452061822L;
+
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 50;
 
     private String name;
     private String code;

@@ -30,6 +30,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -42,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author volsch
  */
-@Component()
+@Component
 public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
 {
     @Override
@@ -60,9 +64,17 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
         {
             errors.rejectValue( "name", "RemoteSubscription.name.blank", "Name must not be blank." );
         }
+        if ( StringUtils.length( remoteSubscription.getName() ) > RemoteSubscription.MAX_NAME_LENGTH )
+        {
+            errors.rejectValue( "name", "RemoteSubscription.name.length", new Object[]{ RemoteSubscription.MAX_NAME_LENGTH }, "Name must not be longer than {0} characters." );
+        }
         if ( StringUtils.isBlank( remoteSubscription.getCode() ) )
         {
             errors.rejectValue( "code", "RemoteSubscription.code.blank", "Code must not be blank." );
+        }
+        if ( StringUtils.length( remoteSubscription.getCode() ) > RemoteSubscription.MAX_CODE_LENGTH )
+        {
+            errors.rejectValue( "code", "RemoteSubscription.code.length", new Object[]{ RemoteSubscription.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
         }
         if ( remoteSubscription.getFhirVersion() == null )
         {
@@ -82,11 +94,19 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
         {
             if ( !ValidatorUtils.isValidUrl( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.baseUrl", "Adapter endpoint base URL is not a valid URL." );
+                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.baseUrl.invalid", "Adapter endpoint base URL is not a valid URL." );
+            }
+            if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) > SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH )
+            {
+                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.baseUrl.length", new Object[]{ SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH }, "Adapter endpoint base URL must not be longer than {0} characters." );
             }
             if ( StringUtils.isBlank( remoteSubscription.getAdapterEndpoint().getAuthorizationHeader() ) )
             {
-                errors.rejectValue( "authorizationHeader", "RemoteSubscription.adapterEndpoint.authorizationHeader", "Adapter endpoint authorization header must not be blank." );
+                errors.rejectValue( "authorizationHeader", "RemoteSubscription.adapterEndpoint.authorizationHeader.blank", "Adapter endpoint authorization header must not be blank." );
+            }
+            if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getAuthorizationHeader() ) > SubscriptionAdapterEndpoint.MAX_AUTHORIZATION_HEADER_LENGTH )
+            {
+                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.authorizationHeader.length", new Object[]{ SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH }, "Adapter endpoint authorization header must not be longer than {0} characters." );
             }
             if ( remoteSubscription.getAdapterEndpoint().getSubscriptionType() == null )
             {
@@ -110,9 +130,17 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             {
                 errors.rejectValue( "username", "RemoteSubscription.dhisEndpoint.username", "DHIS endpoint username must not be blank." );
             }
+            if ( StringUtils.length( remoteSubscription.getDhisEndpoint().getUsername() ) > SubscriptionDhisEndpoint.MAX_USERNAME_LENGTH )
+            {
+                errors.rejectValue( "baseUrl", "RemoteSubscription.dhisEndpoint.username.length", new Object[]{ SubscriptionDhisEndpoint.MAX_USERNAME_LENGTH }, "DHIS endpoint username must not be longer than {0} characters." );
+            }
             if ( StringUtils.isBlank( remoteSubscription.getDhisEndpoint().getPassword() ) )
             {
-                errors.rejectValue( "password", "RemoteSubscription.dhisEndpoint.password", "DHIS endpoint password must not be blank." );
+                errors.rejectValue( "password", "RemoteSubscription.dhisEndpoint.password.blank", "DHIS endpoint password must not be blank." );
+            }
+            if ( StringUtils.length( remoteSubscription.getDhisEndpoint().getPassword() ) > SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH )
+            {
+                errors.rejectValue( "baseUrl", "RemoteSubscription.dhisEndpoint.password.length", new Object[]{ SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH }, "DHIS endpoint password must not be longer than {0} characters." );
             }
         }
         errors.popNestedPath();
@@ -126,7 +154,11 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
         {
             if ( !ValidatorUtils.isValidUrl( remoteSubscription.getFhirEndpoint().getBaseUrl() ) )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl", "FHIR endpoint base URL is not a valid URL." );
+                errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid URL." );
+            }
+            if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
+            {
+                errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.length", new Object[]{ SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
             }
             if ( remoteSubscription.getFhirEndpoint().getHeaders() != null )
             {
@@ -137,9 +169,17 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
                     {
                         errors.rejectValue( "headers[" + i + "].name", "RemoteSubscription.fhirEndpoint.headers.name.blank", "FHIR endpoint request header names must not be blank." );
                     }
+                    if ( StringUtils.length( h.getName() ) > RequestHeader.MAX_NAME_LENGTH )
+                    {
+                        errors.rejectValue( "headers[" + i + "].name", "RemoteSubscription.fhirEndpoint.headers.name.length", new Object[]{ RequestHeader.MAX_NAME_LENGTH }, "FHIR endpoint request header names must not be longer than {0} characters." );
+                    }
                     if ( StringUtils.isBlank( h.getValue() ) )
                     {
                         errors.rejectValue( "headers[" + i + "].value", "RemoteSubscription.fhirEndpoint.headers.value.blank", "FHIR endpoint request header values must not be blank." );
+                    }
+                    if ( StringUtils.length( h.getValue() ) > RequestHeader.MAX_VALUE_LENGTH )
+                    {
+                        errors.rejectValue( "headers[" + i + "].value", "RemoteSubscription.fhirEndpoint.headers.value.length", new Object[]{ RequestHeader.MAX_VALUE_LENGTH }, "FHIR endpoint request header values must not be longer than {0} characters." );
                     }
                 } );
             }

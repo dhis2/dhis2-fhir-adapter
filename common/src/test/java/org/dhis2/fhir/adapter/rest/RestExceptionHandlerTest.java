@@ -55,8 +55,9 @@ public class RestExceptionHandlerTest
     @Test
     public void test()
     {
-        final ResponseEntity<String> entity = restExceptionHandler.handleResponseEntityException( new RestResourceNotFoundException( "This is a test." ), webRequest );
+        final ResponseEntity<RestError> entity = restExceptionHandler.handleResponseEntityException( new RestResourceNotFoundException( "This is a test." ), webRequest );
         Assert.assertEquals( HttpStatus.NOT_FOUND, entity.getStatusCode() );
-        Assert.assertEquals( "This is a test.", entity.getBody() );
+        Assert.assertNotNull( entity.getBody() );
+        Assert.assertEquals( "This is a test.", entity.getBody().getMessage() );
     }
 }

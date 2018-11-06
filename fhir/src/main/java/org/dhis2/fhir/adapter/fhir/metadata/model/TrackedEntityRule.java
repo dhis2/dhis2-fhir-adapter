@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 
@@ -55,6 +56,11 @@ public class TrackedEntityRule extends AbstractRule
     private ExecutableScript locationLookupScript;
     private Reference trackedEntityIdentifierReference;
     private boolean trackedEntityIdentifierFq;
+
+    public TrackedEntityRule()
+    {
+        super( DhisResourceType.TRACKED_ENTITY );
+    }
 
     @Basic
     @Column( name = "tracked_entity_ref", nullable = false, length = 230 )

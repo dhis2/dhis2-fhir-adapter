@@ -47,7 +47,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_tracker_program" )
-public class MappedTrackerProgram extends BaseMetadata implements Serializable
+public class MappedTrackerProgram extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2784006479143123933L;
 

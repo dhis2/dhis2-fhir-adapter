@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
@@ -41,8 +42,10 @@ import java.time.LocalDateTime;
  */
 public interface CustomRemoteSubscriptionResourceUpdateRepository
 {
+    @RestResource( exported = false )
     @Nonnull
     LocalDateTime getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource );
 
+    @RestResource( exported = false )
     boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull LocalDateTime lastUpdated );
 }

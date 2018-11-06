@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nullable;
+
 /**
  * The data type of the input or output variable of a transformation.
  *
@@ -35,11 +37,24 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 public enum TransformDataType
 {
-    DHIS_TRACKED_ENTITY_INSTANCE,
-    DHIS_ENROLLMENT,
-    DHIS_EVENT,
-    FHIR_PATIENT,
-    FHIR_IMMUNIZATION,
-    FHIR_OBSERVATION,
-    FHIR_DIAGNOSTIC_REPORT
+    DHIS_TRACKED_ENTITY_INSTANCE( null ),
+    DHIS_ENROLLMENT( null ),
+    DHIS_EVENT( null ),
+    FHIR_PATIENT( FhirResourceType.PATIENT ),
+    FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),
+    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
+    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT );
+
+    private final FhirResourceType fhirResourceType;
+
+    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    {
+        this.fhirResourceType = fhirResourceType;
+    }
+
+    @Nullable
+    public FhirResourceType getFhirResourceType()
+    {
+        return fhirResourceType;
+    }
 }

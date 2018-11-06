@@ -28,13 +28,20 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * The arguments of an {@linkplain ExecutableScript executable script}. All arguments of the underlying
@@ -44,14 +51,30 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_executable_script_argument" )
-public class ExecutableScriptArg extends BaseMetadata implements Serializable
+public class ExecutableScriptArg implements Serializable, FhirAdapterMetadata<UUID>
 {
     private static final long serialVersionUID = 487628755797899218L;
 
+    private UUID id;
     private String overrideValue;
     private ExecutableScript script;
     private ScriptArg argument;
     private boolean enabled;
+
+    @Override
+    @GeneratedValue( generator = "uuid2" )
+    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
+    {
+        return id;
+    }
+
+    public void setId( UUID id )
+    {
+        this.id = id;
+    }
 
     @Basic
     @Column( name = "override_value", length = 230 )
@@ -67,6 +90,7 @@ public class ExecutableScriptArg extends BaseMetadata implements Serializable
 
     @ManyToOne
     @JoinColumn( name = "executable_script_id", referencedColumnName = "id", nullable = false )
+    @JsonIgnore
     public ExecutableScript getScript()
     {
         return script;

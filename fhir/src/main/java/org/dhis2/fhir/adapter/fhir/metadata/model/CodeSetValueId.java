@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -44,6 +46,7 @@ public class CodeSetValueId implements Serializable
 
     @ManyToOne( optional = false )
     @JoinColumn( name = "code_set_id", nullable = false )
+    @JsonIgnore
     public CodeSet getCodeSet()
     {
         return codeSet;
@@ -79,5 +82,11 @@ public class CodeSetValueId implements Serializable
     public int hashCode()
     {
         return Objects.hash( codeSet, code );
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[" + "codeSetId=" + ((codeSet == null) ? "" : codeSet.getId()) + ", codeId=" + ((code == null) ? "" : code.getId()) + ']';
     }
 }

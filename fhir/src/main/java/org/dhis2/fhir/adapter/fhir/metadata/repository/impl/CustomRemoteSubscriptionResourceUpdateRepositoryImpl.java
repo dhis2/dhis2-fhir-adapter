@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -45,8 +46,14 @@ import java.time.LocalDateTime;
 public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl implements CustomRemoteSubscriptionResourceUpdateRepository
 {
     @PersistenceContext
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
+    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    {
+        this.entityManager = entityManager;
+    }
+
+    @RestResource( exported = false )
     @Nonnull
     @Override
     public LocalDateTime getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource )
@@ -63,6 +70,7 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl implements Cus
         return rsr.getRemoteLastUpdated();
     }
 
+    @RestResource( exported = false )
     @Transactional
     @Override
     public boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull LocalDateTime lastUpdated )

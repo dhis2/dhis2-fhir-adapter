@@ -29,8 +29,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
+import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -38,6 +45,49 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public interface ExecutableScriptRepository extends JpaRepository<ExecutableScript, UUID>
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScript" )
+@RepositoryRestResource
+@PreAuthorize( "hasRole('DATA_MAPPING')" )
+public interface ExecutableScriptRepository extends JpaRepository<ExecutableScript, UUID>, CustomExecutableScriptRepository
 {
+    @Override
+    @Nonnull
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScript> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScript> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScript> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<ExecutableScript> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull ExecutableScript entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends ExecutableScript> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

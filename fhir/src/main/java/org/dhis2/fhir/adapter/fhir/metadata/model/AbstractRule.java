@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
@@ -60,13 +63,20 @@ import java.io.Serializable;
     "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query = "SELECT r FROM AbstractRule r JOIN r.applicableCodeSet acs JOIN acs.codeSetValues csv ON csv.enabled=true JOIN csv.id.code c " +
         "JOIN c.systemCodes sc ON sc.systemCode=:code JOIN sc.system s ON s.systemUri=:system AND s.enabled=true WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true" ) } )
-public abstract class AbstractRule extends BaseMetadata implements Serializable, Comparable<AbstractRule>
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "dhisResourceType" )
+@JsonSubTypes( {
+    @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
+    @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" )
+} )
+public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
     public static final String FIND_RULES_BY_TYPE_NAMED_QUERY = "findRulesByType";
 
     public static final String FIND_RULES_BY_TYPE_CODES_NAMED_QUERY = "findRulesByTypeAndCodes";
+
+    public static final int MAX_NAME_LENGTH = 230;
 
     private String name;
     private String description;
@@ -77,6 +87,16 @@ public abstract class AbstractRule extends BaseMetadata implements Serializable,
     private ExecutableScript applicableInScript;
     private CodeSet applicableCodeSet;
     private ExecutableScript transformInScript;
+
+    protected AbstractRule()
+    {
+        super();
+    }
+
+    protected AbstractRule( @Nonnull DhisResourceType dhisResourceType )
+    {
+        this.dhisResourceType = dhisResourceType;
+    }
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -140,8 +160,9 @@ public abstract class AbstractRule extends BaseMetadata implements Serializable,
     }
 
     @Basic
-    @Column( name = "dhis_resource_type", nullable = false, length = 30 )
+    @Column( name = "dhis_resource_type", nullable = false, updatable = false, length = 30 )
     @Enumerated( EnumType.STRING )
+    @JsonProperty( access = JsonProperty.Access.READ_ONLY )
     public DhisResourceType getDhisResourceType()
     {
         return dhisResourceType;

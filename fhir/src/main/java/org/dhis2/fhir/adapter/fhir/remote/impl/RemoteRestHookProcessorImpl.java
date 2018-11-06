@@ -40,12 +40,14 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessor;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessorException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,6 +149,19 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
     @JmsListener( destination = "#{@fhirRemoteConfig.webHookRequestQueue.queueName}",
         concurrency = "#{@fhirRemoteConfig.webHookRequestQueue.listener.concurrency}" )
     public void receive( @Nonnull RemoteRestHookRequest remoteRestHookRequest )
+    {
+        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
+        try
+        {
+            receiveAuthenticated( remoteRestHookRequest );
+        }
+        finally
+        {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    protected void receiveAuthenticated( @Nonnull RemoteRestHookRequest remoteRestHookRequest )
     {
         logger.info( "Processing queued web hook request {}.", remoteRestHookRequest.getRemoteSubscriptionResourceId() );
         queuedRemoteSubscriptionRequestRepository.dequeued( remoteRestHookRequest.getRemoteSubscriptionResourceId() );

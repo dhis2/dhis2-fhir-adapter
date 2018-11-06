@@ -51,7 +51,7 @@ import java.util.UUID;
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscription" )
 @RepositoryRestResource
-@PreAuthorize( "(authentication==null) or hasRole('ADMINISTRATION')" )
+@PreAuthorize( "hasRole('ADMINISTRATION')" )
 public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscription, UUID>, CustomRemoteSubscriptionRepository
 {
     @RestResource( exported = false )

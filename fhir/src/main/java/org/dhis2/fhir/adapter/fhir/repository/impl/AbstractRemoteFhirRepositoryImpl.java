@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.server.exceptions.BaseServerResponseException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
@@ -43,6 +44,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
+import org.dhis2.fhir.adapter.rest.RestBadRequestException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
@@ -152,10 +154,18 @@ public abstract class AbstractRemoteFhirRepositoryImpl implements RemoteFhirRepo
         final FhirContext fhirContext = fhirContexts.get( event.getRemoteSubscriptionResource().getRemoteSubscription().getFhirVersion() );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, event.getRemoteSubscriptionResource().getRemoteSubscription().getFhirEndpoint() );
 
-        final MethodOutcome methodOutcome = client.create().resource( createFhirSubscription( event.getRemoteSubscriptionResource() ) ).execute();
+        final MethodOutcome methodOutcome;
+        try
+        {
+            methodOutcome = client.create().resource( createFhirSubscription( event.getRemoteSubscriptionResource() ) ).execute();
+        }
+        catch ( BaseServerResponseException e )
+        {
+            throw new RestBadRequestException( "The subscription could not be created on " +
+                event.getRemoteSubscriptionResource().getRemoteSubscription().getFhirEndpoint().getBaseUrl() + ": " + e.getMessage(), e );
+        }
         final String id = methodOutcome.getId().toUnqualifiedVersionless().getIdPart();
         logger.info( "Created FHIR subscription {} for remote subscription {}.", id, event.getRemoteSubscriptionResource().getRemoteSubscription().getId() );
-
         event.getRemoteSubscriptionResource().setFhirSubscriptionId( id );
     }
 

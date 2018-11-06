@@ -44,9 +44,15 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_constant" )
-public class Constant extends BaseMetadata implements Serializable
+public class Constant extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -4219974054617859678L;
+
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 50;
+
+    public static final int MAX_VALUE_LENGTH = 250;
 
     private String name;
     private String description;

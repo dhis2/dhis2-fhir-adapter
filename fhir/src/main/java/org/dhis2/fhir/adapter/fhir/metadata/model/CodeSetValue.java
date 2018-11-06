@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+
 import javax.annotation.Nonnull;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -39,7 +42,7 @@ import java.util.Objects;
 
 @Entity
 @Table( name = "fhir_code_set_value" )
-public class CodeSetValue implements Serializable, Comparable<CodeSetValue>
+public class CodeSetValue implements Serializable, Comparable<CodeSetValue>, FhirAdapterMetadata<CodeSetValueId>
 {
     private static final long serialVersionUID = 8365594386802303061L;
 
@@ -69,6 +72,7 @@ public class CodeSetValue implements Serializable, Comparable<CodeSetValue>
         this.id = id;
     }
 
+    @JsonIgnore
     @Transient
     public CodeSet getCodeSet()
     {
@@ -84,6 +88,7 @@ public class CodeSetValue implements Serializable, Comparable<CodeSetValue>
         id.setCodeSet( codeSet );
     }
 
+    @JsonIgnore
     @Transient
     public Code getCode()
     {
@@ -117,7 +122,8 @@ public class CodeSetValue implements Serializable, Comparable<CodeSetValue>
     @Override
     public int compareTo( @Nonnull CodeSetValue o )
     {
-        int value = getCodeSet().getId().compareTo( o.getCodeSet().getId() );
+        int value = ((getCodeSet() == null) && (o.getCodeSet() == null)) ? 0 :
+            getCodeSet().getId().compareTo( o.getCodeSet().getId() );
         if ( value != 0 )
         {
             return value;

@@ -28,15 +28,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -44,9 +45,49 @@ import java.util.UUID;
  *
  * @author volsch
  */
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "scriptSource" )
+@RepositoryRestResource
+@PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface ScriptSourceRepository extends JpaRepository<ScriptSource, UUID>
 {
-    @Query( "SELECT ss FROM #{#entityName} ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions" )
+    @Override
     @Nonnull
-    Optional<ScriptSource> findByScriptAndFhirVersion( @Param( "script" ) @Nonnull Script script, @Param( "fhirVersion" ) @Nonnull FhirVersion fhirVersion );
+    @CacheEvict( allEntries = true )
+    <S extends ScriptSource> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ScriptSource> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ScriptSource> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<ScriptSource> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull ScriptSource entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends ScriptSource> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

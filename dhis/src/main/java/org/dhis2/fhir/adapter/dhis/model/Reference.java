@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Objects;
@@ -57,7 +60,8 @@ public class Reference implements Serializable
      * @param name the code or name to which the reference refers to.
      * @param type the type of the reference (either a reference by code or by name).
      */
-    public Reference( @Nonnull String name, @Nonnull ReferenceType type )
+    @JsonCreator
+    public Reference( @Nonnull @JsonProperty( "value" ) String name, @Nonnull @JsonProperty( "type" ) ReferenceType type )
     {
         this.value = name;
         this.type = type;

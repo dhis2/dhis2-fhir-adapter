@@ -41,5 +41,5 @@ import java.util.List;
 public interface CustomRuleRepository
 {
     @Nonnull
-    List<? extends AbstractRule> findRulesByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
+    List<? extends AbstractRule> findAllByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
 }

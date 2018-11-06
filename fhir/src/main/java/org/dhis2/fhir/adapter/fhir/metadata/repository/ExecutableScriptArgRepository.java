@@ -28,14 +28,14 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -43,9 +43,47 @@ import java.util.UUID;
  *
  * @author volsch
  */
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScriptArg" )
 public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>
 {
-    @Query( "SELECT sa FROM #{#entityName} sa WHERE sa.script=:script AND sa.enabled=true" )
+    @Override
     @Nonnull
-    Collection<ExecutableScriptArg> findAllEnabledByScript( @Param( "script" ) @Nonnull ExecutableScript executableScript );
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScriptArg> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScriptArg> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ExecutableScriptArg> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<ExecutableScriptArg> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull ExecutableScriptArg entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends ExecutableScriptArg> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

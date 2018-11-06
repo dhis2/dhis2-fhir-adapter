@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,9 +54,13 @@ import java.util.Objects;
  */
 @Entity
 @Table( name = "fhir_code" )
-public class Code extends BaseMetadata implements Serializable
+public class Code extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6376382638316116368L;
+
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 50;
 
     private String name;
     private String code;
@@ -98,7 +104,7 @@ public class Code extends BaseMetadata implements Serializable
         this.description = description;
     }
 
-    @ManyToOne
+    @ManyToOne( optional = false )
     @JoinColumn( name = "code_category_id", referencedColumnName = "id", nullable = false )
     public CodeCategory getCodeCategory()
     {
@@ -112,6 +118,7 @@ public class Code extends BaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "code" )
     @OrderBy( "id" )
+    @JsonIgnore
     public List<SystemCode> getSystemCodes()
     {
         return systemCodes;

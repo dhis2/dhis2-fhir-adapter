@@ -28,74 +28,51 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.BaseMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.VersionedBaseMetadata;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 
 /**
  * Event listener that sets the metadata attributes in entity classes
- * that extends {@linkplain BaseMetadata base metadata} class. Since
- * {@link BaseMetadata#getCreatedAt()} is not updatable in database,
+ * that extends {@linkplain VersionedBaseMetadata base metadata} class. Since
+ * {@link VersionedBaseMetadata#getCreatedAt()} is not updatable in database,
  * value needs not to be reset.
  *
  * @author volsch
  */
 @Component
-public class BaseMetadataEventListener extends AbstractRepositoryEventListener<BaseMetadata>
+@Order( value = 1 )
+public class VersionedBaseMetadataEventListener extends AbstractRepositoryEventListener<VersionedBaseMetadata>
 {
     @Override
-    protected void onBeforeCreate( BaseMetadata entity )
+    protected void onBeforeCreate( VersionedBaseMetadata entity )
     {
         entity.setCreatedAt( LocalDateTime.now() );
         entity.setLastUpdatedAt( entity.getCreatedAt() );
-        entity.setLastUpdatedBy( getCurrentUser() );
+        entity.setLastUpdatedBy( FhirAdapterMetadataEventListener.getCurrentUsername() );
     }
 
     @Override
-    protected void onBeforeSave( BaseMetadata entity )
+    protected void onBeforeSave( VersionedBaseMetadata entity )
     {
         entity.setLastUpdatedAt( LocalDateTime.now() );
-        entity.setLastUpdatedBy( getCurrentUser() );
+        entity.setLastUpdatedBy( FhirAdapterMetadataEventListener.getCurrentUsername() );
     }
 
     @Override
-    protected void onBeforeLinkSave( BaseMetadata parent, Object linked )
+    protected void onBeforeLinkSave( VersionedBaseMetadata parent, Object linked )
     {
         parent.setLastUpdatedAt( LocalDateTime.now() );
-        parent.setLastUpdatedBy( getCurrentUser() );
+        parent.setLastUpdatedBy( FhirAdapterMetadataEventListener.getCurrentUsername() );
     }
 
     @Override
-    protected void onBeforeLinkDelete( BaseMetadata parent, Object linked )
+    protected void onBeforeLinkDelete( VersionedBaseMetadata parent, Object linked )
     {
         parent.setLastUpdatedAt( LocalDateTime.now() );
-        parent.setLastUpdatedBy( getCurrentUser() );
-    }
-
-    @Nullable
-    protected String getCurrentUser()
-    {
-        final SecurityContext context = SecurityContextHolder.getContext();
-        if ( context == null )
-        {
-            return null;
-        }
-        final Authentication authentication = context.getAuthentication();
-        if ( authentication == null )
-        {
-            return null;
-        }
-        if ( !(authentication.getPrincipal() instanceof UserDetails) )
-        {
-            return null;
-        }
-        return ((UserDetails) authentication.getPrincipal()).getUsername();
+        parent.setLastUpdatedBy( FhirAdapterMetadataEventListener.getCurrentUsername() );
     }
 }

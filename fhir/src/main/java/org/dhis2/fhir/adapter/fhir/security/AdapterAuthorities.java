@@ -28,6 +28,14 @@ package org.dhis2.fhir.adapter.fhir.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Security authorities that are used by the adapter.
  */
@@ -38,4 +46,10 @@ public interface AdapterAuthorities
     String CODE_MAPPING_AUTHORITY = "ROLE_CODE_MAPPING";
 
     String DATA_MAPPING_AUTHORITY = "ROLE_DATA_MAPPING";
+
+    Set<GrantedAuthority> ALL_AUTHORITIES = Collections.unmodifiableSet(
+        new HashSet<>( Arrays.asList(
+            new SimpleGrantedAuthority( ADMINISTRATION_AUTHORITY ),
+            new SimpleGrantedAuthority( CODE_MAPPING_AUTHORITY ),
+            new SimpleGrantedAuthority( DATA_MAPPING_AUTHORITY ) ) ) );
 }

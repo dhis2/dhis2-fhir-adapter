@@ -45,6 +45,10 @@ public class SubscriptionAdapterEndpoint implements Serializable
 {
     private static final long serialVersionUID = -7323248001298960849L;
 
+    public static final int MAX_BASE_URL_LENGTH = 200;
+
+    public static final int MAX_AUTHORIZATION_HEADER_LENGTH = 200;
+
     private String baseUrl;
     private String authorizationHeader;
     private SubscriptionType subscriptionType = SubscriptionType.REST_HOOK;

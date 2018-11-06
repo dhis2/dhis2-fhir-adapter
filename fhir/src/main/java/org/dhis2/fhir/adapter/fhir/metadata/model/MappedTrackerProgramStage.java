@@ -28,11 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -40,27 +38,17 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.UUID;
 
 @Entity
 @Table( name = "fhir_tracker_program_stage" )
-public class MappedTrackerProgramStage implements Serializable
+public class MappedTrackerProgramStage extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7561285892767275117L;
 
-    private UUID id;
-    private Long version;
-    private Timestamp createdAt;
-    private String lastUpdatedBy;
-    private Timestamp lastUpdatedAt;
     private String name;
     private String description;
     private Reference programStageReference;
@@ -77,69 +65,6 @@ public class MappedTrackerProgramStage implements Serializable
     private int beforePeriodDays;
     private EventPeriodDayType afterPeriodDayType;
     private int afterPeriodDays;
-
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Column( name = "version", nullable = false )
-    @Version
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public Timestamp getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( Timestamp createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    @JsonInclude( JsonInclude.Include.NON_NULL )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public Timestamp getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( Timestamp lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )

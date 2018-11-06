@@ -50,7 +50,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_remote_subscription_resource" )
-public class RemoteSubscriptionResource extends BaseMetadata implements Serializable
+public class RemoteSubscriptionResource extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;
 

@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.annotation.Nullable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,6 +40,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * Defines a single argument of a script. Arguments of a script have names (are not referenced by their position) and
@@ -46,9 +50,17 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_script_argument" )
-public class ScriptArg extends BaseMetadata implements Serializable
+public class ScriptArg extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -5052962742547037363L;
+
+    public static final int MAX_NAME_LENGTH = 30;
+
+    public static final int MAX_DEFAULT_VALUE_LENGTH = 230;
+
+    public static final String ARRAY_SEPARATOR = "|";
+
+    protected static final String ARRAY_SEPARATOR_REGEXP = Pattern.quote( ARRAY_SEPARATOR );
 
     private String name;
     private DataType dataType;
@@ -131,8 +143,9 @@ public class ScriptArg extends BaseMetadata implements Serializable
         this.description = description;
     }
 
-    @ManyToOne
+    @ManyToOne( optional = false )
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
+    @JsonIgnore
     public Script getScript()
     {
         return script;
@@ -141,5 +154,15 @@ public class ScriptArg extends BaseMetadata implements Serializable
     public void setScript( Script script )
     {
         this.script = script;
+    }
+
+    @Nullable
+    public static String[] splitArrayValues( @Nullable String values )
+    {
+        if ( values == null )
+        {
+            return null;
+        }
+        return values.split( ARRAY_SEPARATOR_REGEXP );
     }
 }

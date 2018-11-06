@@ -28,12 +28,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,8 +45,49 @@ import java.util.UUID;
  *
  * @author volsch
  */
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "scriptArg" )
+@RepositoryRestResource
+@PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface ScriptArgRepository extends JpaRepository<ScriptArg, UUID>
 {
+    @Override
     @Nonnull
-    Collection<ScriptArg> findAllByScript( @Nonnull Script script );
+    @CacheEvict( allEntries = true )
+    <S extends ScriptArg> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ScriptArg> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends ScriptArg> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<ScriptArg> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull ScriptArg entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends ScriptArg> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

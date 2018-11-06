@@ -51,6 +51,10 @@ public class SubscriptionDhisEndpoint implements Serializable
 {
     private static final long serialVersionUID = 4975058445234438007L;
 
+    public static final int MAX_USERNAME_LENGTH = 200;
+
+    public static final int MAX_PASSWORD_LENGTH = 200;
+
     private AuthenticationMethod authenticationMethod;
     private String username;
     private String password;

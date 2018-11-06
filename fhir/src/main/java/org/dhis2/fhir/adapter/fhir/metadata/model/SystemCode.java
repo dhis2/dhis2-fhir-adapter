@@ -53,9 +53,11 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_system_code" )
-public class SystemCode extends BaseMetadata implements Serializable
+public class SystemCode extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7048763667494469394L;
+
+    public static final int MAX_SYSTEM_CODE_LENGTH = 120;
 
     private System system;
     private String systemCode;

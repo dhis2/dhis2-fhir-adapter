@@ -31,11 +31,9 @@ package org.dhis2.fhir.adapter.fhir.script.impl;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptArgRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptArgRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptSourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
@@ -54,38 +52,26 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @Component
 public class ScriptExecutorImpl implements ScriptExecutor
 {
     public static final String ARGUMENTS_VARIABLE_NAME = "args";
 
-    public static final String ARRAY_SEPARATOR = "|";
-
-    protected static final String ARRAY_SEPARATOR_REGEXP = Pattern.quote( ARRAY_SEPARATOR );
-
     private final ScriptEvaluator scriptEvaluator;
 
     private final ScriptExecutionContext scriptExecutionContext;
 
-    private final ExecutableScriptArgRepository executableScriptArgRepository;
-
-    private final ScriptArgRepository scriptArgRepository;
-
-    private final ScriptSourceRepository scriptSourceRepository;
+    private final ExecutableScriptRepository executableScriptRepository;
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
     public ScriptExecutorImpl( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull ScriptArgRepository scriptArgRepository,
-        @Nonnull ScriptSourceRepository scriptSourceRepository )
+        @Nonnull ExecutableScriptRepository executableScriptRepository )
     {
         this.scriptEvaluator = scriptEvaluator;
         this.scriptExecutionContext = scriptExecutionContext;
-        this.executableScriptArgRepository = executableScriptArgRepository;
-        this.scriptArgRepository = scriptArgRepository;
-        this.scriptSourceRepository = scriptSourceRepository;
+        this.executableScriptRepository = executableScriptRepository;
     }
 
     @Nullable
@@ -105,20 +91,20 @@ public class ScriptExecutorImpl implements ScriptExecutor
         {
             return null;
         }
+        final ExecutableScriptInfo executableScriptInfo = executableScriptRepository.findInfo( executableScript, fhirVersion )
+            .orElseThrow( () -> new ScriptPreparationException( "Script \"" + executableScript.getName() + "\" does not include a source for FHIR " + "version " + fhirVersion + "." ) );
 
-        if ( !resultClass.isAssignableFrom( executableScript.getScript().getReturnType().getJavaType() ) )
+        if ( !resultClass.isAssignableFrom( executableScriptInfo.getScript().getReturnType().getJavaType() ) )
         {
             throw new ScriptPreparationException(
-                "Script \"" + executableScript.getScript().getName() + "\" returns " + executableScript.getScript().getReturnType() +
+                "Script \"" + executableScriptInfo.getScript().getName() + "\" returns " + executableScriptInfo.getScript().getReturnType() +
                     " and not requested " + resultClass.getSimpleName() + "." );
         }
 
-        final ScriptSource scriptSource = scriptSourceRepository.findByScriptAndFhirVersion( executableScript.getScript(), fhirVersion ).orElseThrow( () ->
-            new ScriptPreparationException( "Script \"" + executableScript.getScript().getName() + "\" does not include a source for FHIR version " + fhirVersion + "." ) );
         // performance optimization in case script is just a boolean value
         if ( Boolean.class.equals( resultClass ) )
         {
-            @SuppressWarnings( "unchecked" ) final T booleanScriptValue = (T) convertToBoolean( scriptSource.getSourceText() );
+            @SuppressWarnings( "unchecked" ) final T booleanScriptValue = (T) convertToBoolean( executableScriptInfo.getScriptSource().getSourceText() );
             if ( booleanScriptValue != null )
             {
                 return booleanScriptValue;
@@ -126,15 +112,15 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
 
         // validate that all required script variables have been provided
-        executableScript.getScript().getVariables().forEach( v -> {
+        executableScriptInfo.getScript().getVariables().forEach( v -> {
             if ( !variables.containsKey( v.getVariableName() ) )
             {
                 throw new ScriptPreparationException(
-                    "Script \"" + executableScript.getScript().getName() + "\" requires variable " + v.getVariableName() + " that has not been provided." );
+                    "Script \"" + executableScriptInfo.getScript().getName() + "\" requires variable " + v.getVariableName() + " that has not been provided." );
             }
         } );
 
-        final Map<String, Object> args = createArgs( executableScript, arguments );
+        final Map<String, Object> args = createArgs( executableScriptInfo, arguments );
 
         final Map<String, Object> scriptVariables = new HashMap<>( variables );
         scriptVariables.put( ARGUMENTS_VARIABLE_NAME, args );
@@ -143,20 +129,22 @@ public class ScriptExecutorImpl implements ScriptExecutor
         scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables ) );
         try
         {
-            result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource( scriptSource.getSourceText() ), scriptVariables ) );
+            result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource(
+                executableScriptInfo.getScriptSource().getSourceText() ), scriptVariables ) );
         }
         catch ( ScriptExecutionException e )
         {
-            throw new ScriptExecutionException( "Error while executing script \"" + executableScript.getScript().getName() +
-                "\" (" + executableScript.getId() + "): " + e.getMessage(), e );
+            throw new ScriptExecutionException( "Error while executing script \"" + executableScriptInfo.getScript().getName() +
+                "\" (" + executableScriptInfo.getExecutableScript().getId() + "): " + e.getMessage(), e );
         }
         finally
         {
             scriptExecutionContext.resetScriptExecutionContext();
         }
-        if ( (result != null) && !executableScript.getScript().getReturnType().getJavaType().isInstance( result ) )
+        if ( (result != null) && !executableScriptInfo.getScript().getReturnType().getJavaType().isInstance( result ) )
         {
-            throw new ScriptExecutionException( "Script \"" + executableScript.getScript().getName() + "\" (" + executableScript.getId() + ") is expected to return " + executableScript.getScript().getReturnType() + ", but returned " + result.getClass().getSimpleName() + "." );
+            throw new ScriptExecutionException( "Script \"" + executableScriptInfo.getScript().getName() + "\" (" + executableScriptInfo.getExecutableScript().getId() +
+                ") is expected to return " + executableScriptInfo.getScript().getReturnType() + ", but returned " + result.getClass().getSimpleName() + "." );
         }
         return resultClass.cast( result );
     }
@@ -171,10 +159,10 @@ public class ScriptExecutorImpl implements ScriptExecutor
         return value;
     }
 
-    private Map<String, Object> createArgs( @Nonnull ExecutableScript executableScript, @Nonnull Map<String, Object> arguments )
+    private Map<String, Object> createArgs( @Nonnull ExecutableScriptInfo executableScriptInfo, @Nonnull Map<String, Object> arguments )
     {
-        final Collection<ScriptArg> scriptArgs = scriptArgRepository.findAllByScript( executableScript.getScript() );
-        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptArgRepository.findAllEnabledByScript( executableScript );
+        final Collection<ScriptArg> scriptArgs = executableScriptInfo.getScript().getArguments();
+        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptInfo.getExecutableScript().getOverrideArguments();
 
         final Map<String, Object> args = new HashMap<>();
         // use default values of the script first
@@ -225,7 +213,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         {
             if ( scriptArg.isArray() )
             {
-                final String[] values = value.split( ARRAY_SEPARATOR_REGEXP );
+                final String[] values = ScriptArg.splitArrayValues( value );
                 final Object[] convertedValues = new Object[values.length];
                 for ( int i = 0; i < values.length; i++ )
                 {

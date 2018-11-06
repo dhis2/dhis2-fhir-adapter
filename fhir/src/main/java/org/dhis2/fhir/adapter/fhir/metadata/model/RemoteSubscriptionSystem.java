@@ -40,9 +40,11 @@ import java.io.Serializable;
 
 @Entity
 @Table( name = "fhir_remote_subscription_system" )
-public class RemoteSubscriptionSystem extends BaseMetadata implements Serializable
+public class RemoteSubscriptionSystem extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -930459310559544662L;
+
+    public static final int MAX_CODE_PREFIX_LENGTH = 20;
 
     private RemoteSubscription remoteSubscription;
     private FhirResourceType fhirResourceType;

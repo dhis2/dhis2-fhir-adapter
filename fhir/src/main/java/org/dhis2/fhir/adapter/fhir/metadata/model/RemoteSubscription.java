@@ -56,9 +56,13 @@ import java.util.Set;
 @Entity
 @Table( name = "fhir_remote_subscription" )
 @JsonFilter( ToManyPropertyFilter.FILTER_NAME )
-public class RemoteSubscription extends BaseMetadata implements Serializable
+public class RemoteSubscription extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
+
+    public static final int MAX_NAME_LENGTH = 50;
+
+    public static final int MAX_CODE_LENGTH = 20;
 
     private String name;
     private String code;

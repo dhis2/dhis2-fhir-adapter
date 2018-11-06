@@ -28,100 +28,31 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.dhis2.fhir.adapter.jackson.PersistentSortedSetConverter;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.SortedSet;
-import java.util.UUID;
 
 @Entity
 @Table( name = "fhir_code_set" )
-public class CodeSet implements Serializable
+public class CodeSet extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1177970691904984600L;
 
-    private UUID id;
-    private Long version;
-    private ZonedDateTime createdAt;
-    private String lastUpdatedBy;
-    private ZonedDateTime lastUpdatedAt;
     private CodeCategory codeCategory;
     private String name;
     private String code;
     private String description;
     private SortedSet<CodeSetValue> codeSetValues;
-
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
-    @Version
-    @Column( name = "version", nullable = false )
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    public void setVersion( Long version )
-    {
-        this.version = version;
-    }
-
-    @Basic
-    @Column( name = "created_at", nullable = false )
-    public ZonedDateTime getCreatedAt()
-    {
-        return createdAt;
-    }
-
-    public void setCreatedAt( ZonedDateTime createdAt )
-    {
-        this.createdAt = createdAt;
-    }
-
-    @Basic
-    @Column( name = "last_updated_by", length = 11 )
-    @JsonInclude( JsonInclude.Include.NON_NULL )
-    public String getLastUpdatedBy()
-    {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy( String lastUpdatedBy )
-    {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    @Basic
-    @Column( name = "last_updated_at", nullable = false )
-    public ZonedDateTime getLastUpdatedAt()
-    {
-        return lastUpdatedAt;
-    }
-
-    public void setLastUpdatedAt( ZonedDateTime lastUpdatedAt )
-    {
-        this.lastUpdatedAt = lastUpdatedAt;
-    }
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -162,6 +93,7 @@ public class CodeSet implements Serializable
     @SuppressWarnings( "JpaAttributeTypeInspection" )
     @OneToMany( orphanRemoval = true, mappedBy = "id.codeSet", cascade = CascadeType.ALL )
     @OrderBy( "id.codeSet.id,id.code.id" )
+    @JsonSerialize( converter = PersistentSortedSetConverter.class )
     public SortedSet<CodeSetValue> getCodeSetValues()
     {
         return codeSetValues;
@@ -169,6 +101,11 @@ public class CodeSet implements Serializable
 
     public void setCodeSetValues( SortedSet<CodeSetValue> codeSetValues )
     {
+        if ( codeSetValues != null )
+        {
+            codeSetValues.stream().filter( csv -> (csv.getCodeSet() == null) )
+                .forEach( csv -> csv.setCodeSet( this ) );
+        }
         this.codeSetValues = codeSetValues;
     }
 
@@ -179,13 +116,13 @@ public class CodeSet implements Serializable
         if ( o == null || getClass() != o.getClass() ) return false;
         CodeSet that = (CodeSet) o;
         return
-            Objects.equals( id, that.id ) &&
+            Objects.equals( getId(), that.getId() ) &&
                 Objects.equals( name, that.name );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( id, name );
+        return Objects.hash( getId(), name );
     }
 }

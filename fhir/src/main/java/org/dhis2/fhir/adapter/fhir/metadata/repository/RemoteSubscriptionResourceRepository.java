@@ -40,6 +40,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -53,12 +54,14 @@ import java.util.UUID;
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
 @RepositoryRestResource
+@PreAuthorize( "hasRole('ADMINISTRATION')" )
 public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>
 {
     @RestResource( exported = false )
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE r.id=:id" )
     @Nonnull
     @Cacheable( key = "#a0" )
+    @PreAuthorize( "permitAll()" )
     Optional<RemoteSubscriptionResource> findByIdCached( @Param( "id" ) @Nonnull UUID id );
 
     @RestResource( exported = false )

@@ -28,6 +28,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
+import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
+
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -54,9 +59,13 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script" )
-public class Script extends BaseMetadata implements Serializable
+public class Script extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
+
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 50;
 
     private String name;
     private String description;
@@ -159,6 +168,7 @@ public class Script extends BaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "script" )
     @OrderBy( "id" )
+    @JsonSerialize( converter = PersistentBagConverter.class )
     public List<ScriptArg> getArguments()
     {
         return arguments;
@@ -175,6 +185,7 @@ public class Script extends BaseMetadata implements Serializable
     @Column( name = "variable" )
     @Enumerated( EnumType.STRING )
     @OrderBy
+    @JsonSerialize( converter = ScriptVariablePersistentSortedSetConverter.class )
     public SortedSet<ScriptVariable> getVariables()
     {
         return variables;
@@ -187,6 +198,7 @@ public class Script extends BaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER )
     @OrderBy( "id" )
+    @JsonIgnore
     public List<ScriptSource> getSources()
     {
         return sources;

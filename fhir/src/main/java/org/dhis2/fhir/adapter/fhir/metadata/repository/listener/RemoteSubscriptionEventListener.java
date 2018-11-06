@@ -32,6 +32,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
 import org.springframework.stereotype.Component;
 
@@ -51,6 +52,7 @@ import java.util.Collection;
  * @author volsch
  */
 @Component
+@Order( value = 10 )
 public class RemoteSubscriptionEventListener extends AbstractRepositoryEventListener<RemoteSubscription>
 {
     @PersistenceContext

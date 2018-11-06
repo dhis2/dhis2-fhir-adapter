@@ -140,7 +140,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             throw new TransformerMappingException( "Code transformer utils can be found for FHIR version " + context.getFhirRequest().getVersion() );
         }
 
-        final List<? extends AbstractRule> rules = ruleRepository.findRulesByInputData( context.getFhirRequest().getResourceType(),
+        final List<? extends AbstractRule> rules = ruleRepository.findAllByInputData( context.getFhirRequest().getResourceType(),
             codeTransformerUtils.getResourceCodes( input ) );
         for ( final AbstractRule rule : rules )
         {

@@ -52,6 +52,8 @@ public class SubscriptionFhirEndpoint implements Serializable
 {
     private static final long serialVersionUID = 5238213075216094777L;
 
+    public static final int MAX_BASE_URL_LENGTH = 200;
+
     private String baseUrl;
     private boolean logging;
     private boolean verboseLogging;

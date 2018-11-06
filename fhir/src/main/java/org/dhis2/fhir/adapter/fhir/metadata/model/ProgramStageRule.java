@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -65,6 +66,11 @@ public class ProgramStageRule extends AbstractRule
     private ApplicableEnrollmentStatus applicableEnrollmentStatus;
     private ApplicableEventStatus applicableEventStatus;
     private EventStatusUpdate eventStatusUpdate;
+
+    public ProgramStageRule()
+    {
+        super( DhisResourceType.PROGRAM_STAGE_EVENT );
+    }
 
     @Basic
     @Column( name = "enrollment_creation_enabled", nullable = false )

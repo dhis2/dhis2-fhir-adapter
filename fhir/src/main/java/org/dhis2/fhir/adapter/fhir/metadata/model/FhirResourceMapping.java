@@ -46,7 +46,7 @@ import java.io.Serializable;
 @Entity
 @Table( name = "fhir_resource_mapping" )
 
-public class FhirResourceMapping extends BaseMetadata implements Serializable
+public class FhirResourceMapping extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7669881610498151697L;
 

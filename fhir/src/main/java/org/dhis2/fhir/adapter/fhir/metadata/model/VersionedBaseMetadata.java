@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -43,9 +44,11 @@ import java.util.UUID;
 
 /**
  * Base metadata class that contains the base metadata properties.
+ *
+ * @author volsch
  */
 @MappedSuperclass
-public class BaseMetadata implements Serializable
+public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<UUID>
 {
     private static final long serialVersionUID = 7500268787032387101L;
 
@@ -55,6 +58,7 @@ public class BaseMetadata implements Serializable
     private String lastUpdatedBy;
     private LocalDateTime lastUpdatedAt;
 
+    @Override
     @GeneratedValue( generator = "uuid2" )
     @GenericGenerator( name = "uuid2", strategy = "uuid2" )
     @Id

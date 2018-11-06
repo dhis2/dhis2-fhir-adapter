@@ -46,6 +46,10 @@ public class RequestHeader implements Serializable, Comparable<RequestHeader>, C
 {
     private static final long serialVersionUID = 9147646500873557921L;
 
+    public static final int MAX_NAME_LENGTH = 50;
+
+    public static final int MAX_VALUE_LENGTH = 200;
+
     private String name;
 
     @JsonProperty

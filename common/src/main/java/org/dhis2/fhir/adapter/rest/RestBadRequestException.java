@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.rest;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,6 +28,44 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class RemoteSubscriptionQueue
+import org.springframework.http.HttpStatus;
+
+import javax.annotation.Nonnull;
+
+/**
+ * Thrown if the request cannot be handled because the input data is invalid.
+ * The exception contains status code 400 that should be returned to a client.
+ *
+ * @author volsch
+ */
+public class RestBadRequestException extends RestResponseEntityException
 {
+    private static final long serialVersionUID = -7487909336857881610L;
+
+    public RestBadRequestException()
+    {
+        super();
+    }
+
+    public RestBadRequestException( String message )
+    {
+        super( message );
+    }
+
+    public RestBadRequestException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
+
+    public RestBadRequestException( Throwable cause )
+    {
+        super( cause );
+    }
+
+    @Nonnull
+    @Override
+    public HttpStatus getHttpStatus()
+    {
+        return HttpStatus.BAD_REQUEST;
+    }
 }

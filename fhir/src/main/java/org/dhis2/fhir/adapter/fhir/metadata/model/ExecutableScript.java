@@ -28,15 +28,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hibernate.annotations.GenericGenerator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -54,9 +55,13 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_executable_script" )
-public class ExecutableScript implements Serializable
+public class ExecutableScript extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2006842064596779970L;
+
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 100;
 
     private UUID id;
     private Script script;
@@ -65,22 +70,9 @@ public class ExecutableScript implements Serializable
     private String description;
     private List<ExecutableScriptArg> overrideArguments;
 
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
-    {
-        return id;
-    }
-
-    public void setId( UUID id )
-    {
-        this.id = id;
-    }
-
     @ManyToOne
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
+    @JsonIgnore
     public Script getScript()
     {
         return script;
@@ -129,6 +121,8 @@ public class ExecutableScript implements Serializable
 
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
     @OrderBy( "id" )
+    @RestResource
+    @JsonSerialize( converter = PersistentBagConverter.class )
     public List<ExecutableScriptArg> getOverrideArguments()
     {
         return overrideArguments;

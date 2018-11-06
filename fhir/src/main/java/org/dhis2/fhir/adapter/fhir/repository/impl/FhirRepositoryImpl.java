@@ -52,6 +52,7 @@ import org.dhis2.fhir.adapter.fhir.queue.RetryQueueDeliveryException;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
@@ -68,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -168,6 +170,19 @@ public class FhirRepositoryImpl implements FhirRepository
     @JmsListener( destination = "#{@fhirRepositoryConfig.fhirResourceQueue.queueName}",
         concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
     public void receive( @Nonnull RemoteFhirResource remoteFhirResource )
+    {
+        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
+        try
+        {
+            receiveAuthenticated( remoteFhirResource );
+        }
+        finally
+        {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    protected void receiveAuthenticated( @Nonnull RemoteFhirResource remoteFhirResource )
     {
         logger.info( "Processing FHIR resource {} for remote subscription resource {}.",
             remoteFhirResource.getFhirResourceId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
