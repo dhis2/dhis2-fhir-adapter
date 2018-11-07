@@ -182,8 +182,8 @@ CREATE TABLE fhir_constant (
   data_type       VARCHAR(30)                    NOT NULL,
   value           VARCHAR(250),
   CONSTRAINT fhir_constant_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_constant_uk1 UNIQUE (name),
-  CONSTRAINT fhir_constant_uk2 UNIQUE (code),
+  CONSTRAINT fhir_constant_uk_name UNIQUE (name),
+  CONSTRAINT fhir_constant_uk_code UNIQUE (code),
   CONSTRAINT fhir_constant_fk1 FOREIGN KEY(data_type) REFERENCES fhir_data_type_enum(value)
 );
 COMMENT ON TABLE fhir_constant IS 'Contains mappings between a code and a value. The code may be GENDER_FEMALE and the value may be the option set value for female that has been configured in DHIS2. This can be used to map between the FHIR enumerations and frequently used DHIS2 option set values.';
@@ -325,8 +325,8 @@ CREATE TABLE fhir_executable_script (
   code            VARCHAR(100) NOT NULL,
   description     TEXT,
   CONSTRAINT fhir_executable_script_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_executable_script_uk1 UNIQUE (name),
-  CONSTRAINT fhir_executable_script_uk2 UNIQUE (code),
+  CONSTRAINT fhir_executable_script_uk_name UNIQUE (name),
+  CONSTRAINT fhir_executable_script_uk_code UNIQUE (code),
   CONSTRAINT fhir_executable_script_fk1 FOREIGN KEY (script_id) REFERENCES fhir_script (id)
 );
 CREATE INDEX fhir_executable_script_i1
@@ -374,8 +374,8 @@ CREATE TABLE fhir_code_category (
   code            VARCHAR(50)                    NOT NULL,
   description     TEXT,
   CONSTRAINT fhir_code_category_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_code_category_uk1 UNIQUE (name),
-  CONSTRAINT fhir_code_category_uk2 UNIQUE (code)
+  CONSTRAINT fhir_code_category_uk_name UNIQUE (name),
+  CONSTRAINT fhir_code_category_uk_code UNIQUE (code)
 );
 COMMENT ON TABLE fhir_code_category IS 'Contains a category for defined codes. The category is only required for grouping codes in order to finding and using them manually.';
 COMMENT ON COLUMN fhir_code_category.id IS 'Unique ID of entity.';
@@ -396,14 +396,17 @@ CREATE TABLE fhir_code (
   code_category_id UUID                           NOT NULL,
   name             VARCHAR(230)                   NOT NULL,
   code             VARCHAR(50)                    NOT NULL,
+  mapped_code      VARCHAR(50),
   description      TEXT,
   CONSTRAINT fhir_code_pk PRIMARY KEY (id),
   CONSTRAINT fhir_code_fk1 FOREIGN KEY (code_category_id) REFERENCES fhir_code_category (id),
-  CONSTRAINT fhir_code_uk1 UNIQUE (name),
-  CONSTRAINT fhir_code_uk2 UNIQUE (code)
+  CONSTRAINT fhir_code_uk_name UNIQUE (name),
+  CONSTRAINT fhir_code_uk_code UNIQUE (code)
 );
 CREATE INDEX fhir_code_i1
   ON fhir_code (code_category_id);
+CREATE INDEX fhir_code_i2
+  ON fhir_code (mapped_code);
 COMMENT ON TABLE fhir_code IS 'Contains unique codes that can be used by rules, transformations and scripts to reference system dependent codes (e.g. vaccine CVX codes).';
 COMMENT ON COLUMN fhir_code.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_code.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
@@ -413,6 +416,7 @@ COMMENT ON COLUMN fhir_code.last_updated_at IS 'The timestamp when the entity ha
 COMMENT ON COLUMN fhir_code.code_category_id IS 'References the code category to which the code belongs to.';
 COMMENT ON COLUMN fhir_code.name IS 'The unique name of the code.';
 COMMENT ON COLUMN fhir_code.code IS 'The unique code that can be used by rules, transformations and scripts.';
+COMMENT ON COLUMN fhir_code.mapped_code IS 'The optional mapped code (unless it is the same like the code) that is used by DHIS2 (e.g. DHIS2 organization unit code).';
 COMMENT ON COLUMN fhir_code.description IS 'The detailed description that describes for which purpose the code is used. This may also contain details about the license that affects the code. In such a case the description must not be changed.';
 
 CREATE TABLE fhir_code_set (
@@ -427,8 +431,8 @@ CREATE TABLE fhir_code_set (
   description      TEXT,
   CONSTRAINT fhir_code_set_pk PRIMARY KEY (id),
   CONSTRAINT fhir_code_set_fk1 FOREIGN KEY (code_category_id) REFERENCES fhir_code_category (id),
-  CONSTRAINT fhir_code_set_uk1 UNIQUE (name),
-  CONSTRAINT fhir_code_set_uk2 UNIQUE (code)
+  CONSTRAINT fhir_code_set_uk_name UNIQUE (name),
+  CONSTRAINT fhir_code_set_uk_code UNIQUE (code)
 );
 CREATE INDEX fhir_code_set_i1
   ON fhir_code_set (code_category_id);
@@ -466,14 +470,14 @@ CREATE TABLE fhir_system (
   last_updated_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   name                  VARCHAR(230)                   NOT NULL,
   code                  VARCHAR(50)                    NOT NULL,
-  system_uri            VARCHAR(140)                   NOT NULL,
+  system_uri            VARCHAR(120)                   NOT NULL,
   enabled               BOOLEAN                        NOT NULL DEFAULT TRUE,
   description           TEXT,
   description_protected BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_system_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_system_uk1 UNIQUE (name),
-  CONSTRAINT fhir_system_uk2 UNIQUE (code),
-  CONSTRAINT fhir_system_uk3 UNIQUE (system_uri)
+  CONSTRAINT fhir_system_uk_name UNIQUE (name),
+  CONSTRAINT fhir_system_uk_code UNIQUE (code),
+  CONSTRAINT fhir_system_uk_uri UNIQUE (system_uri)
 );
 COMMENT ON TABLE fhir_system IS 'Contains the definition of all system URIs (e.g. system URI of vaccine CVS codes or also system URI for identifiers of patients) that are used by FHIR Resources.';
 COMMENT ON COLUMN fhir_system.id IS 'Unique ID of entity.';
@@ -489,20 +493,21 @@ COMMENT ON COLUMN fhir_system.description_protected IS 'Defines if the descripti
 COMMENT ON COLUMN fhir_system.system_uri IS 'The system URI (e.g. http://hl7.org/fhir/sid/cvx) the system that is defined by this entity.';
 
 CREATE TABLE fhir_system_code (
-  id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
-  version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  system_id       UUID                           NOT NULL,
-  code_id         UUID                           NOT NULL,
-  system_code     VARCHAR(120)                   NOT NULL,
+  id                UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
+  version           BIGINT                         NOT NULL,
+  created_at        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_by   VARCHAR(11),
+  last_updated_at   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  system_id         UUID                           NOT NULL,
+  code_id           UUID                           NOT NULL,
+  system_code       VARCHAR(120)                   NOT NULL,
+  system_code_value VARCHAR(241),
   CONSTRAINT fhir_system_code_pk PRIMARY KEY (id),
   CONSTRAINT fhir_system_code_fk1 FOREIGN KEY (system_id) REFERENCES fhir_system (id),
   CONSTRAINT fhir_system_code_fk2 FOREIGN KEY (code_id) REFERENCES fhir_code (id) ON DELETE CASCADE
 );
 CREATE INDEX fhir_system_code_i1
-  ON fhir_system_code (system_id);
+  ON fhir_system_code (system_id, system_code);
 CREATE INDEX fhir_system_code_i2
   ON fhir_system_code (code_id);
 COMMENT ON TABLE fhir_system_code IS 'Contains the mapping between a code and a system specific code (e.g. the internal code for a vaccine that is used by the adapter to the national vaccine code that is used by a specific country).';
@@ -514,6 +519,7 @@ COMMENT ON COLUMN fhir_system_code.last_updated_at IS 'The timestamp when the en
 COMMENT ON COLUMN fhir_system_code.system_id IS 'References the system to which this code belongs to.';
 COMMENT ON COLUMN fhir_system_code.system_code IS 'The system specific code (e.g. a CVX vaccine code or country or region specific vaccine code).';
 COMMENT ON COLUMN fhir_system_code.code_id IS 'References the adapter internal code that is used by rules, transformations, mappings and in scripts.';
+COMMENT ON COLUMN fhir_system_code.system_code_value IS 'Combination of system URI and code separated by a pipe character. This is mainly used for search purpose.';
 
 CREATE TABLE fhir_rule (
   id                      UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
@@ -531,7 +537,7 @@ CREATE TABLE fhir_rule (
   applicable_code_set_id  UUID,
   transform_in_script_id  UUID                           NOT NULL,
   CONSTRAINT fhir_rule_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_rule_uk1 UNIQUE (name),
+  CONSTRAINT fhir_rule_uk_name UNIQUE (name),
   CONSTRAINT fhir_rule_fk1 FOREIGN KEY (applicable_in_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_rule_fk2 FOREIGN KEY (applicable_code_set_id) REFERENCES fhir_code_set (id),
   CONSTRAINT fhir_rule_fk3 FOREIGN KEY (transform_in_script_id) REFERENCES fhir_executable_script (id),
@@ -602,8 +608,8 @@ CREATE TABLE fhir_tracker_program (
   before_script_id              UUID,
   after_script_id               UUID,
   CONSTRAINT fhir_tracker_program_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_tracker_program_uk1 UNIQUE (name),
-  CONSTRAINT fhir_tracker_program_uk2 UNIQUE (program_ref),
+  CONSTRAINT fhir_tracker_program_uk_name UNIQUE (name),
+  CONSTRAINT fhir_tracker_program_uk_program UNIQUE (program_ref),
   CONSTRAINT fhir_tracker_program_fk1 FOREIGN KEY (tracked_entity_rule_id) REFERENCES fhir_tracked_entity_rule(id),
   CONSTRAINT fhir_tracker_program_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
   CONSTRAINT fhir_tracker_program_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id),
@@ -661,8 +667,8 @@ CREATE TABLE fhir_tracker_program_stage (
   after_period_day_type         VARCHAR(20),
   after_period_days             INTEGER                        NOT NULL DEFAULT 0,
   CONSTRAINT fhir_tracker_program_stage_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_tracker_program_stage_uk1 UNIQUE (name),
-  CONSTRAINT fhir_tracker_program_stage_uk2 UNIQUE (program_id, program_stage_ref),
+  CONSTRAINT fhir_tracker_program_stage_uk_name UNIQUE (name),
+  CONSTRAINT fhir_tracker_program_stage_uk_program_stage UNIQUE (program_id, program_stage_ref),
   CONSTRAINT fhir_tracker_program_stage_fk1 FOREIGN KEY (program_id) REFERENCES fhir_tracker_program(id),
   CONSTRAINT fhir_tracker_program_stage_fk2 FOREIGN KEY (creation_applicable_script_id) REFERENCES fhir_executable_script(id),
   CONSTRAINT fhir_tracker_program_stage_fk3 FOREIGN KEY (creation_script_id) REFERENCES fhir_executable_script(id),
@@ -774,7 +780,7 @@ CREATE TABLE fhir_resource_mapping (
   event_loc_lookup_script_id        UUID,
   effective_date_lookup_script_id   UUID,
   CONSTRAINT fhir_resource_mapping_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_resource_mapping_uk1 UNIQUE (fhir_resource_type),
+  CONSTRAINT fhir_resource_mapping_uk_fhir UNIQUE (fhir_resource_type),
   CONSTRAINT fhir_resource_mapping_fk1 FOREIGN KEY (tei_lookup_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_resource_mapping_fk2 FOREIGN KEY (enrollment_org_lookup_script_id) REFERENCES fhir_executable_script (id),
   CONSTRAINT fhir_resource_mapping_fk3 FOREIGN KEY (event_org_lookup_script_id) REFERENCES fhir_executable_script (id),
@@ -840,8 +846,8 @@ CREATE TABLE fhir_remote_subscription (
   subscription_type             VARCHAR(30)                    NOT NULL,
   auto_configuration            BOOLEAN                        NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_remote_subscription_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_remote_subscription_uk1 UNIQUE (name),
-  CONSTRAINT fhir_remote_subscription_uk2 UNIQUE (code),
+  CONSTRAINT fhir_remote_subscription_uk_name UNIQUE (name),
+  CONSTRAINT fhir_remote_subscription_uk_code UNIQUE (code),
   CONSTRAINT fhir_remote_subscription_fk1 FOREIGN KEY (fhir_version) REFERENCES fhir_version_enum(value),
   CONSTRAINT fhir_remote_subscription_fk2 FOREIGN KEY (dhis_authentication_method) REFERENCES fhir_authentication_method_enum(value),
   CONSTRAINT fhir_remote_subscription_fk3 FOREIGN KEY (subscription_type) REFERENCES subscription_type_enum(value)
@@ -895,7 +901,7 @@ CREATE TABLE fhir_remote_subscription_system (
   system_id                     UUID                           NOT NULL,
   code_prefix                   VARCHAR(20),
   CONSTRAINT fhir_remote_subscription_system_pk PRIMARY KEY (id),
-  CONSTRAINT fhir_remote_subscription_system_uk1 UNIQUE (remote_subscription_id , fhir_resource_type ),
+  CONSTRAINT fhir_remote_subscription_system_uk_fhir UNIQUE (remote_subscription_id , fhir_resource_type ),
   CONSTRAINT fhir_remote_subscription_system_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE,
   CONSTRAINT fhir_remote_subscription_system_fk2 FOREIGN KEY (system_id) REFERENCES fhir_system (id),
   CONSTRAINT fhir_remote_subscription_system_fk3 FOREIGN KEY (fhir_resource_type) REFERENCES fhir_resource_type_enum (value)
@@ -1014,6 +1020,8 @@ INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('02d5719e-8859-445a-a815-5980d418b4e6', 0, 'RxNorm', 'SYSTEM_RXNORM', ' http://www.nlm.nih.gov/research/umls/rxnorm',
 'RxNorm is made available by the US National Library of Medicine at http://www.nlm.nih.gov/research/umls/rxnorm.');
 
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('9e1c64d8-82df-40e5-927b-a34c115f14e9', 0, 'Organization Unit', 'ORGANIZATION_UNIT', 'Organization units that exists on DHIS2.');
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('1197b27e-3956-43dd-a75c-bfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
 INSERT INTO fhir_code_category (id, version, name, code, description)
@@ -1564,33 +1572,97 @@ VALUES ('9299b82e-b90a-4542-8b78-200cadff3d7d', 0, '5b37861d-9442-4e13-ac9f-88a8
 
 -- Script that extracts Organisation Unit Reference from Patient
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
-VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 0, 'Org Unit Code from Patient Org', 'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE',
-'Extracts the organization unit code reference from the business identifier that is specified by the FHIR Organization of the FHIR Patient.',
-'EVALUATE', 'ORG_UNIT_REF', 'FHIR_PATIENT', NULL);
+VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 0, 'Org Unit Code from FHIR Resource', 'EXTRACT_FHIR_RESOURCE_DHIS_ORG_UNIT_CODE',
+'Extracts the organization unit code reference from the input FHIR resource.',
+'EVALUATE', 'ORG_UNIT_REF', NULL, NULL);
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a250e109-a135-42b2-8bdb-1c050c1d384c', 'INPUT');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('7b94feba-bcf6-4635-929a-01311b25d975', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
-'context.createReference(identifierUtils.getReferenceIdentifier(input.managingOrganization, ''ORGANIZATION''), ''CODE'')', 'JAVASCRIPT');
+'var ref = null;
+var organizationReference = null;
+if (input.managingOrganization)
+{
+  organizationReference = input.managingOrganization;
+}
+if (((organizationReference == null) || organizationReference.isEmpty()) && args[''useLocations''] && input.location && !input.getLocation().isEmpty())
+{
+  var location = referenceUtils.getResource(input.location);
+  if ((location != null) && location.managingOrganization && !location.getManagingOrganization.isEmpty())
+  {
+    organizationReference = location.managingOrganization;
+  }
+}
+if (organizationReference != null)
+{
+  var code = identifierUtils.getReferenceIdentifier(organizationReference, ''ORGANIZATION'');
+  var mappedCode;
+  if (code != null)
+  {
+    mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
+    if ((mappedCode == null) && args[''useIdentifierCode''])
+    {
+      mappedCode = organizationUnitUtils.existsWithPrefix(code);
+    }
+  }
+  if (mappedCode == null)
+  {
+    mappedCode = args[''defaultCode''];
+  }
+  if (mappedCode != null)
+  {
+    ref = context.createReference(mappedCode, ''CODE'');
+  }
+}
+if ((ref == null) && args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+{
+  ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+}
+ref', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('7b94feba-bcf6-4635-929a-01311b25d975', 'DSTU3');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('c0175733-83fc-4de2-9cd0-a2ae6b92e991', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
+'useLocations', 'BOOLEAN', TRUE, 'true',
+'Specifies if alternatively the managing organization of an included location should be used when the input itself does not contain a managing organization.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('33e66e7a-32cc-4a2e-8224-519e790c8ad2', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
+'useIdentifierCode', 'BOOLEAN', TRUE, 'true',
+'Specifies if the identifier code itself with the default code prefix for organizations should be used as fallback when no code mapping for the identifier code exists.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('2db146ac-1895-48e0-9d24-e81c7f8a7033', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
+'defaultCode', 'CODE', FALSE, null,
+'Specifies the default DHIS2 organization unit code that should be used when no other matching DHIS2 organization unit cannot be found.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('ef387255-d1df-48a3-955d-2300bedf1f99', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c',
+'useTei', 'BOOLEAN', TRUE, 'true',
+'Specifies if the organization unit of the tracked entity instance (if any) should be used as last fallback when no other organization unit can be found.');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
-VALUES ('25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c', 'Org Unit Code from Patient Org', 'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE',
-'Extracts the organization unit code reference from the business identifier that is specified by the FHIR Organization of the FHIR Patient.');
+VALUES ('25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c', 'Org Unit Code from FHIR Resource', 'EXTRACT_FHIR_RESOURCE_DHIS_ORG_UNIT_CODE',
+'Extracts the organization unit code reference from the input FHIR resource.');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('9de91cc0-979b-43b0-99d5-fc3ee76fd74d', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', '33e66e7a-32cc-4a2e-8224-519e790c8ad2', 'true');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('b19e4cc2-0ded-4410-b5d8-5e971e48fd93', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', '2db146ac-1895-48e0-9d24-e81c7f8a7033', NULL);
 
--- Script that extracts GEO location from Patient
+-- Script that extracts GEO location from an Address
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
-VALUES ('2263b296-9d96-4698-bc1d-17930005eef3', 0, 'GEO Location from Patient', 'EXTRACT_FHIR_PATIENT_GEO_LOCATION',
-'Extracts the GEO location form FHIR Patient.',
-'EVALUATE', 'LOCATION', 'FHIR_PATIENT', NULL);
+VALUES ('2263b296-9d96-4698-bc1d-17930005eef3', 0, 'GEO Location from Patient', 'EXTRACT_ADDRESS_GEO_LOCATION',
+'Extracts the GEO location form an address that is included in the input.',
+'EVALUATE', 'LOCATION', NULL, NULL);
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('2263b296-9d96-4698-bc1d-17930005eef3', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('2263b296-9d96-4698-bc1d-17930005eef3', 'INPUT');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('039ac2e6-50f2-4e4a-9e4a-dc0515560273', 0, '2263b296-9d96-4698-bc1d-17930005eef3',
-'geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address))', 'JAVASCRIPT');
+'var location = null;
+if (input.address)
+{
+  location = geoUtils.getLocation(addressUtils.getPrimaryAddress(input.address));
+}
+location', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('039ac2e6-50f2-4e4a-9e4a-dc0515560273', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
-VALUES ('ef90531f-4438-48bd-83b3-6370dd65875a', 0, '2263b296-9d96-4698-bc1d-17930005eef3',  'GEO Location from Patient', 'EXTRACT_FHIR_PATIENT_GEO_LOCATION',
-'Extracts the GEO location form FHIR Patient.');
+VALUES ('ef90531f-4438-48bd-83b3-6370dd65875a', 0, '2263b296-9d96-4698-bc1d-17930005eef3',  'GEO Location from Address', 'EXTRACT_ADDRESS_GEO_LOCATION',
+'Extracts the GEO location form an address that is included in the input.');
 
 -- Script that extracts Organisation Unit Reference from Tracked Entity Instance
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1719,7 +1791,7 @@ VALUES ('a7b60436-9fa7-4fe4-8bf7-f5e22123a980', 0, '49d35701-2979-4b36-a9ba-4269
 INSERT INTO fhir_resource_mapping (id,version,fhir_resource_type,tei_lookup_script_id,enrollment_org_lookup_script_id,event_org_lookup_script_id,
 enrollment_date_lookup_script_id,event_date_lookup_script_id,enrollment_loc_lookup_script_id,event_loc_lookup_script_id,effective_date_lookup_script_id)
 VALUES ('f1cbd84f-a3db-4aa7-a9f2-a5e547e60bed', 0, 'OBSERVATION', '1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36',
-'a52945b5-94b9-48d4-9c49-f67b43d9dfbc', 'a52945b5-94b9-48d4-9c49-f67b43d9dfbc',
+'25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf',
 'a7b60436-9fa7-4fe4-8bf7-f5e22123a980', 'a7b60436-9fa7-4fe4-8bf7-f5e22123a980',
 'bb070631-46b3-42ec-83b2-00ea219bcf50', 'bb070631-46b3-42ec-83b2-00ea219bcf50',
 'a7b60436-9fa7-4fe4-8bf7-f5e22123a980');
@@ -1935,3 +2007,7 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref, tracked_entity_identifier_fq)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier', FALSE);
+
+UPDATE fhir_system_code sc SET system_code_value = (SELECT system_uri FROM fhir_system s WHERE s.id=sc.system_id) || '|' || system_code;
+ALTER TABLE fhir_system_code ALTER COLUMN system_code_value SET NOT NULL;
+CREATE INDEX fhir_system_code_i3 ON fhir_system_code (system_code_value);

@@ -122,12 +122,12 @@ public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhi
         }
         final Collection<SystemCode> systemCodes = systemCodeRepository.findAllByCodes( convertedMappedCodes );
         final Map<SystemCodeValue, Integer> systemCodeValueIndexes = systemCodes.stream().collect(
-            Collectors.toMap( SystemCode::getSystemCodeValue, sc -> convertedMappedCodes.indexOf( sc.getCode().getCode() ) ) );
+            Collectors.toMap( SystemCode::getCalculatedSystemCodeValue, sc -> convertedMappedCodes.indexOf( sc.getCode().getCode() ) ) );
 
         final int resultingMaxCount = (maxCount == null) ? systemCodes.size() : maxCount;
         final Map<String, List<String>> filterMap = createFilter( referencedResourceParameter, referencedResourceType, referencedResourceId );
         filterMap.put( codeParameter, Collections.singletonList(
-            String.join( ",", systemCodes.stream().map( sc -> sc.getSystemCodeValue().toString() ).collect( Collectors.toList() ) ) ) );
+            String.join( ",", systemCodes.stream().map( sc -> sc.getCalculatedSystemCodeValue().toString() ).collect( Collectors.toList() ) ) ) );
 
         int processedResources = 0;
         int foundMinIndex = Integer.MAX_VALUE;

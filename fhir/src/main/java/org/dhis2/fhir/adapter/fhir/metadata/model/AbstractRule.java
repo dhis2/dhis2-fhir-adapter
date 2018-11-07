@@ -59,10 +59,14 @@ import java.io.Serializable;
 @Table( name = "fhir_rule" )
 @Inheritance( strategy = InheritanceType.JOINED )
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
-@NamedQueries( { @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
-    "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
-    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query = "SELECT r FROM AbstractRule r JOIN r.applicableCodeSet acs JOIN acs.codeSetValues csv ON csv.enabled=true JOIN csv.id.code c " +
-        "JOIN c.systemCodes sc ON sc.systemCode=:code JOIN sc.system s ON s.systemUri=:system AND s.enabled=true WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true" ) } )
+@NamedQueries( {
+    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
+        "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
+    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query =
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true AND " +
+            "(r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
+            "(SELECT 1 FROM CodeSetValue csv JOIN csv.id.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
+            "JOIN sc.system s ON s.enabled=true WHERE csv.id.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ) } )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "dhisResourceType" )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),

@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.dhis.config;
 
 import org.dhis2.fhir.adapter.model.UsernamePassword;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
@@ -38,6 +40,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
 import java.io.Serializable;
 
 /**
@@ -49,11 +52,16 @@ import java.io.Serializable;
  * @author volsch
  */
 @Configuration
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.endpoint" )
 @Validated
 public class DhisEndpointConfig implements Serializable
 {
     private static final long serialVersionUID = 8393014237402428126L;
+
+    public static final int DEFAULT_CONNECT_TIMEOUT = 5_000;
+
+    public static final int DEFAULT_READ_TIMEOUT = 30_000;
 
     @NotBlank
     private String url;
@@ -62,8 +70,15 @@ public class DhisEndpointConfig implements Serializable
     private String apiVersion;
 
     @NotNull
+    @NestedConfigurationProperty
     @Valid
-    private UsernamePassword systemAuthentication;
+    private UsernamePassword systemAuthentication = new UsernamePassword();
+
+    @Positive
+    private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+
+    @Positive
+    private int readTimeout = DEFAULT_READ_TIMEOUT;
 
     public String getUrl()
     {
@@ -94,5 +109,25 @@ public class DhisEndpointConfig implements Serializable
     public void setSystemAuthentication( @NotNull @Valid @Nonnull UsernamePassword systemAuthentication )
     {
         this.systemAuthentication = systemAuthentication;
+    }
+
+    public int getConnectTimeout()
+    {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout( int connectTimeout )
+    {
+        this.connectTimeout = connectTimeout;
+    }
+
+    public int getReadTimeout()
+    {
+        return readTimeout;
+    }
+
+    public void setReadTimeout( int readTimeout )
+    {
+        this.readTimeout = readTimeout;
     }
 }

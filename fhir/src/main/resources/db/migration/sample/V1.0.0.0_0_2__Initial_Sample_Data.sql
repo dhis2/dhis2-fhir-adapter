@@ -59,7 +59,7 @@ VALUES ('2dd51309-3319-40d2-9a1f-be2a102df4a7', 0, 'Sierra Leone Location', 'SYS
 INSERT INTO fhir_system (id, version, name, code, system_uri)
 VALUES ('c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3', 0, 'Sierra Leone Organization', 'SYSTEM_SL_ORGANIZATION', 'http://example.sl/organizations');
 INSERT INTO fhir_system (id, version, name, code, system_uri)
-VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Sierra Leone Patient', 'SYSTEM_SL_PATIENT', 'http://example.sl/national-patient-id');
+VALUES ('ff842c76-a529-4563-972d-216b887a3573', 0, 'Sierra Leone Patient', 'SYSTEM_SL_PATIENT', 'http://example.sl/patients');
 
 -- Assignment of system authentication URIs of unique business identifiers for FHIR resources to the subscription.
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)

@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
 
 import org.dhis2.fhir.adapter.queue.QueueConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
@@ -44,6 +46,7 @@ import java.io.Serializable;
  * @author volsch
  */
 @Configuration( "fhirRemoteConfig" )
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.remote" )
 @Validated
 public class RemoteConfig implements Serializable
@@ -51,6 +54,7 @@ public class RemoteConfig implements Serializable
     private static final long serialVersionUID = -2505291312383786207L;
 
     @NotNull
+    @NestedConfigurationProperty
     @Valid
     private QueueConfig webHookRequestQueue = new QueueConfig();
 

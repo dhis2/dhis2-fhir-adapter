@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
 import com.google.common.collect.Sets;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
@@ -66,9 +67,10 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
     private final SystemCodeRepository systemCodeRepository;
 
     public Dstu3CodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull CodeRepository codeRepository,
         @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext );
+        super( scriptExecutionContext, codeRepository );
         this.systemCodeRepository = systemCodeRepository;
     }
 

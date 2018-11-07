@@ -72,7 +72,8 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
 
     public DhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull SecurityConfig securityConfig )
     {
-        this.restTemplateBuilder = restTemplateBuilder.rootUri( DhisConfig.getRootUri( endpointConfig, true ) );
+        this.restTemplateBuilder = restTemplateBuilder.rootUri( DhisConfig.getRootUri( endpointConfig, true ) )
+            .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() );
         this.securityConfig = securityConfig;
     }
 

@@ -92,9 +92,10 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
         }
         else
         {
-            if ( !ValidatorUtils.isValidUrl( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) )
+            final String baseUrlProtocol = ValidatorUtils.getUrlScheme( remoteSubscription.getAdapterEndpoint().getBaseUrl() );
+            if ( isValidUrl( baseUrlProtocol ) )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.baseUrl.invalid", "Adapter endpoint base URL is not a valid URL." );
+                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.baseUrl.invalid", "Adapter endpoint base URL is not a valid HTTP/HTTPS URL." );
             }
             if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) > SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH )
             {
@@ -152,9 +153,10 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
         }
         else
         {
-            if ( !ValidatorUtils.isValidUrl( remoteSubscription.getFhirEndpoint().getBaseUrl() ) )
+            final String baseUrlProtocol = ValidatorUtils.getUrlScheme( remoteSubscription.getFhirEndpoint().getBaseUrl() );
+            if ( isValidUrl( baseUrlProtocol ) )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid URL." );
+                errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid HTTP/HTTPS URL." );
             }
             if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
             {
@@ -185,5 +187,10 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             }
         }
         errors.popNestedPath();
+    }
+
+    private boolean isValidUrl( String baseUrlProtocol )
+    {
+        return (baseUrlProtocol == null) || (!"http".equals( baseUrlProtocol ) && !"https".equals( baseUrlProtocol ));
     }
 }

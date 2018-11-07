@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -59,6 +60,16 @@ public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscr
     @Query( "SELECT rs FROM #{#entityName} rs WHERE rs.id=:id" )
     @Cacheable( key = "#a0" )
     Optional<RemoteSubscription> findOneByIdCached( @Param( "id" ) UUID id );
+
+    @Override
+    @CachePut( key = "#a0.id" )
+    @Nonnull
+    <S extends RemoteSubscription> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @CachePut( key = "#a0.id" )
+    @Nonnull
+    <S extends RemoteSubscription> S save( @Nonnull S entity );
 
     @Override
     @Nonnull

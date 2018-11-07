@@ -44,6 +44,8 @@ public class System extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_CODE_LENGTH = 50;
 
+    public static final int MAX_SYSTEM_URI_LENGTH = 120;
+
     private String name;
     private String code;
     private String systemUri;
@@ -76,7 +78,7 @@ public class System extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "system_uri", nullable = false, length = 140 )
+    @Column( name = "system_uri", updatable = false, nullable = false, length = 120 )
     public String getSystemUri()
     {
         return systemUri;

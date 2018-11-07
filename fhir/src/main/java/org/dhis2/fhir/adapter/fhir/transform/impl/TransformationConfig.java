@@ -30,17 +30,22 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
 
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.impl.ThreadLocalScriptExecutionContext;
+import org.dhis2.fhir.adapter.script.ScriptCompiler;
+import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.support.StandardScriptEvaluator;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Configuration
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.transformation" )
 @Validated
 public class TransformationConfig implements Serializable
@@ -61,16 +66,25 @@ public class TransformationConfig implements Serializable
     }
 
     @Bean
+    @Nonnull
     protected ScriptExecutionContext scriptExecutionContext()
     {
         return new ThreadLocalScriptExecutionContext();
     }
 
     @Bean
+    @Nonnull
     protected ScriptEvaluator scriptEvaluator()
     {
         final StandardScriptEvaluator scriptEvaluator = new StandardScriptEvaluator();
         scriptEvaluator.setEngineName( getScriptEngineName() );
         return scriptEvaluator;
+    }
+
+    @Bean
+    @Nonnull
+    protected ScriptCompiler scriptCompiler()
+    {
+        return new ScriptCompilerImpl( getScriptEngineName() );
     }
 }

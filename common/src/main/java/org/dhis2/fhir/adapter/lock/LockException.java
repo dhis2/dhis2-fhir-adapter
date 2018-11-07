@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.lock;
  */
 
 /**
- * Thrown if there is any error when locking a key.
+ * Thrown if there is any error when locking a cache.
  *
  * @author volsch
  */

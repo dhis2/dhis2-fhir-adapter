@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Nonnull;
@@ -47,6 +48,7 @@ import java.util.Set;
  * @author volsch
  */
 @Configuration
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.security.authorities" )
 public class AdapterSecurityConfig implements SecurityConfig
 {
@@ -56,7 +58,7 @@ public class AdapterSecurityConfig implements SecurityConfig
 
     private Set<String> dataMapping = new HashSet<>();
 
-    private Multimap<String, String> authoritiesMappings;
+    private transient Multimap<String, String> authoritiesMappings;
 
     @Nonnull
     public Set<String> getAdministration()

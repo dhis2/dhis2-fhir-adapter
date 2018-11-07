@@ -38,9 +38,9 @@ import javax.annotation.Nonnull;
 public interface LockContext extends AutoCloseable
 {
     /**
-     * Locks the specified key. The method may block until the key can be locked.
+     * Locks the specified cache. The method may block until the cache can be locked.
      *
-     * @param key the key that should be locked.
+     * @param key the cache that should be locked.
      */
     void lock( @Nonnull String key );
 

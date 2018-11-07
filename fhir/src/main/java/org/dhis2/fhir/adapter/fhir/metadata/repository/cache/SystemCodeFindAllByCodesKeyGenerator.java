@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.key;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.cache;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,49 +28,34 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.key;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
- * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository#findAllByInputData(FhirResourceType, Collection)}.
- * Since key may be serialized to external storage, key is automatically a string representation.
+ * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository#findAllByCodes(Collection)}.
+ * Since cache may be serialized to external storage, cache is automatically a string representation.
  *
  * @author volsch
  */
 @Component
-public class RuleFindAllByInputDataKeyGenerator implements KeyGenerator
+public class SystemCodeFindAllByCodesKeyGenerator implements KeyGenerator
 {
     @Override
     @Nonnull
     public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
     {
-        @SuppressWarnings( "unchecked" ) final Collection<SystemCodeValue> systemCodeValues = (Collection<SystemCodeValue>) params[1];
-        final SortedSet<String> systemCodes;
-        if ( systemCodeValues == null )
-        {
-            systemCodes = Collections.emptySortedSet();
-        }
-        else
-        {
-            systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
-                .collect( Collectors.toCollection( TreeSet::new ) );
-        }
-        final StringBuilder sb = new StringBuilder( "findAllByInputData," );
-        sb.append( params[0] );
+        @SuppressWarnings( "unchecked" ) final Collection<String> codes = (Collection<String>) params[0];
+        final StringBuilder sb = new StringBuilder( "findAllByCodes," );
+        sb.append( codes.size() );
         // codes must have same order every time
-        for ( final String systemCode : systemCodes )
+        for ( final String code : new TreeSet<>( codes ) )
         {
-            sb.append( ',' ).append( systemCode );
+            sb.append( ',' ).append( code );
         }
         return sb.toString();
     }

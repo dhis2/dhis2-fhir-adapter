@@ -73,6 +73,8 @@ dhis2.fhir-adapter:
     system-authentication:
       username: @dhis2.username@
       password: @dhis2.password@
+    connectTimeout: 5000
+    readTimeout: 30000
   security:
     authorities:
       administration:

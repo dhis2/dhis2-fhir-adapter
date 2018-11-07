@@ -121,7 +121,7 @@ public class LockContextImpl implements LockContext
         }
         catch ( SQLException e )
         {
-            throw new LockException( "Could not lock key " + key + " due to a technical error.", e );
+            throw new LockException( "Could not lock cache " + key + " due to a technical error.", e );
         }
 
         lockedKeys.add( key );

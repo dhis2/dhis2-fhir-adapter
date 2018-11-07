@@ -71,5 +71,13 @@ public class BeforeCreateSaveSystemValidator implements Validator
         {
             errors.rejectValue( "code", "System.code.length", new Object[]{ System.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
         }
+        if ( StringUtils.isBlank( system.getSystemUri() ) )
+        {
+            errors.rejectValue( "systemUri", "System.systemUri.blank", "System URI must not be blank." );
+        }
+        if ( StringUtils.length( system.getSystemUri() ) > System.MAX_SYSTEM_URI_LENGTH )
+        {
+            errors.rejectValue( "systemUri", "System.systemUri.length", new Object[]{ System.MAX_SYSTEM_URI_LENGTH }, "System URI must not be longer than {0} characters." );
+        }
     }
 }

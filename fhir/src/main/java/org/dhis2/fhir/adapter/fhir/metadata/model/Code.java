@@ -62,8 +62,11 @@ public class Code extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_CODE_LENGTH = 50;
 
+    public static final int MAX_MAPPED_CODE_LENGTH = 50;
+
     private String name;
     private String code;
+    private String mappedCode;
     private String description;
     private CodeCategory codeCategory;
     private List<SystemCode> systemCodes;
@@ -90,6 +93,18 @@ public class Code extends VersionedBaseMetadata implements Serializable
     public void setCode( String code )
     {
         this.code = code;
+    }
+
+    @Basic
+    @Column( name = "mapped_code", length = MAX_MAPPED_CODE_LENGTH )
+    public String getMappedCode()
+    {
+        return mappedCode;
+    }
+
+    public void setMappedCode( String mappedCode )
+    {
+        this.mappedCode = mappedCode;
     }
 
     @Basic

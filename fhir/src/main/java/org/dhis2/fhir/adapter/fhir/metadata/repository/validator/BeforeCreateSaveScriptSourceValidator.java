@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
+import org.dhis2.fhir.adapter.script.ScriptCompilationException;
+import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -44,6 +46,13 @@ import javax.annotation.Nonnull;
 @Component
 public class BeforeCreateSaveScriptSourceValidator implements Validator
 {
+    private final ScriptCompiler scriptCompiler;
+
+    public BeforeCreateSaveScriptSourceValidator( @Nonnull ScriptCompiler scriptCompiler )
+    {
+        this.scriptCompiler = scriptCompiler;
+    }
+
     @Override
     public boolean supports( @Nonnull Class<?> clazz )
     {
@@ -62,6 +71,17 @@ public class BeforeCreateSaveScriptSourceValidator implements Validator
         if ( StringUtils.isBlank( scriptSource.getSourceText() ) )
         {
             errors.rejectValue( "sourceText", "ScriptSource.sourceText.blank", "Source text must not be blank." );
+        }
+        else
+        {
+            try
+            {
+                scriptCompiler.compile( scriptSource.getSourceText() );
+            }
+            catch ( ScriptCompilationException e )
+            {
+                errors.rejectValue( "sourceText", "ScriptSource.sourceText.error", e.getMessage() );
+            }
         }
         if ( scriptSource.getSourceType() == null )
         {

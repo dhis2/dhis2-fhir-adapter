@@ -29,17 +29,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 /**
  * Event listener that logs the creation, update and deletion of metadata as long
@@ -56,7 +51,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     @Override
     protected void onAfterCreate( FhirAdapterMetadata entity )
     {
-        final String username = getCurrentUsername();
+        final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
             logger.info( "User {} created entity {} with ID {}.", username, entity.getClass().getSimpleName(), entity.getId() );
@@ -66,7 +61,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     @Override
     protected void onAfterSave( FhirAdapterMetadata entity )
     {
-        final String username = getCurrentUsername();
+        final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
             logger.info( "User {} saved entity {} with ID {}.", username, entity.getClass().getSimpleName(), entity.getId() );
@@ -76,7 +71,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     @Override
     protected void onAfterLinkSave( FhirAdapterMetadata parent, Object linked )
     {
-        final String username = getCurrentUsername();
+        final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
             if ( linked instanceof FhirAdapterMetadata )
@@ -97,7 +92,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     @Override
     protected void onAfterLinkDelete( FhirAdapterMetadata parent, Object linked )
     {
-        final String username = getCurrentUsername();
+        final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
             if ( linked instanceof FhirAdapterMetadata )
@@ -118,30 +113,10 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     @Override
     protected void onAfterDelete( FhirAdapterMetadata entity )
     {
-        final String username = getCurrentUsername();
+        final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
             logger.info( "User {} deleted entity {} with ID {}.", username, entity.getClass().getSimpleName(), entity.getId() );
         }
-    }
-
-    @Nullable
-    public static String getCurrentUsername()
-    {
-        final SecurityContext context = SecurityContextHolder.getContext();
-        if ( context == null )
-        {
-            return null;
-        }
-        final Authentication authentication = context.getAuthentication();
-        if ( authentication == null )
-        {
-            return null;
-        }
-        if ( !(authentication.getPrincipal() instanceof UserDetails) )
-        {
-            return null;
-        }
-        return ((UserDetails) authentication.getPrincipal()).getUsername();
     }
 }

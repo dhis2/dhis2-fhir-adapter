@@ -80,7 +80,9 @@ public class DhisConfig
     @Nonnull
     public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext )
     {
-        return builder.rootUri( getRootUri( endpointConfig, false ) ).configure( new AuthorizedRestTemplate( authorizationContext ) );
+        return builder.rootUri( getRootUri( endpointConfig, false ) )
+            .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
+            .configure( new AuthorizedRestTemplate( authorizationContext ) );
     }
 
     /**
@@ -94,8 +96,9 @@ public class DhisConfig
     @Nonnull
     public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig )
     {
-        return builder.rootUri( getRootUri( endpointConfig, false ) ).basicAuthorization(
-            endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
+        return builder.rootUri( getRootUri( endpointConfig, false ) )
+            .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
+            .basicAuthorization( endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
     }
 
     /**

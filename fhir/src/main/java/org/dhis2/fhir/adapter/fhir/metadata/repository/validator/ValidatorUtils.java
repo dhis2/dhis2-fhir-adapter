@@ -39,21 +39,20 @@ import java.net.URL;
  */
 public abstract class ValidatorUtils
 {
-    public static boolean isValidUrl( @Nullable String url )
+    public static String getUrlScheme( @Nullable String url )
     {
         if ( url == null )
         {
-            return false;
+            return null;
         }
         try
         {
-            new URL( url );
+            return new URL( url ).getProtocol();
         }
         catch ( MalformedURLException e )
         {
-            return false;
+            return null;
         }
-        return true;
     }
 
     private ValidatorUtils()

@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.security.DhisWebApiAuthenticationProvider;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -75,6 +76,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
         http
             .authorizeRequests()
             .antMatchers( "/remote-fhir-rest-hook/**" ).permitAll()
+            .antMatchers( HttpMethod.GET, "/setup" ).permitAll()
             .anyRequest().authenticated()
             .and()
             .httpBasic().realmName( DHIS_BASIC_REALM );

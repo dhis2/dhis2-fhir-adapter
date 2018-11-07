@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.queue;
  */
 
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -48,9 +49,11 @@ public class QueueConfig implements Serializable
     @NotBlank
     private String queueName;
 
+    @NestedConfigurationProperty
     @Valid
     private QueueListenerConfig listener = new QueueListenerConfig();
 
+    @NestedConfigurationProperty
     @Valid
     private AddressSettings embeddedAddressSettings = new AddressSettings();
 

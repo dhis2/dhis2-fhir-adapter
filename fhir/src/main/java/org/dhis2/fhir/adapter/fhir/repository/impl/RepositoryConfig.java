@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 import org.dhis2.fhir.adapter.queue.QueueConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
@@ -44,6 +46,7 @@ import java.io.Serializable;
  * @author volsch
  */
 @Configuration( "fhirRepositoryConfig" )
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.repository" )
 @Validated
 public class RepositoryConfig implements Serializable
@@ -51,10 +54,12 @@ public class RepositoryConfig implements Serializable
     private static final long serialVersionUID = -2505291312383786207L;
 
     @NotNull
+    @NestedConfigurationProperty
     @Valid
     private QueueConfig fhirResourceQueue = new QueueConfig();
 
     @NotNull
+    @NestedConfigurationProperty
     @Valid
     private QueueConfig fhirResourceDlQueue = new QueueConfig();
 

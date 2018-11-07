@@ -93,6 +93,7 @@
           <url>${db.url}</url>
           <user>${db.username}</user>
           <password>${db.password}</password>
+          <locations>${db.flyway.locations}</locations>
         </configuration>
       </plugin>
     </plugins>

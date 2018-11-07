@@ -35,6 +35,8 @@ public class SystemCodeValue implements Serializable
 {
     private static final long serialVersionUID = -4751270623619799949L;
 
+    public static final String SEPARATOR = "|";
+
     private final String system;
 
     private final String code;
@@ -74,6 +76,6 @@ public class SystemCodeValue implements Serializable
     @Override
     public String toString()
     {
-        return (system == null) ? code : (system + "|" + code);
+        return (system == null) ? code : (system + SEPARATOR + code);
     }
 }

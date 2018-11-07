@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSecurityUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -37,6 +38,8 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -120,5 +123,20 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
     {
         this.lastUpdatedAt = lastUpdatedAt;
+    }
+
+    @PrePersist
+    protected void onPrePersist()
+    {
+        setCreatedAt( LocalDateTime.now() );
+        setLastUpdatedAt( getCreatedAt() );
+        setLastUpdatedBy( AdapterSecurityUtils.getCurrentUsername() );
+    }
+
+    @PreUpdate
+    protected void onPreUpdate()
+    {
+        setLastUpdatedAt( LocalDateTime.now() );
+        setLastUpdatedBy( AdapterSecurityUtils.getCurrentUsername() );
     }
 }

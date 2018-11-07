@@ -32,8 +32,12 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
@@ -50,6 +54,12 @@ import java.util.UUID;
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
 public interface CodeRepository extends JpaRepository<Code, UUID>
 {
+    @RestResource( exported = false )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
+    @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.systemCode=:systemCode JOIN sc.system s ON s.systemUri=:systemUri AND s.enabled=true" )
+    List<Code> findBySystemCode( @Param( "systemUri" ) @Nonnull String systemUri, @Param( "systemCode" ) @Nonnull String systemCode );
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

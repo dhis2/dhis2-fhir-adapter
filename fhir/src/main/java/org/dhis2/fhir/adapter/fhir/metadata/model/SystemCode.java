@@ -37,6 +37,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
@@ -62,6 +63,7 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
     private System system;
     private String systemCode;
     private Code code;
+    private String systemCodeValue;
 
     @Basic
     @Column( name = "system_code", nullable = false, length = 120 )
@@ -99,11 +101,29 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
         this.system = system;
     }
 
+    @Basic
+    @Column( name = "system_code_value", nullable = false, length = 241 )
+    public String getSystemCodeValue()
+    {
+        return systemCodeValue;
+    }
+
+    public void setSystemCodeValue( String systemCodeValue )
+    {
+        this.systemCodeValue = systemCodeValue;
+    }
+
     @Transient
     @JsonIgnore
     @Nonnull
-    public SystemCodeValue getSystemCodeValue()
+    public SystemCodeValue getCalculatedSystemCodeValue()
     {
         return new SystemCodeValue( getSystem().getSystemUri(), getSystemCode() );
+    }
+
+    @PrePersist
+    protected void prePersist()
+    {
+        setSystemCodeValue( getSystem().getSystemUri() + SystemCodeValue.SEPARATOR + getSystemCode() );
     }
 }

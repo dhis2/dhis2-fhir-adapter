@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -45,10 +46,13 @@ public class ResourceSystem implements Serializable
 
     private final String system;
 
-    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system )
+    private final String codePrefix;
+
+    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix )
     {
         this.fhirResourceType = fhirResourceType;
         this.system = system;
+        this.codePrefix = codePrefix;
     }
 
     @Nonnull
@@ -61,6 +65,12 @@ public class ResourceSystem implements Serializable
     public String getSystem()
     {
         return system;
+    }
+
+    @Nullable
+    public String getCodePrefix()
+    {
+        return codePrefix;
     }
 
     @Override

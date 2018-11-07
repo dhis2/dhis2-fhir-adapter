@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.key;
+package org.dhis2.fhir.adapter.setup;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,35 +28,67 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.key;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.TreeSet;
+import javax.validation.Valid;
+import java.io.Serializable;
 
 /**
- * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository#findAllByCodes(Collection)}.
- * Since key may be serialized to external storage, key is automatically a string representation.
+ * The setup of the remote subscription.
  *
  * @author volsch
  */
-@Component
-public class SystemCodeFindAllByCodesKeyGenerator implements KeyGenerator
+public class RemoteSubscriptionSetup implements Serializable
 {
-    @Override
-    @Nonnull
-    public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
+    private static final long serialVersionUID = 7653552278753840057L;
+
+    @Valid
+    private RemoteSubscriptionDhisSetup dhisSetup = new RemoteSubscriptionDhisSetup();
+
+    @Valid
+    private RemoteSubscriptionAdapterSetup adapterSetup = new RemoteSubscriptionAdapterSetup();
+
+    @Valid
+    private RemoteSubscriptionFhirSetup fhirSetup = new RemoteSubscriptionFhirSetup();
+
+    @Valid
+    private SystemUriSetup systemUriSetup = new SystemUriSetup();
+
+    public RemoteSubscriptionDhisSetup getDhisSetup()
     {
-        @SuppressWarnings( "unchecked" ) final Collection<String> codes = (Collection<String>) params[0];
-        final StringBuilder sb = new StringBuilder( "findAllByCodes," );
-        sb.append( codes.size() );
-        // codes must have same order every time
-        for ( final String code : new TreeSet<>( codes ) )
-        {
-            sb.append( ',' ).append( code );
-        }
-        return sb.toString();
+        return dhisSetup;
+    }
+
+    public void setDhisSetup( RemoteSubscriptionDhisSetup dhisSetup )
+    {
+        this.dhisSetup = dhisSetup;
+    }
+
+    public RemoteSubscriptionAdapterSetup getAdapterSetup()
+    {
+        return adapterSetup;
+    }
+
+    public void setAdapterSetup( RemoteSubscriptionAdapterSetup adapterSetup )
+    {
+        this.adapterSetup = adapterSetup;
+    }
+
+    public RemoteSubscriptionFhirSetup getFhirSetup()
+    {
+        return fhirSetup;
+    }
+
+    public void setFhirSetup( RemoteSubscriptionFhirSetup fhirSetup )
+    {
+        this.fhirSetup = fhirSetup;
+    }
+
+    public SystemUriSetup getSystemUriSetup()
+    {
+        return systemUriSetup;
+    }
+
+    public void setSystemUriSetup( SystemUriSetup systemUriSetup )
+    {
+        this.systemUriSetup = systemUriSetup;
     }
 }

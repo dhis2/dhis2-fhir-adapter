@@ -79,5 +79,17 @@ public class BeforeCreateSaveCodeValidator implements Validator
         {
             errors.rejectValue( "code", "Code.code.length", new Object[]{ Code.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
         }
+        if ( StringUtils.isBlank( code.getMappedCode() ) )
+        {
+            errors.rejectValue( "mappedCode", "Code.mappedCode.blank", "MappedCode must not be blank." );
+        }
+        else if ( code.getMappedCode().contains( "," ) )
+        {
+            errors.rejectValue( "mappedCode", "Code.mappedCode.comma", "MappedCode must not contain commas." );
+        }
+        if ( StringUtils.length( code.getMappedCode() ) > Code.MAX_MAPPED_CODE_LENGTH )
+        {
+            errors.rejectValue( "mappedCode", "Code.mappedCode.length", new Object[]{ Code.MAX_MAPPED_CODE_LENGTH }, "Mapped code must not be longer than {0} characters." );
+        }
     }
 }

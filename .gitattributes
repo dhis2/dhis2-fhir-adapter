@@ -6,6 +6,7 @@
 LICENSE text
 *.MF text
 *.csv text
+*.html text
 *.java text
 *.json text
 *.md text
@@ -20,6 +21,7 @@ LICENSE text
 
 # Denote all files that are truly binary and should not be modified.
 *.pdf binary
+*.ico binary
 
 # Denote all files that must use UNIX style line endings.
 *.sh text eol=lf

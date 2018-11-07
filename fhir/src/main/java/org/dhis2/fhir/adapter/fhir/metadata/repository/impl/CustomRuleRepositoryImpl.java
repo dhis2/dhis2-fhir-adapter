@@ -43,8 +43,10 @@ import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link CustomRuleRepository}.
@@ -68,15 +70,20 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Nonnull
     public List<? extends AbstractRule> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
-        final List<AbstractRule> rules = new ArrayList<>(
-            entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, AbstractRule.class ).setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
-        if ( (systemCodeValues != null) && !systemCodeValues.isEmpty() )
+        final List<AbstractRule> rules;
+        if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
         {
-            for ( final SystemCodeValue scv : new HashSet<>( systemCodeValues ) )
-            {
-                rules.addAll( entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, AbstractRule.class ).setParameter( "fhirResourceType", fhirResourceType )
-                    .setParameter( "system", scv.getSystem() ).setParameter( "code", scv.getCode() ).getResultList() );
-            }
+            rules = new ArrayList<>(
+                entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, AbstractRule.class )
+                    .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
+        }
+        else
+        {
+            final Set<String> systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
+                .collect( Collectors.toCollection( TreeSet::new ) );
+            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
+                .setParameter( "fhirResourceType", fhirResourceType )
+                .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }
         Collections.sort( rules );
 

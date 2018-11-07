@@ -29,10 +29,18 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
+import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IDomainResource;
@@ -54,11 +62,14 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
 
     private static final List<String> GET_CODE_METHOD_NAMES = Collections.unmodifiableList( Arrays.asList( "getCode", "getVaccineCode" ) );
 
+    private final CodeRepository codeRepository;
+
     private volatile Map<Class<? extends IDomainResource>, Method> codeMethods = new HashMap<>();
 
-    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeRepository codeRepository )
     {
         super( scriptExecutionContext );
+        this.codeRepository = codeRepository;
     }
 
     @Nonnull
@@ -100,6 +111,36 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
             return getSystemCodeValues( domainResource, method );
         }
         return null;
+    }
+
+    @ScriptExecutionRequired
+    public String getMappedCode( @Nullable String code, @Nonnull String fhirResourceType )
+    {
+        if ( code == null )
+        {
+            return null;
+        }
+        final FhirResourceType resourceType;
+        try
+        {
+            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+        }
+
+        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+        final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
+            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
+
+        final Code c = codeRepository.findBySystemCode( resourceSystem.getSystem(), code ).stream().findFirst().orElse( null );
+        if ( c == null )
+        {
+            return null;
+        }
+
+        return (c.getMappedCode() == null) ? c.getCode() : c.getMappedCode();
     }
 
     @Nullable

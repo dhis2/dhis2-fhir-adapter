@@ -327,7 +327,7 @@ public class FhirRepositoryImpl implements FhirRepository
         fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
         fhirRequest.setResourceSystemsByType( systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
         final FhirToDhisTransformOutcome<? extends DhisResource> outcome;

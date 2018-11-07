@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Simple cache configuration of a Redis cache.
@@ -50,7 +51,7 @@ public class SimpleRedisCacheConfig implements Serializable
     private Duration timeToLive = Duration.ZERO;
 
     @NotNull
-    private CacheKeyPrefix keyPrefix = CacheKeyPrefix.simple();
+    private String keyPrefix = UUID.randomUUID().toString();
 
     @Nonnull
     public Duration getTimeToLive()
@@ -64,14 +65,9 @@ public class SimpleRedisCacheConfig implements Serializable
     }
 
     @Nonnull
-    public CacheKeyPrefix getKeyPrefix()
+    public CacheKeyPrefix getCacheKeyPrefix()
     {
-        return keyPrefix;
-    }
-
-    public void setKeyPrefix( @Nonnull String keyPrefix )
-    {
-        this.keyPrefix = new CacheKeyPrefix()
+        return new CacheKeyPrefix()
         {
             @Override
             @Nonnull
@@ -80,5 +76,21 @@ public class SimpleRedisCacheConfig implements Serializable
                 return keyPrefix + ":" + cacheName + ":";
             }
         };
+    }
+
+    @Nonnull
+    public String getKeyPrefix()
+    {
+        return keyPrefix;
+    }
+
+    public void setKeyPrefix( @Nonnull String keyPrefix )
+    {
+        this.keyPrefix = keyPrefix;
+    }
+
+    public void setKeyPrefixString( @Nonnull String keyPrefix )
+    {
+        this.keyPrefix = keyPrefix;
     }
 }

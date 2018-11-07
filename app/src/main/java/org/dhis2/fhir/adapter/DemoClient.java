@@ -117,7 +117,7 @@ public class DemoClient
         Patient child = new Patient();
         child.setIdElement( IdType.newRandomUuid() );
         child.addIdentifier()
-            .setSystem( "http://example.sl/national-patient-id" )
+            .setSystem( "http://example.sl/patients" )
             .setValue( childNationalId );
         child.addName()
             .setFamily( "West" )
@@ -147,7 +147,7 @@ public class DemoClient
         Patient mother = new Patient();
         mother.setIdElement( IdType.newRandomUuid() );
         mother.addIdentifier()
-            .setSystem( "http://example.sl/national-patient-id" )
+            .setSystem( "http://example.sl/patients" )
             .setValue( motherNationalId );
         mother.addName()
             .setFamily( "West" )
@@ -358,13 +358,13 @@ public class DemoClient
             .setFullUrl( child.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.sl/national-patient-id|" + childNationalId );
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
         bundle.addEntry()
             .setResource( mother )
             .setFullUrl( mother.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
-            .setUrl( "Patient?identifier=http://example.sl/national-patient-id|" + motherNationalId );
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
         bundle.addEntry()
             .setResource( location )
             .setFullUrl( location.getId() )

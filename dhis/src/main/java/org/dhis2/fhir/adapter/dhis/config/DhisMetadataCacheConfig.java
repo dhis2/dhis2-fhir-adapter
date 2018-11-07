@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.config;
 import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,8 +44,11 @@ import javax.annotation.Nonnull;
 
 /**
  * Cache configuration for FHIR Resources.
+ *
+ * @author volsch
  */
 @Configuration
+@EnableConfigurationProperties
 @ConfigurationProperties( "dhis2.fhir-adapter.cache.dhis" )
 @Validated
 public class DhisMetadataCacheConfig extends AbstractSimpleCacheConfig

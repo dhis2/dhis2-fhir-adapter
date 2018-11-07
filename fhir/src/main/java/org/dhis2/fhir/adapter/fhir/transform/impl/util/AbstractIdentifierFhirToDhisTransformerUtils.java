@@ -78,7 +78,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     @ScriptExecutionRequired
     public String getReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformerException
     {
-        if ( reference == null )
+        if ( (reference == null) || reference.isEmpty() )
         {
             return null;
         }
@@ -94,7 +94,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     @Nullable
     public String getReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformerException
     {
-        if ( reference == null )
+        if ( (reference == null) || reference.isEmpty() )
         {
             return null;
         }

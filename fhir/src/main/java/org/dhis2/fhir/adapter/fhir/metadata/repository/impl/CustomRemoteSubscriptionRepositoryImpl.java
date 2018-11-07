@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,16 +128,13 @@ public class CustomRemoteSubscriptionRepositoryImpl implements CustomRemoteSubsc
                     {
                         final RemoteSubscriptionResource rsr = new RemoteSubscriptionResource();
                         rsr.setRemoteSubscription( remoteSubscription );
-                        rsr.setCreatedAt( remoteSubscription.getLastUpdatedAt() );
-                        rsr.setLastUpdatedBy( remoteSubscription.getLastUpdatedBy() );
-                        rsr.setLastUpdatedAt( remoteSubscription.getLastUpdatedAt() );
                         rsr.setFhirResourceType( resourceType );
                         rsr.setDescription( "Automatically created subscription for FHIR Resource " + resourceType.getResourceTypeName() + "." );
                         remoteSubscription.getResources().add( rsr );
 
                         final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
                         resourceUpdate.setRemoteSubscriptionResource( rsr );
-                        resourceUpdate.setRemoteLastUpdated( rsr.getLastUpdatedAt() );
+                        resourceUpdate.setRemoteLastUpdated( LocalDateTime.now() );
                         rsr.setResourceUpdate( resourceUpdate );
 
                         autoCreatedRemoteSubscriptionResources.add( rsr );

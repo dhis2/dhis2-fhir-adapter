@@ -41,7 +41,7 @@ import javax.annotation.Nonnull;
 public interface SecurityConfig
 {
     /**
-     * Returns the authorities mappings where the key is the DHIS2 authority and
+     * Returns the authorities mappings where the cache is the DHIS2 authority and
      * the values are the Adapter authorities to be grantes.
      *
      * @return the mapping of authorities.

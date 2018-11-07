@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.cache;
  */
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
@@ -58,12 +59,14 @@ public abstract class AbstractSimpleCacheConfig implements Serializable
     private SimpleCacheType type = SimpleCacheType.NONE;
 
     @Valid
+    @NestedConfigurationProperty
     @NotNull
-    private SimpleCaffeineCacheConfig caffeine = new SimpleCaffeineCacheConfig();
+    private final SimpleCaffeineCacheConfig caffeine = new SimpleCaffeineCacheConfig();
 
     @Valid
+    @NestedConfigurationProperty
     @NotNull
-    private SimpleRedisCacheConfig redis = new SimpleRedisCacheConfig();
+    private final SimpleRedisCacheConfig redis = new SimpleRedisCacheConfig();
 
     @Nonnull
     public SimpleCacheType getType()
@@ -82,20 +85,10 @@ public abstract class AbstractSimpleCacheConfig implements Serializable
         return caffeine;
     }
 
-    public void setCaffeine( @Nonnull SimpleCaffeineCacheConfig caffeine )
-    {
-        this.caffeine = caffeine;
-    }
-
     @Nonnull
     public SimpleRedisCacheConfig getRedis()
     {
         return redis;
-    }
-
-    public void setRedis( @Nonnull SimpleRedisCacheConfig redis )
-    {
-        this.redis = redis;
     }
 
     @Nonnull
@@ -119,7 +112,7 @@ public abstract class AbstractSimpleCacheConfig implements Serializable
     @Nonnull
     protected <R> RedisCacheConfiguration createRedisCacheConfiguration( @Nonnull RedisSerializer<R> redisSerializer )
     {
-        return RedisCacheConfiguration.defaultCacheConfig().computePrefixWith( getRedis().getKeyPrefix() )
+        return RedisCacheConfiguration.defaultCacheConfig().computePrefixWith( getRedis().getCacheKeyPrefix() )
             .entryTtl( getRedis().getTimeToLive() ).serializeValuesWith( new RedisSerializationContext.SerializationPair<R>()
             {
                 @Override
