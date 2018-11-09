@@ -111,16 +111,4 @@ public class TrackedEntityRule extends AbstractRule
     {
         this.trackedEntityIdentifierReference = trackedEntityIdentifierReference;
     }
-
-    @Basic
-    @Column( name = "tracked_entity_identifier_fq", nullable = false )
-    public boolean isTrackedEntityIdentifierFq()
-    {
-        return trackedEntityIdentifierFq;
-    }
-
-    public void setTrackedEntityIdentifierFq( boolean trackedEntityIdentifierFq )
-    {
-        this.trackedEntityIdentifierFq = trackedEntityIdentifierFq;
-    }
 }

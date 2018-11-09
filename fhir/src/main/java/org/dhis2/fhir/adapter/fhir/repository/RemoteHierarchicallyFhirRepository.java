@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.impl.util;
+package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,52 +28,26 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
+import java.util.function.Function;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. HAPI FHIR objects).
+ * Facade for {@link RemoteFhirRepository} to handle parent child relationships on
+ * to request the complete hierarchy up to the root.
  *
  * @author volsch
  */
-public abstract class BeanTransformerUtils
+public interface RemoteHierarchicallyFhirRepository
 {
-    @Nullable
-    @SuppressWarnings( { "unchecked" } )
-    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
-    {
-        if ( object == null )
-        {
-            return null;
-        }
-        final IParser parser = fhirContext.newJsonParser();
-        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
-    }
-
-    @Nullable
-    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
-    {
-        if ( objects == null )
-        {
-            return null;
-        }
-        if ( objects.isEmpty() )
-        {
-            return Collections.emptyList();
-        }
-        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
-    }
-
-    private BeanTransformerUtils()
-    {
-        super();
-    }
+    @Nonnull
+    IBaseBundle findWithParents( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint,
+        @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType, @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction );
 }

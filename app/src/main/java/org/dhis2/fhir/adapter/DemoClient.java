@@ -101,12 +101,20 @@ public class DemoClient
         // Organization
         ///////////////
 
-        Organization org = new Organization();
-        org.setId( IdType.newRandomUuid() );
-        org.setName( "Connaught Hospital" );
-        org.addIdentifier()
+        Organization hospitalOrg = new Organization();
+        hospitalOrg.setId( IdType.newRandomUuid() );
+        hospitalOrg.setName( "Connaught Hospital" );
+        hospitalOrg.addIdentifier()
             .setSystem( "http://example.sl/organizations" )
             .setValue( orgCode );
+
+        Organization org = new Organization();
+        org.setId( IdType.newRandomUuid() );
+        org.setName( "Registration Unit" );
+        org.addIdentifier()
+            .setSystem( "http://example.sl/organizations" )
+            .setValue( "XZY123456" );
+        org.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
 
         //////////////////////////////////
         // Create Patient (new born child)
@@ -371,6 +379,12 @@ public class DemoClient
             .getRequest()
             .setMethod( Bundle.HTTPVerb.PUT )
             .setUrl( "Location?identifier=http://example.sl/locations|" + orgCode );
+        bundle.addEntry()
+            .setResource( hospitalOrg )
+            .setFullUrl( hospitalOrg.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Organization?identifier=http://example.sl/organizations|XZY123456" );
         bundle.addEntry()
             .setResource( org )
             .setFullUrl( org.getId() )

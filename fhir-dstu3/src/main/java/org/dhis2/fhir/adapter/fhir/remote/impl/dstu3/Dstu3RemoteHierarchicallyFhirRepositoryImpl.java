@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.impl.util;
+package org.dhis2.fhir.adapter.fhir.remote.impl.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,52 +28,40 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
+import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractRemoteHierarchicallyFhirRepositoryImpl;
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Resource;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. HAPI FHIR objects).
+ * Implementation of {@link AbstractRemoteHierarchicallyFhirRepositoryImpl} for DSTU3.
  *
  * @author volsch
  */
-public abstract class BeanTransformerUtils
+@Component
+public class Dstu3RemoteHierarchicallyFhirRepositoryImpl extends AbstractRemoteHierarchicallyFhirRepositoryImpl
 {
-    @Nullable
-    @SuppressWarnings( { "unchecked" } )
-    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
+    public Dstu3RemoteHierarchicallyFhirRepositoryImpl( @Nonnull RemoteFhirRepository remoteFhirRepository )
     {
-        if ( object == null )
-        {
-            return null;
-        }
-        final IParser parser = fhirContext.newJsonParser();
-        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
+        super( remoteFhirRepository );
     }
 
-    @Nullable
-    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
+    @Nonnull
+    @Override
+    protected IBaseBundle createBundle( @Nonnull List<? extends IBaseResource> resources )
     {
-        if ( objects == null )
-        {
-            return null;
-        }
-        if ( objects.isEmpty() )
-        {
-            return Collections.emptyList();
-        }
-        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
-    }
-
-    private BeanTransformerUtils()
-    {
-        super();
+        final Bundle bundle = new Bundle();
+        resources.stream().map( r -> {
+            final Bundle.BundleEntryComponent component = new Bundle.BundleEntryComponent();
+            component.setResource( (Resource) r );
+            return component;
+        } ).forEach( bundle::addEntry );
+        return bundle;
     }
 }

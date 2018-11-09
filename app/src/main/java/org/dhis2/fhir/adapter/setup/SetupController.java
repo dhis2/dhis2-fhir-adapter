@@ -29,6 +29,9 @@ package org.dhis2.fhir.adapter.setup;
  */
 
 import org.apache.commons.codec.binary.Hex;
+import org.dhis2.fhir.adapter.rest.RestResponseEntityException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,6 +50,8 @@ import java.security.SecureRandom;
 @ConditionalOnProperty( "adapter-setup" )
 public class SetupController
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     protected static final int BEARER_TOKEN_BYTES = 40;
 
     private final SetupService setupService;
@@ -82,8 +87,24 @@ public class SetupController
             return "setup";
         }
 
-        setupService.apply( setup );
-        return "result";
+        try
+        {
+            setupService.apply( setup );
+        }
+        catch ( SetupException | RestResponseEntityException e )
+        {
+            logger.error( "An error occurred when performing the setup.", e );
+            bindingResult.reject( "setup.error", new Object[]{ e.getMessage() }, "{0}" );
+            return "setup";
+        }
+        catch ( RuntimeException e )
+        {
+            logger.error( "An error occurred when performing the setup.", e );
+            bindingResult.reject( "setup.error", "An error occurred when performing setup. Please, check the log files for further information." );
+            return "setup";
+        }
+
+        return "setup-completed";
     }
 
     @Nonnull

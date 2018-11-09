@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.remote.impl.dstu3;
+package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,39 @@ package org.dhis2.fhir.adapter.fhir.remote.impl.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
+import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.remote.impl.AbstractSubscriptionResourceBundleRetriever;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractOrganizationTransformerUtils;
 import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.instance.model.api.IAnyResource;
+import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of {@link AbstractSubscriptionResourceBundleRetriever} for DSTU3.
- *
- * @author volsch
- */
 @Component
-public class Dstu3SubscriptionResourceBundleRetriever extends AbstractSubscriptionResourceBundleRetriever
+@Scriptable
+public class Dstu3OrganizationTransformerUtils extends AbstractOrganizationTransformerUtils
 {
-    public Dstu3SubscriptionResourceBundleRetriever( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext )
+    public Dstu3OrganizationTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull OrganisationUnitService organisationUnitService,
+        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
+        @Nonnull RemoteFhirRepository remoteFhirRepository,
+        @Nonnull RemoteHierarchicallyFhirRepository remoteHierarchicallyFhirRepository )
     {
-        super( fhirContext );
+        super( scriptExecutionContext, organisationUnitService, subscriptionResourceRepository, remoteFhirRepository, remoteHierarchicallyFhirRepository );
     }
 
     @Nonnull
@@ -64,44 +70,32 @@ public class Dstu3SubscriptionResourceBundleRetriever extends AbstractSubscripti
         return FhirVersion.DSTU3_ONLY;
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected Class<? extends IBaseBundle> getBundleClass()
+    protected IBaseReference getParentReference( @Nullable IBaseResource resource )
     {
-        return Bundle.class;
+        if ( resource == null )
+        {
+            return null;
+        }
+        return ((Organization) resource).getPartOf();
     }
 
     @Nonnull
     @Override
-    protected List<? extends IAnyResource> getResourceEntries( @Nonnull IBaseBundle bundle )
+    protected List<IBaseResource> extractResources( @Nullable IBaseBundle bundle )
     {
+        if ( bundle == null )
+        {
+            return Collections.emptyList();
+        }
+
         final Bundle b = (Bundle) bundle;
+        if ( b.getEntry() == null )
+        {
+            return Collections.emptyList();
+        }
+
         return b.getEntry().stream().map( Bundle.BundleEntryComponent::getResource ).collect( Collectors.toList() );
-    }
-
-    @Nullable
-    @Override
-    protected Long getBundleTotalCount( @Nonnull IBaseBundle bundle )
-    {
-        final Bundle b = (Bundle) bundle;
-        return b.hasTotal() ? (long) b.getTotal() : null;
-    }
-
-    @Nullable
-    @Override
-    protected IBaseBundle loadNextPage( @Nonnull IGenericClient client, @Nonnull IBaseBundle bundle )
-    {
-        final Bundle b = (Bundle) bundle;
-        final Bundle.BundleLinkComponent link = b.getLink( Bundle.LINK_NEXT );
-        return ((link != null) && !link.isEmpty()) ? client.loadPage().next( bundle ).execute() : null;
-    }
-
-    @Nullable
-    @Override
-    protected IBaseBundle loadPreviousPage( @Nonnull IGenericClient client, @Nonnull IBaseBundle bundle )
-    {
-        final Bundle b = (Bundle) bundle;
-        final Bundle.BundleLinkComponent link = b.getLink( Bundle.LINK_PREV );
-        return ((link != null) && !link.isEmpty()) ? client.loadPage().previous( bundle ).execute() : null;
     }
 }

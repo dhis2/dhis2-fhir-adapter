@@ -225,7 +225,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<TrackedEntityInstance> getTrackedEntityInstanceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull IBaseResource baseResource,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        final String identifier = getIdentifier( context, baseResource, rule.isTrackedEntityIdentifierFq(), scriptVariables );
+        final String identifier = getIdentifier( context, baseResource, scriptVariables );
         if ( identifier == null )
         {
             return Optional.empty();
@@ -256,7 +256,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nullable
-    protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, IBaseResource baseResource, boolean identifierFullQualified, @Nonnull Map<String, Object> scriptVariables )
+    protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, IBaseResource baseResource, @Nonnull Map<String, Object> scriptVariables )
     {
         if ( !(baseResource instanceof IDomainResource) )
         {
@@ -278,10 +278,6 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         {
             logger.info( "Resource " + resourceType + " does not include the required identifier with system: " + resourceSystem.getSystem() );
             return null;
-        }
-        if ( identifierFullQualified )
-        {
-            throw new TransformerMappingException( "Full qualified identifiers are required that are not yet supported." );
         }
 
         return identifier;

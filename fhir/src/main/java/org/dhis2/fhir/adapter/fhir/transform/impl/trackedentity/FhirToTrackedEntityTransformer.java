@@ -206,6 +206,6 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
     {
         final IBaseResource baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
-        return getIdentifier( context, baseResource, rule.isTrackedEntityIdentifierFq(), scriptVariables );
+        return getIdentifier( context, baseResource, scriptVariables );
     }
 }

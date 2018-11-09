@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
@@ -43,6 +44,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeCategoryRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptArgRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -71,7 +73,15 @@ import java.util.stream.Collectors;
 @Service
 public class SetupService
 {
+    public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
+
     public static final String ORGANIZATION_CODE_CATEGORY = "ORGANIZATION_UNIT";
+
+    public static final String ORG_UNIT_CODE_EXECUTABLE_SCRIPT_CODE = "EXTRACT_FHIR_RESOURCE_DHIS_ORG_UNIT_CODE";
+
+    public static final String ORG_UNIT_CODE_FALLBACK_ARG_NAME = "useIdentifierCode";
+
+    public static final String ORG_UNIT_CODE_DEFAULT_CODE_ARG_NAME = "defaultCode";
 
     private final CodeCategoryRepository codeCategoryRepository;
 
@@ -81,16 +91,19 @@ public class SetupService
 
     private final SystemCodeRepository systemCodeRepository;
 
+    private final ExecutableScriptArgRepository executableScriptArgRepository;
+
     private final RemoteSubscriptionRepository remoteSubscriptionRepository;
 
     public SetupService( @Nonnull CodeCategoryRepository codeCategoryRepository, @Nonnull CodeRepository codeRepository,
         @Nonnull SystemRepository systemRepository, @Nonnull SystemCodeRepository systemCodeRepository,
-        @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository )
+        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository )
     {
         this.codeCategoryRepository = codeCategoryRepository;
         this.codeRepository = codeRepository;
         this.systemRepository = systemRepository;
         this.systemCodeRepository = systemCodeRepository;
+        this.executableScriptArgRepository = executableScriptArgRepository;
         this.remoteSubscriptionRepository = remoteSubscriptionRepository;
     }
 
@@ -122,6 +135,59 @@ public class SetupService
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
     }
 
+    private void createRemoteSubscription( @Nonnull RemoteSubscriptionSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
+    {
+        final RemoteSubscription remoteSubscription = new RemoteSubscription();
+        remoteSubscription.setSystems( new ArrayList<>() );
+        remoteSubscription.setAutoCreatedSubscriptionResources( Collections.singleton( FhirResourceType.PATIENT ) );
+        remoteSubscription.setName( "Default Remote Subscription" );
+        remoteSubscription.setCode( "DEFAULT" );
+        remoteSubscription.setDescription( "Default remote subscription." );
+        remoteSubscription.setFhirVersion( FhirVersion.DSTU3 );
+        remoteSubscription.setEnabled( true );
+        remoteSubscription.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
+
+        final SubscriptionAdapterEndpoint adapterEndpoint = new SubscriptionAdapterEndpoint();
+        adapterEndpoint.setBaseUrl( StringUtils.trim( setup.getAdapterSetup().getBaseUrl() ) );
+        adapterEndpoint.setAuthorizationHeader( StringUtils.trim( setup.getAdapterSetup().getAuthorizationHeaderValue() ) );
+        adapterEndpoint.setSubscriptionType( setup.getFhirSetup().getSubscriptionType() );
+        remoteSubscription.setAdapterEndpoint( adapterEndpoint );
+
+        final SubscriptionDhisEndpoint dhisEndpoint = new SubscriptionDhisEndpoint();
+        dhisEndpoint.setAuthenticationMethod( AuthenticationMethod.BASIC );
+        dhisEndpoint.setUsername( StringUtils.trim( setup.getDhisSetup().getUsername() ) );
+        dhisEndpoint.setPassword( StringUtils.trim( setup.getDhisSetup().getPassword() ) );
+        remoteSubscription.setDhisEndpoint( dhisEndpoint );
+
+        final SubscriptionFhirEndpoint fhirEndpoint = new SubscriptionFhirEndpoint();
+        fhirEndpoint.setBaseUrl( setup.getFhirSetup().getBaseUrl() );
+        if ( StringUtils.isNotBlank( setup.getFhirSetup().getHeaderName() ) &&
+            StringUtils.isNotBlank( setup.getFhirSetup().getHeaderValue() ) )
+        {
+            fhirEndpoint.setHeaders( new TreeSet<>( Collections.singleton( new RequestHeader(
+                StringUtils.trim( setup.getFhirSetup().getHeaderName() ),
+                StringUtils.trim( setup.getFhirSetup().getHeaderValue() ),
+                AUTHORIZATION_HEADER_NAME.equalsIgnoreCase( StringUtils.trim( setup.getFhirSetup().getHeaderName() ) ) ) ) ) );
+        }
+        remoteSubscription.setFhirEndpoint( fhirEndpoint );
+
+        final RemoteSubscriptionSystem subscriptionOrganizationSystem = new RemoteSubscriptionSystem();
+        subscriptionOrganizationSystem.setRemoteSubscription( remoteSubscription );
+        subscriptionOrganizationSystem.setFhirResourceType( FhirResourceType.ORGANIZATION );
+        subscriptionOrganizationSystem.setSystem( organizationSystem );
+        subscriptionOrganizationSystem.setCodePrefix( StringUtils.trim( setup.getSystemUriSetup().getOrganizationCodePrefix() ) );
+        remoteSubscription.getSystems().add( subscriptionOrganizationSystem );
+
+        final RemoteSubscriptionSystem subscriptionPatientSystem = new RemoteSubscriptionSystem();
+        subscriptionPatientSystem.setRemoteSubscription( remoteSubscription );
+        subscriptionPatientSystem.setFhirResourceType( FhirResourceType.PATIENT );
+        subscriptionPatientSystem.setSystem( patientSystem );
+        subscriptionPatientSystem.setCodePrefix( StringUtils.trim( setup.getSystemUriSetup().getPatientCodePrefix() ) );
+        remoteSubscription.getSystems().add( subscriptionPatientSystem );
+
+        remoteSubscriptionRepository.saveAndFlush( remoteSubscription );
+    }
+
     private void createSystemCodes( @Nonnull OrganizationCodeSetup setup, @Nonnull System organizationSystem )
     {
         final List<FhirDhisCodeMapping> codeMappings = setup.getCodeMappings();
@@ -140,77 +206,33 @@ public class SetupService
             } ).collect( Collectors.toList() );
             systemCodeRepository.saveAll( systemCodes );
         }
+
+        ExecutableScriptArg scriptArg = executableScriptArgRepository.findByCodeAndName( ORG_UNIT_CODE_EXECUTABLE_SCRIPT_CODE, ORG_UNIT_CODE_FALLBACK_ARG_NAME )
+            .orElseThrow( () -> new SetupException( "Executable script with code " + ORG_UNIT_CODE_EXECUTABLE_SCRIPT_CODE + " and argument " + ORG_UNIT_CODE_FALLBACK_ARG_NAME + " exists." ) );
+        scriptArg.setOverrideValue( Boolean.valueOf( setup.isFallback() ).toString() );
+        executableScriptArgRepository.save( scriptArg );
+
+        scriptArg = executableScriptArgRepository.findByCodeAndName( ORG_UNIT_CODE_EXECUTABLE_SCRIPT_CODE, ORG_UNIT_CODE_DEFAULT_CODE_ARG_NAME )
+            .orElseThrow( () -> new SetupException( "Executable script with code " + ORG_UNIT_CODE_EXECUTABLE_SCRIPT_CODE + " and argument " + ORG_UNIT_CODE_DEFAULT_CODE_ARG_NAME + " exists." ) );
+        scriptArg.setOverrideValue( StringUtils.trimToNull( setup.getDefaultDhisCode() ) );
+        executableScriptArgRepository.save( scriptArg );
     }
 
     @Nonnull
     private Map<String, Code> createCodes( @Nonnull List<FhirDhisCodeMapping> codeMappings, @Nonnull CodeCategory organizationCodeCategory )
     {
         final Map<String, Code> codes = new HashMap<>();
-        codeMappings.forEach( cm -> {
-            codes.computeIfAbsent( cm.getDhisCode(), c -> {
-                final Code code = new Code();
-                code.setCodeCategory( organizationCodeCategory );
-                code.setName( "Default DHIS2 Organization Unit Code " + c );
-                code.setDescription( "Default DHIS2 organization unit code " + c );
-                code.setCode( c.startsWith( OrganizationCodeSetup.DEFAULT_CODE_PREFIX ) ? c :
-                    (OrganizationCodeSetup.DEFAULT_CODE_PREFIX + c) );
-                code.setMappedCode( c );
-                return code;
-            } );
-        } );
+        codeMappings.forEach( cm -> codes.computeIfAbsent( cm.getDhisCode(), c -> {
+            final Code code = new Code();
+            code.setCodeCategory( organizationCodeCategory );
+            code.setName( "Default DHIS2 Organization Unit Code " + c );
+            code.setDescription( "Default DHIS2 organization unit code " + c );
+            code.setCode( c.startsWith( OrganizationCodeSetup.DEFAULT_CODE_PREFIX ) ? c :
+                (OrganizationCodeSetup.DEFAULT_CODE_PREFIX + c) );
+            code.setMappedCode( c );
+            return code;
+        } ) );
         return codes;
-    }
-
-    private void createRemoteSubscription( @Nonnull RemoteSubscriptionSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
-    {
-        final RemoteSubscription remoteSubscription = new RemoteSubscription();
-        remoteSubscription.setSystems( new ArrayList<>() );
-        remoteSubscription.setAutoCreatedSubscriptionResources( Collections.singleton( FhirResourceType.PATIENT ) );
-        remoteSubscription.setName( "Default Remote Subscription" );
-        remoteSubscription.setCode( "DEFAULT" );
-        remoteSubscription.setDescription( "Default remote subscription." );
-        remoteSubscription.setFhirVersion( FhirVersion.DSTU3 );
-        remoteSubscription.setEnabled( true );
-        remoteSubscription.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
-
-        final SubscriptionAdapterEndpoint adapterEndpoint = new SubscriptionAdapterEndpoint();
-        adapterEndpoint.setBaseUrl( setup.getAdapterSetup().getBaseUrl() );
-        adapterEndpoint.setAuthorizationHeader( setup.getAdapterSetup().getAuthorizationHeaderValue() );
-        adapterEndpoint.setSubscriptionType( setup.getFhirSetup().getSubscriptionType() );
-        remoteSubscription.setAdapterEndpoint( adapterEndpoint );
-
-        final SubscriptionDhisEndpoint dhisEndpoint = new SubscriptionDhisEndpoint();
-        dhisEndpoint.setAuthenticationMethod( AuthenticationMethod.BASIC );
-        dhisEndpoint.setUsername( setup.getDhisSetup().getUsername() );
-        dhisEndpoint.setPassword( setup.getDhisSetup().getPassword() );
-        remoteSubscription.setDhisEndpoint( dhisEndpoint );
-
-        final SubscriptionFhirEndpoint fhirEndpoint = new SubscriptionFhirEndpoint();
-        fhirEndpoint.setBaseUrl( setup.getFhirSetup().getBaseUrl() );
-        if ( StringUtils.isNotBlank( setup.getFhirSetup().getHeaderName() ) &&
-            StringUtils.isNotBlank( setup.getFhirSetup().getHeaderValue() ) )
-        {
-            fhirEndpoint.setHeaders( new TreeSet<>( Collections.singleton( new RequestHeader(
-                setup.getFhirSetup().getHeaderName(),
-                setup.getFhirSetup().getHeaderValue(), true ) ) ) );
-        }
-        remoteSubscription.setFhirEndpoint( fhirEndpoint );
-
-        final RemoteSubscriptionSystem subscriptionOrganizationSystem = new RemoteSubscriptionSystem();
-        subscriptionOrganizationSystem.setRemoteSubscription( remoteSubscription );
-        subscriptionOrganizationSystem.setFhirResourceType( FhirResourceType.ORGANIZATION );
-        subscriptionOrganizationSystem.setSystem( organizationSystem );
-        subscriptionOrganizationSystem.setCodePrefix( setup.getSystemUriSetup().getOrganizationCodePrefix() );
-        remoteSubscription.getSystems().add( subscriptionOrganizationSystem );
-
-        final RemoteSubscriptionSystem subscriptionPatientSystem = new RemoteSubscriptionSystem();
-        subscriptionPatientSystem.setRemoteSubscription( remoteSubscription );
-        subscriptionPatientSystem.setFhirResourceType( FhirResourceType.PATIENT );
-        subscriptionPatientSystem.setSystem( patientSystem );
-        subscriptionPatientSystem.setCodePrefix( setup.getSystemUriSetup().getPatientCodePrefix() );
-        remoteSubscription.getSystems().add( subscriptionPatientSystem );
-
-        remoteSubscriptionRepository.saveAndFlush( remoteSubscription );
     }
 
     @Nonnull

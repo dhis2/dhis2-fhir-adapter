@@ -51,11 +51,5 @@ public interface RemoteFhirRepository
     Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId );
-
-    @Nonnull
     Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
-
-    @Nonnull
-    Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId );
 }

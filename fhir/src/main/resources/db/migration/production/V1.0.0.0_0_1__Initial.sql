@@ -97,13 +97,13 @@ CREATE TABLE fhir_version_enum (
 COMMENT ON TABLE fhir_version_enum IS 'Enumeration values with supported FHIR versions.';
 INSERT INTO fhir_version_enum VALUES('DSTU3');
 
-CREATE TABLE subscription_type_enum (
+CREATE TABLE fhir_subscription_type_enum (
   value VARCHAR(30) NOT NULL,
-  CONSTRAINT subscription_type_enum_pk PRIMARY KEY(value)
+  CONSTRAINT fhir_subscription_type_enum_pk PRIMARY KEY(value)
 );
-COMMENT ON TABLE subscription_type_enum IS 'Enumeration values with supported FHIR subscription types.';
-INSERT INTO subscription_type_enum VALUES('REST_HOOK');
-INSERT INTO subscription_type_enum VALUES('REST_HOOK_WITH_JSON_PAYLOAD');
+COMMENT ON TABLE fhir_subscription_type_enum IS 'Enumeration values with supported FHIR subscription types.';
+INSERT INTO fhir_subscription_type_enum VALUES('REST_HOOK');
+INSERT INTO fhir_subscription_type_enum VALUES('REST_HOOK_WITH_JSON_PAYLOAD');
 
 CREATE TABLE fhir_event_status_enum (
   value VARCHAR(30) NOT NULL,
@@ -572,7 +572,6 @@ CREATE TABLE fhir_tracked_entity_rule (
   org_lookup_script_id          UUID         NOT NULL,
   loc_lookup_script_id          UUID         NOT NULL,
   tracked_entity_identifier_ref VARCHAR(230) NOT NULL,
-  tracked_entity_identifier_fq  BOOLEAN      NOT NULL DEFAULT FALSE,
   CONSTRAINT fhir_tracked_entity_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_tracked_entity_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
   CONSTRAINT fhir_tracked_entity_rule_fk2 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id),
@@ -588,7 +587,6 @@ COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_ref IS 'The reference 
 COMMENT ON COLUMN fhir_tracked_entity_rule.org_lookup_script_id IS 'References the executable lookup script for DHIS2 Organization Units.';
 COMMENT ON COLUMN fhir_tracked_entity_rule.loc_lookup_script_id IS 'References the executable lookup script for DHIS2 coordinates (longitude and latitude).';
 COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_ref IS 'The reference of the DHIS2 Tracked Entity Attribute that includes the identifier value that is also used by FHIR resources (e.g. NAME:National identifier).';
-COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_fq IS 'Specifies if the identifier that is stored in the DHIS2 Tracked Entity Attribute contains also the system URI.';
 
 CREATE TABLE fhir_tracker_program (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -850,7 +848,7 @@ CREATE TABLE fhir_remote_subscription (
   CONSTRAINT fhir_remote_subscription_uk_code UNIQUE (code),
   CONSTRAINT fhir_remote_subscription_fk1 FOREIGN KEY (fhir_version) REFERENCES fhir_version_enum(value),
   CONSTRAINT fhir_remote_subscription_fk2 FOREIGN KEY (dhis_authentication_method) REFERENCES fhir_authentication_method_enum(value),
-  CONSTRAINT fhir_remote_subscription_fk3 FOREIGN KEY (subscription_type) REFERENCES subscription_type_enum(value)
+  CONSTRAINT fhir_remote_subscription_fk3 FOREIGN KEY (subscription_type) REFERENCES fhir_subscription_type_enum(value)
 );
 COMMENT ON TABLE fhir_remote_subscription IS 'Contains FHIR Services on which the adapter has one or more FHIR Subscriptions.';
 COMMENT ON COLUMN fhir_remote_subscription.id IS 'Unique ID of entity (also used as first part of web hook URI).';
@@ -1594,15 +1592,22 @@ if (((organizationReference == null) || organizationReference.isEmpty()) && args
 }
 if (organizationReference != null)
 {
-  var code = identifierUtils.getReferenceIdentifier(organizationReference, ''ORGANIZATION'');
-  var mappedCode;
-  if (code != null)
+  var mappedCode = null;
+  var hierarchy = organizationUtils.findHierarchy(organizationReference);
+  if (hierarchy != null)
   {
-    mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
-    if ((mappedCode == null) && args[''useIdentifierCode''])
-    {
-      mappedCode = organizationUnitUtils.existsWithPrefix(code);
-    }
+    for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+	  {
+      var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''ORGANIZATION'');
+      if (code != null)
+      {
+        mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
+        if ((mappedCode == null) && args[''useIdentifierCode''])
+        {
+          mappedCode = organizationUtils.existsWithPrefix(code);
+        }
+      }
+	  }
   }
   if (mappedCode == null)
   {
@@ -2005,8 +2010,8 @@ VALUES ('081c4642-bb83-44ab-b90f-aa206ad347aa', 'DSTU3');
 -- Rule FHIR Patient to tracked entity type Person
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
 VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
-INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref, tracked_entity_identifier_fq)
-VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier', FALSE);
+INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref)
+VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier');
 
 UPDATE fhir_system_code sc SET system_code_value = (SELECT system_uri FROM fhir_system s WHERE s.id=sc.system_id) || '|' || system_code;
 ALTER TABLE fhir_system_code ALTER COLUMN system_code_value SET NOT NULL;

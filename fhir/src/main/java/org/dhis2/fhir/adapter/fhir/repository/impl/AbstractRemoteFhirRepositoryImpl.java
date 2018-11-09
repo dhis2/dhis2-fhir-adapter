@@ -35,14 +35,12 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.server.exceptions.BaseServerResponseException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedRemoteSubscriptionResourceEvent;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
-import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.rest.RestBadRequestException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
@@ -96,7 +94,7 @@ public abstract class AbstractRemoteFhirRepositoryImpl implements RemoteFhirRepo
     }
 
     @HystrixCommand
-    @CachePut( key = "{#remoteSubscriptionId, #resourceType, #resourceId}", unless = "#result==null" )
+    @CachePut( key = "{#remoteSubscriptionId, #fhirVersion, #resourceType, #resourceId}", unless = "#result==null" )
     @Nonnull
     @Override
     public Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
@@ -119,33 +117,12 @@ public abstract class AbstractRemoteFhirRepositoryImpl implements RemoteFhirRepo
     }
 
     @HystrixCommand
-    @CachePut( key = "{#remoteSubscriptionId, #resourceType, #resourceId}", unless = "#result==null" )
-    @Nonnull
-    @Override
-    public Optional<IBaseResource> findRefreshed( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId )
-    {
-        final RemoteSubscription remoteSubscription = repository.findOneByIdCached( remoteSubscriptionId )
-            .orElseThrow( () -> new FhirRepositoryException( "Remote subscription with ID " + remoteSubscriptionId + " does not longer exist." ) );
-        return findRefreshed( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-            resourceType, resourceId );
-    }
-
-    @HystrixCommand
-    @Cacheable( key = "{#remoteSubscriptionId, #resourceType, #resourceId}", unless = "#result==null" )
+    @Cacheable( key = "{#remoteSubscriptionId, #fhirVersion, #resourceType, #resourceId}", unless = "#result==null" )
     @Nonnull
     @Override
     public Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
     {
         return findRefreshed( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, resourceId );
-    }
-
-    @HystrixCommand
-    @Cacheable( key = "{#remoteSubscriptionId, #resourceType, #resourceId}", unless = "#result==null" )
-    @Nonnull
-    @Override
-    public Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull String resourceType, @Nonnull String resourceId )
-    {
-        return findRefreshed( remoteSubscriptionId, resourceType, resourceId );
     }
 
     @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedRemoteSubscriptionResourceEvent.class )
