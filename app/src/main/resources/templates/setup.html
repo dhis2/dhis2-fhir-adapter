@@ -59,9 +59,13 @@
 <div th:unless="${completedSetup}">
   <p>In the following sections you can enter the initial setup data of the Adapter. All further adjustments must be applied by using the REST API of the Adapter.</p>
   <form action="#" th:action="@{/setup}" th:object="${setup}" method="post">
+    <div th:if="${#fields.hasGlobalErrors()}" style="margin-top: 10px; margin-bottom: 10px">
+      <ul>
+        <li th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error"></li>
+      </ul>
+    </div>
     <h2>FHIR Subscriptions</h2>
     <p>This section contains the data that is used to setup the FHIR subscriptions.</p>
-
     <h3>DHIS2 Setup</h3>
     <p>This sub-section contains the data of DHIS2 that is required when storing mapped and transformed FHIR data on DHIS2.</p>
     <div class="value">
@@ -69,7 +73,7 @@
         create and update Tracker program instances and create and update tracker program stage instances.</p>
       <p><label for="dhisUsername">Username:</label><input id="dhisUsername" type="text" th:field="*{remoteSubscriptionSetup.dhisSetup.username}"/></p>
       <p th:if="${#fields.hasErrors('remoteSubscriptionSetup.dhisSetup.username')}" th:errors="*{remoteSubscriptionSetup.dhisSetup.username}" class="error">DHIS2 Username</p>
-      <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:field="*{remoteSubscriptionSetup.dhisSetup.password}"/></p>
+      <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:name="remoteSubscriptionSetup.dhisSetup.password" th:value="*{remoteSubscriptionSetup.dhisSetup.password}"/></p>
       <p th:if="${#fields.hasErrors('remoteSubscriptionSetup.dhisSetup.password')}" th:errors="*{remoteSubscriptionSetup.dhisSetup.password}" class="error">DHIS2 Password</p>
     </div>
 
@@ -152,7 +156,7 @@
     <h3>FHIR Organization to DHIS2 Organization Unit Mapping</h3>
     <p>The mapping uses the business identifier code that is defined by the FHIR organization resource and tries to lookup the code in the mapping table that is defined below. If the code cannot be found in the mapping table below, the code is optionally
       be used used to lookup the DHIS2 organization unit (including the code prefix that has been defined above) as a fallback. If such a DHIS2 organization unit does not exist, the default organization unit is used (when specified). If no existing DHIS2
-      organization unit can be found, the transformation of the input data will be skipped.</p>
+      organization unit can be found, the transformation of the input data will be skipped. Normally the mapping must be done for organization units at facility level (e.g. the hospital itself).</p>
     <p>The mapping table below has two columns. The column values may be separated by spaces, tabulators, commas and semicolons. Every code mapping must be placed in a new line. The first column contains the FHIR business identifier code and the second
       column contains the DHIS2 organization unit code. The same FHIR identifier code must not be specified more than once. DHIS2 organization unit codes can be specified several times.<br/><br/>
       Example:</p>
@@ -167,8 +171,9 @@
     <p><label for="orgCodeDefault">Default DHIS2 Code:</label><input id="orgCodeDefault" th:field="*{organizationCodeSetup.defaultDhisCode}"/></p>
     <p th:if="${#fields.hasErrors('organizationCodeSetup.defaultDhisCode')}" th:errors="*{organizationCodeSetup.defaultDhisCode}" class="error">Org Code Default</p>
 
-    <p style="margin-top: 40px">After pressing the button you will be asked for a username and password. Please, enter the username and password of a DHIS2 user that has all privileges.<br/><br/>
-      <input type="submit" value="Setup" style="width: 15em; height: 2em"/></p>
+    <div style="margin-top: 40px">
+      <input type="submit" value="Setup" style="width: 15em; height: 2em"/>
+    </div>
   </form>
 </div>
 </body>
