@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
@@ -225,11 +226,12 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<TrackedEntityInstance> getTrackedEntityInstanceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull IBaseResource baseResource,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        final String identifier = getIdentifier( context, baseResource, scriptVariables );
+        String identifier = getIdentifier( context, baseResource, scriptVariables );
         if ( identifier == null )
         {
             return Optional.empty();
         }
+        identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
 
         final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() )
@@ -253,6 +255,16 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
                 " returned more than one tracked entity instance: " + identifier );
         }
         return result.stream().findFirst();
+    }
+
+    protected String createFullQualifiedTrackedEntityInstanceIdentifier( @Nonnull FhirToDhisTransformerContext context, String identifier )
+    {
+        final ResourceSystem resourceSystem = context.getFhirRequest().getResourceSystem( context.getFhirRequest().getResourceType() );
+        if ( (resourceSystem != null) && StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) )
+        {
+            identifier = resourceSystem.getCodePrefix() + identifier;
+        }
+        return identifier;
     }
 
     @Nullable

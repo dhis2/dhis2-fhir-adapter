@@ -127,11 +127,12 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
         if ( trackedEntityInstance.isNewResource() )
         {
-            final String identifier = getIdentifier( context, rule, scriptVariables );
+            String identifier = getIdentifier( context, rule, scriptVariables );
             if ( identifier == null )
             {
                 return null;
             }
+            identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
 
             final String attributeId = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() ).orElseThrow( () ->
                 new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) ).getId();
