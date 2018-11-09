@@ -36,6 +36,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Utility class to create FHIR client with its required configuration.
+ *
+ * @author volsch
+ */
 public abstract class FhirClientUtils
 {
     @Nonnull
@@ -48,7 +53,10 @@ public abstract class FhirClientUtils
         }
 
         final AdditionalRequestHeadersInterceptor requestHeadersInterceptor = new AdditionalRequestHeadersInterceptor();
-        fhirEndpoint.getHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );
+        if ( fhirEndpoint.getHeaders() != null )
+        {
+            fhirEndpoint.getHeaders().forEach( h -> requestHeadersInterceptor.addHeaderValue( h.getName(), h.getValue() ) );
+        }
         client.registerInterceptor( requestHeadersInterceptor );
 
         return client;

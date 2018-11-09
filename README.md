@@ -1,75 +1,36 @@
 # DHIS2 FHIR Adapter
-This repository contains the source code of the DHIS2 FHIR Adapter. The current scope of the Adapter is to import data into DHIS2 Tracker by using FHIR Subscriptions. Event if the adapter may support more FHIR Resource types, the initial official support is
- for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances.
+## Overview
+This repository contains the source code of the DHIS2 FHIR Adapter. The current scope of the Adapter is to import data into DHIS2 Tracker by using FHIR Subscriptions. Event if the adapter may support more FHIR Resource types at the moment, the initial 
+ official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances. 
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
 
-## Running the Adapter in Development Environment
+The image above shows the high level architecture of the DHIS2 FHIR Adapter. The image may contain more details than the current official version of the Adapter. Optional components and connections are shown with dashed lines.
+
+The Adapter receives FHIR subscription notifications from one or more FHIR services (e.g. HAPI FHIR JPA Server) when there are created or updated resources (currently FHIR patient resources). The Adapter queues the notifications internally and retrieves new 
+ data from the FHIR service as soon as possible. The Adapter may retrieve more data from the FHIR service when needed (e.g. FHIR organization resources). To perform transformations to DHIS2 there are configured rules and transformations. Rules and 
+ transformations may use reusable Javascript code snippets. In order to identify already created DHIS2 tracked entity instances a national identifier must be provided by the FHIR patient resource.
+ 
+The Adapter uses a database to store mapping data and temporary processing data. In order not to perform conflicting tasks on more than one Adapter instance in a clustered environment, locking is performed by using PostgreSQL Advisory Locks. Since there may
+ be more created and updated FHIR resources than the Adapter and the DHIS2 backend (depending on the hardware sizing) can process at the same time, the Adapter queues all FHIR notifications until it is able to process them. The queue is also used to retry 
+ failed transformations (e.g. DHIS2 backend could not be reached). In a non-clustered environment the embedded Apache Artemis message queuing system can be used. In a clustered environment an external Apache Artemis message queuing system to which all Adapter 
+ instances are connected must be installed. The Adapter supports three different caches (Adapter mapping metadata to avoid database accesses, DHIS2 metadata to avoid DHIS2 backend accesses and FHIR resources to avoid accesses to FHIR endpoints of FHIR 
+ service). Each of the three caches can be configured individually. The cache can be disabled, can be stored in memory (Caffeine cache implementation) or on a caching server (Redis cache).
+
+Depending on the country specific use of FHIR organization and location resources, mapping of FHIR organization and location resources to DHIS2 organization units may use data that is stored externally. For this purpose also external micro services that 
+ have been developed for country specific use cases may be connected to the Adapter. The same may exist for the mapping of medications (not yet supported by the Adapter and if and when these are supported has not yet been defined).      
+     
+## Running the Adapter
 ### Dependent Software Components
 #### DHIS2
-DHIS 2.29 must be installed and the DHIS2 demo DB with data for Sierra Leone can be used. No additional setup is required for the Adapter when using this data.
+DHIS 2.29 or newer must be installed.  
 
-In order to use the Adapter without any configuration change, DHIS2 Web API Endpoints should be accessible on http://localhost:8080/api.
+The standard tracked entity type Person with first and last name tracked entity attribute must be available. For example, this tracked entity type can be found at [DHIS 2 Play](https://play.dhis2.org/). 
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. Also FHIR Includes must be supported currently. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
 
-Three subscriptions must be setup on the FHIR Service. The adapter works with FHIR web hook subscriptions that do not need a payload. If the FHIR Service does not support this or there are any issues (like any kind of bugs or FHIR service does not behave as
- described by FHIR specification), a payload can be added optionally (payload will be ignored by the adapter). The values listed below do not need to be changed. The shell script command snippets below assume that FHIR Endpoints of HAPI FHIR JPA Server 
- Example can be reached on http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3 (HAPI FHIR JPA Server Example WAR has been placed in a Servlet Container that listens on port 8082 on the local machine) and the adapter can be reached on 
- http://localhost:8081/ (Adapter WAR has been placed in a Servlet Container that listens on port 8081 on the local machine).
-
-Creating Subscription for FHIR Resource Patient:
-
-    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
-        '{
-              "resourceType": "Subscription",
-              "criteria": "Patient?",
-              "channel": {
-                  "type": "rest-hook",
-                  "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/667bfa41-867c-4796-86b6-eb9f9ed4dc94",
-                  "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
-                  "payload": "application/fhir+json"
-              }, "status": "requested"}'
-
-Creating Subscription for FHIR Resource Immunization:
-
-    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
-        '{
-                "resourceType": "Subscription",
-                "criteria": "Immunization?",
-                "channel": {
-                    "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/a756ef2a-1bf4-43f4-a991-fbb48ad358ac",
-                    "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
-                    "payload": "application/fhir+json"
-                }, "status": "requested"}'
-                
-Creating Subscription for FHIR Resource Observation:
-
-    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
-        '{
-                "resourceType": "Subscription",
-                "criteria": "Observation?",
-                "channel": {
-                    "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b32b4098-f8e1-426a-8dad-c5c4d8e0fab6",
-                    "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
-                    "payload": "application/fhir+json"
-                }, "status": "requested"}'    
-                
-Creating Subscription for FHIR Resource Medication Requests:
-
-    curl -XPOST http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Subscription -i -H 'Content-Type: application/json' -d \
-        '{
-                "resourceType": "Subscription",
-                "criteria": "MedicationRequest?",
-                "channel": {
-                    "type": "rest-hook",
-                    "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/0b732310-1cca-4b0a-9510-432d4f93f582",
-                    "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs",
-                    "payload": "application/fhir+json"
-                }, "status": "requested"}'                
+The initial subscription for FHIR Resource Patient is created by the initial setup user interface that is described later in this document. 
                                
 #### PostgreSQL Database
 The Adapter requires a PostgresSQL 10.0 database. 
@@ -90,42 +51,67 @@ Enter the following command into the console:
 
     CREATE EXTENSION "uuid-ossp";    
     
-Exit the console and return to your previous user with \q followed by exit.    
+Exit the console and return to your previous user with \q followed by exit.
+
+The database tables will be created on first startup of the Adapter automatically.    
 
 ### Building
-In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven configuration. The following command builds the artifact dhis2-fhir-adapter.war in sub-directory app/target 
-and includes the configuration with sample data.
+In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven configuration. The following command builds the artifact dhis2-fhir-adapter.war in sub-directory app/target.
 
-    mvn -Psample clean install
+    mvn clean install
 
-The project can also be imported into an IDE like IntelliJ IDEA ULTIMATE where it can be built automatically.
+### Configuration
+The application has its configuration directory below $DHIS2_HOME/services/fhir-adapter. This sub-directory structure must be created below $DHIS2_HOME and a configuration file named application.yml must be placed inside this directory. The Adapter may create 
+ further sub-directories below this directory (e.g. directory containing message queue files). The environment variable DHIS2_HOME must have been set when running the Adapter application.
+
+The following example contains the content of configuration file application.yml with default configuration values for a non-clustered environment. These can be customized if needed.
+
+    server:
+      # The default port on which HTTP connections will be available when starting
+      # the Adapter as a standalone application.
+      port: 8081
+
+    spring:
+      datasource:
+        # The JDBC URL of the database in which the Adapter tables are located.
+        url: jdbc:postgresql://localhost/dhis2-fhir
+        # The username that is required to connect to the database.
+        username: dhis-fhir
+        # The password that is required to connect to the database.
+        password: dhis-fhir
+    
+    dhis2.fhir-adapter:
+      # Configuration of DHIS2 endpoint that is accessed by the adapter.
+      endpoint:
+        # The base URL of the DHIS2 installation.
+        url: http://localhost:8080
+        # The API version that should be accessed on the DHIS2 installation.
+        api-version: 29
+        # Authentication data to access metadata on DHIS2 installation.
+        # The complete metadata (organization units, tracked entity types, 
+        # tracked entity attributes, tracker programs, tracker program stages) 
+        # must be accessible.
+        system-authentication:
+          # The username that is used to connect to DHIS2 to access the metadata.
+          username: admin
+          # The password that is used to connect to DHIS2 to access the metadata.
+          password: district
 
 ### Running
-Since the database scripts are not yet versioned for every check-in into the source code repository, the application will not start when there is a database change and the database must be cleaned (just for development version). Cleaning of the database 
-can be done by executing the following command in folder fhir in the console:
-
-    mvn -Psample flyway:clean
-    
-The database will be reinitialized when starting the adapter.
-
-The application has its configuration directory below $DHIS2_HOME/services/fhir-adapter. This sub-directory structure must be created below $DHIS2_HOME and an empty configuration file named application.yml must be placed inside this directory. The Adapter 
-may create further sub-directories below this directory (e.g. directory containing message queue files). The environment variable DHIS2_HOME must have been set when running the Adapter application.
-
-The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). In IntelliJ IDEA ULTIMATE also class org.dhis2.fhir.adapter.App can be used to start the Adapter as Spring Boot application without an external servlet 
-container.
+The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). 
 
 After successfully building the application also Maven can be used to run the application. Enter the following command in folder app in the console:
 
-    mvn -Psample jetty:run
+    mvn jetty:run
     
-Since the created WAR file is an executable WAR file (can also be disabled when building), also the following command can be entered in folder app/target in the console:
+Since the created WAR file is an executable WAR file, also the following command can be entered in folder app/target in the console:
 
     java -jar dhis2-fhir-adapter.war    
 
-The project contains a sample test FHIR client that enrolls a new born child into Child Programme. The main class is named org.dhis2.fhir.adapter.DemoClient and expects three arguments. The first argument must be the code of an existing organization 
-unit in which the enrollments should take place (tracker programs must have been assigned to these organization unit in maintenance section of DHIS2). The second argument is the new national identifier that will be assigned to the mother and the third 
-argument is the new national identifier that will be assigned to the new born child.
-
-The following command line arguments of the demo client can be used to create the tracked entities and enrollments into Connaught Hospital that is located in Freetown in Western Area.  
-
-    OU_278320 93682 93683
+For the initial setup of the Adapter a simple user interface is provided. To access the initial setup user interface, the initial setup must have been enabled when starting the adapter. The following command can be entered in the console to start the 
+ Adapter with initial setup enabled:
+ 
+    java -jar dhis2-fhir-adapter.war --adapter-setup=true
+    
+With the default configuration the initial setup user interface can be accessed in any web browser by using http://localhost:8081/setup. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
+ successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
