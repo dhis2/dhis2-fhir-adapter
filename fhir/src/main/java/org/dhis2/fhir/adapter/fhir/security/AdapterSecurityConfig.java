@@ -35,6 +35,8 @@ import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -95,18 +97,29 @@ public class AdapterSecurityConfig implements SecurityConfig
 
     @Nonnull
     @Override
-    public Multimap<String, String> getAuthoritiesMappings()
+    public Set<GrantedAuthority> createGrantedAuthorities( @Nonnull Set<String> grantedDhisAuthorities )
     {
-        return authoritiesMappings;
+        final Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+        authoritiesMappings.forEach( ( adapterAuthority, dhisAuthority ) -> {
+            if ( grantedAuthorities.contains( dhisAuthority ) )
+            {
+                grantedAuthorities.add( new SimpleGrantedAuthority( adapterAuthority ) );
+            }
+        } );
+        if ( grantedAuthorities.size() + 1 == AdapterAuthorities.ALL_AUTHORITIES.size() )
+        {
+            grantedAuthorities.add( new SimpleGrantedAuthority( AdapterAuthorities.ALL_AUTHORITY_ROLE ) );
+        }
+        return grantedAuthorities;
     }
 
     @PostConstruct
     protected void init()
     {
         final Multimap<String, String> mm = HashMultimap.create();
-        getAdministration().forEach( a -> mm.put( AdapterAuthorities.ADMINISTRATION_AUTHORITY, a ) );
-        getCodeMapping().forEach( a -> mm.put( AdapterAuthorities.CODE_MAPPING_AUTHORITY, a ) );
-        getDataMapping().forEach( a -> mm.put( AdapterAuthorities.DATA_MAPPING_AUTHORITY, a ) );
+        getAdministration().forEach( a -> mm.put( AdapterAuthorities.ADMINISTRATION_AUTHORITY_ROLE, a ) );
+        getCodeMapping().forEach( a -> mm.put( AdapterAuthorities.CODE_MAPPING_AUTHORITY_ROLE, a ) );
+        getDataMapping().forEach( a -> mm.put( AdapterAuthorities.DATA_MAPPING_AUTHORITY_ROLE, a ) );
         authoritiesMappings = ImmutableMultimap.copyOf( mm );
     }
 }

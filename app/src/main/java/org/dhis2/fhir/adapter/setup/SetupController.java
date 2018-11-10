@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.rest.RestResponseEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -48,6 +49,7 @@ import java.security.SecureRandom;
 
 @Controller
 @ConditionalOnProperty( "adapter-setup" )
+@PreAuthorize( "hasRole('ALL')" )
 public class SetupController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );

@@ -28,9 +28,10 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.common.collect.Multimap;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
  * Configuration that provides a mapping from DHIS2 authorities to
@@ -41,11 +42,11 @@ import javax.annotation.Nonnull;
 public interface SecurityConfig
 {
     /**
-     * Returns the authorities mappings where the cache is the DHIS2 authority and
-     * the values are the Adapter authorities to be grantes.
+     * Performs the mapping from DHIS2 authorities to adapter authorities.
      *
-     * @return the mapping of authorities.
+     * @param grantedDhisAuthorities the granted DHIS2 authorities.
+     * @return the granted adapter authorities.
      */
     @Nonnull
-    Multimap<String, String> getAuthoritiesMappings();
+    Set<GrantedAuthority> createGrantedAuthorities( @Nonnull Set<String> grantedDhisAuthorities );
 }

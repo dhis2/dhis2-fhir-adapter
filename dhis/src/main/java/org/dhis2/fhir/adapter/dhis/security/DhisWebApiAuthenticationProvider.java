@@ -42,7 +42,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -110,14 +109,7 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
         }
 
         final Set<String> dhisAuthorities = new HashSet<>( Objects.requireNonNull( authorizationResponse.getBody() ) );
-        final Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-        securityConfig.getAuthoritiesMappings().forEach( ( adapterAuthority, dhisAuthority ) -> {
-            if ( dhisAuthorities.contains( dhisAuthority ) )
-            {
-                grantedAuthorities.add( new SimpleGrantedAuthority( adapterAuthority ) );
-            }
-        } );
-
+        final Set<GrantedAuthority> grantedAuthorities = securityConfig.createGrantedAuthorities( dhisAuthorities );
         return new AdapterUserDetails( Objects.requireNonNull( idResponse.getBody() ).getId(), grantedAuthorities );
     }
 }

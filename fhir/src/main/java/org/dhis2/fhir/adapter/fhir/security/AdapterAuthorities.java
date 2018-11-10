@@ -41,15 +41,28 @@ import java.util.Set;
  */
 public interface AdapterAuthorities
 {
-    String ADMINISTRATION_AUTHORITY = "ROLE_ADMINISTRATION";
+    String ROLE_PREFIX = "ROLE_";
 
-    String CODE_MAPPING_AUTHORITY = "ROLE_CODE_MAPPING";
+    String ALL_AUTHORITY = "ALL";
+
+    String ALL_AUTHORITY_ROLE = ROLE_PREFIX + ALL_AUTHORITY;
+
+    String ADMINISTRATION_AUTHORITY = "ADMINISTRATION";
+
+    String ADMINISTRATION_AUTHORITY_ROLE = ROLE_PREFIX + ADMINISTRATION_AUTHORITY;
+
+    String CODE_MAPPING_AUTHORITY = "CODE_MAPPING";
+
+    String CODE_MAPPING_AUTHORITY_ROLE = ROLE_PREFIX + CODE_MAPPING_AUTHORITY;
 
     String DATA_MAPPING_AUTHORITY = "ROLE_DATA_MAPPING";
 
+    String DATA_MAPPING_AUTHORITY_ROLE = ROLE_PREFIX + DATA_MAPPING_AUTHORITY;
+
     Set<GrantedAuthority> ALL_AUTHORITIES = Collections.unmodifiableSet(
         new HashSet<>( Arrays.asList(
-            new SimpleGrantedAuthority( ADMINISTRATION_AUTHORITY ),
-            new SimpleGrantedAuthority( CODE_MAPPING_AUTHORITY ),
-            new SimpleGrantedAuthority( DATA_MAPPING_AUTHORITY ) ) ) );
+            new SimpleGrantedAuthority( ALL_AUTHORITY_ROLE ),
+            new SimpleGrantedAuthority( ADMINISTRATION_AUTHORITY_ROLE ),
+            new SimpleGrantedAuthority( CODE_MAPPING_AUTHORITY_ROLE ),
+            new SimpleGrantedAuthority( DATA_MAPPING_AUTHORITY_ROLE ) ) ) );
 }
