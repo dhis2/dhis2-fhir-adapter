@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.jackson;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,48 +28,51 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.format.FormatterRegistry;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.annotation.Order;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Nonnull;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
- * Common application configuration.
+ * Configures Jackson for the application.
  *
  * @author volsch
  */
 @Configuration
 @Validated
-public class AppConfig
+public class JacksonConfig
 {
     @Bean
-    @Nonnull
-    public WebMvcConfigurer mvcConfigurer()
+    @Order( 1 )
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer()
     {
-        return new WebMvcConfigurer()
-        {
-            @Override
-            public void addCorsMappings( @Nonnull CorsRegistry registry )
-            {
-                registry.addMapping( "/api" )
-                    .allowedOrigins( "*" )
-                    .allowedMethods( HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.HEAD.name(), HttpMethod.OPTIONS.name() )
-                    .allowCredentials( true );
-            }
-
-            @Override
-            public void addFormatters( @Nonnull FormatterRegistry registry )
-            {
-                registry.addConverter( ZonedDateTime.class, Date.class, new ZonedDateTimeToDateConverter() );
-            }
+        return jacksonObjectMapperBuilder -> {
+            final ZoneId zoneId = ZoneId.systemDefault();
+            jacksonObjectMapperBuilder
+                .serializers(
+                    new ZonedDateTimeSerializer(),
+                    new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) )
+                .deserializers(
+                    new ZonedDateTimeDeserializer(),
+                    new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+            jacksonObjectMapperBuilder.filters( new SimpleFilterProvider()
+                .addFilter( SecuredPropertyFilter.FILTER_NAME, new SecuredPropertyFilter() )
+                .addFilter( ToManyPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                {
+                } )
+                .addFilter( ToOnePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                {
+                } ) );
+            jacksonObjectMapperBuilder.featuresToDisable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );
         };
     }
 }

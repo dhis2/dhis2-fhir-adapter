@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,7 +134,7 @@ public class CustomRemoteSubscriptionRepositoryImpl implements CustomRemoteSubsc
 
                         final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
                         resourceUpdate.setRemoteSubscriptionResource( rsr );
-                        resourceUpdate.setRemoteLastUpdated( LocalDateTime.now() );
+                        resourceUpdate.setRemoteLastUpdated( Instant.now() );
                         rsr.setResourceUpdate( resourceUpdate );
 
                         autoCreatedRemoteSubscriptionResources.add( rsr );

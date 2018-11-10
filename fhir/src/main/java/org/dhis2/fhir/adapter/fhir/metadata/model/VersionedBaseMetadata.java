@@ -42,7 +42,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -57,9 +57,9 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
 
     private UUID id;
     private Long version;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     private String lastUpdatedBy;
-    private LocalDateTime lastUpdatedAt;
+    private Instant lastUpdatedAt;
 
     @Override
     @GeneratedValue( generator = "uuid2" )
@@ -90,12 +90,12 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
 
     @Basic
     @Column( name = "created_at", nullable = false, updatable = false )
-    public LocalDateTime getCreatedAt()
+    public Instant getCreatedAt()
     {
         return createdAt;
     }
 
-    public void setCreatedAt( LocalDateTime createdAt )
+    public void setCreatedAt( Instant createdAt )
     {
         this.createdAt = createdAt;
     }
@@ -115,12 +115,12 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     @Basic
     @Column( name = "last_updated_at", nullable = false )
     @LastModifiedDate
-    public LocalDateTime getLastUpdatedAt()
+    public Instant getLastUpdatedAt()
     {
         return lastUpdatedAt;
     }
 
-    public void setLastUpdatedAt( LocalDateTime lastUpdatedAt )
+    public void setLastUpdatedAt( Instant lastUpdatedAt )
     {
         this.lastUpdatedAt = lastUpdatedAt;
     }
@@ -128,7 +128,7 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     @PrePersist
     protected void onPrePersist()
     {
-        setCreatedAt( LocalDateTime.now() );
+        setCreatedAt( Instant.now() );
         setLastUpdatedAt( getCreatedAt() );
         setLastUpdatedBy( AdapterSecurityUtils.getCurrentUsername() );
     }
@@ -136,7 +136,7 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     @PreUpdate
     protected void onPreUpdate()
     {
-        setLastUpdatedAt( LocalDateTime.now() );
+        setLastUpdatedAt( Instant.now() );
         setLastUpdatedBy( AdapterSecurityUtils.getCurrentUsername() );
     }
 }

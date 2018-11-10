@@ -64,7 +64,7 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
     private SortedSet<FhirVersion> fhirVersions;
 
     @Basic
-    @Column( name = "source_text", nullable = false, length = -1 )
+    @Column( name = "source_text", nullable = false, columnDefinition = "TEXT" )
     public String getSourceText()
     {
         return sourceText;

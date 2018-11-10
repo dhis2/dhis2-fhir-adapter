@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,19 +28,30 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.function.Consumer;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 
 /**
- * Custom repository for processed remote FHIR resources {@link ProcessedRemoteFhirResource}.
+ * Converts a zoned date time to a date with system time zone.
+ *
+ * @author volsch
  */
-public interface CustomProcessedRemoteFhirResourceRepository
+public class ZonedDateTimeToDateConverter extends TypedConverter<ZonedDateTime, Date>
 {
-    void process( @Nonnull ProcessedRemoteFhirResource processedRemoteFhirResource, @Nonnull Consumer<ProcessedRemoteFhirResource> consumer );
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
-    int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp );
+    public ZonedDateTimeToDateConverter()
+    {
+        super( ZonedDateTime.class, Date.class );
+    }
+
+    @Override
+    @Nullable
+    public Date doConvert( @Nonnull ZonedDateTime source )
+    {
+        return Date.from( source.toInstant() );
+    }
 }

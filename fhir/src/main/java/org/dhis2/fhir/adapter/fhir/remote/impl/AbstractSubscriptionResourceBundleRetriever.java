@@ -49,9 +49,8 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,11 +86,11 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
     }
 
     @Nonnull
-    public ZonedDateTime poll( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull LocalDateTime remoteLastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
+    public Instant poll( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Instant remoteLastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
     {
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription().getFhirEndpoint() );
-        ZonedDateTime lastUpdated = null;
-        LocalDateTime fromLastUpdated = remoteLastUpdated
+        Instant lastUpdated = null;
+        Instant fromLastUpdated = remoteLastUpdated
             .minus( subscriptionResource.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
 
         final Set<SubscriptionResourceInfo> allResources = new HashSet<>();
@@ -107,7 +106,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
             if ( lastUpdated == null )
             {
                 // last updated must only bet set on the first search invocation
-                lastUpdated = ZonedDateTime.now();
+                lastUpdated = Instant.now();
             }
             IBaseBundle bundle = client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
                 .whereMap( getQuery( subscriptionResource ) ).count( maxSearchCount ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated.atZone( zoneId ).toInstant() ), null ) )
@@ -118,7 +117,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                 for ( final IAnyResource resource : getResourceEntries( bundle ) )
                 {
                     resources.add( new SubscriptionResourceInfo( resource.getIdElement().getIdPart(),
-                        (resource.getMeta().getLastUpdated() == null) ? null : ZonedDateTime.ofInstant( resource.getMeta().getLastUpdated().toInstant(), zoneId ),
+                        (resource.getMeta().getLastUpdated() == null) ? null : resource.getMeta().getLastUpdated().toInstant(),
                         resource.getIdElement().getVersionIdPart() ) );
                 }
                 resources.forEach( r -> {
@@ -162,7 +161,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                         {
                             logger.debug( "Returned {} of {} for remote subscription resource {} with maximum requested {}.",
                                 resources.size(), totalCount, subscriptionResource.getId(), maxSearchCount );
-                            final ZonedDateTime maxLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
+                            final Instant maxLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
                                 .filter( lu -> (lu != null) ).max( Comparator.naturalOrder() ).orElse( null );
                             if ( maxLastUpdated == null )
                             {
@@ -170,15 +169,14 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                             }
                             else
                             {
-                                final LocalDateTime newFromLastUpdated = maxLastUpdated.toLocalDateTime();
-                                if ( newFromLastUpdated.equals( fromLastUpdated ) )
+                                if ( maxLastUpdated.equals( fromLastUpdated ) )
                                 {
                                     throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
                                         fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
                                 }
                                 else
                                 {
-                                    fromLastUpdated = newFromLastUpdated;
+                                    fromLastUpdated = maxLastUpdated;
                                     moreAvailable = true;
                                 }
                             }

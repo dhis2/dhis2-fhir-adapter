@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Event listener that prepares {@link RemoteSubscriptionResource} class before saving.
@@ -63,7 +63,7 @@ public class RemoteSubscriptionResourceEventListener extends AbstractRepositoryE
     {
         final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
         resourceUpdate.setRemoteSubscriptionResource( entity );
-        resourceUpdate.setRemoteLastUpdated( LocalDateTime.now() );
+        resourceUpdate.setRemoteLastUpdated( Instant.now() );
         entity.setResourceUpdate( resourceUpdate );
 
         // must not be set externally

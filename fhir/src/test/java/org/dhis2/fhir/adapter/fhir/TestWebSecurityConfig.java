@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.fhir;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,19 +28,46 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.function.Consumer;
 
 /**
- * Custom repository for processed remote FHIR resources {@link ProcessedRemoteFhirResource}.
+ * Security configuration of tests.
+ *
+ * @author volsch
  */
-public interface CustomProcessedRemoteFhirResourceRepository
+@Configuration
+@EnableWebSecurity
+public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter
 {
-    void process( @Nonnull ProcessedRemoteFhirResource processedRemoteFhirResource, @Nonnull Consumer<ProcessedRemoteFhirResource> consumer );
+    protected static final String DHIS_BASIC_REALM = "DHIS2";
 
-    int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp );
+    @Override
+    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    {
+        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
+        http.csrf().disable();
+        http
+            .authorizeRequests()
+            .antMatchers( HttpMethod.OPTIONS, "/api/**" ).permitAll()
+            .anyRequest().authenticated()
+            .and()
+            .httpBasic().realmName( DHIS_BASIC_REALM );
+    }
+
+    @Override
+    protected void configure( AuthenticationManagerBuilder auth ) throws Exception
+    {
+        auth.inMemoryAuthentication()
+            .withUser( "code" )
+            .password( "code" )
+            .roles( "CODE_MAPPING" );
+    }
 }

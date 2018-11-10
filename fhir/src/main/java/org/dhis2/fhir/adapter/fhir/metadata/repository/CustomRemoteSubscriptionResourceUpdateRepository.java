@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpda
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Custom repository for {@link RemoteSubscriptionResourceUpdate}.
@@ -44,8 +44,8 @@ public interface CustomRemoteSubscriptionResourceUpdateRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    LocalDateTime getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource );
+    Instant getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource );
 
     @RestResource( exported = false )
-    boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull LocalDateTime lastUpdated );
+    boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant lastUpdated );
 }

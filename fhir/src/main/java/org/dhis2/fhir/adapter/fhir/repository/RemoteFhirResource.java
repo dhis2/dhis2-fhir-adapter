@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -53,14 +53,14 @@ public class RemoteFhirResource implements Serializable
     private String fhirResourceVersion;
 
     @JsonInclude( JsonInclude.Include.NON_NULL )
-    private ZonedDateTime lastUpdated;
+    private Instant lastUpdated;
 
     public RemoteFhirResource()
     {
         super();
     }
 
-    public RemoteFhirResource( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String fhirResourceId, @Nullable String fhirResourceVersion, @Nullable ZonedDateTime lastUpdated )
+    public RemoteFhirResource( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String fhirResourceId, @Nullable String fhirResourceVersion, @Nullable Instant lastUpdated )
     {
         this.remoteSubscriptionResourceId = remoteSubscriptionResourceId;
         this.fhirResourceId = fhirResourceId;
@@ -98,12 +98,12 @@ public class RemoteFhirResource implements Serializable
         this.fhirResourceVersion = fhirResourceVersion;
     }
 
-    public ZonedDateTime getLastUpdated()
+    public Instant getLastUpdated()
     {
         return lastUpdated;
     }
 
-    public void setLastUpdated( ZonedDateTime lastUpdated )
+    public void setLastUpdated( Instant lastUpdated )
     {
         this.lastUpdated = lastUpdated;
     }

@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.function.Consumer;
 
 /**
@@ -60,7 +60,7 @@ public class CustomProcessedRemoteFhirResourceRepositoryImpl implements CustomPr
 
     @Transactional
     @Override
-    public int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull LocalDateTime timestamp )
+    public int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp )
     {
         return entityManager.createQuery( "DELETE FROM ProcessedRemoteFhirResource p WHERE p.id.remoteSubscriptionResource=:remoteSubscriptionResource AND p.processedAt<:timestamp" )
             .setParameter( "remoteSubscriptionResource", remoteSubscriptionResource ).setParameter( "timestamp", timestamp ).executeUpdate();

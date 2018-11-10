@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.fhir;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,12 +29,16 @@ package org.dhis2.fhir.adapter;
  */
 
 import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
+import org.dhis2.fhir.adapter.script.ScriptCompiler;
+import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.http.HttpMethod;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nonnull;
@@ -42,14 +46,20 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
- * Common application configuration.
+ * Test configuration.
  *
- * @author volsch
+ * @author volsch4
  */
 @Configuration
-@Validated
-public class AppConfig
+public class TestConfig
 {
+    @Nonnull
+    @Bean
+    protected ScriptCompiler scriptCompiler()
+    {
+        return new ScriptCompilerImpl( "nashorn" );
+    }
+
     @Bean
     @Nonnull
     public WebMvcConfigurer mvcConfigurer()
@@ -57,18 +67,31 @@ public class AppConfig
         return new WebMvcConfigurer()
         {
             @Override
-            public void addCorsMappings( @Nonnull CorsRegistry registry )
-            {
-                registry.addMapping( "/api" )
-                    .allowedOrigins( "*" )
-                    .allowedMethods( HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.HEAD.name(), HttpMethod.OPTIONS.name() )
-                    .allowCredentials( true );
-            }
-
-            @Override
             public void addFormatters( @Nonnull FormatterRegistry registry )
             {
                 registry.addConverter( ZonedDateTime.class, Date.class, new ZonedDateTimeToDateConverter() );
+            }
+        };
+    }
+
+    @Nonnull
+    @Bean
+    protected GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer()
+    {
+        return new GenericJackson2JsonRedisSerializer();
+    }
+
+    @Nonnull
+    @Bean
+    protected RepositoryRestConfigurer repositoryRestConfigurer()
+    {
+        return new RepositoryRestConfigurerAdapter()
+        {
+            @Override
+            public void configureRepositoryRestConfiguration( RepositoryRestConfiguration config )
+            {
+                config.setRepositoryDetectionStrategy( RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED );
+                config.setBasePath( "/api" );
             }
         };
     }

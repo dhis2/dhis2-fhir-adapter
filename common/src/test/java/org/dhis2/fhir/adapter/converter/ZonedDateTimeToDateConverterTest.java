@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.converter;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,19 +28,33 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.function.Consumer;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
- * Custom repository for processed remote FHIR resources {@link ProcessedRemoteFhirResource}.
+ * Unit tests for {@link ZonedDateTimeToDateConverter}.
+ *
+ * @author volsch
  */
-public interface CustomProcessedRemoteFhirResourceRepository
+public class ZonedDateTimeToDateConverterTest
 {
-    void process( @Nonnull ProcessedRemoteFhirResource processedRemoteFhirResource, @Nonnull Consumer<ProcessedRemoteFhirResource> consumer );
+    private ZonedDateTimeToDateConverter converter = new ZonedDateTimeToDateConverter();
 
-    int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp );
+    @Test
+    public void docConvert()
+    {
+        final Date date = new GregorianCalendar( 2018, 7, 15, 17, 24, 23 ).getTime();
+        Assert.assertEquals( date, converter.convert( ZonedDateTime.of( 2018, 8, 15, 17, 24, 23, 0, ZoneId.systemDefault() ) ) );
+    }
+
+    @Test
+    public void doConvertNull()
+    {
+        Assert.assertNull( converter.convert( null ) );
+    }
 }

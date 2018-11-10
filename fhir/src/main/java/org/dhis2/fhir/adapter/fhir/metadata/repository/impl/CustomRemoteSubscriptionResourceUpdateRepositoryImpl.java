@@ -38,7 +38,7 @@ import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
@@ -56,7 +56,7 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl implements Cus
     @RestResource( exported = false )
     @Nonnull
     @Override
-    public LocalDateTime getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource )
+    public Instant getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource )
     {
         RemoteSubscriptionResourceUpdate rsr = entityManager.find( RemoteSubscriptionResourceUpdate.class, remoteSubscriptionResource.getId() );
         if ( rsr == null )
@@ -64,7 +64,7 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl implements Cus
             rsr = new RemoteSubscriptionResourceUpdate();
             rsr.setId( remoteSubscriptionResource.getId() );
             rsr.setRemoteSubscriptionResource( remoteSubscriptionResource );
-            rsr.setRemoteLastUpdated( LocalDateTime.now() );
+            rsr.setRemoteLastUpdated( Instant.now() );
             entityManager.persist( rsr );
         }
         return rsr.getRemoteLastUpdated();
@@ -73,7 +73,7 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl implements Cus
     @RestResource( exported = false )
     @Transactional
     @Override
-    public boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull LocalDateTime lastUpdated )
+    public boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant lastUpdated )
     {
         final RemoteSubscriptionResourceUpdate rsr = entityManager.find( RemoteSubscriptionResourceUpdate.class, remoteSubscriptionResource.getId() );
         if ( rsr == null )

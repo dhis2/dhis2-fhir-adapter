@@ -87,7 +87,7 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     }
 
     @Basic
-    @Column( name = "description", length = -1 )
+    @Column( name = "description", columnDefinition = "TEXT" )
     public String getDescription()
     {
         return description;

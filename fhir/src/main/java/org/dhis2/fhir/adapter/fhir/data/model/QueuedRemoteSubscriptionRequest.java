@@ -39,7 +39,7 @@ import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -60,7 +60,7 @@ public class QueuedRemoteSubscriptionRequest implements Serializable
 
     private String requestId;
 
-    private LocalDateTime queuedAt;
+    private Instant queuedAt;
 
     @Id
     @Column( name = "id", nullable = false )
@@ -100,12 +100,12 @@ public class QueuedRemoteSubscriptionRequest implements Serializable
     }
 
     @Column( name = "queued_at", nullable = false )
-    public LocalDateTime getQueuedAt()
+    public Instant getQueuedAt()
     {
         return queuedAt;
     }
 
-    public void setQueuedAt( LocalDateTime queuedAt )
+    public void setQueuedAt( Instant queuedAt )
     {
         this.queuedAt = queuedAt;
     }

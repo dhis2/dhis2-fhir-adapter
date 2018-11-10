@@ -36,7 +36,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Entity that contains if currently for {@linkplain RemoteSubscriptionResource remote subscription resource}
@@ -54,7 +54,7 @@ public class QueuedRemoteFhirResource implements Serializable
 
     private String requestId;
 
-    private LocalDateTime queuedAt;
+    private Instant queuedAt;
 
     @EmbeddedId
     public QueuedRemoteFhirResourceId getId()
@@ -80,12 +80,12 @@ public class QueuedRemoteFhirResource implements Serializable
     }
 
     @Column( name = "queued_at", nullable = false )
-    public LocalDateTime getQueuedAt()
+    public Instant getQueuedAt()
     {
         return queuedAt;
     }
 
-    public void setQueuedAt( LocalDateTime queuedAt )
+    public void setQueuedAt( Instant queuedAt )
     {
         this.queuedAt = queuedAt;
     }

@@ -78,7 +78,7 @@ public class CodeCategory extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "description", length = -1 )
+    @Column( name = "description", columnDefinition = "TEXT" )
     public String getDescription()
     {
         return description;

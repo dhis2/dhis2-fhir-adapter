@@ -34,8 +34,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -54,10 +52,10 @@ public class SubscriptionResourceInfo implements Serializable
 
     private final String version;
 
-    public SubscriptionResourceInfo( @Nonnull String id, @Nullable ZonedDateTime lastUpdated, @Nullable String version )
+    public SubscriptionResourceInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version )
     {
         this.id = id;
-        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toInstant().toEpochMilli();
+        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toEpochMilli();
         this.version = version;
     }
 
@@ -68,9 +66,9 @@ public class SubscriptionResourceInfo implements Serializable
     }
 
     @Nullable
-    public ZonedDateTime getLastUpdated()
+    public Instant getLastUpdated()
     {
-        return (lastUpdated == 0) ? null : ZonedDateTime.ofInstant( Instant.ofEpochMilli( lastUpdated ), ZoneId.systemDefault() );
+        return (lastUpdated == 0) ? null : Instant.ofEpochMilli( lastUpdated );
     }
 
     @Nullable
@@ -97,7 +95,7 @@ public class SubscriptionResourceInfo implements Serializable
     }
 
     @Nonnull
-    public String toVersionString( @Nonnull ZonedDateTime defaultLastUpdated )
+    public String toVersionString( @Nonnull Instant defaultLastUpdated )
     {
         return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) + "|" + lastUpdated;
     }

@@ -115,7 +115,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @Basic
-    @Column( name = "description", length = -1 )
+    @Column( name = "description", columnDefinition = "TEXT" )
     public String getDescription()
     {
         return description;

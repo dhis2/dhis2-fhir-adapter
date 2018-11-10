@@ -101,7 +101,7 @@ public class AdapterSecurityConfig implements SecurityConfig
     {
         final Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
         authoritiesMappings.forEach( ( adapterAuthority, dhisAuthority ) -> {
-            if ( grantedAuthorities.contains( dhisAuthority ) )
+            if ( grantedDhisAuthorities.contains( dhisAuthority ) )
             {
                 grantedAuthorities.add( new SimpleGrantedAuthority( adapterAuthority ) );
             }

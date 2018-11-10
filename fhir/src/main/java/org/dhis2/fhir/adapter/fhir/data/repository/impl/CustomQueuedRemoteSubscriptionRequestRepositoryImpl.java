@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -57,7 +57,7 @@ public class CustomQueuedRemoteSubscriptionRequestRepositoryImpl implements Cust
     {
         final Query query = entityManager.createNativeQuery( "INSERT INTO fhir_queued_remote_subscription_request(id,request_id,queued_at) " +
             "VALUES (:id,:requestId,:queuedAt) ON CONFLICT ON CONSTRAINT fhir_queued_remote_subscription_request_pk DO NOTHING RETURNING request_id" )
-            .setParameter( "id", subscriptionResourceId ).setParameter( "requestId", requestId ).setParameter( "queuedAt", LocalDateTime.now() );
+            .setParameter( "id", subscriptionResourceId ).setParameter( "requestId", requestId ).setParameter( "queuedAt", Instant.now() );
         // avoid invalidation of complete 2nd level cache
         query.unwrap( NativeQuery.class ).addSynchronizedEntityClass( QueuedRemoteSubscriptionRequest.class );
         return query.getResultList().stream().anyMatch( requestId::equals );

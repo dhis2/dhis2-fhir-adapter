@@ -36,7 +36,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * A processed remote FHIR resource that contains also the distinct version of the
@@ -52,14 +52,14 @@ public class ProcessedRemoteFhirResource implements Serializable
 
     private ProcessedRemoteFhirResourceId id;
 
-    private LocalDateTime processedAt;
+    private Instant processedAt;
 
     public ProcessedRemoteFhirResource()
     {
         super();
     }
 
-    public ProcessedRemoteFhirResource( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String versionedFhirResourceId, @Nonnull LocalDateTime processedAt )
+    public ProcessedRemoteFhirResource( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String versionedFhirResourceId, @Nonnull Instant processedAt )
     {
         this.id = new ProcessedRemoteFhirResourceId( remoteSubscriptionResource, versionedFhirResourceId );
         this.processedAt = processedAt;
@@ -77,12 +77,12 @@ public class ProcessedRemoteFhirResource implements Serializable
     }
 
     @Column( name = "processed_at", nullable = false )
-    public LocalDateTime getProcessedAt()
+    public Instant getProcessedAt()
     {
         return processedAt;
     }
 
-    public void setProcessedAt( LocalDateTime processedAt )
+    public void setProcessedAt( Instant processedAt )
     {
         this.processedAt = processedAt;
     }

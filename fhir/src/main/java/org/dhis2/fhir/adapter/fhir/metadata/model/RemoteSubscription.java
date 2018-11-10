@@ -127,7 +127,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     }
 
     @Basic
-    @Column( name = "description", length = -1 )
+    @Column( name = "description", columnDefinition = "TEXT" )
     public String getDescription()
     {
         return description;

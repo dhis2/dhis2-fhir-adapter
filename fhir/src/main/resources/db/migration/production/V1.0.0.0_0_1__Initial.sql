@@ -172,9 +172,9 @@ INSERT INTO fhir_authentication_method_enum VALUES('BASIC');
 CREATE TABLE fhir_constant (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name            VARCHAR(230)                   NOT NULL,
   description     TEXT,
   category        VARCHAR(30)                    NOT NULL,
@@ -202,9 +202,9 @@ COMMENT ON COLUMN fhir_constant.value IS 'The value of the constant. The convers
 CREATE TABLE fhir_script (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name            VARCHAR(230)                   NOT NULL,
   code            VARCHAR(100)                   NOT NULL,
   script_type     VARCHAR(30)                    NOT NULL,
@@ -237,9 +237,9 @@ CREATE TABLE fhir_script_source (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
   script_id       UUID                           NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   source_text     TEXT                           NOT NULL,
   source_type     VARCHAR(30)                    NOT NULL,
   CONSTRAINT fhir_script_source_pk PRIMARY KEY (id),
@@ -283,9 +283,9 @@ COMMENT ON COLUMN fhir_script_variable.variable IS 'The variable that is require
 CREATE TABLE fhir_script_argument (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   script_id       UUID                           NOT NULL,
   name            VARCHAR(30)                    NOT NULL,
   data_type       VARCHAR(30)                    NOT NULL,
@@ -317,9 +317,9 @@ COMMENT ON COLUMN fhir_script_argument.script_id IS 'The reference to the script
 CREATE TABLE fhir_executable_script (
   id              UUID NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   script_id       UUID NOT NULL,
   name            VARCHAR(230) NOT NULL,
   code            VARCHAR(100) NOT NULL,
@@ -367,9 +367,9 @@ COMMENT ON COLUMN fhir_executable_script_argument.enabled IS 'Specifies if this 
 CREATE TABLE fhir_code_category (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
-  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by VARCHAR(11),
-  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name            VARCHAR(230)                   NOT NULL,
   code            VARCHAR(50)                    NOT NULL,
   description     TEXT,
@@ -390,9 +390,9 @@ COMMENT ON COLUMN fhir_code_category.description IS 'The detailed description th
 CREATE TABLE fhir_code (
   id               UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version          BIGINT                         NOT NULL,
-  created_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by  VARCHAR(11),
-  last_updated_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   code_category_id UUID                           NOT NULL,
   name             VARCHAR(230)                   NOT NULL,
   code             VARCHAR(50)                    NOT NULL,
@@ -422,9 +422,9 @@ COMMENT ON COLUMN fhir_code.description IS 'The detailed description that descri
 CREATE TABLE fhir_code_set (
   id               UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version          BIGINT                         NOT NULL,
-  created_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by  VARCHAR(11),
-  last_updated_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   code_category_id UUID                           NOT NULL,
   name             VARCHAR(230)                   NOT NULL,
   code             VARCHAR(50)                    NOT NULL,
@@ -465,9 +465,9 @@ COMMENT ON COLUMN fhir_code_set_value.enabled IS 'Disabling a code of the code s
 CREATE TABLE fhir_system (
   id                    UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version               BIGINT                         NOT NULL,
-  created_at            TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at            TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by       VARCHAR(11),
-  last_updated_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at       TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name                  VARCHAR(230)                   NOT NULL,
   code                  VARCHAR(50)                    NOT NULL,
   system_uri            VARCHAR(120)                   NOT NULL,
@@ -495,9 +495,9 @@ COMMENT ON COLUMN fhir_system.system_uri IS 'The system URI (e.g. http://hl7.org
 CREATE TABLE fhir_system_code (
   id                UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version           BIGINT                         NOT NULL,
-  created_at        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by   VARCHAR(11),
-  last_updated_at   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   system_id         UUID                           NOT NULL,
   code_id           UUID                           NOT NULL,
   system_code       VARCHAR(120)                   NOT NULL,
@@ -524,9 +524,9 @@ COMMENT ON COLUMN fhir_system_code.system_code_value IS 'Combination of system U
 CREATE TABLE fhir_rule (
   id                      UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
   version                 BIGINT                         NOT NULL,
-  created_at              TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT CURRENT_TIMESTAMP,
+  created_at              TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by         VARCHAR(11),
-  last_updated_at         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name                    VARCHAR(230)                   NOT NULL,
   description             TEXT,
   enabled                 BOOLEAN                        NOT NULL     DEFAULT TRUE,
@@ -591,9 +591,9 @@ COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_ref IS 'The
 CREATE TABLE fhir_tracker_program (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
-  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by               VARCHAR(11),
-  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name                          VARCHAR(230)                   NOT NULL,
   description                   TEXT,
   program_ref                   VARCHAR(230)                   NOT NULL,
@@ -645,9 +645,9 @@ COMMENT ON COLUMN fhir_tracker_program.tracked_entity_rule_id IS 'References the
 CREATE TABLE fhir_tracker_program_stage (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
-  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by               VARCHAR(11),
-  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name                          VARCHAR(230)                   NOT NULL,
   description                   TEXT,
   program_id                    UUID                           NOT NULL,
@@ -766,9 +766,9 @@ CREATE TABLE fhir_resource_mapping (
   id                                UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                           BIGINT                         NOT NULL,
   fhir_resource_type                VARCHAR(30)                    NOT NULL,
-  created_at                        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at                        TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by                   VARCHAR(11),
-  last_updated_at                   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at                   TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   tei_lookup_script_id              UUID,
   enrollment_org_lookup_script_id   UUID,
   event_org_lookup_script_id        UUID,
@@ -823,9 +823,9 @@ COMMENT ON COLUMN fhir_resource_mapping.effective_date_lookup_script_id IS 'Refe
 CREATE TABLE fhir_remote_subscription (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
-  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by               VARCHAR(11),
-  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   name                          VARCHAR(50)                    NOT NULL,
   code                          VARCHAR(20)                    NOT NULL,
   enabled                       BOOLEAN                        NOT NULL DEFAULT TRUE,
@@ -891,9 +891,9 @@ COMMENT ON COLUMN fhir_remote_subscription_header.secure IS 'Specifies if the va
 CREATE TABLE fhir_remote_subscription_system (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                       BIGINT                         NOT NULL,
-  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by               VARCHAR(11),
-  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   remote_subscription_id        UUID                           NOT NULL,
   fhir_resource_type            VARCHAR(30)                    NOT NULL,
   system_id                     UUID                           NOT NULL,
@@ -919,9 +919,9 @@ COMMENT ON COLUMN fhir_remote_subscription_system.code_prefix IS 'Prefix that is
 CREATE TABLE fhir_remote_subscription_resource (
   id                       UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version                  BIGINT                         NOT NULL,
-  created_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   last_updated_by          VARCHAR(11),
-  last_updated_at          TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_updated_at          TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   remote_subscription_id   UUID                           NOT NULL,
   fhir_resource_type       VARCHAR(30)                    NOT NULL,
   fhir_criteria_parameters VARCHAR(200),
@@ -948,7 +948,7 @@ COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_subscription_id IS 'The
 
 CREATE TABLE fhir_remote_subscription_resource_update (
   id                       UUID                           NOT NULL,
-  remote_last_updated      TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  remote_last_updated      TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   CONSTRAINT fhir_remote_subscription_resource_update_pk PRIMARY KEY (id),
   CONSTRAINT fhir_remote_subscription_resource_update_fk1 FOREIGN KEY (id) REFERENCES fhir_remote_subscription_resource (id) ON DELETE CASCADE
 );
@@ -958,7 +958,7 @@ COMMENT ON COLUMN fhir_remote_subscription_resource_update.remote_last_updated I
 CREATE TABLE fhir_queued_remote_subscription_request (
   id         UUID                           NOT NULL,
   request_id VARCHAR(50)                    NOT NULL,
-  queued_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  queued_at  TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   CONSTRAINT fhir_queued_remote_subscription_request_pk PRIMARY KEY(id),
   CONSTRAINT fhir_queued_remote_subscription_request_fk1 FOREIGN KEY(id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
 );
@@ -970,7 +970,7 @@ COMMENT ON COLUMN fhir_queued_remote_subscription_request.queued_at IS 'The time
 CREATE TABLE fhir_processed_remote_resource (
   remote_subscription_resource_id   UUID         NOT NULL,
   versioned_fhir_resource_id        VARCHAR(120) NOT NULL,
-  processed_at                      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  processed_at                      TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   CONSTRAINT fhir_processed_remote_resource_pk PRIMARY KEY (remote_subscription_resource_id, versioned_fhir_resource_id),
   CONSTRAINT fhir_processed_remote_resource_fk1 FOREIGN KEY(remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
 );
@@ -985,7 +985,7 @@ CREATE TABLE fhir_queued_remote_resource (
   remote_subscription_resource_id   UUID                           NOT NULL,
   fhir_resource_id                  VARCHAR(80)                    NOT NULL,
   request_id                        VARCHAR(50)                    NOT NULL,
-  queued_at                         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  queued_at                         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   CONSTRAINT fhir_queued_remote_resource_pk PRIMARY KEY(remote_subscription_resource_id, fhir_resource_id ),
   CONSTRAINT fhir_queued_remote_resource_fk1 FOREIGN KEY(remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource(id) ON DELETE CASCADE
 );

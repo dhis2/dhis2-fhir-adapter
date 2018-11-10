@@ -33,8 +33,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
@@ -51,6 +53,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -121,9 +124,11 @@ public class DhisConfig
         mapper.disable( WRITE_DATES_AS_TIMESTAMPS );
 
         final SimpleModule module = new SimpleModule();
+        module.addSerializer( InstantSerializer.INSTANCE );
         module.addSerializer( LocalDateTimeSerializer.INSTANCE );
         module.addSerializer( new ZonedDateTimeSerializer() );
         module.addSerializer( new LocalDateSerializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
+        module.addDeserializer( Instant.class, InstantDeserializer.INSTANT );
         module.addDeserializer( LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE );
         module.addDeserializer( ZonedDateTime.class, new ZonedDateTimeDeserializer() );
         module.addDeserializer( LocalDate.class, new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );

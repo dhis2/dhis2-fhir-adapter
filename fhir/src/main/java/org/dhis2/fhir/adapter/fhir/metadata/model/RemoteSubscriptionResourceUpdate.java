@@ -39,7 +39,7 @@ import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -55,7 +55,7 @@ public class RemoteSubscriptionResourceUpdate implements Serializable
 
     private UUID id;
     private RemoteSubscriptionResource remoteSubscriptionResource;
-    private LocalDateTime remoteLastUpdated;
+    private Instant remoteLastUpdated;
 
     @Id
     public UUID getId()
@@ -84,12 +84,12 @@ public class RemoteSubscriptionResourceUpdate implements Serializable
 
     @Basic
     @Column( name = "remote_last_updated", nullable = false )
-    public LocalDateTime getRemoteLastUpdated()
+    public Instant getRemoteLastUpdated()
     {
         return remoteLastUpdated;
     }
 
-    public void setRemoteLastUpdated( LocalDateTime remoteLastUpdate )
+    public void setRemoteLastUpdated( Instant remoteLastUpdate )
     {
         this.remoteLastUpdated = remoteLastUpdate;
     }

@@ -76,7 +76,7 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
     }
 
     @Basic
-    @Column( name = "description", length = -1 )
+    @Column( name = "description", columnDefinition = "TEXT" )
     public String getDescription()
     {
         return description;

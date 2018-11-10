@@ -53,8 +53,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -183,17 +184,16 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
                 ", but no bundle retriever is available for that version." );
         }
 
-        final LocalDateTime remoteLastUpdated = remoteSubscriptionResourceUpdateRepository.getRemoteLastUpdated( remoteSubscriptionResource );
+        final Instant remoteLastUpdated = remoteSubscriptionResourceUpdateRepository.getRemoteLastUpdated( remoteSubscriptionResource );
         final AtomicLong count = new AtomicLong();
-        final ZonedDateTime lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, remoteLastUpdated, processorConfig.getMaxSearchCount(), resources -> {
+        final Instant lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, remoteLastUpdated, processorConfig.getMaxSearchCount(), resources -> {
             final String requestId = getCurrentRequestId();
-            final ZonedDateTime zonedProcessedAt = ZonedDateTime.now();
+            final Instant processedAt = Instant.now();
             final Set<String> processedVersionedIds = processedRemoteFhirResourceRepository.findByVersionedIds( remoteSubscriptionResource,
-                resources.stream().map( sr -> sr.toVersionString( zonedProcessedAt ) ).collect( Collectors.toList() ) );
+                resources.stream().map( sr -> sr.toVersionString( processedAt ) ).collect( Collectors.toList() ) );
 
-            final LocalDateTime processedAt = zonedProcessedAt.toLocalDateTime();
             resources.forEach( sr -> {
-                final String versionedId = sr.toVersionString( zonedProcessedAt );
+                final String versionedId = sr.toVersionString( processedAt );
                 if ( !processedVersionedIds.contains( versionedId ) )
                 {
                     // persist processed remote FHIR resource and
@@ -215,8 +215,7 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
                 }
             } );
         } );
-        remoteSubscriptionResourceUpdateRepository.updateRemoteLastUpdated(
-            remoteSubscriptionResource, lastUpdated.toLocalDateTime() );
+        remoteSubscriptionResourceUpdateRepository.updateRemoteLastUpdated( remoteSubscriptionResource, lastUpdated );
 
         // Purging old data must not be done before and also must not be done asynchronously. The remote last updated
         // timestamp may be older than the purged data. And before purging the old data, the remote last updated
@@ -235,7 +234,7 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
 
     protected void purgeOldestProcessed( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource )
     {
-        final LocalDateTime from = LocalDateTime.now().minusMinutes( processorConfig.getMaxProcessedAgeMinutes() );
+        final Instant from = Instant.now().minus( processorConfig.getMaxProcessedAgeMinutes(), ChronoUnit.MINUTES );
         logger.debug( "Purging oldest processed remote subscription FHIR resources before {} for remote subscription resource {}.",
             from, remoteSubscriptionResource.getId() );
         final int count = processedRemoteFhirResourceRepository.deleteOldest( remoteSubscriptionResource, from );
