@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir;
 import org.dhis2.fhir.adapter.fhir.data.DataBasePackage;
 import org.dhis2.fhir.adapter.fhir.metadata.MetadataBasePackage;
 import org.dhis2.fhir.adapter.jackson.JacksonConfig;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -39,8 +40,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
@@ -48,9 +47,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-
-import javax.annotation.Nonnull;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Abstract base class for JPA Repository dependent tests.
@@ -64,20 +62,17 @@ import javax.annotation.Nonnull;
 @EntityScan( basePackageClasses = { DataBasePackage.class, MetadataBasePackage.class } )
 @SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK )
 @TestPropertySource( "classpath:test.properties" )
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs( outputDir = "target/snippets/{class-name}/{method-name}" )
 @DataJpaTest
 public abstract class AbstractJpaRepositoryTest
 {
     @Autowired
+    protected WebApplicationContext context;
+
     protected MockMvc mockMvc;
 
-    @Nonnull
-    protected RequestPostProcessor createRequestPostProcessor()
+    @Before
+    public void beforeAbstractJpaRepositoryTest()
     {
-        return request -> {
-            request.setRemotePort( 8081 );
-            return request;
-        };
+        mockMvc = MockMvcBuilders.webAppContextSetup( context ).build();
     }
 }

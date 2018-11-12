@@ -28,36 +28,31 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.restdocs.constraints.ConstraintDescriptions;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.snippet.Attributes.key;
+
 /**
- * Security configuration of tests.
+ * Contains constrained fields of a class for REST documentation.
  *
  * @author volsch
  */
-@Configuration
-@EnableWebSecurity
-public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter
+public class ConstrainedFields
 {
-    protected static final String DHIS_BASIC_REALM = "DHIS2";
+    private final ConstraintDescriptions constraintDescriptions;
 
-    @Override
-    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    public ConstrainedFields( @Nonnull Class<?> input )
     {
-        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
-        http.csrf().disable();
-        http
-            .authorizeRequests()
-            .antMatchers( HttpMethod.OPTIONS, "/api/**" ).permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .httpBasic().realmName( DHIS_BASIC_REALM );
+        this.constraintDescriptions = new ConstraintDescriptions( input );
+    }
+
+    public FieldDescriptor withPath( @Nonnull String path )
+    {
+        return fieldWithPath( path ).attributes( key( "constraints" ).value( StringUtils.collectionToDelimitedString( constraintDescriptions.descriptionsForProperty( path ), ". " ) ) );
     }
 }

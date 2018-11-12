@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir;
 import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
 import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
+import org.springframework.boot.test.autoconfigure.restdocs.RestDocsAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -39,6 +40,7 @@ import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nonnull;
@@ -48,9 +50,10 @@ import java.util.Date;
 /**
  * Test configuration.
  *
- * @author volsch4
+ * @author volsch
  */
 @Configuration
+@ContextConfiguration( classes = { RestDocsAutoConfiguration.class } )
 public class TestConfig
 {
     @Nonnull

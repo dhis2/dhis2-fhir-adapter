@@ -28,36 +28,45 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.junit.Before;
+import org.junit.Rule;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
 /**
- * Security configuration of tests.
+ * Abstract test class that generate REST documentation for JPA repositories.
  *
  * @author volsch
  */
-@Configuration
-@EnableWebSecurity
-public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter
+@Transactional
+@Rollback
+public abstract class AbstractJpaRepositoryRestDocsTest extends AbstractJpaRepositoryTest
 {
-    protected static final String DHIS_BASIC_REALM = "DHIS2";
+    @Rule
+    public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
 
-    @Override
-    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    protected RestDocumentationResultHandler documentationHandler;
+
+    protected MockMvc docMockMvc;
+
+    @Before
+    public void beforeAbstractJpaRepositoryRestDocsTest()
     {
-        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
-        http.csrf().disable();
-        http
-            .authorizeRequests()
-            .antMatchers( HttpMethod.OPTIONS, "/api/**" ).permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .httpBasic().realmName( DHIS_BASIC_REALM );
+        documentationHandler = document( "{method-name}",
+            preprocessRequest( prettyPrint() ),
+            preprocessResponse( removeHeaders( "X-Content-Type-Options", "X-XSS-Protection", "X-Frame-Options" ), prettyPrint() ) );
+
+        docMockMvc = MockMvcBuilders.webAppContextSetup( context )
+            .apply( documentationConfiguration( restDocumentation ).uris().withPort( 8081 ) )
+            .alwaysDo( documentationHandler )
+            .build();
     }
 }

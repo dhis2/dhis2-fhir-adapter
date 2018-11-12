@@ -5,6 +5,7 @@
 # to native line endings on checkout.
 LICENSE text
 *.MF text
+*.adoc text
 *.csv text
 *.html text
 *.java text
@@ -13,6 +14,7 @@ LICENSE text
 *.properties text
 *.sql text
 *.script text
+*.snippet text
 *.txt text
 *.xml text
 *.xsd text

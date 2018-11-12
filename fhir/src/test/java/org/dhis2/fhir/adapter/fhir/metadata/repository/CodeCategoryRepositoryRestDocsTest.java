@@ -29,16 +29,22 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.apache.commons.io.IOUtils;
-import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryTest;
+import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
+import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import java.util.Objects;
+
+import static org.hamcrest.Matchers.is;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.snippet.Attributes.attributes;
+import static org.springframework.restdocs.snippet.Attributes.key;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -46,19 +52,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author volsch
  */
-public class CodeCategoryRepositoryTest extends AbstractJpaRepositoryTest
+public class CodeCategoryRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
 {
-    @WithMockUser( username = "2h2maqu827da1", password = "code_test", roles = "CODE_MAPPING" )
     @Test
+    @WithMockUser( username = "2h2maqu827d", password = "code_test", roles = "CODE_MAPPING" )
     public void createCodeCategory() throws Exception
     {
-        mockMvc.perform( post( "/api/codeCategories" ).with( createRequestPostProcessor() ).contentType( MediaType.APPLICATION_JSON ).accept( MediaType.APPLICATION_JSON )
+        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class );
+        final String location = docMockMvc.perform( post( "/api/codeCategories" ).contentType( MediaType.APPLICATION_JSON )
             .content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCodeCategory.json" ) ) )
             .andExpect( status().isCreated() )
-            .andDo( document( "{method-name}/", requestFields(
-                fieldWithPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
-                fieldWithPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
-                fieldWithPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional().attributes()
-            ) ) );
+            .andExpect( header().exists( "Location" ) )
+            .andDo( documentationHandler.document( requestFields(
+                attributes( key( "title" ).value( "Fields for code category creation" ) ),
+                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional()
+            ) ) ).andReturn().getResponse().getHeader( "Location" );
+
+        mockMvc
+            .perform( get( Objects.requireNonNull( location ) ) )
+            .andExpect( status().isOk() )
+            .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
+            .andExpect( jsonPath( "name", is( "Test Code Category" ) ) )
+            .andExpect( jsonPath( "code", is( "TEST_CODE_CATEGORY" ) ) )
+            .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 }

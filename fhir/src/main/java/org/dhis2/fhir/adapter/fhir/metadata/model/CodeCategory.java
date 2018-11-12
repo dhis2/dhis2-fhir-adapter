@@ -32,6 +32,8 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -49,8 +51,14 @@ public class CodeCategory extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_CODE_LENGTH = 50;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
     private String description;
 
     @Basic

@@ -38,6 +38,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -64,11 +67,22 @@ public class Code extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_MAPPED_CODE_LENGTH = 50;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
+    @Size( max = MAX_MAPPED_CODE_LENGTH )
     private String mappedCode;
+
     private String description;
+
+    @NotNull
     private CodeCategory codeCategory;
+
     private List<SystemCode> systemCodes;
 
     @Basic
