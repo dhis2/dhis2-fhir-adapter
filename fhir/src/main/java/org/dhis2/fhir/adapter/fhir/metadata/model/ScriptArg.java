@@ -28,7 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nullable;
 import javax.persistence.Basic;
@@ -39,6 +41,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
@@ -50,6 +55,7 @@ import java.util.regex.Pattern;
  */
 @Entity
 @Table( name = "fhir_script_argument" )
+@JsonFilter( ToOnePropertyFilter.FILTER_NAME )
 public class ScriptArg extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -5052962742547037363L;
@@ -62,12 +68,23 @@ public class ScriptArg extends VersionedBaseMetadata implements Serializable
 
     protected static final String ARRAY_SEPARATOR_REGEXP = Pattern.quote( ARRAY_SEPARATOR );
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotNull
+    @EnumValue( DataType.class )
     private DataType dataType;
+
     private boolean mandatory;
+
     private boolean array;
+
     private String defaultValue;
+
     private String description;
+
+    @NotNull
     private Script script;
 
     @Basic
@@ -145,7 +162,6 @@ public class ScriptArg extends VersionedBaseMetadata implements Serializable
 
     @ManyToOne( optional = false )
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
-    @JsonIgnore
     public Script getScript()
     {
         return script;

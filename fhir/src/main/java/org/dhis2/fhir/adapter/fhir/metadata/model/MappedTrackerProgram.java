@@ -54,7 +54,7 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
     private String name;
     private String description;
     private Reference programReference;
-    private boolean enabled;
+    private boolean enabled = true;
     private TrackedEntityRule trackedEntityRule;
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;

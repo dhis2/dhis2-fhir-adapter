@@ -30,30 +30,79 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+import org.hibernate.annotations.GenericGenerator;
 
-import javax.annotation.Nonnull;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
+/**
+ * Contains the value of the {@linkplain CodeSet code set} which can additionally be
+ * enabled and disabled.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_code_set_value" )
-public class CodeSetValue implements Serializable, Comparable<CodeSetValue>, FhirAdapterMetadata<CodeSetValueId>
+public class CodeSetValue implements Serializable, FhirAdapterMetadata<UUID>
 {
     private static final long serialVersionUID = 8365594386802303061L;
 
-    private CodeSetValueId id;
+    private UUID id;
 
-    private boolean enabled;
+    private CodeSet codeSet;
 
-    @EmbeddedId
-    public CodeSetValueId getId()
+    @NotNull
+    private Code code;
+
+    private boolean enabled = true;
+
+    @Override
+    @GeneratedValue( generator = "uuid2" )
+    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
+    @Id
+    @Column( name = "id", nullable = false )
+    public UUID getId()
     {
         return id;
+    }
+
+    public void setId( UUID id )
+    {
+        this.id = id;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "code_set_id", nullable = false )
+    @JsonIgnore
+    public CodeSet getCodeSet()
+    {
+        return codeSet;
+    }
+
+    public void setCodeSet( CodeSet codeSet )
+    {
+        this.codeSet = codeSet;
+    }
+
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "code_id", nullable = false )
+    public Code getCode()
+    {
+        return code;
+    }
+
+    public void setCode( Code code )
+    {
+        this.code = code;
     }
 
     @Column( name = "enabled", nullable = false )
@@ -67,67 +116,25 @@ public class CodeSetValue implements Serializable, Comparable<CodeSetValue>, Fhi
         this.enabled = enabled;
     }
 
-    public void setId( CodeSetValueId id )
-    {
-        this.id = id;
-    }
-
-    @JsonIgnore
-    @Transient
-    public CodeSet getCodeSet()
-    {
-        return (id == null) ? null : id.getCodeSet();
-    }
-
-    public void setCodeSet( CodeSet codeSet )
-    {
-        if ( id == null )
-        {
-            id = new CodeSetValueId();
-        }
-        id.setCodeSet( codeSet );
-    }
-
-    @JsonIgnore
-    @Transient
-    public Code getCode()
-    {
-        return (id == null) ? null : id.getCode();
-    }
-
-    public void setCode( Code code )
-    {
-        if ( id == null )
-        {
-            id = new CodeSetValueId();
-        }
-        id.setCode( code );
-    }
-
     @Override
     public boolean equals( Object o )
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
         CodeSetValue that = (CodeSetValue) o;
-        return Objects.equals( id, that.id );
+        return Objects.equals( (codeSet == null) ? null : codeSet.getId(), (that.codeSet == null) ? null : that.codeSet.getId() ) &&
+            Objects.equals( (code == null) ? null : code.getId(), (that.code == null) ? null : that.code.getId() );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( id );
+        return Objects.hash( (codeSet == null) ? null : codeSet.getId(), (code == null) ? null : code.getId() );
     }
 
     @Override
-    public int compareTo( @Nonnull CodeSetValue o )
+    public String toString()
     {
-        int value = ((getCodeSet() == null) && (o.getCodeSet() == null)) ? 0 :
-            getCodeSet().getId().compareTo( o.getCodeSet().getId() );
-        if ( value != 0 )
-        {
-            return value;
-        }
-        return getCode().getId().compareTo( o.getCode().getId() );
+        return "[" + "codeSetId=" + ((codeSet == null) ? "" : codeSet.getId()) + ", codeId=" + ((code == null) ? "" : code.getId()) + ']';
     }
 }

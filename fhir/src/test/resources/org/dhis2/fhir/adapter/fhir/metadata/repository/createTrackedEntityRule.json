@@ -1,0 +1,21 @@
+{
+  "name": "FHIR Patient to Person (disabled)",
+  "description": "Transforms a FHIR Patient to a Person",
+  "enabled": false,
+  "evaluationOrder": 0,
+  "dhisResourceType": "TRACKED_ENTITY",
+  "fhirResourceType": "PATIENT",
+  "trackedEntityReference": {
+    "value": "Person",
+    "type": "NAME"
+  },
+  "trackedEntityIdentifierReference": {
+    "value": "National identifier",
+    "type": "CODE"
+  },
+  "applicableInScript": null,
+  "applicableCodeSet": null,
+  "transformInScript": "$transformInScriptId",
+  "orgUnitLookupScript": "$orgUnitLookupScriptId",
+  "locationLookupScript": "$locationLookupScriptId"
+}

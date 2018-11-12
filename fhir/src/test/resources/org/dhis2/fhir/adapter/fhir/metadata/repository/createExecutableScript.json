@@ -1,0 +1,17 @@
+{
+  "script": "$scriptId",
+  "name": "CP: Birth Weight",
+  "code": "CP_BIRTH_WEIGHT",
+  "overrideArguments": [
+    {
+      "argument": "$dataElementArgId",
+      "overrideValue": "CODE:DE_2005736",
+      "enabled": true
+    },
+    {
+      "argument": "$roundArgId",
+      "overrideValue": "false",
+      "enabled": true
+    }
+  ]
+}

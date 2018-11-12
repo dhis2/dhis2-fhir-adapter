@@ -1,0 +1,8 @@
+{
+  "name": "Sierra Leone Patient",
+  "code": "SYSTEM_SL_PATIENT",
+  "description": "All Sierra Leone patients.",
+  "descriptionProtected": false,
+  "systemUri": "http://example.sl/patients",
+  "enabled": true
+}

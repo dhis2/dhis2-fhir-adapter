@@ -52,7 +52,7 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     private String name;
     private String description;
     private Reference programStageReference;
-    private boolean enabled;
+    private boolean enabled = true;
     private MappedTrackerProgram program;
     private boolean creationEnabled;
     private ExecutableScript creationApplicableScript;

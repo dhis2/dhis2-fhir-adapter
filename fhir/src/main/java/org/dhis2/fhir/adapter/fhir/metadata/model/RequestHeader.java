@@ -30,19 +30,20 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.jackson.ConditionallySecuredPropertyContainer;
 import org.dhis2.fhir.adapter.jackson.SecuredProperty;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
 @JsonFilter( SecuredPropertyFilter.FILTER_NAME )
 @Embeddable
-public class RequestHeader implements Serializable, Comparable<RequestHeader>, ConditionallySecuredPropertyContainer
+public class RequestHeader implements Serializable, ConditionallySecuredPropertyContainer
 {
     private static final long serialVersionUID = 9147646500873557921L;
 
@@ -50,10 +51,13 @@ public class RequestHeader implements Serializable, Comparable<RequestHeader>, C
 
     public static final int MAX_VALUE_LENGTH = 200;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
 
     @JsonProperty
     @SecuredProperty
+    @Size( max = MAX_VALUE_LENGTH )
     private String value;
 
     private boolean secure;
@@ -114,16 +118,5 @@ public class RequestHeader implements Serializable, Comparable<RequestHeader>, C
     public int hashCode()
     {
         return Objects.hash( name, value );
-    }
-
-    @Override
-    public int compareTo( @Nonnull RequestHeader o )
-    {
-        int value = ObjectUtils.compare( getName(), o.getName() );
-        if ( value != 0 )
-        {
-            return value;
-        }
-        return ObjectUtils.compare( getValue(), o.getValue() );
     }
 }

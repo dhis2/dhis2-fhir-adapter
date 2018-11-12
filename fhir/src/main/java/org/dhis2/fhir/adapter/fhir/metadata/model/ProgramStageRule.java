@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.springframework.hateoas.core.Relation;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -51,6 +52,7 @@ import javax.persistence.Transient;
 @Entity
 @Table( name = "fhir_program_stage_rule" )
 @DiscriminatorValue( "PROGRAM_STAGE_EVENT" )
+@Relation( value = "rule", collectionRelation = "rules" )
 public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;

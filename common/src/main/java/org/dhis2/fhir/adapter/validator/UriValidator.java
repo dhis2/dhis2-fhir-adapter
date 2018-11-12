@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.jackson;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,36 @@ package org.dhis2.fhir.adapter.jackson;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
-
-import java.util.SortedSet;
-import java.util.TreeSet;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
- * Converts sorted sets (especially persistent sorted set) to a tree set.
- * This is required when class name is serialized and used sorted set class
- * cannot be instantiated otherwise.
+ * Validator that checks that a URI is a valid URI.
  *
  * @author volsch
  */
-public class PersistentSortedSetConverter implements Converter<SortedSet<?>, TreeSet<?>>
+public class UriValidator implements ConstraintValidator<Uri, String>
 {
     @Override
-    public TreeSet<?> convert( SortedSet<?> value )
+    public boolean isValid( String value, ConstraintValidatorContext context )
     {
         if ( value == null )
         {
-            return null;
+            return true;
         }
-        return new TreeSet<>( value );
-    }
 
-    @Override
-    public JavaType getInputType( TypeFactory typeFactory )
-    {
-        return typeFactory.constructCollectionType( SortedSet.class, Object.class );
-    }
+        try
+        {
+            new URI( value );
+        }
+        catch ( URISyntaxException e )
+        {
+            context.buildConstraintViolationWithTemplate( "Not a valid URI" );
+            return false;
+        }
 
-    @Override
-    public JavaType getOutputType( TypeFactory typeFactory )
-    {
-        return typeFactory.constructCollectionType( TreeSet.class, Object.class );
+        return true;
     }
 }

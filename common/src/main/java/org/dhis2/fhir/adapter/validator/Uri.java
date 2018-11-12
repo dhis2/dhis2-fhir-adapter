@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,65 +28,26 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import java.io.Serializable;
-import java.util.Objects;
-
-@Embeddable
-public class CodeSetValueId implements Serializable
+/**
+ * Validation that a URI is a valid URI.
+ *
+ * @author volsch
+ */
+@Constraint( validatedBy = UriValidator.class )
+@Target( { ElementType.FIELD } )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface Uri
 {
-    private static final long serialVersionUID = -804758880988113845L;
+    String message() default "Not a valid URI";
 
-    private CodeSet codeSet;
-    private Code code;
+    Class<?>[] groups() default {};
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "code_set_id", nullable = false )
-    @JsonIgnore
-    public CodeSet getCodeSet()
-    {
-        return codeSet;
-    }
-
-    public void setCodeSet( CodeSet codeSet )
-    {
-        this.codeSet = codeSet;
-    }
-
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "code_id", nullable = false )
-    public Code getCode()
-    {
-        return code;
-    }
-
-    public void setCode( Code code )
-    {
-        this.code = code;
-    }
-
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        CodeSetValueId that = (CodeSetValueId) o;
-        return Objects.equals( codeSet, that.codeSet ) && Objects.equals( code, that.code );
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash( codeSet, code );
-    }
-
-    @Override
-    public String toString()
-    {
-        return "[" + "codeSetId=" + ((codeSet == null) ? "" : codeSet.getId()) + ", codeId=" + ((code == null) ? "" : code.getId()) + ']';
-    }
+    Class<? extends Payload>[] payload() default {};
 }

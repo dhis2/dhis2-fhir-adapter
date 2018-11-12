@@ -1,0 +1,9 @@
+{
+  "script": "$scriptId",
+  "name": "weightUnit",
+  "description": "The resulting weight unit in which the value will be set on the data element.",
+  "dataType": "WEIGHT_UNIT",
+  "mandatory": true,
+  "array": false,
+  "defaultValue": "KILO_GRAM"
+}

@@ -28,12 +28,17 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.validator.EnumValue;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -54,11 +59,25 @@ public class Constant extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_VALUE_LENGTH = 250;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
     private String description;
+
+    @NotNull
+    @EnumValue( ConstantCategory.class )
     private ConstantCategory category;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
+    @NotNull
+    @EnumValue( DataType.class )
     private DataType dataType;
+
+    @Size( max = MAX_VALUE_LENGTH )
     private String value;
 
     @Basic
@@ -99,7 +118,7 @@ public class Constant extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;

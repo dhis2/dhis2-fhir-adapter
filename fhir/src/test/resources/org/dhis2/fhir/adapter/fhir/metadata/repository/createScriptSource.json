@@ -1,0 +1,6 @@
+{
+  "script": "$scriptId",
+  "sourceType": "JAVASCRIPT",
+  "sourceText": "output.setValue(args['dataElement'], vitalSignUtils.getWeight(input.value, args['weightUnit'], args['round']), null, args['override'], context.getFhirRequest().getLastUpdated())",
+  "fhirVersions": [ "DSTU3" ]
+}

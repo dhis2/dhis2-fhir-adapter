@@ -1,0 +1,8 @@
+{
+  "category": "GENDER",
+  "name": "Gender Female",
+  "description": "Constant for Gender option value as it is used by DHIS2.",
+  "code": "GENDER_FEMALE",
+  "dataType": "STRING",
+  "value": "Female"
+}

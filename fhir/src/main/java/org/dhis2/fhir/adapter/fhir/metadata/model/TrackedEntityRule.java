@@ -40,8 +40,12 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
+ * Rule for tracked entities.
+ *
  * @author volsch
  */
 @Entity
@@ -51,11 +55,19 @@ public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
 
+    @NotNull
+    @Valid
     private Reference trackedEntityReference;
+
+    @NotNull
     private ExecutableScript orgUnitLookupScript;
+
+    @NotNull
     private ExecutableScript locationLookupScript;
+
+    @NotNull
+    @Valid
     private Reference trackedEntityIdentifierReference;
-    private boolean trackedEntityIdentifierFq;
 
     public TrackedEntityRule()
     {

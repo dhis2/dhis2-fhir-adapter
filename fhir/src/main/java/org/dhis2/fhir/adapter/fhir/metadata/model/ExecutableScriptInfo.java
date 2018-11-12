@@ -33,6 +33,8 @@ import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The executable script prepared to be processed by a script executor.
@@ -45,14 +47,24 @@ public class ExecutableScriptInfo implements Serializable
 
     private final ExecutableScript executableScript;
 
+    private final List<ExecutableScriptArg> executableScriptArgs;
+
     private final Script script;
+
+    private final List<ScriptArg> scriptArgs;
 
     private final ScriptSource scriptSource;
 
-    public ExecutableScriptInfo( @JsonProperty( "executableScript" ) @NonNull ExecutableScript executableScript, @JsonProperty( "script" ) @Nonnull Script script, @JsonProperty( "scriptSource" ) @Nonnull ScriptSource scriptSource )
+    public ExecutableScriptInfo( @JsonProperty( "executableScript" ) @NonNull ExecutableScript executableScript, @JsonProperty( "executableScriptArgs" ) @Nonnull List<ExecutableScriptArg> executableScriptArgs,
+        @JsonProperty( "script" ) @Nonnull Script script, @JsonProperty( "scriptArgs" ) @Nonnull List<ScriptArg> scriptArgs,
+        @JsonProperty( "scriptSource" ) @Nonnull ScriptSource scriptSource )
     {
         this.executableScript = executableScript;
+        // do not use persistence specific list implementations when serializing to JSON
+        this.executableScriptArgs = new ArrayList<>( executableScriptArgs );
         this.script = script;
+        // do not use persistence specific list implementations when serializing to JSON
+        this.scriptArgs = new ArrayList<>( scriptArgs );
         this.scriptSource = scriptSource;
     }
 
@@ -66,6 +78,18 @@ public class ExecutableScriptInfo implements Serializable
     public Script getScript()
     {
         return script;
+    }
+
+    @Nonnull
+    public List<ExecutableScriptArg> getExecutableScriptArgs()
+    {
+        return executableScriptArgs;
+    }
+
+    @Nonnull
+    public List<ScriptArg> getScriptArgs()
+    {
+        return scriptArgs;
     }
 
     @Nonnull

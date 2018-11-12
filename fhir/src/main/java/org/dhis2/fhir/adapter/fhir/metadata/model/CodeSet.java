@@ -28,31 +28,59 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.dhis2.fhir.adapter.jackson.PersistentSortedSetConverter;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
-import java.util.SortedSet;
 
+/**
+ * Contains a collection of {@linkplain Code code}. E.g. there may be multiple codes
+ * for vaccines that cause an immunization for measles.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_code_set" )
+@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
 public class CodeSet extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1177970691904984600L;
 
+    public static final int MAX_NAME_LENGTH = 230;
+
+    public static final int MAX_CODE_LENGTH = 50;
+
+    @NotNull
     private CodeCategory codeCategory;
+
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
     private String description;
-    private SortedSet<CodeSetValue> codeSetValues;
+
+    @NotNull
+    @Valid
+    private List<CodeSetValue> codeSetValues;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -67,7 +95,7 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;
@@ -90,16 +118,27 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
         this.description = description;
     }
 
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "code_category_id", nullable = false )
+    public CodeCategory getCodeCategory()
+    {
+        return codeCategory;
+    }
+
+    public void setCodeCategory( CodeCategory codeCategory )
+    {
+        this.codeCategory = codeCategory;
+    }
+
     @SuppressWarnings( "JpaAttributeTypeInspection" )
-    @OneToMany( orphanRemoval = true, mappedBy = "id.codeSet", cascade = CascadeType.ALL )
-    @OrderBy( "id.codeSet.id,id.code.id" )
-    @JsonSerialize( converter = PersistentSortedSetConverter.class )
-    public SortedSet<CodeSetValue> getCodeSetValues()
+    @OneToMany( orphanRemoval = true, mappedBy = "codeSet", cascade = CascadeType.ALL )
+    @OrderBy( "id" )
+    public List<CodeSetValue> getCodeSetValues()
     {
         return codeSetValues;
     }
 
-    public void setCodeSetValues( SortedSet<CodeSetValue> codeSetValues )
+    public void setCodeSetValues( List<CodeSetValue> codeSetValues )
     {
         if ( codeSetValues != null )
         {

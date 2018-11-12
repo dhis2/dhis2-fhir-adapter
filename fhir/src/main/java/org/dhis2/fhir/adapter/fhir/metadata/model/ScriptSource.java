@@ -28,10 +28,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.FhirVersionPersistentSortedSetConverter;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
@@ -44,6 +44,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.SortedSet;
 
@@ -58,9 +61,18 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6002604151209645784L;
 
+    @NotBlank
     private String sourceText;
+
+    @NotNull
+    @EnumValue( ScriptSourceType.class )
     private ScriptSourceType sourceType;
+
+    @NotNull
     private Script script;
+
+    @NotNull
+    @Size( min = 1 )
     private SortedSet<FhirVersion> fhirVersions;
 
     @Basic
@@ -90,7 +102,6 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
 
     @ManyToOne
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
-    @JsonIgnore
     public Script getScript()
     {
         return script;

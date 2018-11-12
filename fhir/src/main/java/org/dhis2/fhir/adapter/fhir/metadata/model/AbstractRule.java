@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Basic;
@@ -48,6 +49,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -65,9 +70,9 @@ import java.io.Serializable;
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query =
         "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true AND " +
             "(r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
-            "(SELECT 1 FROM CodeSetValue csv JOIN csv.id.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
-            "JOIN sc.system s ON s.enabled=true WHERE csv.id.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ) } )
-@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "dhisResourceType" )
+            "(SELECT 1 FROM CodeSetValue csv JOIN csv.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
+            "JOIN sc.system s ON s.enabled=true WHERE csv.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ) } )
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" )
@@ -82,14 +87,29 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     public static final int MAX_NAME_LENGTH = 230;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
     private String description;
-    private boolean enabled;
+
+    private boolean enabled = true;
+
     private int evaluationOrder;
+
+    @NotNull
+    @EnumValue( DhisResourceType.class )
     private DhisResourceType dhisResourceType;
+
+    @NotNull
+    @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
+
     private ExecutableScript applicableInScript;
+
     private CodeSet applicableCodeSet;
+
+    @NotNull
     private ExecutableScript transformInScript;
 
     protected AbstractRule()
@@ -103,7 +123,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @Basic
-    @Column( name = "name", nullable = false, length = 230 )
+    @Column( name = "name", nullable = false, length = 230, unique = true )
     public String getName()
     {
         return name;
@@ -163,18 +183,11 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.fhirResourceType = fhirResourceType;
     }
 
-    @Basic
-    @Column( name = "dhis_resource_type", nullable = false, updatable = false, length = 30 )
-    @Enumerated( EnumType.STRING )
+    @Transient
     @JsonProperty( access = JsonProperty.Access.READ_ONLY )
     public DhisResourceType getDhisResourceType()
     {
         return dhisResourceType;
-    }
-
-    public void setDhisResourceType( DhisResourceType dhisResourceType )
-    {
-        this.dhisResourceType = dhisResourceType;
     }
 
     @ManyToOne

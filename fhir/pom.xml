@@ -124,6 +124,11 @@
             <configuration>
               <backend>html</backend>
               <doctype>book</doctype>
+              <logHandler>
+                <failIf>
+                  <severity>WARN</severity>
+                </failIf>
+              </logHandler>
             </configuration>
           </execution>
         </executions>

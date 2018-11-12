@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,26 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import java.net.URI;
-import java.net.URISyntaxException;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Validator that checks that a URI is a valid URI.
+ * Validation that a URL is a valid HTTP/HTTPS URL.
  *
  * @author volsch
  */
-public class UriValidator implements ConstraintValidator<Uri, String>
+@Constraint( validatedBy = HttpUrlValidator.class )
+@Target( { ElementType.FIELD } )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface HttpUrl
 {
-    @Override
-    public boolean isValid( String value, ConstraintValidatorContext context )
-    {
-        if ( value == null )
-        {
-            return true;
-        }
+    String message() default "Not a valid HTTP/HTTPS URL";
 
-        try
-        {
-            new URI( value );
-        }
-        catch ( URISyntaxException e )
-        {
-            context.buildConstraintViolationWithTemplate( "Not a valid URI." );
-            return false;
-        }
+    Class<?>[] groups() default {};
 
-        return true;
-    }
+    Class<? extends Payload>[] payload() default {};
 }

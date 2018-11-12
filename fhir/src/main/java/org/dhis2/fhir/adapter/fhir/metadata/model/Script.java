@@ -28,10 +28,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
-import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -46,6 +48,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 import java.util.SortedSet;
@@ -59,6 +64,7 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script" )
+@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
 public class Script extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
@@ -67,15 +73,34 @@ public class Script extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_CODE_LENGTH = 50;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
     private String description;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
+    @NotNull
+    @EnumValue( ScriptType.class )
     private ScriptType scriptType;
+
+    @NotNull
+    @EnumValue( DataType.class )
     private DataType returnType;
+
+    @EnumValue( TransformDataType.class )
     private TransformDataType inputType;
+
+    @EnumValue( TransformDataType.class )
     private TransformDataType outputType;
+
     private List<ScriptArg> arguments;
+
     private SortedSet<ScriptVariable> variables;
+
     private List<ScriptSource> sources;
 
     @Basic
@@ -103,7 +128,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;
@@ -168,7 +193,6 @@ public class Script extends VersionedBaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "script" )
     @OrderBy( "id" )
-    @JsonSerialize( converter = PersistentBagConverter.class )
     public List<ScriptArg> getArguments()
     {
         return arguments;

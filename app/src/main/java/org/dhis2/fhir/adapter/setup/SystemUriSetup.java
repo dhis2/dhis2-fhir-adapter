@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.setup;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
+import org.dhis2.fhir.adapter.validator.Uri;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;

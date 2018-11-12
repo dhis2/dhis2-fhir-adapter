@@ -1,0 +1,15 @@
+{
+  "name": "Vaccine Measles",
+  "code": "ALL_MEASLES",
+  "codeCategory": "$codeCategoryId",
+  "description": "All measles vaccine codes.",
+  "codeSetValues": [
+    {
+      "code": "$codeId1"
+    },
+    {
+      "code": "$codeId2",
+      "enabled": false
+    }
+  ]
+}

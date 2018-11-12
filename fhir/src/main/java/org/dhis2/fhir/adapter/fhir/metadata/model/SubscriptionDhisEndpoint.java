@@ -38,6 +38,9 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -55,8 +58,15 @@ public class SubscriptionDhisEndpoint implements Serializable
 
     public static final int MAX_PASSWORD_LENGTH = 200;
 
+    @NotNull
     private AuthenticationMethod authenticationMethod;
+
+    @NotBlank
+    @Size( max = MAX_USERNAME_LENGTH )
     private String username;
+
+    @NotBlank
+    @Size( max = MAX_PASSWORD_LENGTH )
     private String password;
 
     @Enumerated( EnumType.STRING )

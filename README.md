@@ -3,7 +3,7 @@
 This repository contains the source code of the DHIS2 FHIR Adapter. The current scope of the Adapter is to import data into DHIS2 Tracker by using FHIR Subscriptions. Event if the adapter may support more FHIR Resource types at the moment, the initial 
  official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances.
  
-The import works on the basis of a domain specific business rule engine that decides about transformations of medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
+The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
 
@@ -117,3 +117,8 @@ For the initial setup of the Adapter a simple user interface is provided. To acc
     
 With the default configuration the initial setup user interface can be accessed in any web browser by using http://localhost:8081/setup. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
  successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
+
+### API for Administration and Mapping
+The adapter provides REST interfaces for administration and mapping. The documentation is currently generated automatically when building the adapter. Unit test execution must not be skipped in this case when building the adapter. The documentation can be 
+ found at docs/api-guide.html. If the Adapter has been started by command line without changing the port, then the guide is available at http://localhost:8081/docs/api-guide.html.
+    

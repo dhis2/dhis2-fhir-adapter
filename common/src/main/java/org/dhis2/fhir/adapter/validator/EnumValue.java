@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,43 +28,32 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Validator that checks that a URL is a valid HTTP/HTTPS URL.
+ * Validation that a value is a supported value.
  *
  * @author volsch
  */
-public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String>
+@Constraint( validatedBy = EnumValueValidator.class )
+@Target( { ElementType.FIELD } )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface EnumValue
 {
-    @Override
-    public boolean isValid( String value, ConstraintValidatorContext context )
-    {
-        if ( value == null )
-        {
-            return true;
-        }
+    String message() default "Supported enum values {value}, unsupported {unsupported}";
 
-        final String protocol;
-        try
-        {
-            protocol = new URL( value ).getProtocol();
-        }
-        catch ( MalformedURLException e )
-        {
-            context.buildConstraintViolationWithTemplate( "Not a valid URL." );
-            return false;
-        }
+    Class<? extends Enum<?>> value();
 
-        if ( !"http".equals( protocol ) && !"https".equals( protocol ) )
-        {
-            context.buildConstraintViolationWithTemplate( "URL must use protocol HTTP or HTTPS." );
-            return false;
-        }
+    String[] unsupported() default {};
 
-        return true;
-    }
+    String[] supported() default {};
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

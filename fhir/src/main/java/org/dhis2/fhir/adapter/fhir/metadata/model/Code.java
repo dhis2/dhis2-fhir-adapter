@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -98,7 +99,7 @@ public class Code extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;
@@ -148,6 +149,7 @@ public class Code extends VersionedBaseMetadata implements Serializable
     @OneToMany( mappedBy = "code" )
     @OrderBy( "id" )
     @JsonIgnore
+    @RestResource( exported = false )
     public List<SystemCode> getSystemCodes()
     {
         return systemCodes;

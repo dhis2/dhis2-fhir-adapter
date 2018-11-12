@@ -29,7 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.dhis2.fhir.adapter.jackson.PersistentSortedSetConverter;
+import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
@@ -39,8 +40,11 @@ import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OrderBy;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.SortedSet;
+import java.util.List;
 
 /**
  * The configuration of the FHIR endpoint that is used by the subscription.
@@ -54,10 +58,17 @@ public class SubscriptionFhirEndpoint implements Serializable
 
     public static final int MAX_BASE_URL_LENGTH = 200;
 
+    @NotBlank
+    @URL
+    @Size( max = MAX_BASE_URL_LENGTH )
     private String baseUrl;
+
     private boolean logging;
+
     private boolean verboseLogging;
-    private SortedSet<RequestHeader> headers;
+
+    @Valid
+    private List<RequestHeader> headers;
 
     @Basic
     @Column( name = "remote_base_url", nullable = false, length = 200 )
@@ -75,13 +86,13 @@ public class SubscriptionFhirEndpoint implements Serializable
     @ElementCollection( fetch = FetchType.EAGER )
     @CollectionTable( name = "fhir_remote_subscription_header", joinColumns = @JoinColumn( name = "remote_subscription_id" ) )
     @OrderBy( "name,value" )
-    @JsonSerialize( converter = PersistentSortedSetConverter.class )
-    public SortedSet<RequestHeader> getHeaders()
+    @JsonSerialize( converter = PersistentBagConverter.class )
+    public List<RequestHeader> getHeaders()
     {
         return headers;
     }
 
-    public void setHeaders( SortedSet<RequestHeader> headers )
+    public void setHeaders( List<RequestHeader> headers )
     {
         this.headers = headers;
     }

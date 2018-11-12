@@ -41,7 +41,7 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeSaveTrackedEntityRuleValidator extends AbstractBeforeCreateSaveRuleValidator
+public class BeforeCreateSaveTrackedEntityRuleValidator extends AbstractBeforeCreateSaveRuleValidator
 {
     @Override
     public boolean supports( @Nonnull Class<?> clazz )
@@ -59,9 +59,17 @@ public class BeforeSaveTrackedEntityRuleValidator extends AbstractBeforeCreateSa
         {
             errors.rejectValue( "trackedEntityReference", "TrackedEntityRule.trackedEntityReference.null", "Tracked entity reference is mandatory." );
         }
+        else if ( !rule.getTrackedEntityReference().isValid() )
+        {
+            errors.rejectValue( "trackedEntityReference", "TrackedEntityRule.trackedEntityReferenceinvalid", "Tracked entity reference is not valid." );
+        }
         if ( rule.getTrackedEntityIdentifierReference() == null )
         {
             errors.rejectValue( "trackedEntityIdentifierReference", "TrackedEntityRule.trackedEntityIdentifierReference.null", "Tracked entity identifier reference is mandatory." );
+        }
+        else if ( !rule.getTrackedEntityIdentifierReference().isValid() )
+        {
+            errors.rejectValue( "trackedEntityIdentifierReference", "TrackedEntityRule.trackedEntityIdentifierReference.invalid", "Tracked entity identifier reference is not valid." );
         }
         BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript( errors, "TrackedEntityRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript() );
         BeforeCreateSaveFhirResourceMappingValidator.checkValidLocationLookupScript( errors, "TrackedEntityRule.", "locationLookupScript", rule.getFhirResourceType(), rule.getLocationLookupScript() );

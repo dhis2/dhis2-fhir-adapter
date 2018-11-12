@@ -448,16 +448,19 @@ COMMENT ON COLUMN fhir_code_set.description IS 'The detailed description that de
 COMMENT ON COLUMN fhir_code_set.code_category_id IS 'References the code category to which this code set and its codes belongs to.';
 
 CREATE TABLE fhir_code_set_value (
+  id               UUID    NOT NULL DEFAULT UUID_GENERATE_V4(),
   code_set_id      UUID    NOT NULL,
   code_id          UUID    NOT NULL,
   enabled          BOOLEAN NOT NULL DEFAULT TRUE,
-  CONSTRAINT fhir_code_set_value_pk PRIMARY KEY (code_set_id, code_id),
+  CONSTRAINT fhir_code_set_value_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_code_set_value_uk_code UNIQUE (code_set_id, code_id),
   CONSTRAINT fhir_code_set_value_fk1 FOREIGN KEY (code_set_id) REFERENCES fhir_code_set (id) ON DELETE CASCADE,
   CONSTRAINT fhir_code_set_value_fk2 FOREIGN KEY (code_id) REFERENCES fhir_code (id) ON DELETE CASCADE
 );
 CREATE INDEX fhir_code_set_value_i1
   ON fhir_code_set_value (code_id);
 COMMENT ON TABLE fhir_code_set_value IS 'Contains mapping between the code set and its assigned codes. The mapping for individual codes may be disabled.';
+COMMENT ON COLUMN fhir_code_set_value.id IS 'Unique ID of entity.';
 COMMENT ON COLUMN fhir_code_set_value.code_set_id IS 'Contains the reference to the code set that owns this mapping.';
 COMMENT ON COLUMN fhir_code_set_value.code_id IS 'Contains the reference to the code that is assigned to the code set of this mapping..';
 COMMENT ON COLUMN fhir_code_set_value.enabled IS 'Disabling a code of the code set avoids that the code has to be removed from the code set. The mapping can be switched off temporarily or can be kept for historically reasons.';

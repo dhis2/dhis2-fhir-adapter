@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.setup;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
+import org.dhis2.fhir.adapter.validator.HttpUrl;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;

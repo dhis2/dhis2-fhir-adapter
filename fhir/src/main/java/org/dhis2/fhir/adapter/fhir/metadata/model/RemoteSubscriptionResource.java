@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
@@ -41,6 +43,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -54,11 +58,22 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
 {
     private static final long serialVersionUID = -6797001318266984453L;
 
+    public static final int MAX_CRITERIA_PARAMETERS_LENGTH = 200;
+
+    @NotNull
+    @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
+
+    @Size( max = MAX_CRITERIA_PARAMETERS_LENGTH )
     private String fhirCriteriaParameters;
+
     private String description;
+
+    @NotNull
     private RemoteSubscription remoteSubscription;
+
     private RemoteSubscriptionResourceUpdate resourceUpdate;
+
     private String fhirSubscriptionId;
 
     @Basic
@@ -75,7 +90,7 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     }
 
     @Basic
-    @Column( name = "fhir_criteria_parameters", length = 200 )
+    @Column( name = "fhir_criteria_parameters", length = MAX_CRITERIA_PARAMETERS_LENGTH )
     public String getFhirCriteriaParameters()
     {
         return fhirCriteriaParameters;
@@ -125,6 +140,7 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
 
     @Basic
     @Column( name = "fhir_subscription_id", length = 100 )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     public String getFhirSubscriptionId()
     {
         return fhirSubscriptionId;

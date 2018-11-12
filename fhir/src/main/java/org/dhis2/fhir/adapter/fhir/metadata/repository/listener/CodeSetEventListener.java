@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,26 +28,32 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
+import org.springframework.core.annotation.Order;
+import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
+import org.springframework.stereotype.Component;
 
 /**
- * Validation that a URI is a valid URI.
+ * Event listener that prepares {@link CodeSet} class before saving.
  *
  * @author volsch
  */
-@Constraint( validatedBy = UriValidator.class )
-@Target( { ElementType.FIELD } )
-@Retention( RetentionPolicy.RUNTIME )
-public @interface Uri
+@Component
+@Order( value = 10 )
+public class CodeSetEventListener extends AbstractRepositoryEventListener<CodeSet>
 {
-    String message() default "Not a valid URI";
+    @Override
+    protected void onBeforeCreate( CodeSet entity )
+    {
+        onBeforeSave( entity );
+    }
 
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
+    @Override
+    protected void onBeforeSave( CodeSet entity )
+    {
+        if ( entity.getCodeSetValues() != null )
+        {
+            entity.getCodeSetValues().stream().filter( csv -> csv.getCodeSet() == null ).forEach( csv -> csv.setCodeSet( entity ) );
+        }
+    }
 }

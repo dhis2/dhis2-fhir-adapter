@@ -90,6 +90,6 @@ public class CustomExecutableScriptRepositoryImpl implements CustomExecutableScr
         }
         Hibernate.initialize( scriptSource.getFhirVersions() );
 
-        return Optional.of( new ExecutableScriptInfo( es, es.getScript(), scriptSource ) );
+        return Optional.of( new ExecutableScriptInfo( es, es.getOverrideArguments(), es.getScript(), es.getScript().getArguments(), scriptSource ) );
     }
 }

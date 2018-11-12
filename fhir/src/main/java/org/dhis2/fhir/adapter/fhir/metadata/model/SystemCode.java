@@ -38,8 +38,12 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -60,9 +64,16 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_SYSTEM_CODE_LENGTH = 120;
 
+    @NotNull
     private System system;
+
+    @NotBlank
+    @Size( max = MAX_SYSTEM_CODE_LENGTH )
     private String systemCode;
+
+    @NotNull
     private Code code;
+
     private String systemCodeValue;
 
     @Basic
@@ -122,6 +133,7 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
     }
 
     @PrePersist
+    @PreUpdate
     protected void prePersist()
     {
         setSystemCodeValue( getSystem().getSystemUri() + SystemCodeValue.SEPARATOR + getSystemCode() );

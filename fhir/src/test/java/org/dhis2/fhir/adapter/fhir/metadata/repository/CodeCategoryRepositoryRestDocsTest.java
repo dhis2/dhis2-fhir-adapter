@@ -33,18 +33,22 @@ import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
 import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.test.context.support.WithMockUser;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.snippet.Attributes.attributes;
 import static org.springframework.restdocs.snippet.Attributes.key;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -54,13 +58,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class CodeCategoryRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
 {
+    @Autowired
+    private CodeCategoryRepository codeCategoryRepository;
+
     @Test
-    @WithMockUser( username = "2h2maqu827d", password = "code_test", roles = "CODE_MAPPING" )
     public void createCodeCategory() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class );
-        final String location = docMockMvc.perform( post( "/api/codeCategories" ).contentType( MediaType.APPLICATION_JSON )
-            .content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCodeCategory.json" ) ) )
+        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
+        final String location = docMockMvc.perform( post( "/api/codeCategories" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCodeCategory.json" ) ) )
             .andExpect( status().isCreated() )
             .andExpect( header().exists( "Location" ) )
             .andDo( documentationHandler.document( requestFields(
@@ -71,11 +77,41 @@ public class CodeCategoryRepositoryRestDocsTest extends AbstractJpaRepositoryRes
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
-            .perform( get( Objects.requireNonNull( location ) ) )
+            .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "name", is( "Test Code Category" ) ) )
             .andExpect( jsonPath( "code", is( "TEST_CODE_CATEGORY" ) ) )
+            .andExpect( jsonPath( "description", is( "This is a test code category." ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
+    }
+
+    @Test
+    public void readCodeCategory() throws Exception
+    {
+        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
+        final String codeCategoryId = loadCodeCategory( "ORGANIZATION_UNIT" ).getId().toString();
+        docMockMvc.perform( get( "/api/codeCategories/{codeCategoryId}", codeCategoryId ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+            .andExpect( status().isOk() )
+            .andDo( documentationHandler.document( links(
+                linkWithRel( "self" ).description( "Link to this resource itself." ),
+                linkWithRel( "codeCategory" ).description( "Link to this resource itself." ) ), responseFields(
+                attributes( key( "title" ).value( "Fields for code category reading" ) ),
+                fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
+                fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
+                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional(),
+                subsectionWithPath( "_links" ).description( "Links to other resources" )
+            ) ) );
+    }
+
+    @Nonnull
+    protected CodeCategory loadCodeCategory( @Nonnull String code )
+    {
+        final CodeCategory example = new CodeCategory();
+        example.setCode( code );
+        return codeCategoryRepository.findOne( Example.of( example ) ).orElseThrow( () -> new AssertionError( "Code category does not exist: " + code ) );
     }
 }

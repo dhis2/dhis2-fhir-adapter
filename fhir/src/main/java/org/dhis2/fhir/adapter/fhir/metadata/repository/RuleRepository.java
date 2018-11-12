@@ -46,7 +46,7 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
-@RepositoryRestResource
+@RepositoryRestResource( path = "rules" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface RuleRepository extends JpaRepository<AbstractRule, UUID>, CustomRuleRepository
 {

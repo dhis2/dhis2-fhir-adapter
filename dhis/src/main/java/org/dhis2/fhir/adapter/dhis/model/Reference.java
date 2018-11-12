@@ -29,9 +29,15 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -46,8 +52,14 @@ public class Reference implements Serializable
 {
     private static final long serialVersionUID = 6049184293580457755L;
 
+    public static final int MAX_VALUE_LENGTH = 200;
+
+    @NotBlank
+    @Size( max = MAX_VALUE_LENGTH )
     private final String value;
 
+    @NotNull
+    @EnumValue( ReferenceType.class )
     private final ReferenceType type;
 
     @Nonnull
@@ -80,6 +92,12 @@ public class Reference implements Serializable
     public ReferenceType getType()
     {
         return type;
+    }
+
+    @JsonIgnore
+    public boolean isValid()
+    {
+        return StringUtils.isNotBlank( getValue() ) && (StringUtils.length( getValue() ) <= MAX_VALUE_LENGTH);
     }
 
     @Override

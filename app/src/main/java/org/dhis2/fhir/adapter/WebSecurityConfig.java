@@ -81,6 +81,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
             .antMatchers( HttpMethod.GET, "/favicon.ico" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/health" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/info" ).permitAll()
+            .antMatchers( HttpMethod.GET, "/docs/**" ).permitAll()
             .antMatchers( HttpMethod.OPTIONS, "/api/**" ).permitAll()
             .antMatchers( "/actuator/**" ).hasRole( AdapterAuthorities.ADMINISTRATION_AUTHORITY )
             .anyRequest().authenticated()

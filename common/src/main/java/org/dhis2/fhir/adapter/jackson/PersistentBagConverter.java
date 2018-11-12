@@ -32,20 +32,21 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.Converter;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Converts lists (especially persistent bag) to a list.
- * This is required when class name is serialized and used sorted set class
- * cannot be instantiated otherwise.
+ * Converts persistent bags to a list. This is required when class name is serialized
+ * and used list class cannot be instantiated otherwise.
  *
  * @author volsch
  */
-public class PersistentBagConverter implements Converter<List<?>, List<?>>
+public class PersistentBagConverter implements Converter<List<?>, ArrayList<?>>
 {
     @Override
-    public List<?> convert( List<?> value )
+    @Nullable
+    public ArrayList<?> convert( @Nullable List<?> value )
     {
         if ( value == null )
         {

@@ -1,0 +1,448 @@
+= DHIS2 FHIR Adapter API Guide for Administration and Mapping
+;
+ifndef::snippets[]
+:snippets: ../../../target/generated-snippets
+endif::[]
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+:operation-curl-request-title: Example request
+:operation-http-response-title: Example response
+
+[[overview]]
+= Overview
+
+[[overview-http-verbs]]
+== HTTP verbs
+
+|===
+| Verb | Usage
+
+| `GET`
+| Used to retrieve a resource
+
+| `POST`
+| Used to create a new resource
+
+| `PATCH`
+| Used to update an existing resource, including partial updates (support for http://jsonpatch.com/ and https://tools.ietf.org/html/rfc7386).
+
+| `DELETE`
+| Used to delete an existing resource
+|===
+
+[[overview-http-status-codes]]
+== HTTP status codes
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| The request completed successfully
+
+| `201 Created`
+| A new resource has been created successfully. The resource's URI is available from the response's
+`Location` header
+
+| `204 No Content`
+| An update to an existing resource has been applied successfully
+
+| `400 Bad Request`
+| The request was malformed. The response body will include an error providing further information
+
+| `404 Not Found`
+| The requested resource did not exist
+|===
+
+[[overview-authentication]]
+== Authentication
+
+To use the API authentication is required. Currently only basic authentication is supported. The support will be
+extended to OAuth2 in the future. The authentication is verified by DHIS 2 and authorities are granted by DHIS 2 as well
+(mapped by the configuration of the adapter).
+
+[[api]]
+= API
+
+[[api-enumerations]]
+== Enumeration Values
+
+The API re-uses several enumerations. These are described by this section. Enumerations that are used by one one API
+resource are documented with the corresponding API resource.
+
+[[api-enumerations-data-type]]
+=== Data Type
+Data type enumerations are used for defining data the are passed to a script and data that is returned by a script.
+Some of the data types can also be used for script arguments. In this case there is a string represenation for that
+data type.
+
+|===
+| Value | Description
+
+| `BOOLEAN`
+| A boolean value. The strings `true` and `false` can be used.
+
+| `INTEGER`
+| An integer value without fraction digits. E.g. 10678
+
+| `STRING`
+| A string value.
+
+| `DOUBLE`
+| A double precision floating point value. E.g. -18.83
+
+| `DATE_TIME`
+| A date and time value. E.g. 2018-11-13T20:11:11.204Z
+
+| `DATE_UNIT`
+| A date unit. Possible values are YEARS, MONTHS, DAYS.
+
+| `WEIGHT_UNIT`
+| A weight unit. Possible values are GRAM, KILO_GRAM, OUNCE, POUND.
+
+| `CONSTANT`
+| The code of a constant resource entry. E.g. GENDER_FEMALE.
+
+| `CODE`
+| The code of a code resource entry. E.g. VACCINE_01.
+
+| `LOCATION`
+| A GEO location with longitude and latitude (in specified order). E.g. [-10.212,69.123]
+
+| `PATTERN`
+| A regular expression pattern that may also contain groups. E.g. CODE_(.+)
+
+| `ORG_UNIT_REF`
+| A reference to a organization unit (by unique ID, code or name). E.g. CODE:OU_471827
+
+| `TRACKED_ENTITY_REF`
+| A reference to a tracked entity type (by unique ID or name). E.g. NAME:Person
+
+| `TRACKED_ENTITY_ATTRIBUTE_REF`
+| A reference to a tracked entity attribute (by unique ID, code or name). E.g. ID:1uw827761s21
+
+| `DATA_ELEMENT_REF`
+| A reference to a data element (by unique ID, code or name). E.g. NAME:CP Birth Weight
+
+| `PROGRAM_REF`
+| A reference to a tracker program (by unique ID, name). E.g. NAME:Child Programme
+
+| `PROGRAM_STAGE_REF`
+| A reference to a tracker program stage (bu unique ID, name). E.g. NAME:Birth
+
+| `FHIR_RESOURCE`
+| A FHIR resource as defined by HAPI FHIR API. There is no string representation for this data type.
+
+| `EVENT_DECISION_TYPE`
+| A decision that is made before processing an event (tracker program stage instance). Possible values are CONTINUE (use the existing event), NEW_EVENT (create a new event, just for repeatable program stages), BREAK (the complete rule is not applicable).
+|===
+
+[[api-resources]]
+== Resources
+
+Resources can be divided into three groups:
+
+- Code mapping management.
+- Data mapping management.
+- Adapter administration.
+
+The response body resource examples in this document use by default content type application/hal+json.
+
+
+
+[[api-resources-code]]
+=== Code Mapping Resources
+
+[[api-resources-code-constant]]
+==== Constant
+The constant resource enables mapping of a constant value to a configurable value. E.g. the constant GENDER_MALE can
+be mapped to the DHIS 2 option set value Male. When another value is used by DHIS 2 (e.g. the letter M for Male),
+then just the configurable value must be changed. The rules and transformations does not need to be changed.
+
+.Create resource curl snippet
+include::{snippets}/create-constant/curl-request.adoc[]
+
+include::{snippets}/create-constant/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-constant/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-constant/response-body.adoc[]
+
+include::{snippets}/read-constant/response-fields.adoc[]
+
+[[api-resources-code-code-category]]
+==== Code Category
+The code category resource is used to group codes. E.g. a category can be used for defining vaccine codes
+or organization unit codes.
+
+.Create resource curl snippet
+include::{snippets}/create-code-category/curl-request.adoc[]
+
+include::{snippets}/create-code-category/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-code-category/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-code-category/response-body.adoc[]
+
+include::{snippets}/read-code-category/response-fields.adoc[]
+
+[[api-resources-code-code]]
+==== Code
+The code resource is used to define system independent codes. E.g. one code can be
+created for a specific vaccine. This code can then be used by rules and transformations.
+This code can the be mapped to system specific codes (e.g. country dependent 
+vaccine codes).
+
+.Create resource curl snippet
+include::{snippets}/create-code/curl-request.adoc[]
+
+include::{snippets}/create-code/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-code/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-code/response-body.adoc[]
+
+include::{snippets}/read-code/response-fields.adoc[]
+
+[[api-resources-code-code-set]]
+==== Code Set
+The code category resource is used to group codes for a specific purpose.
+E.g. a code set can be defined that contains all vaccines that result in
+a measles immunization. This code set can then be used to check if a rule
+is applicable to change measles immunization related information of a
+patient.
+
+.Create resource curl snippet
+include::{snippets}/create-code-set/curl-request.adoc[]
+
+include::{snippets}/create-code-set/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-code-set/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-code-set/response-body.adoc[]
+
+include::{snippets}/read-code-set/response-fields.adoc[]
+
+[[api-resources-code-system]]
+==== System
+The system resource is used to define coding system. E.g. the CVX standard for 
+vaccine codes is a coding system with a defined system URI. Also the identifier
+values for national patient identifiers are defined within a coding system.
+
+.Create resource curl snippet
+include::{snippets}/create-system/curl-request.adoc[]
+
+include::{snippets}/create-system/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-system/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-system/response-body.adoc[]
+
+include::{snippets}/read-system/response-fields.adoc[]
+
+[[api-resources-code-system-code]]
+==== System Code
+The system code resource is used to define system specific codes and map then 
+to internally used codes that are used by rules and transformations. E.g. a
+system specific code may be a national vaccine code that is mapped to an
+internal code.
+
+.Create resource curl snippet
+include::{snippets}/create-system-code/curl-request.adoc[]
+
+include::{snippets}/create-system-code/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-system-code/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-system-code/response-body.adoc[]
+
+include::{snippets}/read-system-code/response-fields.adoc[]
+
+[[api-resources-data]]
+=== Data Mapping Resources
+
+[[api-resources-data-script]]
+==== Script
+The script resource defines a single script with a specific purpose. The script
+itself cannot be executed. Only executable scripts can be executed. There may be
+more than one executable script for one script (using different script argument
+values). The purpose may be a evaluation (e.g. calculating a specific date) or a
+transformation (e.g. transformation from FHIR patient to DHIS 2 tracked entity
+instance). For one script there may be several script sources (one for each
+supported FHIR version). A single script source can also handle multiple FHIR
+versions. One script may have several arguments that are passed as a single map
+variable to the script. The script may require further variables to execute.
+
+.Create resource curl snippet
+include::{snippets}/create-script/curl-request.adoc[]
+
+include::{snippets}/create-script/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-script/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-script/response-body.adoc[]
+
+include::{snippets}/read-script/response-fields.adoc[]
+
+[[api-resources-data-script-argument]]
+==== Script Argument
+The script argument resource defines a single script argument that belongs to a
+script. Event of the script argument is marked as mandatory, providing a value is
+not required. The final value must be specified by the executable script argument
+in this case. The provided default argument value is only used when the executable
+script does not define any override value for that argument
+
+.Create resource curl snippet
+include::{snippets}/create-script-arg/curl-request.adoc[]
+
+include::{snippets}/create-script-arg/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-script-arg/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-script-arg/response-body.adoc[]
+
+include::{snippets}/read-script-arg/response-fields.adoc[]
+
+[[api-resources-data-script-source]]
+==== Script Source
+The source code of the script. There may be a source for each supported FHIR version
+at most.
+
+.Create resource curl snippet
+include::{snippets}/create-script-source/curl-request.adoc[]
+
+include::{snippets}/create-script-source/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-script-source/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-script-source/response-body.adoc[]
+
+include::{snippets}/read-script-source/response-fields.adoc[]
+
+[[api-resources-data-executable-script]]
+==== Executable Script
+The executable script resource provides the ability to create an executable
+script for a script. There may be more than one executable script for one
+script. Each executable script can override the script argument values of the
+original scripts. E.g. a script may define an argument for the data element
+reference and the unit for the weight of the person. The script may not
+define a default value for the data element, but a default value for the unit
+(e.g. kilogram). The executable script that processes the weight of a new born
+child must then define the value for the data element reference and may
+override the unit (e.g. gram because weight precision for a new born child).
+
+.Create resource curl snippet
+include::{snippets}/create-executable-script/curl-request.adoc[]
+
+include::{snippets}/create-executable-script/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-executable-script/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-executable-script/response-body.adoc[]
+
+include::{snippets}/read-executable-script/response-fields.adoc[]
+
+[[api-resources-data-tracked-entity-rule]]
+==== Tracked Entity Rule
+The tracked entity rule resource defines a rule that is able to transform
+a FHIR resource that a DHIS 2 tracked entity instance.
+
+.Create resource curl snippet
+include::{snippets}/create-tracked-entity-rule/curl-request.adoc[]
+
+include::{snippets}/create-tracked-entity-rule/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-tracked-entity-rule/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-tracked-entity-rule/response-body.adoc[]
+
+include::{snippets}/read-tracked-entity-rule/response-fields.adoc[]
+
+[[api-resources-administration]]
+=== Adapter Administration Resources
+
+[[api-resources-adm-remote-subscription]]
+==== Remote Subscription
+The remote subscription resource defines a single remote FHIR server and its
+subscriptions for FHIR resources.
+
+.Create resource curl snippet
+include::{snippets}/create-remote-subscription/curl-request.adoc[]
+
+include::{snippets}/create-remote-subscription/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-remote-subscription/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-remote-subscription/response-body.adoc[]
+
+include::{snippets}/read-remote-subscription/response-fields.adoc[]
+
+[[api-resources-adm-remote-subscription-resource]]
+==== Remote Subscription Resource
+The resource for remote subscription resources defines a single subscription
+for a single specific FHIR resource on a single FHIR server.
+
+.Create resource curl snippet
+include::{snippets}/create-remote-subscription-resource/curl-request.adoc[]
+
+include::{snippets}/create-remote-subscription-resource/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-remote-subscription-resource/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-remote-subscription-resource/response-body.adoc[]
+
+include::{snippets}/read-remote-subscription-resource/response-fields.adoc[]
+
+[[api-resources-adm-remote-subscription-system]]
+==== Remote Subscription System
+The remote subscription system resource defines a specific coding system that is
+used for a FHIR resource. E.g. a FHIR system may use system specific codes for
+patients and organizations. The codes that are provided by several FHIR systems
+may overlap and are only unique in combination with a FHIR system specific
+system URI. For each coding system a code prefix can be defined. E.g. if there
+are ten regions in a country and the ten regions use their own FHIR server than
+each region may use its own patient identifiers. These patient identifiers can be
+made unique by adding a specific code prefix (e.g. two letter abbreviation of the
+regions). This results in a unique national identifier.
+
+.Create resource curl snippet
+include::{snippets}/create-remote-subscription-system/curl-request.adoc[]
+
+include::{snippets}/create-remote-subscription-system/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-remote-subscription-system/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-remote-subscription-system/response-body.adoc[]
+
+include::{snippets}/read-remote-subscription-system/response-fields.adoc[]

@@ -62,7 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -164,7 +163,7 @@ public class SetupService
         if ( StringUtils.isNotBlank( setup.getFhirSetup().getHeaderName() ) &&
             StringUtils.isNotBlank( setup.getFhirSetup().getHeaderValue() ) )
         {
-            fhirEndpoint.setHeaders( new TreeSet<>( Collections.singleton( new RequestHeader(
+            fhirEndpoint.setHeaders( new ArrayList<>( Collections.singleton( new RequestHeader(
                 StringUtils.trim( setup.getFhirSetup().getHeaderName() ),
                 StringUtils.trim( setup.getFhirSetup().getHeaderValue() ),
                 AUTHORIZATION_HEADER_NAME.equalsIgnoreCase( StringUtils.trim( setup.getFhirSetup().getHeaderName() ) ) ) ) ) );

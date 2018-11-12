@@ -28,24 +28,23 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
-import org.springframework.data.rest.core.annotation.RestResource;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Contains the definition of an executable {@linkplain Script script} where values of all mandatory arguments must
@@ -55,6 +54,7 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_executable_script" )
+@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
 public class ExecutableScript extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2006842064596779970L;
@@ -63,16 +63,23 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
 
     public static final int MAX_CODE_LENGTH = 100;
 
-    private UUID id;
+    @NotNull
     private Script script;
+
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
     private String description;
+
     private List<ExecutableScriptArg> overrideArguments;
 
     @ManyToOne
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
-    @JsonIgnore
     public Script getScript()
     {
         return script;
@@ -96,7 +103,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     }
 
     @Basic
-    @Column( name = "code", nullable = false )
+    @Column( name = "code", nullable = false, unique = true )
     public String getCode()
     {
         return code;
@@ -119,10 +126,8 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
         this.description = description;
     }
 
-    @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER )
+    @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
-    @RestResource
-    @JsonSerialize( converter = PersistentBagConverter.class )
     public List<ExecutableScriptArg> getOverrideArguments()
     {
         return overrideArguments;
