@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.validator.EnumValue;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,8 +38,15 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
+/**
+ * Contains the subscription related system URI assignments.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_remote_subscription_system" )
 public class RemoteSubscriptionSystem extends VersionedBaseMetadata implements Serializable
@@ -46,9 +55,17 @@ public class RemoteSubscriptionSystem extends VersionedBaseMetadata implements S
 
     public static final int MAX_CODE_PREFIX_LENGTH = 20;
 
+    @NotNull
     private RemoteSubscription remoteSubscription;
+
+    @NotNull
+    @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
+
+    @NotNull
     private System system;
+
+    @Size( max = MAX_CODE_PREFIX_LENGTH )
     private String codePrefix;
 
     @Basic

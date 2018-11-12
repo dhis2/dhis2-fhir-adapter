@@ -3,7 +3,7 @@
 This repository contains the source code of the DHIS2 FHIR Adapter. The current scope of the Adapter is to import data into DHIS2 Tracker by using FHIR Subscriptions. Event if the adapter may support more FHIR Resource types at the moment, the initial 
  official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances.
  
-The import works on the basis of a domain specific business rule engine that decides about transformations of medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
+The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
 

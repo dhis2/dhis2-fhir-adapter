@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.springframework.restdocs.constraints.ConstraintDescriptionResolver;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.util.StringUtils;
@@ -46,9 +47,9 @@ public class ConstrainedFields
 {
     private final ConstraintDescriptions constraintDescriptions;
 
-    public ConstrainedFields( @Nonnull Class<?> input )
+    public ConstrainedFields( @Nonnull Class<?> input, @Nonnull ConstraintDescriptionResolver descriptionResolver )
     {
-        this.constraintDescriptions = new ConstraintDescriptions( input );
+        constraintDescriptions = new ConstraintDescriptions( input, descriptionResolver );
     }
 
     public FieldDescriptor withPath( @Nonnull String path )

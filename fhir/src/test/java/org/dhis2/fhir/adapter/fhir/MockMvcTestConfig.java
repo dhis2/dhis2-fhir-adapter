@@ -28,19 +28,32 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
+import org.dhis2.fhir.adapter.fhir.data.DataBasePackage;
+import org.dhis2.fhir.adapter.fhir.metadata.MetadataBasePackage;
 import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
-import org.springframework.boot.test.autoconfigure.restdocs.RestDocsAutoConfiguration;
+import org.dhis2.fhir.adapter.validator.EnumValue;
+import org.dhis2.fhir.adapter.validator.EnumValueValidator;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration;
+import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.mapping.RepositoryDetectionStrategy;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.restdocs.constraints.Constraint;
+import org.springframework.restdocs.constraints.ConstraintDescriptionResolver;
+import org.springframework.restdocs.constraints.ResourceBundleConstraintDescriptionResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nonnull;
@@ -53,8 +66,9 @@ import java.util.Date;
  * @author volsch
  */
 @Configuration
-@ContextConfiguration( classes = { RestDocsAutoConfiguration.class } )
-public class TestConfig
+@EnableAutoConfiguration( exclude = { RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class, ArtemisAutoConfiguration.class, HystrixAutoConfiguration.class } )
+@ComponentScan( basePackageClasses = { DataBasePackage.class, MetadataBasePackage.class } )
+public class MockMvcTestConfig
 {
     @Nonnull
     @Bean
@@ -95,6 +109,31 @@ public class TestConfig
             {
                 config.setRepositoryDetectionStrategy( RepositoryDetectionStrategy.RepositoryDetectionStrategies.ANNOTATED );
                 config.setBasePath( "/api" );
+            }
+        };
+    }
+
+    @Nonnull
+    @Primary
+    @Bean
+    protected ConstraintDescriptionResolver constraintDescriptionResolver()
+    {
+        return new ResourceBundleConstraintDescriptionResolver()
+        {
+            @Override
+            public String resolveDescription( Constraint constraint )
+            {
+                if ( EnumValue.class.getName().equals( constraint.getName() ) )
+                {
+                    @SuppressWarnings( "unchecked" ) final Class<Enum<?>> value = (Class<Enum<?>>) constraint.getConfiguration().get( "value" );
+                    final String[] unsupported = (String[]) constraint.getConfiguration().get( "unsupported" );
+                    final String[] supported = (String[]) constraint.getConfiguration().get( "supported" );
+                    if ( value != null )
+                    {
+                        return "Supported values are " + StringUtils.join( EnumValueValidator.getSupported( value, unsupported, supported ), ", " );
+                    }
+                }
+                return super.resolveDescription( constraint );
             }
         };
     }

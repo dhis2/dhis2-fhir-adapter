@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.setup;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
+import org.dhis2.fhir.adapter.validator.HttpUrl;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;

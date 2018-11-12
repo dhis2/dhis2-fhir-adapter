@@ -30,12 +30,15 @@ package org.dhis2.fhir.adapter.fhir;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * Security configuration of tests.
@@ -44,7 +47,7 @@ import javax.annotation.Nonnull;
  */
 @Configuration
 @EnableWebSecurity
-public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter
+public class MockMvcTestWebSecurityConfig extends WebSecurityConfigurerAdapter
 {
     protected static final String DHIS_BASIC_REALM = "DHIS2";
 
@@ -59,5 +62,35 @@ public class TestWebSecurityConfig extends WebSecurityConfigurerAdapter
             .anyRequest().authenticated()
             .and()
             .httpBasic().realmName( DHIS_BASIC_REALM );
+    }
+
+    @Override
+    protected void configure( @Nonnull AuthenticationManagerBuilder auth ) throws Exception
+    {
+        auth.inMemoryAuthentication().passwordEncoder( new PasswordEncoder()
+        {
+            @Override
+            public String encode( CharSequence rawPassword )
+            {
+                return String.valueOf( rawPassword );
+            }
+
+            @Override
+            public boolean matches( CharSequence rawPassword, String encodedPassword )
+            {
+                return Objects.equals( String.valueOf( rawPassword ), encodedPassword );
+            }
+        } )
+            .withUser( "2h2maqu827d" )
+            .password( "password" )
+            .roles( "CODE_MAPPING" )
+            .and()
+            .withUser( "2h2maqu827e" )
+            .password( "password" )
+            .roles( "DATA_MAPPING" )
+            .and()
+            .withUser( "2h2maqu827f" )
+            .password( "password" )
+            .roles( "AUTHORIZATION" );
     }
 }

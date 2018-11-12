@@ -37,6 +37,8 @@ import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -50,10 +52,13 @@ public class RequestHeader implements Serializable, Comparable<RequestHeader>, C
 
     public static final int MAX_VALUE_LENGTH = 200;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
 
     @JsonProperty
     @SecuredProperty
+    @Size( max = MAX_VALUE_LENGTH )
     private String value;
 
     private boolean secure;

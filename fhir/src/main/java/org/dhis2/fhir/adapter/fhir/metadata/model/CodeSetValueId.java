@@ -36,6 +36,12 @@ import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Contains the ID of a value of the {@linkplain CodeSet code set} which can additionally
+ * be enabled and disabled. This is just a single assigned code.
+ *
+ * @author volsch
+ */
 @Embeddable
 public class CodeSetValueId implements Serializable
 {

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -30,15 +30,15 @@ package org.dhis2.fhir.adapter.setup;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
- * Validator that checks that a URL is a valid HTTP/HTTPS URL.
+ * Validator that checks that a URI is a valid URI.
  *
  * @author volsch
  */
-public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String>
+public class UriValidator implements ConstraintValidator<Uri, String>
 {
     @Override
     public boolean isValid( String value, ConstraintValidatorContext context )
@@ -48,20 +48,13 @@ public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String>
             return true;
         }
 
-        final String protocol;
         try
         {
-            protocol = new URL( value ).getProtocol();
+            new URI( value );
         }
-        catch ( MalformedURLException e )
+        catch ( URISyntaxException e )
         {
-            context.buildConstraintViolationWithTemplate( "Not a valid URL." );
-            return false;
-        }
-
-        if ( !"http".equals( protocol ) && !"https".equals( protocol ) )
-        {
-            context.buildConstraintViolationWithTemplate( "URL must use protocol HTTP or HTTPS." );
+            context.buildConstraintViolationWithTemplate( "Not a valid URI" );
             return false;
         }
 

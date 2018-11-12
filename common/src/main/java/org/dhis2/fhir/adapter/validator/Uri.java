@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.jackson;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,41 +28,26 @@ package org.dhis2.fhir.adapter.jackson;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
-
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Converts lists (especially persistent bag) to a list.
- * This is required when class name is serialized and used sorted set class
- * cannot be instantiated otherwise.
+ * Validation that a URI is a valid URI.
  *
  * @author volsch
  */
-public class PersistentBagConverter implements Converter<List<?>, List<?>>
+@Constraint( validatedBy = UriValidator.class )
+@Target( { ElementType.FIELD } )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface Uri
 {
-    @Override
-    public List<?> convert( List<?> value )
-    {
-        if ( value == null )
-        {
-            return null;
-        }
-        return new ArrayList<>( value );
-    }
+    String message() default "Not a valid URI";
 
-    @Override
-    public JavaType getInputType( TypeFactory typeFactory )
-    {
-        return typeFactory.constructCollectionType( List.class, Object.class );
-    }
+    Class<?>[] groups() default {};
 
-    @Override
-    public JavaType getOutputType( TypeFactory typeFactory )
-    {
-        return typeFactory.constructCollectionType( ArrayList.class, Object.class );
-    }
+    Class<? extends Payload>[] payload() default {};
 }

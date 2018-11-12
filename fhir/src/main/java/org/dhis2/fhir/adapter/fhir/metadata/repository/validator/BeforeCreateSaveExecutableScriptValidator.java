@@ -38,6 +38,7 @@ import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,26 +90,35 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
             errors.rejectValue( "code", "ExecutableScript.code.length", new Object[]{ ExecutableScript.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
         }
 
-        if ( executableScript.getOverrideArguments() != null )
-        {
-            final Set<UUID> argIds = new HashSet<>();
-            int index = 0;
-            for ( final ExecutableScriptArg arg : executableScript.getOverrideArguments() )
-            {
-                errors.pushNestedPath( "overrideArguments[" + index + "]" );
-                if ( !argIds.add( arg.getArgument().getId() ) )
-                {
-                    errors.rejectValue( null, "ExecutableScript.overrideArguments.duplicate",
-                        new Object[]{ arg.getArgument().getId() }, "Duplicate override argument for argument {0}." );
-                }
-                argValidator.validate( arg, errors );
-                errors.popNestedPath();
-                index++;
-            }
-        }
-
         if ( executableScript.getScript() != null )
         {
+            if ( executableScript.getOverrideArguments() != null )
+            {
+                final Set<UUID> argIds = new HashSet<>();
+                int index = 0;
+                for ( final ExecutableScriptArg arg : executableScript.getOverrideArguments() )
+                {
+                    errors.pushNestedPath( "overrideArguments[" + index + "]" );
+                    if ( arg.getScript() == null )
+                    {
+                        arg.setScript( executableScript );
+                    }
+                    if ( !Objects.equals( arg.getScript().getId(), executableScript.getId() ) )
+                    {
+                        errors.rejectValue( "script", "ExecutableScript.overrideArguments.script",
+                            "Executable script argument does not reference executable script to which it belongs to." );
+                    }
+                    if ( !argIds.add( arg.getArgument().getId() ) )
+                    {
+                        errors.rejectValue( null, "ExecutableScript.overrideArguments.duplicate",
+                            new Object[]{ arg.getArgument().getId() }, "Duplicate override argument for argument {0}." );
+                    }
+                    argValidator.validate( arg, errors );
+                    errors.popNestedPath();
+                    index++;
+                }
+            }
+
             final Set<String> mandatoryArgNames = executableScript.getScript().getArguments()
                 .stream().filter( a -> a.isMandatory() && (a.getDefaultValue() == null) )
                 .map( ScriptArg::getName ).collect( Collectors.toSet() );

@@ -40,6 +40,12 @@ import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Contains the value of the {@linkplain CodeSet code set} which can additionally be
+ * enabled and disabled.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_code_set_value" )
 public class CodeSetValue implements Serializable, Comparable<CodeSetValue>, FhirAdapterMetadata<CodeSetValueId>
@@ -48,7 +54,7 @@ public class CodeSetValue implements Serializable, Comparable<CodeSetValue>, Fhi
 
     private CodeSetValueId id;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
     @EmbeddedId
     public CodeSetValueId getId()

@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.jackson.PersistentSortedSetConverter;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Basic;
 import javax.persistence.CollectionTable;
@@ -39,6 +40,9 @@ import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OrderBy;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.SortedSet;
 
@@ -54,9 +58,16 @@ public class SubscriptionFhirEndpoint implements Serializable
 
     public static final int MAX_BASE_URL_LENGTH = 200;
 
+    @NotBlank
+    @URL
+    @Size( max = MAX_BASE_URL_LENGTH )
     private String baseUrl;
+
     private boolean logging;
+
     private boolean verboseLogging;
+
+    @Valid
     private SortedSet<RequestHeader> headers;
 
     @Basic

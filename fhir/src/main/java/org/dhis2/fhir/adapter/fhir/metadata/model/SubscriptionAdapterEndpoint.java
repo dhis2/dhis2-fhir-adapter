@@ -28,11 +28,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hibernate.validator.constraints.URL;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -49,8 +54,16 @@ public class SubscriptionAdapterEndpoint implements Serializable
 
     public static final int MAX_AUTHORIZATION_HEADER_LENGTH = 200;
 
+    @NotBlank
+    @URL
+    @Size( max = MAX_BASE_URL_LENGTH )
     private String baseUrl;
+
+    @NotBlank
+    @Size( max = MAX_AUTHORIZATION_HEADER_LENGTH )
     private String authorizationHeader;
+
+    @NotNull
     private SubscriptionType subscriptionType = SubscriptionType.REST_HOOK;
 
     @Basic

@@ -1,0 +1,7 @@
+{
+  "name": "Test Code",
+  "code": "TEST_CODE",
+  "mappedCode": "MAPPED_TEST_CODE",
+  "description": "This is a test code.",
+  "codeCategory": "$codeCategory"
+}

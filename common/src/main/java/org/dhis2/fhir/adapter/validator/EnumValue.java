@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -36,16 +36,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Validation that a URI is a valid URI.
+ * Validation that a value is a supported value.
  *
  * @author volsch
  */
-@Constraint( validatedBy = UriValidator.class )
+@Constraint( validatedBy = EnumValueValidator.class )
 @Target( { ElementType.FIELD } )
 @Retention( RetentionPolicy.RUNTIME )
-public @interface Uri
+public @interface EnumValue
 {
-    String message() default "Not a valid URI";
+    String message() default "Supported enum values {value}, unsupported {unsupported}";
+
+    Class<? extends Enum<?>> value();
+
+    String[] unsupported() default {};
+
+    String[] supported() default {};
 
     Class<?>[] groups() default {};
 

@@ -32,6 +32,8 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 @Entity
@@ -46,11 +48,22 @@ public class System extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_SYSTEM_URI_LENGTH = 120;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
+
+    @NotBlank
+    @Size( max = MAX_SYSTEM_URI_LENGTH )
     private String systemUri;
-    private boolean enabled;
+
+    private boolean enabled = true;
+
     private String description;
+
     private boolean descriptionProtected;
 
     @Basic
@@ -66,7 +79,7 @@ public class System extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -57,6 +58,11 @@ public class BeforeCreateSaveRemoteSubscriptionResourceValidator implements Vali
         if ( remoteSubscriptionResource.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "RemoteSubscriptionResource.fhirResourceType.null", "FHIR resource type is mandatory." );
+        }
+        if ( StringUtils.length( remoteSubscriptionResource.getFhirCriteriaParameters() ) > RemoteSubscriptionResource.MAX_CRITERIA_PARAMETERS_LENGTH )
+        {
+            errors.rejectValue( "fhirCriteriaParameters", "RemoteSubscriptionResource.fhirCriteriaParameters.length", new Object[]{ RemoteSubscriptionResource.MAX_CRITERIA_PARAMETERS_LENGTH },
+                "FHIR criteria parameters must not be longer than {0} characters." );
         }
     }
 }

@@ -28,27 +28,19 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.data.DataBasePackage;
-import org.dhis2.fhir.adapter.fhir.metadata.MetadataBasePackage;
 import org.dhis2.fhir.adapter.jackson.JacksonConfig;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.restdocs.constraints.ConstraintDescriptionResolver;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 /**
  * Abstract base class for JPA Repository dependent tests.
@@ -56,23 +48,29 @@ import org.springframework.web.context.WebApplicationContext;
  * @author volsch
  */
 @RunWith( SpringRunner.class )
-@EnableAutoConfiguration
-@ContextConfiguration( classes = { JacksonAutoConfiguration.class, WebMvcAutoConfiguration.class, SpringDataWebAutoConfiguration.class, JacksonConfig.class, TestConfig.class, TestWebSecurityConfig.class, RepositoryRestMvcConfiguration.class } )
-@ComponentScan( basePackageClasses = { DataBasePackage.class, MetadataBasePackage.class } )
-@EntityScan( basePackageClasses = { DataBasePackage.class, MetadataBasePackage.class } )
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK )
+@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = { JacksonConfig.class, MockMvcTestConfig.class, MockMvcTestWebSecurityConfig.class } )
 @TestPropertySource( "classpath:test.properties" )
-@DataJpaTest
-public abstract class AbstractJpaRepositoryTest
+public abstract class AbstractMockMvcTest
 {
+    public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
+
+    public static final String CODE_MAPPING_AUTHORIZATION_HEADER_VALUE = "Basic MmgybWFxdTgyN2Q6cGFzc3dvcmQ=";
+
+    public static final String DATA_MAPPING_AUTHORIZATION_HEADER_VALUE = "Basic MmgybWFxdTgyN2U6cGFzc3dvcmQ=";
+
+    public static final String ADMINISTRATION_AUTHORIZATION_HEADER_VALUE = "Basic MmgybWFxdTgyN2Y6cGFzc3dvcmQ=";
+
+    @Autowired
+    protected ConstraintDescriptionResolver constraintDescriptionResolver;
+
     @Autowired
     protected WebApplicationContext context;
 
     protected MockMvc mockMvc;
 
     @Before
-    public void beforeAbstractJpaRepositoryTest()
+    public void beforeAbstractTest()
     {
-        mockMvc = MockMvcBuilders.webAppContextSetup( context ).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup( context ).apply( springSecurity() ).build();
     }
 }

@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
 import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static org.hamcrest.Matchers.is;
@@ -52,59 +54,79 @@ import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Tests for {@link CodeCategoryRepository}.
+ * Tests for {@link CodeRepository}.
  *
  * @author volsch
  */
-public class CodeCategoryRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
+public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
 {
     @Autowired( required = false )
     private CodeCategoryRepository codeCategoryRepository;
 
+    @Autowired( required = false )
+    private CodeRepository codeRepository;
+
     @Test
-    public void createCodeCategory() throws Exception
+    public void createCode() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
-        final String location = docMockMvc.perform( post( "/api/codeCategories" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE )
-            .contentType( MediaType.APPLICATION_JSON ).content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCodeCategory.json" ) ) )
+        final ConstrainedFields fields = new ConstrainedFields( Code.class, constraintDescriptionResolver );
+        final String codeCategoryId = loadCodeCategory( "ORGANIZATION_UNIT" ).getId().toString();
+        final String request = IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCode.json", StandardCharsets.UTF_8 )
+            .replace( "$codeCategory", API_BASE_URI + "/codeCategories/" + codeCategoryId );
+        final String location = docMockMvc.perform( post( "/api/codes" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( request ) )
             .andExpect( status().isCreated() )
             .andExpect( header().exists( "Location" ) )
             .andDo( documentationHandler.document( requestFields(
-                attributes( key( "title" ).value( "Fields for code category creation" ) ),
-                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional()
+                attributes( key( "title" ).value( "Fields for code creation" ) ),
+                fields.withPath( "name" ).description( "The unique name of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "mappedCode" ).description( "The optional mapped code (e.g. organization unit code as it exists on DHIS2). If this is not specified the code itself is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "codeCategory" ).description( "The reference to the code category to which this code belongs to." ).type( JsonFieldType.STRING )
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
             .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
-            .andExpect( jsonPath( "name", is( "Test Code Category" ) ) )
-            .andExpect( jsonPath( "code", is( "TEST_CODE_CATEGORY" ) ) )
-            .andExpect( jsonPath( "description", is( "This is a test code category." ) ) )
-            .andExpect( jsonPath( "_links.self.href", is( location ) ) );
+            .andExpect( jsonPath( "name", is( "Test Code" ) ) )
+            .andExpect( jsonPath( "code", is( "TEST_CODE" ) ) )
+            .andExpect( jsonPath( "mappedCode", is( "MAPPED_TEST_CODE" ) ) )
+            .andExpect( jsonPath( "description", is( "This is a test code." ) ) )
+            .andExpect( jsonPath( "_links.self.href", is( location ) ) )
+            .andExpect( jsonPath( "_links.codeCategory.href", is( location + "/codeCategory" ) ) );
     }
 
     @Test
-    public void readCodeCategory() throws Exception
+    public void readCode() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
-        final String codeCategoryId = loadCodeCategory( "ORGANIZATION_UNIT" ).getId().toString();
-        docMockMvc.perform( get( "/api/codeCategories/{codeCategoryId}", codeCategoryId ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+        final ConstrainedFields fields = new ConstrainedFields( Code.class, constraintDescriptionResolver );
+        final String codeId = loadCode( "OU_FT_CH" ).getId().toString();
+        docMockMvc.perform( get( "/api/codes/{codeId}", codeId ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
+                linkWithRel( "code" ).description( "Link to this resource itself." ),
                 linkWithRel( "codeCategory" ).description( "Link to this resource itself." ) ), responseFields(
                 attributes( key( "title" ).value( "Fields for code category reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
-                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "name" ).description( "The unique name of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "mappedCode" ).description( "The optional mapped code (e.g. organization unit code as it exists on DHIS2). If this is not specified the code itself is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code is used." ).type( JsonFieldType.STRING ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );
+    }
+
+    @Nonnull
+    protected Code loadCode( @Nonnull String code )
+    {
+        final Code example = new Code();
+        example.setCode( code );
+        return codeRepository.findOne( Example.of( example ) ).orElseThrow( () -> new AssertionError( "Code does not exist: " + code ) );
     }
 
     @Nonnull

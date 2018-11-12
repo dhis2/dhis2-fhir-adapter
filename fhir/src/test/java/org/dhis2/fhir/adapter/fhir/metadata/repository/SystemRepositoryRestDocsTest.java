@@ -31,10 +31,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
 import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
-import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
@@ -52,66 +53,75 @@ import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Tests for {@link CodeCategoryRepository}.
+ * Tests for {@link SystemRepository}.
  *
  * @author volsch
  */
-public class CodeCategoryRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
+public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTest
 {
     @Autowired( required = false )
-    private CodeCategoryRepository codeCategoryRepository;
+    private SystemRepository systemRepository;
 
     @Test
-    public void createCodeCategory() throws Exception
+    public void createSystem() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
-        final String location = docMockMvc.perform( post( "/api/codeCategories" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE )
-            .contentType( MediaType.APPLICATION_JSON ).content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createCodeCategory.json" ) ) )
+        final ConstrainedFields fields = new ConstrainedFields( System.class, constraintDescriptionResolver );
+        final String location = docMockMvc.perform( post( "/api/systems" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createSystem.json" ) ) )
             .andExpect( status().isCreated() )
             .andExpect( header().exists( "Location" ) )
             .andDo( documentationHandler.document( requestFields(
-                attributes( key( "title" ).value( "Fields for code category creation" ) ),
-                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional()
+                attributes( key( "title" ).value( "Fields for system creation" ) ),
+                fields.withPath( "name" ).description( "The unique name of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the system is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
+                fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
             .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
-            .andExpect( jsonPath( "name", is( "Test Code Category" ) ) )
-            .andExpect( jsonPath( "code", is( "TEST_CODE_CATEGORY" ) ) )
-            .andExpect( jsonPath( "description", is( "This is a test code category." ) ) )
+            .andExpect( jsonPath( "name", is( "Sierra Leone Patient" ) ) )
+            .andExpect( jsonPath( "code", is( "SYSTEM_SL_PATIENT" ) ) )
+            .andExpect( jsonPath( "description", is( "All Sierra Leone patients." ) ) )
+            .andExpect( jsonPath( "systemUri", is( "http://example.sl/patients" ) ) )
+            .andExpect( jsonPath( "enabled", is( true ) ) )
+            .andExpect( jsonPath( "descriptionProtected", is( false ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 
     @Test
-    public void readCodeCategory() throws Exception
+    public void readSystem() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( CodeCategory.class, constraintDescriptionResolver );
-        final String codeCategoryId = loadCodeCategory( "ORGANIZATION_UNIT" ).getId().toString();
-        docMockMvc.perform( get( "/api/codeCategories/{codeCategoryId}", codeCategoryId ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+        final ConstrainedFields fields = new ConstrainedFields( System.class, constraintDescriptionResolver );
+        final String systemId = loadSystem( "SYSTEM_SL_ORGANIZATION" ).getId().toString();
+        docMockMvc.perform( get( "/api/systems/{systemId}", systemId ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
-                linkWithRel( "codeCategory" ).description( "Link to this resource itself." ) ), responseFields(
-                attributes( key( "title" ).value( "Fields for code category reading" ) ),
+                linkWithRel( "system" ).description( "Link to this resource itself." ) ), responseFields(
+                attributes( key( "title" ).value( "Fields for system reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
-                fields.withPath( "name" ).description( "The unique name of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "code" ).description( "The unique code of the code category." ).type( JsonFieldType.STRING ),
-                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code category is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "name" ).description( "The unique name of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "code" ).description( "The unique code of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the system is used." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
+                fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );
     }
 
     @Nonnull
-    protected CodeCategory loadCodeCategory( @Nonnull String code )
+    protected System loadSystem( @Nonnull String code )
     {
-        final CodeCategory example = new CodeCategory();
+        final System example = new System();
         example.setCode( code );
-        return codeCategoryRepository.findOne( Example.of( example ) ).orElseThrow( () -> new AssertionError( "Code category does not exist: " + code ) );
+        return systemRepository.findOne( Example.of( example, ExampleMatcher.matching().withIgnorePaths( "enabled" ) ) ).orElseThrow( () -> new AssertionError( "System does not exist: " + code ) );
     }
 }

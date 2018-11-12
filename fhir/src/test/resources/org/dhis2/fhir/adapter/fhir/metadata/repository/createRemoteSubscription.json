@@ -1,0 +1,24 @@
+{
+  "name": "Main Subscription",
+  "code": "MAIN_SUBSCRIPTION",
+  "description": "Main FHIR service on which the adapter has subscriptions.",
+  "enabled": true,
+  "locked": false,
+  "fhirVersion": "DSTU3",
+  "toleranceMillis": 2000,
+  "autoCreatedSubscriptionResources": [ "PATIENT" ],
+  "adapterEndpoint": {
+    "baseUrl": "http://localhist:8081",
+    "subscriptionType": "REST_HOOK",
+    "authorizationHeader": "Bearer 98a7558102b7bdc4da5c8f74ca63958c498b4bd9231bd3b0cc"
+  },
+  "dhisEndpoint": {
+    "authenticationMethod": "BASIC",
+    "username": "admin",
+    "password": "district"
+  },
+  "fhirEndpoint": {
+    "baseUrl": "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3",
+    "headers": [ { "name": "Authorization", "value": "Bearer 1196cc744b416a2b91c8239c1a1e251c139d2a89df86427241", "secure": true } ]
+  }
+}

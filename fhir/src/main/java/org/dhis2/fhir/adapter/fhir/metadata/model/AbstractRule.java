@@ -84,7 +84,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private String name;
     private String description;
-    private boolean enabled;
+    private boolean enabled = true;
     private int evaluationOrder;
     private DhisResourceType dhisResourceType;
     private FhirResourceType fhirResourceType;

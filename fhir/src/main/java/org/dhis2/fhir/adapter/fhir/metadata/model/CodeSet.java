@@ -42,6 +42,12 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.SortedSet;
 
+/**
+ * Contains a collection of {@linkplain Code code}. E.g. there may be multiple codes
+ * for vaccines that cause an immunization for measles.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_code_set" )
 public class CodeSet extends VersionedBaseMetadata implements Serializable
@@ -67,7 +73,7 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50 )
+    @Column( name = "code", nullable = false, length = 50, unique = true )
     public String getCode()
     {
         return code;

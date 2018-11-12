@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -40,6 +41,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -56,10 +58,16 @@ public class ExecutableScriptArg implements Serializable, FhirAdapterMetadata<UU
     private static final long serialVersionUID = 487628755797899218L;
 
     private UUID id;
+
     private String overrideValue;
+
+    @NotNull
     private ExecutableScript script;
+
+    @NotNull
     private ScriptArg argument;
-    private boolean enabled;
+
+    private boolean enabled = true;
 
     @Override
     @GeneratedValue( generator = "uuid2" )
@@ -91,6 +99,7 @@ public class ExecutableScriptArg implements Serializable, FhirAdapterMetadata<UU
     @ManyToOne
     @JoinColumn( name = "executable_script_id", referencedColumnName = "id", nullable = false )
     @JsonIgnore
+    @RestResource( exported = false )
     public ExecutableScript getScript()
     {
         return script;

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -44,6 +45,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
@@ -64,18 +70,44 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
 
     public static final int MAX_CODE_LENGTH = 20;
 
+    @NotBlank
+    @Size( max = MAX_NAME_LENGTH )
     private String name;
+
+    @NotBlank
+    @Size( max = MAX_CODE_LENGTH )
     private String code;
-    private boolean enabled;
+
+    private boolean enabled = true;
+
     private boolean locked;
+
     private String description;
+
+    @NotNull
+    @EnumValue( FhirVersion.class )
     private FhirVersion fhirVersion;
+
+    @Min( 0 )
     private int toleranceMillis;
+
+    @NotNull
+    @Valid
     private SubscriptionDhisEndpoint dhisEndpoint;
+
+    @NotNull
+    @Valid
     private SubscriptionFhirEndpoint fhirEndpoint;
+
+    @NotNull
+    @Valid
     private SubscriptionAdapterEndpoint adapterEndpoint;
+
     private List<RemoteSubscriptionResource> resources;
+
     private List<RemoteSubscriptionSystem> systems;
+
+    @EnumValue( value = FhirResourceType.class, supported = { "PATIENT" } )
     private Set<FhirResourceType> autoCreatedSubscriptionResources;
 
     @Basic
@@ -91,7 +123,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 20 )
+    @Column( name = "code", nullable = false, length = 20, unique = true )
     public String getCode()
     {
         return code;

@@ -161,8 +161,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
 
     private Map<String, Object> createArgs( @Nonnull ExecutableScriptInfo executableScriptInfo, @Nonnull Map<String, Object> arguments )
     {
-        final Collection<ScriptArg> scriptArgs = executableScriptInfo.getScript().getArguments();
-        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptInfo.getExecutableScript().getOverrideArguments();
+        final Collection<ScriptArg> scriptArgs = executableScriptInfo.getScriptArgs();
+        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptInfo.getExecutableScriptArgs();
 
         final Map<String, Object> args = new HashMap<>();
         // use default values of the script first

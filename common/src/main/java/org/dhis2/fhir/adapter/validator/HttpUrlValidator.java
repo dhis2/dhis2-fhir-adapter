@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.setup;
+package org.dhis2.fhir.adapter.validator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,26 +28,43 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
- * Validation that a URL is a valid HTTP/HTTPS URL.
+ * Validator that checks that a URL is a valid HTTP/HTTPS URL.
  *
  * @author volsch
  */
-@Constraint( validatedBy = HttpUrlValidator.class )
-@Target( { ElementType.FIELD } )
-@Retention( RetentionPolicy.RUNTIME )
-public @interface HttpUrl
+public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String>
 {
-    String message() default "Not a valid HTTP/HTTPS URL.";
+    @Override
+    public boolean isValid( String value, ConstraintValidatorContext context )
+    {
+        if ( value == null )
+        {
+            return true;
+        }
 
-    Class<?>[] groups() default {};
+        final String protocol;
+        try
+        {
+            protocol = new URL( value ).getProtocol();
+        }
+        catch ( MalformedURLException e )
+        {
+            context.buildConstraintViolationWithTemplate( "Not a valid URL" );
+            return false;
+        }
 
-    Class<? extends Payload>[] payload() default {};
+        if ( !"http".equals( protocol ) && !"https".equals( protocol ) )
+        {
+            context.buildConstraintViolationWithTemplate( "URL must use protocol HTTP or HTTPS" );
+            return false;
+        }
+
+        return true;
+    }
 }

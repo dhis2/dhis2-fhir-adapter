@@ -1,0 +1,10 @@
+{
+  "name": "Transforms FHIR Immunization to Y/N data element",
+  "code": "TRANSFORM_FHIR_IMMUNIZATION_YN",
+  "description": "Transforms FHIR Immunization to Y/N data element.",
+  "scriptType": "TRANSFORM_TO_DHIS",
+  "returnType": "BOOLEAN",
+  "inputType": "FHIR_IMMUNIZATION",
+  "outputType": "DHIS_EVENT",
+  "variables": [ "CONTEXT", "INPUT", "OUTPUT" ]
+}
