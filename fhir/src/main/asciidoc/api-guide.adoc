@@ -197,7 +197,7 @@ include::{snippets}/read-code-category/response-fields.adoc[]
 ==== Code
 The code resource is used to define system independent codes. E.g. one code can be
 created for a specific vaccine. This code can then be used by rules and transformations.
-This code can the be mapped to system specific codes (e.g. country dependent 
+This code can the be mapped to system specific codes (e.g. country dependent
 vaccine codes).
 
 .Create resource curl snippet
@@ -236,7 +236,7 @@ include::{snippets}/read-code-set/response-fields.adoc[]
 
 [[api-resources-code-system]]
 ==== System
-The system resource is used to define coding system. E.g. the CVX standard for 
+The system resource is used to define coding system. E.g. the CVX standard for
 vaccine codes is a coding system with a defined system URI. Also the identifier
 values for national patient identifiers are defined within a coding system.
 
@@ -255,7 +255,7 @@ include::{snippets}/read-system/response-fields.adoc[]
 
 [[api-resources-code-system-code]]
 ==== System Code
-The system code resource is used to define system specific codes and map then 
+The system code resource is used to define system specific codes and map then
 to internally used codes that are used by rules and transformations. E.g. a
 system specific code may be a national vaccine code that is mapped to an
 internal code.
