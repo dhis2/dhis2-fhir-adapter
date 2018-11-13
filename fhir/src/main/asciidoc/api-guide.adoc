@@ -151,7 +151,15 @@ Resources can be divided into three groups:
 
 The response body resource examples in this document use by default content type application/hal+json.
 
+Sorting and paging can be achieved as seen below.
 
+.Read resource sorted and paged curl snippet
+include::{snippets}/read-codes-sorted-paged/curl-request.adoc[]
+
+.Read resource sorted and paged response body
+include::{snippets}/read-codes-sorted-paged/response-body.adoc[]
+
+include::{snippets}/read-codes-sorted-paged/response-fields.adoc[]
 
 [[api-resources-code]]
 === Code Mapping Resources

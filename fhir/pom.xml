@@ -122,6 +122,7 @@
               <goal>process-asciidoc</goal>
             </goals>
             <configuration>
+              <skip>${skipTests}</skip>
               <backend>html</backend>
               <doctype>book</doctype>
               <logHandler>

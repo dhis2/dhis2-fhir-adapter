@@ -65,6 +65,8 @@
 
     <hapi-fhir.version>3.6.0</hapi-fhir.version>
     <spring.cloud.version>2.0.1.RELEASE</spring.cloud.version>
+
+    <skipTests>false</skipTests>
   </properties>
 
   <dependencies>

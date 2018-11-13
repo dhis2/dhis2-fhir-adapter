@@ -49,6 +49,8 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.restdocs.snippet.Attributes.attributes;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -109,7 +111,7 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "code" ).description( "Link to this resource itself." ),
                 linkWithRel( "codeCategory" ).description( "Link to this resource itself." ) ), responseFields(
-                attributes( key( "title" ).value( "Fields for code category reading" ) ),
+                attributes( key( "title" ).value( "Fields for code reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
@@ -119,6 +121,61 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code is used." ).type( JsonFieldType.STRING ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );
+    }
+
+    @Test
+    public void readCodesPaged() throws Exception
+    {
+        final ConstrainedFields fields = new ConstrainedFields( Code.class, constraintDescriptionResolver );
+        docMockMvc.perform( get( "/api/codes" ).param( "size", "3" ).header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+            .andExpect( status().isOk() )
+            .andDo( documentationHandler.document( links(
+                linkWithRel( "self" ).description( "Link to this resource itself." ),
+                linkWithRel( "first" ).description( "Link to the first page of the paged resource." ),
+                linkWithRel( "prev" ).description( "Link to the previous page (if any) of the paged resource." ).optional(),
+                linkWithRel( "next" ).description( "Link to the next page (if any) of the paged resource." ).optional(),
+                linkWithRel( "last" ).description( "Link to the last page of the paged resource." ),
+                linkWithRel( "profile" ).description( "Link to the profile of this resource." ) ), responseFields(
+                attributes( key( "title" ).value( "Fields for paged code reading" ) ),
+                fieldWithPath( "page" ).description( "The paging information." ).type( JsonFieldType.OBJECT ),
+                fieldWithPath( "page.size" ).description( "The used page size (may be less than the specified amount)." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.totalElements" ).description( "The total amount of elements." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.totalPages" ).description( "The total number of pages." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.number" ).description( "The current page number." ).type( JsonFieldType.NUMBER ),
+                subsectionWithPath( "_embedded" ).ignored(),
+                subsectionWithPath( "_links" ).description( "Links to other resources" )
+                )
+            ) );
+    }
+
+    @Test
+    public void readCodesSortedPaged() throws Exception
+    {
+        final ConstrainedFields fields = new ConstrainedFields( Code.class, constraintDescriptionResolver );
+        docMockMvc.perform( get( "/api/codes" ).param( "page", "0" ).param( "size", "3" ).param( "sort", "lastUpdatedAt,desc" )
+            .header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+            .andExpect( status().isOk() )
+            .andDo( documentationHandler.document( links(
+                linkWithRel( "self" ).description( "Link to this resource itself." ),
+                linkWithRel( "first" ).description( "Link to the first page of the paged resource." ),
+                linkWithRel( "prev" ).description( "Link to the previous page (if any) of the paged resource." ).optional(),
+                linkWithRel( "next" ).description( "Link to the next page (if any) of the paged resource." ).optional(),
+                linkWithRel( "last" ).description( "Link to the last page of the paged resource." ),
+                linkWithRel( "profile" ).description( "Link to the profile of this resource." ) ), requestParameters(
+                parameterWithName( "page" ).description( "The current page number to display." ).optional(),
+                parameterWithName( "size" ).description( "The number of elements to display one one page." ).optional(),
+                parameterWithName( "sort" ).description( "The sort that should be applied with format propertyName[,asc|desc]" ).optional()
+                ), responseFields(
+                attributes( key( "title" ).value( "Fields for paged code reading" ) ),
+                fieldWithPath( "page" ).description( "The paging information." ).type( JsonFieldType.OBJECT ),
+                fieldWithPath( "page.size" ).description( "The used page size (may be less than the specified amount)." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.totalElements" ).description( "The total amount of elements." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.totalPages" ).description( "The total number of pages." ).type( JsonFieldType.NUMBER ),
+                fieldWithPath( "page.number" ).description( "The current page number." ).type( JsonFieldType.NUMBER ),
+                subsectionWithPath( "_embedded" ).ignored(),
+                subsectionWithPath( "_links" ).description( "Links to other resources" )
+                )
+            ) );
     }
 
     @Nonnull
