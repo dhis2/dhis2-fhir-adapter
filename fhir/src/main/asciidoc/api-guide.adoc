@@ -161,6 +161,14 @@ include::{snippets}/read-codes-sorted-paged/response-body.adoc[]
 
 include::{snippets}/read-codes-sorted-paged/response-fields.adoc[]
 
+Filtering can be done as shown below.
+
+.Read resource filtered curl snippet
+include::{snippets}/read-codes-filtered/curl-request.adoc[]
+
+.Read resource filtered response body
+include::{snippets}/read-codes-filtered/response-body.adoc[]
+
 [[api-resources-code]]
 === Code Mapping Resources
 

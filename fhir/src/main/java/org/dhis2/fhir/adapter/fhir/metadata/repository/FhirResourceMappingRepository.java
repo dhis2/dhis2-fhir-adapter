@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +52,7 @@ import java.util.UUID;
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "resourceMapping" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>
+public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>
 {
     @RestResource( exported = false )
     @Nonnull

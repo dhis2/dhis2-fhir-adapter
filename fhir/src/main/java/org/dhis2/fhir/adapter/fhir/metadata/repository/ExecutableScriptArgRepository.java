@@ -34,6 +34,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -48,7 +49,7 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScriptArg" )
-public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>
+public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>, QuerydslPredicateExecutor<ExecutableScriptArg>
 {
     @RestResource( exported = false )
     @Query( "SELECT esa FROM #{#entityName} esa JOIN esa.script es ON es.code=:scriptCode JOIN esa.argument a ON a.name=:argName" )

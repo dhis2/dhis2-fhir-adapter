@@ -178,6 +178,16 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             ) );
     }
 
+    @Test
+    public void readCodesFiltered() throws Exception
+    {
+        final ConstrainedFields fields = new ConstrainedFields( Code.class, constraintDescriptionResolver );
+        docMockMvc.perform( get( "/api/codes" ).param( "name", "DTaP" )
+            .header( AUTHORIZATION_HEADER_NAME, CODE_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
+            .andExpect( status().isOk() )
+            .andDo( documentationHandler.document() );
+    }
+
     @Nonnull
     protected Code loadCode( @Nonnull String code )
     {

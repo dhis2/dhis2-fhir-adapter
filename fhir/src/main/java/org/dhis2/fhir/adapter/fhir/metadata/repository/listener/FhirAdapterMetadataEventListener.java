@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirAdapterMetadata;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

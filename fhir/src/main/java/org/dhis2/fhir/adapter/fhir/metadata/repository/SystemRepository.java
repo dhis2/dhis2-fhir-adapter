@@ -33,6 +33,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -48,7 +49,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "system" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemRepository extends JpaRepository<System, UUID>
+public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>
 {
     @Override
     @Nonnull

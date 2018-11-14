@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirAdapterMetadata;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;

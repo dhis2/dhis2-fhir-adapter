@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo

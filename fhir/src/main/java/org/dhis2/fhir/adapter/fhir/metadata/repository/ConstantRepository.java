@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -53,7 +54,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "constant" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface ConstantRepository extends JpaRepository<Constant, UUID>, ConstantResolver
+public interface ConstantRepository extends JpaRepository<Constant, UUID>, QuerydslPredicateExecutor<Constant>, ConstantResolver
 {
     /**
      * Resolves constants by code.

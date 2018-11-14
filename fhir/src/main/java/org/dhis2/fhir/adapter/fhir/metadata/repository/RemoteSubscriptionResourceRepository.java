@@ -37,6 +37,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -55,7 +56,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('ADMINISTRATION')" )
-public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>
+public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>, QuerydslPredicateExecutor<RemoteSubscriptionResource>
 {
     @RestResource( exported = false )
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE r.id=:id" )

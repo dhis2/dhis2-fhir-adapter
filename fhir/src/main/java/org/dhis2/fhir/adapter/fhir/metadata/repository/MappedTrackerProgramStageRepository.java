@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgramStage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 import java.util.UUID;
 
@@ -38,6 +39,6 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public interface MappedTrackerProgramStageRepository extends JpaRepository<MappedTrackerProgramStage, UUID>
+public interface MappedTrackerProgramStageRepository extends JpaRepository<MappedTrackerProgramStage, UUID>, QuerydslPredicateExecutor<MappedTrackerProgramStage>
 {
 }

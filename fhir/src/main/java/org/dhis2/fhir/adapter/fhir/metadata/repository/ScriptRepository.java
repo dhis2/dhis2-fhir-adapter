@@ -33,6 +33,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -48,7 +49,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "script" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface ScriptRepository extends JpaRepository<Script, UUID>
+public interface ScriptRepository extends JpaRepository<Script, UUID>, QuerydslPredicateExecutor<Script>
 {
     @Override
     @Nonnull
