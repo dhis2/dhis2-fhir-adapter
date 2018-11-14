@@ -29,38 +29,29 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractOrganizationTransformerUtils;
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Organization;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseReference;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractContactPointFhirToDhisTransformerUtils;
+import org.hl7.fhir.dstu3.model.ContactPoint;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @Scriptable
-public class Dstu3OrganizationTransformerUtils extends AbstractOrganizationTransformerUtils
+public class Dstu3ContactPointFhirToDhisTransformerUtils extends AbstractContactPointFhirToDhisTransformerUtils
 {
-    public Dstu3OrganizationTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull OrganisationUnitService organisationUnitService,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
-        @Nonnull RemoteFhirRepository remoteFhirRepository,
-        @Nonnull RemoteHierarchicallyFhirRepository remoteHierarchicallyFhirRepository )
+    private final Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils;
+
+    public Dstu3ContactPointFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils )
     {
-        super( scriptExecutionContext, organisationUnitService, subscriptionResourceRepository, remoteFhirRepository, remoteHierarchicallyFhirRepository );
+        super( scriptExecutionContext );
+        this.dateTimeTransformerUtils = dateTimeTransformerUtils;
     }
 
     @Nonnull
@@ -72,30 +63,45 @@ public class Dstu3OrganizationTransformerUtils extends AbstractOrganizationTrans
 
     @Nullable
     @Override
-    protected IBaseReference getParentReference( @Nullable IBaseResource resource )
+    protected String getContactPointValue( @Nullable List<? extends ICompositeType> contactPoints, @Nullable String code )
     {
-        if ( resource == null )
+        if ( (contactPoints == null) || (code == null) )
         {
             return null;
         }
-        return ((Organization) resource).getPartOf();
+
+        final ContactPoint found = contactPoints.stream().map( cp -> (ContactPoint) cp )
+            .filter( cp -> cp.hasSystem() && code.equalsIgnoreCase( cp.getSystem().toCode() )
+                && dateTimeTransformerUtils.isValidNow( cp.getPeriod() ) && cp.hasValue() ).min( new ContactPointComparator() ).orElse( null );
+        return (found == null) ? null : found.getValue();
     }
 
-    @Nonnull
-    @Override
-    protected List<IBaseResource> extractResources( @Nullable IBaseBundle bundle )
+    protected static class ContactPointComparator implements Comparator<ContactPoint>
     {
-        if ( bundle == null )
+        @Override
+        public int compare( ContactPoint o1, ContactPoint o2 )
         {
-            return Collections.emptyList();
+            return getOrderString( o1 ).compareTo( getOrderString( o2 ) );
         }
 
-        final Bundle b = (Bundle) bundle;
-        if ( b.getEntry() == null )
+        @Nonnull
+        private String getOrderString( @Nonnull ContactPoint cp )
         {
-            return Collections.emptyList();
+            final String use;
+            if ( cp.getUse() == ContactPoint.ContactPointUse.OLD )
+            {
+                use = "8";
+            }
+            else if ( cp.getUse() == ContactPoint.ContactPointUse.TEMP )
+            {
+                use = "5";
+            }
+            else
+            {
+                use = "0";
+            }
+            final int rank = cp.hasRank() ? cp.getRank() : Integer.MAX_VALUE;
+            return use + String.format( "0x%08x", rank );
         }
-
-        return b.getEntry().stream().map( Bundle.BundleEntryComponent::getResource ).collect( Collectors.toList() );
     }
 }

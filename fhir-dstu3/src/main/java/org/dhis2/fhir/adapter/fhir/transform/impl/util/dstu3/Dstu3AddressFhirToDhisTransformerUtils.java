@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -83,6 +84,50 @@ public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirT
             return null;
         }
         return String.join( delimiter, convertedAddress.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
+    }
+
+    @Nullable
+    @Override
+    public String getConstructedText( @Nullable ICompositeType address, @Nonnull String delimiter )
+    {
+        final Address convertedAddress = (Address) address;
+        if ( address == null )
+        {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        convertedAddress.getLine().stream().filter( l -> (l != null) && StringUtils.isNotBlank( l.getValue() ) )
+            .forEach( l -> sb.append( delimiter ).append( l.getValue() ) );
+        if ( StringUtils.isNotBlank( convertedAddress.getPostalCode() ) && StringUtils.isNotBlank( convertedAddress.getCity() ) )
+        {
+            sb.append( delimiter ).append( convertedAddress.getPostalCode() ).append( ' ' ).append( convertedAddress.getCity() );
+        }
+        else if ( StringUtils.isNotBlank( convertedAddress.getPostalCode() ) )
+        {
+            sb.append( delimiter ).append( convertedAddress.getPostalCode() );
+        }
+        else if ( StringUtils.isNotBlank( convertedAddress.getCity() ) )
+        {
+            sb.append( delimiter ).append( convertedAddress.getCity() );
+        }
+        if ( StringUtils.isNotBlank( convertedAddress.getState() ) )
+        {
+            sb.append( delimiter ).append( convertedAddress.getState() );
+        }
+        if ( sb.length() == 0 )
+        {
+            return convertedAddress.getText();
+        }
+        return sb.substring( delimiter.length() );
+    }
+
+    @Nullable
+    @Override
+    public String getText( @Nullable ICompositeType address )
+    {
+        final Address convertedAddress = (Address) address;
+        return (convertedAddress == null) ? null : convertedAddress.getText();
     }
 
     @Nonnull

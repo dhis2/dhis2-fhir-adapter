@@ -34,11 +34,14 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.model.ImmutableFhirRequest;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
@@ -80,6 +83,13 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
             return null;
         }
         return new Reference( value, rt );
+    }
+
+    @Nonnull
+    @Override
+    public List<IBaseResource> createFhirResourceList()
+    {
+        return new ArrayList<>();
     }
 
     @Nonnull

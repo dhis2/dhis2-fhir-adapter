@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.trackedentity;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.Option;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributeValue;
@@ -47,7 +48,9 @@ import org.dhis2.fhir.adapter.model.ValueType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 @Scriptable
 public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
@@ -88,6 +91,12 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     public String getTypeId()
     {
         return trackedEntityType.getId();
+    }
+
+    @Nonnull
+    public String getIdentifier()
+    {
+        return trackedEntityInstance.getIdentifier();
     }
 
     @Override
@@ -188,7 +197,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
             throw new TransformerMappingException( "Value of tracked entity type attribute \"" + attribute.getName() + "\" is generated and cannot be set." );
         }
 
-        final Object convertedValue;
+        Object convertedValue;
         try
         {
             convertedValue = valueConverter.convert( value, attribute.getValueType(), String.class );
@@ -196,6 +205,44 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         catch ( ConversionException e )
         {
             throw new TransformerMappingException( "Value of tracked entity type attribute \"" + attribute.getName() + "\" could not be converted: " + e.getMessage(), e );
+        }
+
+        if ( (convertedValue != null) && attribute.isOptionSetValue() )
+        {
+            String checked1 = convertedValue.toString();
+            boolean found = attribute.getOptionSet().getOptions().stream()
+                .anyMatch( o -> Objects.equals( checked1, o.getCode() ) );
+            if ( found )
+            {
+                convertedValue = checked1;
+            }
+            else
+            {
+                // try locale independent upper case match
+                final String checked2 = checked1.toUpperCase( Locale.ROOT );
+                // try locale independent upper case match
+                found = attribute.getOptionSet().getOptions().stream()
+                    .anyMatch( o -> checked2.equals( o.getCode() ) );
+                if ( found )
+                {
+                    convertedValue = checked2;
+                }
+                else
+                {
+                    final Optional<? extends Option> option = attribute.getOptionSet().getOptions().stream().filter( o -> o.getCode() != null )
+                        .filter( o -> checked2.equals( o.getCode().toUpperCase( Locale.ROOT ) ) ).findFirst();
+                    if ( option.isPresent() )
+                    {
+                        convertedValue = option.get().getCode();
+                        found = true;
+                    }
+                }
+            }
+            if ( !found )
+            {
+                throw new TransformerMappingException( "Code \"" + convertedValue + "\" is not a valid option of \"" +
+                    attribute.getOptionSet().getName() + "\" for attribute \"" + attribute.getName() + "\"." );
+            }
         }
 
         final TrackedEntityAttributeValue attributeValue = trackedEntityInstance.getAttribute( attribute.getId() );
@@ -236,7 +283,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         }
 
         trackedEntityType.getAttributes().stream().filter( TrackedEntityTypeAttribute::isMandatory ).forEach( ta -> {
-            if ( !trackedEntityInstance.containsAttribute( ta.getAttributeId() ) )
+            if ( !trackedEntityInstance.containsAttributeWithValue( ta.getAttributeId() ) )
             {
                 throw new TransformerMappingException( "Value of tracked entity type attribute \"" + ta.getName() + "\" is mandatory and must be set." );
             }

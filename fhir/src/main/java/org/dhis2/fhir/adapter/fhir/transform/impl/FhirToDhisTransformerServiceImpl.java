@@ -122,7 +122,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource originalInput ) throws TransformerException
+    public FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource originalInput, boolean contained ) throws TransformerException
     {
         final FhirContext fhirContext = remoteFhirRepository.findFhirContext( context.getFhirRequest().getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
@@ -144,6 +144,11 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             codeTransformerUtils.getResourceCodes( input ) );
         for ( final AbstractRule rule : rules )
         {
+            if ( contained && !rule.isContainedAllowed() )
+            {
+                continue;
+            }
+
             final FhirToDhisTransformer<?, ?> transformer = this.transformers.get( new FhirVersionedValue<>( context.getFhirRequest().getVersion(), rule.getDhisResourceType() ) );
             if ( transformer == null )
             {

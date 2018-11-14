@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.trackedentity;
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
@@ -44,6 +46,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.AbstractFhirToDhisTransformer;
@@ -104,6 +107,11 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     public FhirToDhisTransformOutcome<TrackedEntityInstance> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( !rule.getTrackedEntity().isEnabled() )
+        {
+            return null;
+        }
+
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         if ( !addScriptVariables( variables, rule ) )
         {
@@ -112,34 +120,41 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
         final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityType trackedEntityType = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
-        final TrackedEntityInstance trackedEntityInstance = getResource( context, rule, variables )
-            .orElseThrow( () -> new FatalTransformerException( "Tracked entity instance could neither be retrieved nor created." ) );
+        final TrackedEntityInstance trackedEntityInstance = getResource( context, rule, variables ).orElse( null );
+        if ( trackedEntityInstance == null )
+        {
+            return null;
+        }
+
         final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
             context, trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedTrackedEntityInstance );
 
-        final Optional<OrganisationUnit> organisationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );
+        final Optional<OrganisationUnit> organisationUnit;
+        if ( rule.getOrgUnitLookupScript() == null )
+        {
+            if ( scriptedTrackedEntityInstance.getOrganizationUnitId() == null )
+            {
+                logger.info( "Rule does not define an organization unit lookup script and tracked entity instance does not yet include one." );
+                return null;
+            }
+            organisationUnit = getOrgUnit( context,
+                new Reference( scriptedTrackedEntityInstance.getOrganizationUnitId(), ReferenceType.ID ), variables );
+        }
+        else
+        {
+            organisationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );
+            organisationUnit.ifPresent( ou -> scriptedTrackedEntityInstance.setOrganizationUnitId( ou.getId() ) );
+        }
         if ( !organisationUnit.isPresent() )
         {
             return null;
         }
-        scriptedTrackedEntityInstance.setOrganizationUnitId( organisationUnit.get().getId() );
 
-        if ( trackedEntityInstance.isNewResource() )
+        if ( rule.getLocationLookupScript() != null )
         {
-            String identifier = getIdentifier( context, rule, scriptVariables );
-            if ( identifier == null )
-            {
-                return null;
-            }
-            identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
-
-            final String attributeId = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() ).orElseThrow( () ->
-                new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) ).getId();
-            trackedEntityInstance.getAttribute( attributeId ).setValue( identifier );
+            scriptedTrackedEntityInstance.setCoordinates( getCoordinate( context, rule.getLocationLookupScript(), variables ) );
         }
-
-        scriptedTrackedEntityInstance.setCoordinates( getCoordinate( context, rule.getLocationLookupScript(), variables ) );
         if ( !transform( context, rule, variables ) )
         {
             return null;
@@ -155,8 +170,10 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     {
         final TrackedEntityAttributes trackedEntityAttributes = trackedEntityMetadataService.getAttributes();
         arguments.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), trackedEntityAttributes );
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getType( rule.getTrackedEntityReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Tracked entity type in rule " + rule + " could not be found: " + rule.getTrackedEntityReference() ) );
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getType(
+            rule.getTrackedEntity().getTrackedEntityReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity type in rule " + rule + " could not be found: " +
+                rule.getTrackedEntity().getTrackedEntityReference() ) );
         arguments.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
 
         // is applicable for further processing
@@ -181,7 +198,19 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        final IBaseResource baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
+        final IBaseResource baseResource;
+        if ( rule.getTeiLookupScript() == null )
+        {
+            baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
+        }
+        else
+        {
+            baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+        }
+        if ( baseResource == null )
+        {
+            return Optional.empty();
+        }
         if ( sync )
         {
             lockManager.getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
@@ -199,14 +228,54 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         {
             return null;
         }
-        return new TrackedEntityInstance(
+
+        if ( rule.getTeiLookupScript() != null )
+        {
+            final IBaseResource resource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+            if ( resource == null )
+            {
+                return null;
+            }
+            throw new TrackedEntityInstanceNotFoundException( "Tracked entity for resource " + resource.getIdElement().toUnqualifiedVersionless() + " could not be found.", resource );
+        }
+
+        String identifier = getIdentifier( context, rule, scriptVariables );
+        if ( identifier == null )
+        {
+            return null;
+        }
+        identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
+
+        final TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance(
             getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ), id, true );
+        trackedEntityInstance.setIdentifier( identifier );
+
+        final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
+        final String attributeId = trackedEntityAttributes.getOptional(
+            rule.getTrackedEntity().getTrackedEntityIdentifierReference() ).orElseThrow( () ->
+            new TransformerMappingException( "Tracked entity identifier attribute does not exist: " +
+                rule.getTrackedEntity().getTrackedEntityIdentifierReference() ) ).getId();
+        trackedEntityInstance.getAttribute( attributeId ).setValue( identifier );
+
+        return trackedEntityInstance;
     }
 
     @Nullable
     protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
     {
-        final IBaseResource baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
+        final IBaseResource baseResource;
+        if ( rule.getTeiLookupScript() == null )
+        {
+            baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
+        }
+        else
+        {
+            baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+        }
+        if ( baseResource == null )
+        {
+            return null;
+        }
         return getIdentifier( context, baseResource, scriptVariables );
     }
 }

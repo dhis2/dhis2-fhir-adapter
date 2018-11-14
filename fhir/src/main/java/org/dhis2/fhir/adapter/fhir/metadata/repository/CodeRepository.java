@@ -42,6 +42,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,9 +58,9 @@ public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredi
 {
     @RestResource( exported = false )
     @Nonnull
-    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
-    @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.systemCode=:systemCode JOIN sc.system s ON s.systemUri=:systemUri AND s.enabled=true" )
-    List<Code> findBySystemCode( @Param( "systemUri" ) @Nonnull String systemUri, @Param( "systemCode" ) @Nonnull String systemCode );
+    @Cacheable( keyGenerator = "codeFindAllBySystemCodesKeyGenerator" )
+    @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true" )
+    List<Code> findAllBySystemCodes( @Param( "systemCodeValues" ) @Nonnull Collection<String> systemCodeValues );
 
     @Override
     @Nonnull

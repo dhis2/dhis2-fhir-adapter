@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.model.DateUnit;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 import javax.annotation.Nonnull;
@@ -139,6 +140,8 @@ public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends Abstrac
     {
         return isOlderThan( ZonedDateTime.now(), dateTime, amount, dateUnit );
     }
+
+    public abstract boolean isValidNow( @Nullable ICompositeType period );
 
     @Nullable
     protected final Integer getAge( @Nonnull Date relativeDate, @Nullable Date date, @Nonnull TemporalUnit temporalUnit )

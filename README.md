@@ -25,12 +25,13 @@ Depending on the country specific use of FHIR organization and location resource
 ## Running the Adapter
 ### Dependent Software Components
 #### DHIS2
-DHIS 2.29 or newer must be installed.  
+DHIS 2.30 or newer must be installed.  
 
-The standard tracked entity type Person with first and last name tracked entity attribute must be available. For example, this tracked entity type can be found at [DHIS 2 Play](https://play.dhis2.org/). 
+The application includes a suggested tracked entity type person. The corresponding metadata for DHIS 2.30 is located at [Person Metadata](fhir/src/main/resources/static/dhis/metadata/person-metadata.json). It can also be accessed from the setup application
+ that is described below. This allows also to customize the mapping to the tracked entity type for the FHIR resource patient. 
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.6.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
 
 The initial subscription for FHIR Resource Patient is created by the initial setup user interface that is described later in this document. 
                                
@@ -56,6 +57,10 @@ Enter the following command into the console:
 Exit the console and return to your previous user with \q followed by exit.
 
 The database tables will be created on first startup of the Adapter automatically.    
+
+### Downloading
+You can download the latest build of the Adapter at [Download WAR](https://s3-eu-west-1.amazonaws.com/releases.dhis2.org/fhir/dhis2-fhir-adapter.war). Alternatively you can also build the application from its source code as described below. Otherwise you 
+can continue with the configuration section of this document.
 
 ### Building
 In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is required. No additional repositories need to be configured in Maven configuration. The following command builds the artifact dhis2-fhir-adapter.war in sub-directory app/target.
@@ -88,7 +93,7 @@ The following example contains the content of configuration file application.yml
         # The base URL of the DHIS2 installation.
         url: http://localhost:8080
         # The API version that should be accessed on the DHIS2 installation.
-        api-version: 29
+        api-version: 30
         # Authentication data to access metadata on DHIS2 installation.
         # The complete metadata (organization units, tracked entity types, 
         # tracked entity attributes, tracker programs, tracker program stages) 

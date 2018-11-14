@@ -56,12 +56,12 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
 
     private volatile Map<Class<? extends IDomainResource>, Method> identifierMethods = new HashMap<>();
 
-    private final ReferenceTransformUtils referenceTransformUtils;
+    private final ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils;
 
-    protected AbstractIdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceTransformUtils referenceTransformUtils )
+    protected AbstractIdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils )
     {
         super( scriptExecutionContext );
-        this.referenceTransformUtils = referenceTransformUtils;
+        this.referenceFhirToDhisTransformerUtils = referenceFhirToDhisTransformerUtils;
     }
 
     @Nonnull
@@ -82,7 +82,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         {
             return null;
         }
-        referenceTransformUtils.initReference( reference );
+        referenceFhirToDhisTransformerUtils.initReference( reference, fhirResourceType );
         if ( reference.getResource() instanceof IDomainResource )
         {
             return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType );
@@ -98,7 +98,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         {
             return null;
         }
-        referenceTransformUtils.initReference( reference );
+        referenceFhirToDhisTransformerUtils.initReference( reference, fhirResourceType );
         if ( reference.getResource() instanceof IDomainResource )
         {
             return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType, system );

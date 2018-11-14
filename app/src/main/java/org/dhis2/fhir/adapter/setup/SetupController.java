@@ -81,7 +81,7 @@ public class SetupController
     }
 
     @PostMapping( "/setup" )
-    public String submit( @Valid Setup setup, BindingResult bindingResult, Model model )
+    public String submit( @Valid Setup setup, @Nonnull BindingResult bindingResult, @Nonnull Model model, @Nonnull HttpServletRequest servletRequest )
     {
         if ( bindingResult.hasErrors() )
         {

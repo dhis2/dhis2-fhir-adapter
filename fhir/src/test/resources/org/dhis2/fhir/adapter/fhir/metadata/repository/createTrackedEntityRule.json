@@ -5,16 +5,9 @@
   "evaluationOrder": 0,
   "dhisResourceType": "TRACKED_ENTITY",
   "fhirResourceType": "PATIENT",
-  "trackedEntityReference": {
-    "value": "Person",
-    "type": "NAME"
-  },
-  "trackedEntityIdentifierReference": {
-    "value": "National identifier",
-    "type": "CODE"
-  },
   "applicableInScript": null,
   "applicableCodeSet": null,
+  "trackedEntity": "$trackedEntityId",
   "transformInScript": "$transformInScriptId",
   "orgUnitLookupScript": "$orgUnitLookupScriptId",
   "locationLookupScript": "$locationLookupScriptId"

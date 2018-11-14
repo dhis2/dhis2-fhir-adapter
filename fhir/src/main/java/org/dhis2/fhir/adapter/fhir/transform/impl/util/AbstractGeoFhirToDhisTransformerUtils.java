@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 @Scriptable
 public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    protected static final String GEO_LOCATION_URL = "http://hl7.org/fhir/StructureDefinition/geolocation";
+    protected static final String GEO_LOCATION_URI = "http://hl7.org/fhir/StructureDefinition/geolocation";
 
     protected static final String LATITUDE_URL = "latitude";
 

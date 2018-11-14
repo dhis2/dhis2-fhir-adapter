@@ -1,0 +1,13 @@
+{
+  "name": "Person Tracked Entity (disabled)",
+  "description": "Transforms a FHIR Patient to a Person (obsolete).",
+  "enabled": false,
+  "trackedEntityReference": {
+    "value": "Obsolete Person",
+    "type": "NAME"
+  },
+  "trackedEntityIdentifierReference": {
+    "value": "National identifier",
+    "type": "CODE"
+  }
+}

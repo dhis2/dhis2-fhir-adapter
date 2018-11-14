@@ -41,6 +41,8 @@ public abstract class AbstractAddressFhirToDhisTransformerUtils extends Abstract
 {
     protected static final String DEFAULT_LINE_DELIMITER = " ";
 
+    protected static final String DEFAULT_TEXT_DELIMITER = " / ";
+
     private static final String SCRIPT_ATTR_NAME = "addressUtils";
 
     protected AbstractAddressFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
@@ -61,6 +63,12 @@ public abstract class AbstractAddressFhirToDhisTransformerUtils extends Abstract
         return getSingleLine( address, DEFAULT_LINE_DELIMITER );
     }
 
+    @Nullable
+    public String getConstructedText( @Nullable ICompositeType address )
+    {
+        return getConstructedText( address, DEFAULT_TEXT_DELIMITER );
+    }
+
     public abstract boolean hasPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses );
 
     @Nullable
@@ -68,4 +76,10 @@ public abstract class AbstractAddressFhirToDhisTransformerUtils extends Abstract
 
     @Nullable
     public abstract String getSingleLine( @Nullable ICompositeType address, @Nonnull String delimiter );
+
+    @Nullable
+    public abstract String getConstructedText( @Nullable ICompositeType address, @Nonnull String delimiter );
+
+    @Nullable
+    public abstract String getText( @Nullable ICompositeType address );
 }

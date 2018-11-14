@@ -41,6 +41,6 @@ public interface FhirToDhisTransformerService
     FhirToDhisTransformerContext createContext( @Nonnull FhirRequest fhirRequest );
 
     @Nullable
-    FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input )
+    FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, boolean contained )
         throws TransformerException;
 }

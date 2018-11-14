@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -41,6 +42,7 @@ import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ import java.util.UUID;
  */
 @Component
 @Scriptable
-public class ReferenceTransformUtils extends AbstractFhirToDhisTransformerUtils
+public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "referenceUtils";
 
@@ -70,7 +72,7 @@ public class ReferenceTransformUtils extends AbstractFhirToDhisTransformerUtils
 
     private final RemoteFhirRepository remoteFhirRepository;
 
-    public ReferenceTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+    public ReferenceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
         @Nonnull RemoteFhirRepository remoteFhirRepository )
     {
@@ -93,44 +95,83 @@ public class ReferenceTransformUtils extends AbstractFhirToDhisTransformerUtils
         return FhirVersion.ALL;
     }
 
-    public void initReference( @Nullable IBaseReference reference )
+    public void initReference( @Nullable IBaseReference reference, @Nullable Object resourceType )
     {
-        initReference( reference, false );
+        initReference( reference, resourceType, false );
     }
 
-    public void initReference( @Nullable IBaseReference reference, boolean refreshed )
+    public void initReference( @Nullable IBaseReference reference, @Nullable Object resourceType, boolean refreshed )
     {
-        getResource( reference, refreshed );
-    }
-
-    @Nullable
-    public IBaseResource getResource( @Nullable IBaseReference reference )
-    {
-        return getResource( reference, false );
+        getResource( reference, resourceType, refreshed );
     }
 
     @Nullable
-    public IBaseResource getResource( @Nullable IBaseReference reference, boolean refreshed )
+    public IBaseResource getResource( @Nullable IBaseReference reference, @Nullable Object resourceType )
+    {
+        return getResource( reference, resourceType, false );
+    }
+
+    @Nullable
+    public IBaseResource getResource( @Nullable IBaseReference reference, @Nullable Object resourceType, boolean refreshed )
     {
         if ( reference == null )
         {
             return null;
         }
+
+        final FhirResourceType fhirResourceType;
+        if ( resourceType == null )
+        {
+            fhirResourceType = null;
+        }
+        else
+        {
+            try
+            {
+                fhirResourceType = FhirResourceType.valueOf( resourceType.toString() );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                throw new TransformerScriptException( "Invalid FHIR resource type: " + resourceType, e );
+            }
+        }
+
         if ( reference.getResource() != null )
         {
+            if ( (fhirResourceType != null) && (FhirResourceType.getByResource( reference.getResource() ) != fhirResourceType) )
+            {
+                logger.debug( "The referenced resource ID contains resource type {}, but requested resource type is {}.",
+                    FhirResourceType.getByResource( reference.getResource() ), fhirResourceType );
+                return null;
+            }
+            // also handles the case of a local reference
             return reference.getResource();
         }
+
         if ( reference.isEmpty() )
         {
             return null;
         }
         if ( reference.getReferenceElement().isLocal() )
         {
-            throw new TransformerDataException( "Reference element refers to an embedded resource, but no resource is specified: " + reference.getReferenceElement() );
+            throw new TransformerDataException( "Reference element refers to a contained resource, but no resource is specified: " + reference.getReferenceElement() );
         }
-        if ( !reference.getReferenceElement().hasResourceType() )
+
+        String finalResourceType = reference.getReferenceElement().getResourceType();
+        if ( fhirResourceType != null )
         {
-            throw new TransformerDataException( "Reference element does not include a resource type: " + reference.getReferenceElement() );
+            if ( (finalResourceType != null) && !finalResourceType.equals( fhirResourceType.getResourceTypeName() ) )
+            {
+                logger.debug( "The referenced resource ID contains resource type {}, but requested resource type is {}.",
+                    finalResourceType, fhirResourceType );
+                return null;
+            }
+            finalResourceType = fhirResourceType.getResourceTypeName();
+        }
+
+        if ( finalResourceType == null )
+        {
+            throw new TransformerDataException( "Final resource type could not be determined for reference: " + reference.getReferenceElement() );
         }
         if ( !reference.getReferenceElement().hasIdPart() )
         {
@@ -151,9 +192,9 @@ public class ReferenceTransformUtils extends AbstractFhirToDhisTransformerUtils
         final RemoteSubscription remoteSubscription = subscriptionResource.getRemoteSubscription();
         final Optional<IBaseResource> optionalResource = refreshed ?
             remoteFhirRepository.findRefreshed( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-                reference.getReferenceElement().getResourceType(), reference.getReferenceElement().getIdPart() ) :
+                finalResourceType, reference.getReferenceElement().getIdPart() ) :
             remoteFhirRepository.find( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-                reference.getReferenceElement().getResourceType(), reference.getReferenceElement().getIdPart() );
+                finalResourceType, reference.getReferenceElement().getIdPart() );
         final IBaseResource resource = optionalResource.map( r -> BeanTransformerUtils.clone( fhirContext, r ) )
             .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for remote subscription resource " + resourceId ) );
         reference.setResource( resource );

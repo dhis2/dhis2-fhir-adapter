@@ -34,9 +34,13 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
@@ -45,7 +49,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeCategoryRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptArgRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackedEntityRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -60,8 +66,10 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -94,9 +102,14 @@ public class SetupService
 
     private final RemoteSubscriptionRepository remoteSubscriptionRepository;
 
+    private final MappedTrackedEntityRepository trackedEntityRepository;
+
+    private final ScriptRepository scriptRepository;
+
     public SetupService( @Nonnull CodeCategoryRepository codeCategoryRepository, @Nonnull CodeRepository codeRepository,
         @Nonnull SystemRepository systemRepository, @Nonnull SystemCodeRepository systemCodeRepository,
-        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository )
+        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository,
+        @Nonnull ScriptRepository scriptRepository, @Nonnull MappedTrackedEntityRepository trackedEntityRepository )
     {
         this.codeCategoryRepository = codeCategoryRepository;
         this.codeRepository = codeRepository;
@@ -104,6 +117,8 @@ public class SetupService
         this.systemCodeRepository = systemCodeRepository;
         this.executableScriptArgRepository = executableScriptArgRepository;
         this.remoteSubscriptionRepository = remoteSubscriptionRepository;
+        this.scriptRepository = scriptRepository;
+        this.trackedEntityRepository = trackedEntityRepository;
     }
 
     public boolean hasCompletedSetup()
@@ -132,19 +147,42 @@ public class SetupService
 
         createRemoteSubscription( setup.getRemoteSubscriptionSetup(), organizationSystem, patientSystem );
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
+        updateTrackedEntity( setup.getTrackedEntitySetup() );
     }
 
     private void createRemoteSubscription( @Nonnull RemoteSubscriptionSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
+        final Set<FhirResourceType> autoCreatedSubscriptionResources = new HashSet<>();
+        autoCreatedSubscriptionResources.add( FhirResourceType.PATIENT );
+
         final RemoteSubscription remoteSubscription = new RemoteSubscription();
         remoteSubscription.setSystems( new ArrayList<>() );
-        remoteSubscription.setAutoCreatedSubscriptionResources( Collections.singleton( FhirResourceType.PATIENT ) );
         remoteSubscription.setName( "Default Remote Subscription" );
         remoteSubscription.setCode( "DEFAULT" );
         remoteSubscription.setDescription( "Default remote subscription." );
         remoteSubscription.setFhirVersion( FhirVersion.DSTU3 );
         remoteSubscription.setEnabled( true );
         remoteSubscription.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
+
+        if ( setup.getFhirSetup().isSupportsRelatedPerson() )
+        {
+            autoCreatedSubscriptionResources.add( FhirResourceType.RELATED_PERSON );
+        }
+        else
+        {
+            if ( remoteSubscription.getResources() == null )
+            {
+                remoteSubscription.setResources( new ArrayList<>() );
+            }
+
+            final RemoteSubscriptionResource rsr = new RemoteSubscriptionResource();
+            rsr.setRemoteSubscription( remoteSubscription );
+            rsr.setFhirResourceType( FhirResourceType.RELATED_PERSON );
+            rsr.setVirtual( true );
+            rsr.setDescription( "Virtual remote subscription for FHIR Related Person." );
+            remoteSubscription.getResources().add( rsr );
+        }
+        remoteSubscription.setAutoCreatedSubscriptionResources( autoCreatedSubscriptionResources );
 
         final SubscriptionAdapterEndpoint adapterEndpoint = new SubscriptionAdapterEndpoint();
         adapterEndpoint.setBaseUrl( StringUtils.trim( setup.getAdapterSetup().getBaseUrl() ) );
@@ -217,6 +255,24 @@ public class SetupService
         executableScriptArgRepository.save( scriptArg );
     }
 
+    private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup )
+    {
+        final MappedTrackedEntity trackedEntity = findTrackedEntity( "Person" );
+        trackedEntity.setTrackedEntityReference( trackedEntitySetup.getType().getReference() );
+        trackedEntity.setTrackedEntityIdentifierReference( trackedEntitySetup.getPatientId().getReference() );
+
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "uniqueIdAttribute" ).setDefaultValue( trackedEntitySetup.getUniqueId().getOptionalRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "firstNameAttribute" ).setDefaultValue( trackedEntitySetup.getFirstName().getMandatoryRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "lastNameAttribute" ).setDefaultValue( trackedEntitySetup.getLastName().getMandatoryRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "birthDateAttribute" ).setDefaultValue( trackedEntitySetup.getBirthDate().getOptionalRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "genderAttribute" ).setDefaultValue( trackedEntitySetup.getGender().getOptionalRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "addressTextAttribute" ).setDefaultValue( trackedEntitySetup.getVillageName().getOptionalRefVal() );
+
+        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personFirstNameAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverFirstName().getOptionalRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personLastNameAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverLastName().getOptionalRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personPhoneAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverPhone().getOptionalRefVal() );
+    }
+
     @Nonnull
     private Map<String, Code> createCodes( @Nonnull List<FhirDhisCodeMapping> codeMappings, @Nonnull CodeCategory organizationCodeCategory )
     {
@@ -258,11 +314,28 @@ public class SetupService
     {
         CodeCategory codeCategory = new CodeCategory();
         codeCategory.setCode( code );
-        codeCategory = codeCategoryRepository.findAll( Example.of( codeCategory ) ).stream().findFirst().orElse( null );
-        if ( codeCategory == null )
-        {
-            throw new SetupException( "Code category with code " + code + " does not exist." );
-        }
+        codeCategory = codeCategoryRepository.findAll( Example.of( codeCategory ) ).stream().findFirst()
+            .orElseThrow( () -> new SetupException( "Code category with code " + code + " does not exist." ) );
         return codeCategory;
+    }
+
+    @Nonnull
+    protected MappedTrackedEntity findTrackedEntity( @Nonnull String name )
+    {
+        MappedTrackedEntity trackedEntity = new MappedTrackedEntity();
+        trackedEntity.setName( name );
+        trackedEntity = trackedEntityRepository.findAll( Example.of( trackedEntity ) )
+            .stream().findFirst().orElseThrow( () -> new SetupException( "Tracked entity with name " + name + " does not exist." ) );
+        return trackedEntity;
+    }
+
+    @Nonnull
+    protected ScriptArg findScriptArg( @Nonnull String scriptCode, @Nonnull String attrName )
+    {
+        Script script = new Script();
+        script.setCode( scriptCode );
+        script = scriptRepository.findAll( Example.of( script ) ).stream().findFirst().orElseThrow( () -> new SetupException( "Script with code " + scriptCode + " does not exist." ) );
+        return script.getArguments().stream().filter( a -> attrName.equals( a.getName() ) ).findFirst()
+            .orElseThrow( () -> new SetupException( "Script " + scriptCode + " does not include script argument " + attrName + "." ) );
     }
 }

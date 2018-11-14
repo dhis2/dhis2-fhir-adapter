@@ -90,8 +90,8 @@ VALUES ('73cd99c50ca842ada53b1891fccce08f', 0, CURRENT_TIMESTAMP(), CURRENT_TIME
 INSERT INTO fhir_remote_subscription_header (remote_subscription_id, name, value, secure)
 VALUES ('73cd99c50ca842ada53b1891fccce08f', 'Authorization', 'Bearer jshru38jsHdsdfy38sh38H3d', TRUE);
 
-INSERT INTO fhir_remote_subscription_resource (id, version, created_at, last_updated_at, last_updated_by, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description)
-VALUES ('667bfa41867c479686b6eb9f9ed4dc94', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '73cd99c50ca842ada53b1891fccce08f', 'PATIENT', '_format=json', 'Subscription for all Patients.');
+INSERT INTO fhir_remote_subscription_resource (id, version, created_at, last_updated_at, last_updated_by, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description, virtual)
+VALUES ('667bfa41867c479686b6eb9f9ed4dc94', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '73cd99c50ca842ada53b1891fccce08f', 'PATIENT', '_format=json', 'Subscription for all Patients.', false);
 INSERT INTO fhir_remote_subscription_system (id, version, created_at, last_updated_at, last_updated_by, remote_subscription_id, fhir_resource_type, system_id)
 VALUES ('ea9804a39e824d0d9cd2e417b32b1c0c', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '73cd99c50ca842ada53b1891fccce08f', 'ORGANIZATION', 'c4e9ac6acc8f4c73aab60fa6775c0ca3');
 
@@ -175,9 +175,13 @@ VALUES ('72451c8f7492470790b8a3e0796de19e', 0, CURRENT_TIMESTAMP(), CURRENT_TIME
 'Transforms FHIR Patient to DHIS Person', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'Transforms FHIR Patient to DHIS Person.');
 INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value, enabled)
 VALUES ('9b832b2c0a574441841147b5dc65ec91', '72451c8f7492470790b8a3e0796de19e', '90b3c11038e44291934ce2569e8af1ba', 'CODE:MMD_PER_DOB', TRUE);
-  
-INSERT INTO fhir_rule (id, version, created_at, last_updated_at, last_updated_by, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
-VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'FHIR Patient to Person', NULL, TRUE, 1, 'PATIENT', 'TRACKED_ENTITY', NULL, '72451c8f7492470790b8a3e0796de19e');
-INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref)
-VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 'NAME:Person', '25a97bb47b394ed48677db4bcaa28ccf', 'ef90531f443848bd83b36370dd65875a', 'CODE:National identifier');
+
+-- Tracked Entity Person
+INSERT INTO fhir_tracked_entity(id, version, created_at, last_updated_at, last_updated_by, name, enabled, description, tracked_entity_ref, tracked_entity_identifier_ref)
+VALUES ('4203754d21774a4486aa2de31ee4c8ee', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'Person', TRUE, 'Tracked entity for a patient.', 'NAME:Person', 'CODE:National identifier');
+
+INSERT INTO fhir_rule (id, version, created_at, last_updated_at, last_updated_by, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id, contained_allowed)
+VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'FHIR Patient to Person', NULL, TRUE, 1, 'PATIENT', 'TRACKED_ENTITY', NULL, '72451c8f7492470790b8a3e0796de19e', FALSE);
+INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, org_lookup_script_id, loc_lookup_script_id)
+VALUES ('5f9ebdc9852e4c8387ca795946aabc35', '4203754d21774a4486aa2de31ee4c8ee', '25a97bb47b394ed48677db4bcaa28ccf', 'ef90531f443848bd83b36370dd65875a');
 

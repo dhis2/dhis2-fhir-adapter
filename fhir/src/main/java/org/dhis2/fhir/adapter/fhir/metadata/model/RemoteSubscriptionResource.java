@@ -74,6 +74,8 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
 
     private RemoteSubscriptionResourceUpdate resourceUpdate;
 
+    private boolean virtual;
+
     private String fhirSubscriptionId;
 
     @Basic
@@ -136,6 +138,18 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     public void setResourceUpdate( RemoteSubscriptionResourceUpdate resourceUpdate )
     {
         this.resourceUpdate = resourceUpdate;
+    }
+
+    @Basic
+    @Column( name = "virtual", nullable = false )
+    public boolean isVirtual()
+    {
+        return virtual;
+    }
+
+    public void setVirtual( boolean virtual )
+    {
+        this.virtual = virtual;
     }
 
     @Basic

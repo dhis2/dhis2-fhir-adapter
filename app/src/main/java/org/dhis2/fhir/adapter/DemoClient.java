@@ -35,6 +35,7 @@ import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Enumerations;
@@ -47,12 +48,14 @@ import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.RelatedPerson;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.dstu3.model.codesystems.ObservationCategory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Date;
 
 /**
@@ -116,6 +119,10 @@ public class DemoClient
             .setValue( "XZY123456" );
         org.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
 
+        Organization birthOrg = new Organization();
+        birthOrg.setName( "Birth Unit" );
+        birthOrg.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
+
         //////////////////////////////////
         // Create Patient (new born child)
         //////////////////////////////////
@@ -135,6 +142,8 @@ public class DemoClient
             TemporalPrecisionEnum.DAY );
         child.setGender( Enumerations.AdministrativeGender.MALE );
         child.addAddress()
+            .addLine( "Water Road 675" )
+            .addLine( "Apartment 62" )
             .setCity( "Freetown" )
             .setCountry( "Sierra Leone" );
         child.getAddress().get( 0 )
@@ -176,7 +185,7 @@ public class DemoClient
             .addExtension( new Extension()
                 .setUrl( "longitude" )
                 .setValue( new DecimalType( -13.262743 ) ) );
-        mother.setManagingOrganization( new Reference( org.getId() ) );
+        mother.setManagingOrganization( new Reference( birthOrg ) );
 
         //////////////////////
         // Create Vaccinations
@@ -463,7 +472,67 @@ public class DemoClient
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Observation" );
+        client.transaction().withBundle( bundle ).execute();
 
+        Bundle searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + childNationalId ) ) ).execute();
+        child = (Patient) searchResult.getEntry().get( 0 ).getResource();
+        searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + motherNationalId ) ) ).execute();
+        mother = (Patient) searchResult.getEntry().get( 0 ).getResource();
+
+        RelatedPerson childRelatedPerson = new RelatedPerson();
+        childRelatedPerson.setActive( true );
+        childRelatedPerson.getRelationship().addCoding(
+            new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
+        childRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
+        childRelatedPerson.addName().setFamily( "West" ).addGiven( "Elizabeth" );
+        childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(123) 456-7890.10" ).setRank( 1 ).setUse( ContactPoint.ContactPointUse.OLD );
+        childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.10" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
+        childRelatedPerson.getPatient().setReferenceElement( child.getIdElement().toUnqualifiedVersionless() );
+        child.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setResource( childRelatedPerson );
+
+        RelatedPerson motherRelatedPerson = new RelatedPerson();
+        motherRelatedPerson.setId( IdType.newRandomUuid() );
+        motherRelatedPerson.addIdentifier().setSystem( "http://example.sl/relatedPersons" ).setValue( "mth" + motherNationalId );
+        motherRelatedPerson.setActive( true );
+        motherRelatedPerson.getRelationship().addCoding(
+            new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
+        motherRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
+        motherRelatedPerson.addName().setFamily( "West" ).addGiven( "Maria" );
+        motherRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.20" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
+        motherRelatedPerson.getPatient().setReferenceElement( mother.getIdElement().toUnqualifiedVersionless() );
+
+        bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.TRANSACTION );
+        bundle.addEntry()
+            .setResource( motherRelatedPerson )
+            .setFullUrl( motherRelatedPerson.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/relatedPersons|mth" + motherNationalId );
+        bundle.addEntry()
+            .setResource( child )
+            .setFullUrl( child.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
+        client.transaction().withBundle( bundle ).execute();
+
+        searchResult = client.search().forResource( RelatedPerson.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/relatedPersons|mth" + motherNationalId ) ) ).execute();
+        motherRelatedPerson = (RelatedPerson) searchResult.getEntry().get( 0 ).getResource();
+
+        mother.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setReferenceElement( motherRelatedPerson.getIdElement().toUnqualifiedVersionless() );
+
+        bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.TRANSACTION );
+        bundle.addEntry()
+            .setResource( mother )
+            .setFullUrl( mother.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
         client.transaction().withBundle( bundle ).execute();
     }
 }

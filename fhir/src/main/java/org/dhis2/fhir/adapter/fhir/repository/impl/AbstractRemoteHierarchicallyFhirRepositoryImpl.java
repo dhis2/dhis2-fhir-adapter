@@ -81,6 +81,7 @@ public abstract class AbstractRemoteHierarchicallyFhirRepositoryImpl implements 
             return createBundle( Collections.emptyList() );
         }
 
+        final Set<IBaseResource> processedResources = new HashSet<>();
         final Set<String> processedResourceIds = new HashSet<>();
         processedResourceIds.add( resourceType + "/" + resourceId );
         final List<IBaseResource> result = new ArrayList<>();
@@ -89,17 +90,29 @@ public abstract class AbstractRemoteHierarchicallyFhirRepositoryImpl implements 
         IBaseReference parentReference;
         while ( (child != null) && ((parentReference = parentReferenceFunction.apply( child )) != null) && !parentReference.isEmpty() && parentReference.getReferenceElement().hasIdPart() )
         {
-            final String childResourceType = parentReference.getReferenceElement().hasResourceType() ?
-                parentReference.getReferenceElement().getResourceType() : resourceType;
-            if ( !processedResourceIds.add( childResourceType + "/" + parentReference.getReferenceElement().getIdPart() ) )
+            if ( parentReference.getResource() == null )
             {
-                // there is a dependency loop and search must be interrupted
-                break;
+                final String childResourceType = parentReference.getReferenceElement().hasResourceType() ?
+                    parentReference.getReferenceElement().getResourceType() : resourceType;
+                if ( !processedResourceIds.add( childResourceType + "/" + parentReference.getReferenceElement().getIdPart() ) )
+                {
+                    // there is a dependency loop and search must be interrupted
+                    break;
+                }
+                child = remoteFhirRepository.find( remoteSubscriptionId, fhirVersion, fhirEndpoint,
+                    childResourceType, parentReference.getReferenceElement().getIdPart() ).orElse( null );
             }
-            child = remoteFhirRepository.find( remoteSubscriptionId, fhirVersion, fhirEndpoint,
-                childResourceType, parentReference.getReferenceElement().getIdPart() ).orElse( null );
+            else
+            {
+                child = parentReference.getResource();
+            }
             if ( child != null )
             {
+                if ( !processedResources.add( child ) )
+                {
+                    // there is a dependency loop and search must be interrupted
+                    break;
+                }
                 result.add( child );
             }
         }

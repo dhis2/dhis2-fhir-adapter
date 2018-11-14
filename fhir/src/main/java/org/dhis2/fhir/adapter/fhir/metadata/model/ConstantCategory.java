@@ -35,5 +35,5 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 public enum ConstantCategory
 {
-    GENDER, OTHER
+    GENDER, TEXT_RECOGNITION, OTHER
 }

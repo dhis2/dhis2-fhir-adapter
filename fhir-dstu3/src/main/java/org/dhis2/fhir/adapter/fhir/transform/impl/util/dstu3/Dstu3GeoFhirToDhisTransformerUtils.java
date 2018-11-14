@@ -67,7 +67,7 @@ public class Dstu3GeoFhirToDhisTransformerUtils extends AbstractGeoFhirToDhisTra
     public Location getLocation( @Nonnull IElement element ) throws TransformerException
     {
         final Element e = (Element) element;
-        final List<Extension> locationExtensions = e.getExtensionsByUrl( GEO_LOCATION_URL );
+        final List<Extension> locationExtensions = e.getExtensionsByUrl( GEO_LOCATION_URI );
         if ( locationExtensions.isEmpty() )
         {
             return null;

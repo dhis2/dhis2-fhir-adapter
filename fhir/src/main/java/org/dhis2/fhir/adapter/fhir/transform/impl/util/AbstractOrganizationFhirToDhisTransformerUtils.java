@@ -55,7 +55,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -63,7 +66,7 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public abstract class AbstractOrganizationTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "organizationUtils";
 
@@ -77,7 +80,7 @@ public abstract class AbstractOrganizationTransformerUtils extends AbstractFhirT
 
     private final RemoteHierarchicallyFhirRepository remoteHierarchicallyFhirRepository;
 
-    public AbstractOrganizationTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+    public AbstractOrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull OrganisationUnitService organisationUnitService,
         @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
         @Nonnull RemoteFhirRepository remoteFhirRepository,
@@ -136,14 +139,43 @@ public abstract class AbstractOrganizationTransformerUtils extends AbstractFhirT
     @Nullable
     public List<? extends IBaseResource> findHierarchy( @Nullable IBaseReference childReference )
     {
-        if ( (childReference == null) || childReference.isEmpty() )
+        return findHierarchy( childReference, new HashSet<>() );
+    }
+
+    @Nullable
+    protected List<? extends IBaseResource> findHierarchy( @Nullable IBaseReference childReference, @Nonnull Set<IBaseResource> processedResources )
+    {
+        if ( childReference == null )
         {
             return null;
         }
 
+        if ( childReference.getResource() != null )
+        {
+            if ( !processedResources.add( childReference.getResource() ) )
+            {
+                // loop within hierarchy
+                return null;
+            }
+
+            final List<IBaseResource> foundResources = new ArrayList<>();
+            foundResources.add( childReference.getResource() );
+            final List<? extends IBaseResource> remainingResources = findHierarchy(
+                getParentReference( childReference.getResource() ), processedResources );
+            if ( remainingResources != null )
+            {
+                foundResources.addAll( remainingResources );
+            }
+            return foundResources;
+        }
+
+        if ( childReference.isEmpty() )
+        {
+            return null;
+        }
         if ( childReference.getReferenceElement().isLocal() )
         {
-            throw new TransformerDataException( "Reference element refers to an embedded resource, but no resource is specified: " + childReference.getReferenceElement() );
+            throw new TransformerDataException( "Reference element refers to a contained resource, but no resource is specified: " + childReference.getReferenceElement() );
         }
         if ( childReference.getReferenceElement().hasResourceType() && !FhirResourceType.ORGANIZATION.getResourceTypeName().equals( childReference.getReferenceElement().getResourceType() ) )
         {

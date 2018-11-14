@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.setup;
  */
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -41,10 +42,16 @@ public class Setup implements Serializable
     private static final long serialVersionUID = -5257148949174992807L;
 
     @Valid
+    @NotNull
     private RemoteSubscriptionSetup remoteSubscriptionSetup = new RemoteSubscriptionSetup();
 
     @Valid
+    @NotNull
     private OrganizationCodeSetup organizationCodeSetup = new OrganizationCodeSetup();
+
+    @Valid
+    @NotNull
+    private TrackedEntitySetup trackedEntitySetup = new TrackedEntitySetup();
 
     public RemoteSubscriptionSetup getRemoteSubscriptionSetup()
     {
@@ -64,5 +71,15 @@ public class Setup implements Serializable
     public void setOrganizationCodeSetup( OrganizationCodeSetup organizationCodeSetup )
     {
         this.organizationCodeSetup = organizationCodeSetup;
+    }
+
+    public TrackedEntitySetup getTrackedEntitySetup()
+    {
+        return trackedEntitySetup;
+    }
+
+    public void setTrackedEntitySetup( TrackedEntitySetup trackedEntitySetup )
+    {
+        this.trackedEntitySetup = trackedEntitySetup;
     }
 }

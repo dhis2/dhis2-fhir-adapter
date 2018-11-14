@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -64,7 +65,9 @@ import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -186,8 +189,16 @@ public class FhirRepositoryImpl implements FhirRepository
     {
         logger.info( "Processing FHIR resource {} for remote subscription resource {}.",
             remoteFhirResource.getFhirResourceId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
-        queuedRemoteFhirResourceRepository.dequeued(
-            remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getFhirResourceId() );
+        try
+        {
+            queuedRemoteFhirResourceRepository.dequeued(
+                remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getFhirResourceId() );
+        }
+        catch ( IgnoredSubscriptionResourceException e )
+        {
+            // has already been logger with sufficient details
+            return;
+        }
 
         final RemoteSubscriptionResource remoteSubscriptionResource =
             remoteSubscriptionResourceRepository.findByIdCached( remoteFhirResource.getRemoteSubscriptionResourceId() ).orElse( null );
@@ -236,7 +247,10 @@ public class FhirRepositoryImpl implements FhirRepository
     {
         try
         {
-            return saveRetried( subscriptionResource, resource );
+            if ( !saveRetried( subscriptionResource, resource, false ) )
+            {
+                return false;
+            }
         }
         catch ( TrackedEntityInstanceNotFoundException e )
         {
@@ -251,7 +265,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
             try
             {
-                return saveRetried( subscriptionResource, resource );
+                if ( !saveRetried( subscriptionResource, resource, false ) )
+                    return false;
             }
             catch ( TrackedEntityInstanceNotFoundException e2 )
             {
@@ -260,6 +275,44 @@ public class FhirRepositoryImpl implements FhirRepository
                 return false;
             }
         }
+
+        for ( final IAnyResource containedResource : ((IDomainResource) resource).getContained() )
+        {
+            logger.info( "Processing contained FHIR resource {} with ID {}.",
+                containedResource.getClass().getSimpleName(), containedResource.getIdElement().toUnqualifiedVersionless() );
+            try
+            {
+                saveContainedResource( subscriptionResource, containedResource );
+            }
+            catch ( TrackedEntityInstanceNotFoundException e )
+            {
+                logger.error( "Processing of contained FHIR resource {} with ID {} returned that tracked entity could not be found: {}",
+                    containedResource.getClass().getSimpleName(), containedResource.getIdElement().toUnqualifiedVersionless(), e.getMessage() );
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean saveContainedResource( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    {
+        final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
+        if ( fhirResourceType == null )
+        {
+            logger.info( "FHIR Resource type for {} is not available. Contained FHIR Resource cannot be processed." );
+            return false;
+        }
+
+        final RemoteSubscriptionResource containedRemoteSubscriptionResource =
+            remoteSubscriptionResourceRepository.findFirstCached( subscriptionResource.getRemoteSubscription(), fhirResourceType ).orElse( null );
+        if ( containedRemoteSubscriptionResource == null )
+        {
+            logger.info( "Remote subscription {} does not define a resource {}. Contained FHIR Resource cannot be processed.",
+                subscriptionResource.getRemoteSubscription().getId(), fhirResourceType );
+            return false;
+        }
+
+        return saveRetried( containedRemoteSubscriptionResource, resource, true );
     }
 
     protected boolean createTrackedEntityInstance( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
@@ -282,26 +335,28 @@ public class FhirRepositoryImpl implements FhirRepository
         }
 
         final RemoteSubscription remoteSubscription = trackedEntityRemoteSubscriptionResource.getRemoteSubscription();
-        final Optional<IBaseResource> refreshedResource = remoteFhirRepository.findRefreshed(
+        final Optional<IBaseResource> optionalRefreshedResource = remoteFhirRepository.findRefreshed(
             remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
             fhirResourceType.getResourceTypeName(), resource.getIdElement().getIdPart() );
-        if ( !refreshedResource.isPresent() )
+        if ( !optionalRefreshedResource.isPresent() )
         {
             logger.info( "Resource {} that should be used as tracked entity resource does no longer exist for remote subscription {}.",
                 resource.getIdElement(), trackedEntityRemoteSubscriptionResource.getRemoteSubscription().getId() );
             return false;
         }
-        return saveRetried( trackedEntityRemoteSubscriptionResource, refreshedResource.get() );
+
+        saveRetried( trackedEntityRemoteSubscriptionResource, optionalRefreshedResource.get(), false );
+        return true;
     }
 
-    protected boolean saveRetried( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    protected boolean saveRetried( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource, boolean contained )
     {
         DhisConflictException lastException = null;
         for ( int i = 0; i < MAX_CONFLICT_RETRIES + 1; i++ )
         {
             try
             {
-                return saveInternally( subscriptionResource, resource );
+                return saveInternally( subscriptionResource, resource, contained );
             }
             catch ( DhisConflictException e )
             {
@@ -313,7 +368,7 @@ public class FhirRepositoryImpl implements FhirRepository
     }
 
     @SuppressWarnings( "unchecked" )
-    protected boolean saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    protected boolean saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource, boolean contained )
     {
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( subscriptionResource.getRemoteSubscription() );
 
@@ -336,7 +391,7 @@ public class FhirRepositoryImpl implements FhirRepository
             final HystrixRequestContext context = HystrixRequestContext.initializeContext();
             try
             {
-                outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), resource );
+                outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), resource, contained );
             }
             finally
             {

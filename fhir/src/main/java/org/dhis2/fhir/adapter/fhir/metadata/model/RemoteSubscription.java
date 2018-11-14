@@ -107,7 +107,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
 
     private List<RemoteSubscriptionSystem> systems;
 
-    @EnumValue( value = FhirResourceType.class, supported = { "PATIENT" } )
+    @EnumValue( value = FhirResourceType.class, supported = { "PATIENT", "RELATED_PERSON" } )
     private Set<FhirResourceType> autoCreatedSubscriptionResources;
 
     @Basic

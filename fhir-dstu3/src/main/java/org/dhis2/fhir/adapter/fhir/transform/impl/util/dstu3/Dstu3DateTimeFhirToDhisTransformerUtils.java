@@ -35,6 +35,8 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractDateTimeFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.util.CastUtils;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.hl7.fhir.dstu3.model.Period;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
 
@@ -73,6 +75,24 @@ public class Dstu3DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhi
             return true;
         }
         return (((BaseDateTimeType) dateTime).getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
+    }
+
+    @Override
+    public boolean isValidNow( @Nullable ICompositeType period )
+    {
+        if ( period == null )
+        {
+            return true;
+        }
+
+        final Period p = (Period) period;
+        final Date now = new Date();
+        // start will be ignored since there may be no further notification about that event
+        if ( (p.getEnd() != null) && now.after( p.getEnd() ) )
+        {
+            return false;
+        }
+        return true;
     }
 
     @Override

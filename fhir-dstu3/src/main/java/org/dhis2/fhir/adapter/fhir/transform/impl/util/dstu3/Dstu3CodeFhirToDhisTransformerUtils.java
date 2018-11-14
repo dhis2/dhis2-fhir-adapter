@@ -64,14 +64,12 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final SystemCodeRepository systemCodeRepository;
 
     public Dstu3CodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull CodeRepository codeRepository,
         @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext, codeRepository );
-        this.systemCodeRepository = systemCodeRepository;
+        super( scriptExecutionContext, codeRepository, systemCodeRepository );
     }
 
     @Nonnull
@@ -121,25 +119,25 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
     }
 
     @Override
-    public boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes )
+    public boolean containsMappingCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappingCodes )
     {
-        if ( mappedCodes == null )
+        if ( mappingCodes == null )
         {
-            throw new IllegalArgumentException( "Mapped codes must be specified." );
+            throw new IllegalArgumentException( "Codes must be specified." );
         }
 
-        if ( codeableConcept == null )
+        if ( (codeableConcept == null) || codeableConcept.isEmpty() )
         {
             return false;
         }
-        final List<String> convertedMappedCodes = ScriptArgUtils.extractStringArray( mappedCodes );
-        if ( CollectionUtils.isEmpty( convertedMappedCodes ) )
+        final List<String> convertedCodes = ScriptArgUtils.extractStringArray( mappingCodes );
+        if ( CollectionUtils.isEmpty( convertedCodes ) )
         {
             return false;
         }
 
         final Set<String> checkedCodes = new HashSet<>();
-        final Collection<SystemCode> systemCodes = systemCodeRepository.findAllByCodes( convertedMappedCodes );
+        final Collection<SystemCode> systemCodes = getSystemCodeRepository().findAllByCodes( convertedCodes );
         for ( final SystemCode systemCode : systemCodes )
         {
             if ( containsCode( codeableConcept, systemCode.getSystem().getSystemUri(), systemCode.getSystemCode() ) )
@@ -148,9 +146,9 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
             }
             checkedCodes.add( systemCode.getCode().getCode() );
         }
-        if ( logger.isDebugEnabled() && checkedCodes.size() < convertedMappedCodes.size() )
+        if ( logger.isDebugEnabled() && checkedCodes.size() < convertedCodes.size() )
         {
-            logger.info( "Mapped codes have not been defined: " + Sets.difference( new HashSet<>( convertedMappedCodes ), checkedCodes ) );
+            logger.info( "Codes have not been defined: " + Sets.difference( new HashSet<>( convertedCodes ), checkedCodes ) );
         }
         return false;
     }

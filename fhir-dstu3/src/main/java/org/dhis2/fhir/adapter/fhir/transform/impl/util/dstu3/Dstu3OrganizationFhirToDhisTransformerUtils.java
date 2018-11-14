@@ -28,36 +28,39 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractFhirClientTransformUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractOrganizationFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Bundle.BundleEntryComponent;
-import org.hl7.fhir.dstu3.model.Bundle.BundleLinkComponent;
-import org.hl7.fhir.dstu3.model.Resource;
+import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Scriptable
-public class Dstu3FhirClientTransformUtils extends AbstractFhirClientTransformUtils
+public class Dstu3OrganizationFhirToDhisTransformerUtils extends AbstractOrganizationFhirToDhisTransformerUtils
 {
-    public Dstu3FhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
+    public Dstu3OrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull OrganisationUnitService organisationUnitService,
+        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
+        @Nonnull RemoteFhirRepository remoteFhirRepository,
+        @Nonnull RemoteHierarchicallyFhirRepository remoteHierarchicallyFhirRepository )
     {
-        super( scriptExecutionContext, fhirContext, subscriptionResourceRepository, systemCodeRepository );
+        super( scriptExecutionContext, organisationUnitService, subscriptionResourceRepository, remoteFhirRepository, remoteHierarchicallyFhirRepository );
     }
 
     @Nonnull
@@ -67,38 +70,32 @@ public class Dstu3FhirClientTransformUtils extends AbstractFhirClientTransformUt
         return FhirVersion.DSTU3_ONLY;
     }
 
-    @Nonnull
-    @Override
-    protected Class<? extends IBaseBundle> getBundleClass()
-    {
-        return Bundle.class;
-    }
-
-    @Override
-    protected boolean hasNextLink( @Nonnull IBaseBundle bundle )
-    {
-        final BundleLinkComponent link = ((Bundle) bundle).getLink( Bundle.LINK_NEXT );
-        return (link != null) && !link.isEmpty();
-    }
-
     @Nullable
     @Override
-    protected IBaseResource getFirstRep( @Nonnull IBaseBundle bundle )
+    protected IBaseReference getParentReference( @Nullable IBaseResource resource )
     {
-        final Bundle b = (Bundle) bundle;
-        return (b.getEntry().isEmpty() ? null : b.getEntryFirstRep().getResource());
+        if ( resource == null )
+        {
+            return null;
+        }
+        return ((Organization) resource).getPartOf();
     }
 
-    @Override
     @Nonnull
-    protected List<? extends IBaseResource> getEntries( @Nonnull IBaseBundle bundle )
+    @Override
+    protected List<IBaseResource> extractResources( @Nullable IBaseBundle bundle )
     {
-        final Bundle b = (Bundle) bundle;
-        final List<Resource> resources = new ArrayList<>();
-        for ( final BundleEntryComponent entry : b.getEntry() )
+        if ( bundle == null )
         {
-            resources.add( entry.getResource() );
+            return Collections.emptyList();
         }
-        return resources;
+
+        final Bundle b = (Bundle) bundle;
+        if ( b.getEntry() == null )
+        {
+            return Collections.emptyList();
+        }
+
+        return b.getEntry().stream().map( Bundle.BundleEntryComponent::getResource ).collect( Collectors.toList() );
     }
 }

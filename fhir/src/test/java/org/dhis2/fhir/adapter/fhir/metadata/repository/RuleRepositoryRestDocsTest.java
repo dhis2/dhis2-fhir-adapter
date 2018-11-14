@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
 import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,13 +67,18 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
     private RuleRepository ruleRepository;
 
     @Autowired
+    private MappedTrackedEntityRepository mappedTrackedEntityRepository;
+
+    @Autowired
     private ExecutableScriptRepository executableScriptRepository;
 
     @Test
     public void createTrackedEntityRule() throws Exception
     {
+        final MappedTrackedEntity mappedTrackedEntity = loadTrackedEntity( "Person" );
         final ConstrainedFields fields = new ConstrainedFields( TrackedEntityRule.class, constraintDescriptionResolver );
         final String request = IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createTrackedEntityRule.json", StandardCharsets.UTF_8 )
+            .replace( "$trackedEntityId", API_BASE_URI + "/trackedEntities/" + mappedTrackedEntity.getId().toString() )
             .replace( "$transformInScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON" ).getId().toString() )
             .replace( "$orgUnitLookupScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE" ).getId().toString() )
             .replace( "$locationLookupScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "EXTRACT_FHIR_PATIENT_GEO_LOCATION" ).getId().toString() );
@@ -92,16 +98,14 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 fields.withPath( "applicableInScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. " +
                     "The script must be an evaluation script that returns a boolean value." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "transformInScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).type( JsonFieldType.STRING ),
+                fields.withPath( "trackedEntity" ).description( "The reference to the DHIS2 Tracked Entity resource." ).type( JsonFieldType.STRING ),
                 fields.withPath( "orgUnitLookupScript" ).description( "Link to the executable script reference that is used to extract the organization unit reference. " +
                     "The script must be an evaluation script that return a reference." ).type( JsonFieldType.STRING ),
                 fields.withPath( "locationLookupScript" ).description( "Link to the executable script reference that is used to extract the location reference. " +
                     "The script must be an evaluation script that return a location (geo coordinates)." ).type( JsonFieldType.STRING ),
-                fields.withPath( "trackedEntityReference" ).description( "The reference to the DHIS2 Tracked Entity Type." ).type( JsonFieldType.OBJECT ),
-                fields.withPath( "trackedEntityReference.value" ).description( "The unique ID/code/name of the Tracked Entity Type." ).type( JsonFieldType.STRING ),
-                fields.withPath( "trackedEntityReference.type" ).description( "The type of reference value of the Tracked Entity Type." ).type( JsonFieldType.STRING ),
-                fields.withPath( "trackedEntityIdentifierReference" ).description( "The reference to the DHIS2 Tracked Entity Attribute that is used as national identifier." ).type( JsonFieldType.OBJECT ),
-                fields.withPath( "trackedEntityIdentifierReference.value" ).description( "The unique ID/code/name of the Tracked Entity Attribute." ).type( JsonFieldType.STRING ),
-                fields.withPath( "trackedEntityIdentifierReference.type" ).description( "The type of reference value of the Tracked Entity Attribute." ).type( JsonFieldType.STRING )
+                fields.withPath( "teiLookupScript" ).description(
+                    "Link to the executable script reference that is used to extract the tracked entity related FHIR resource from the input. The script must be an evaluation script that returns a FHIR resource." )
+                    .type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -113,10 +117,6 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             .andExpect( jsonPath( "evaluationOrder", is( 0 ) ) )
             .andExpect( jsonPath( "dhisResourceType", is( "TRACKED_ENTITY" ) ) )
             .andExpect( jsonPath( "fhirResourceType", is( "PATIENT" ) ) )
-            .andExpect( jsonPath( "trackedEntityReference.value", is( "Person" ) ) )
-            .andExpect( jsonPath( "trackedEntityReference.type", is( "NAME" ) ) )
-            .andExpect( jsonPath( "trackedEntityIdentifierReference.value", is( "National identifier" ) ) )
-            .andExpect( jsonPath( "trackedEntityIdentifierReference.type", is( "CODE" ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 
@@ -133,27 +133,33 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 linkWithRel( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).optional(),
                 linkWithRel( "applicableInScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." ).optional(),
                 linkWithRel( "transformInScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ),
-                linkWithRel( "orgUnitLookupScript" ).description( "Link to the executable script reference that is used to extract the organization unit reference. The script must be an evaluation script that return a reference." ),
-                linkWithRel( "locationLookupScript" ).description( "Link to the executable script reference that is used to extract the location reference. The script must be an evaluation script that return a location (geo coordinates)." ) ),
+                linkWithRel( "trackedEntity" ).description( "Link to the tracked entity resource that describes the tracked entity of the transformation." ),
+                linkWithRel( "orgUnitLookupScript" ).description( "Link to the executable script reference that is used to extract the organization unit reference. The script must be an evaluation script that return a reference." ).optional(),
+                linkWithRel( "locationLookupScript" ).description( "Link to the executable script reference that is used to extract the location reference. The script must be an evaluation script that return a location (geo coordinates)." ).optional(),
+                linkWithRel( "teiLookupScript" ).description( "Link to the executable script reference that is used to extract the tracked entity related FHIR resource from the input. The script must be an evaluation script that returns a FHIR resource." ).optional() ),
                 responseFields(
-                attributes( key( "title" ).value( "Fields for rule reading" ) ),
-                fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
-                fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
-                fields.withPath( "name" ).description( "The unique name of the rule." ).type( JsonFieldType.STRING ),
-                fields.withPath( "description" ).description( "The detailed description that describes for which purpose the rule is used." ).type( JsonFieldType.STRING ).optional(),
+                    attributes( key( "title" ).value( "Fields for rule reading" ) ),
+                    fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
+                    fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
+                    fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
+                    fields.withPath( "name" ).description( "The unique name of the rule." ).type( JsonFieldType.STRING ),
+                    fields.withPath( "description" ).description( "The detailed description that describes for which purpose the rule is used." ).type( JsonFieldType.STRING ).optional(),
                     fields.withPath( "dhisResourceType" ).description( "The type of the rule and the type of the data that is stored in DHIS2." ).type( JsonFieldType.STRING ),
                     fields.withPath( "fhirResourceType" ).description( "The FHIR resource type of the incoming resource." ).type( JsonFieldType.STRING ),
                     fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
-                    fields.withPath( "trackedEntityReference" ).description( "The reference to the DHIS2 Tracked Entity Type." ).type( JsonFieldType.OBJECT ),
-                    fields.withPath( "trackedEntityReference.value" ).description( "The unique ID/code/name of the Tracked Entity Type." ).type( JsonFieldType.STRING ),
-                    fields.withPath( "trackedEntityReference.type" ).description( "The type of reference value of the Tracked Entity Type." ).type( JsonFieldType.STRING ),
-                    fields.withPath( "trackedEntityIdentifierReference" ).description( "The reference to the DHIS2 Tracked Entity Attribute that is used as national identifier." ).type( JsonFieldType.OBJECT ),
-                    fields.withPath( "trackedEntityIdentifierReference.value" ).description( "The unique ID/code/name of the Tracked Entity Attribute." ).type( JsonFieldType.STRING ),
-                    fields.withPath( "trackedEntityIdentifierReference.type" ).description( "The type of reference value of the Tracked Entity Attribute." ).type( JsonFieldType.STRING ),
-                subsectionWithPath( "_links" ).description( "Links to other resources" )
-            ) ) );
+                    fields.withPath( "containedAllowed" ).description( "Specified if this rule can process contained resources." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    subsectionWithPath( "_links" ).description( "Links to other resources" )
+                ) ) );
+    }
+
+    @Nonnull
+    protected MappedTrackedEntity loadTrackedEntity( @Nonnull String name )
+    {
+        final MappedTrackedEntity example = new MappedTrackedEntity();
+        example.setName( name );
+        return mappedTrackedEntityRepository.findOne( Example.of( example, ExampleMatcher.matching().withIgnorePaths( "enabled" ) ) )
+            .orElseThrow( () -> new AssertionError( "Mapped tracked entity does not exist: " + name ) );
     }
 
     @Nonnull

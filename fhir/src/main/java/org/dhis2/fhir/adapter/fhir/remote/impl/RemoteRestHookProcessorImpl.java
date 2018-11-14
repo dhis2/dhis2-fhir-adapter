@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteSubscriptionRequestRepository;
@@ -130,9 +131,17 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
     public void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId )
     {
         logger.debug( "Checking for a queued entry of remote subscription resource {}.", remoteSubscriptionResourceId );
-        if ( !queuedRemoteSubscriptionRequestRepository.enqueue( remoteSubscriptionResourceId, requestId ) )
+        try
         {
-            logger.debug( "There is already a queued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
+            if ( !queuedRemoteSubscriptionRequestRepository.enqueue( remoteSubscriptionResourceId, requestId ) )
+            {
+                logger.debug( "There is already a queued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
+                return;
+            }
+        }
+        catch ( IgnoredSubscriptionResourceException e )
+        {
+            // has already been logger with sufficient details
             return;
         }
 
@@ -165,7 +174,15 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
     protected void receiveAuthenticated( @Nonnull RemoteRestHookRequest remoteRestHookRequest )
     {
         logger.info( "Processing queued web hook request {}.", remoteRestHookRequest.getRemoteSubscriptionResourceId() );
-        queuedRemoteSubscriptionRequestRepository.dequeued( remoteRestHookRequest.getRemoteSubscriptionResourceId() );
+        try
+        {
+            queuedRemoteSubscriptionRequestRepository.dequeued( remoteRestHookRequest.getRemoteSubscriptionResourceId() );
+        }
+        catch ( IgnoredSubscriptionResourceException e )
+        {
+            // has already been logger with sufficient details
+            return;
+        }
 
         final RemoteSubscriptionResource remoteSubscriptionResource =
             remoteSubscriptionResourceRepository.findByIdCached( remoteRestHookRequest.getRemoteSubscriptionResourceId() ).orElse( null );
@@ -198,18 +215,25 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
                 {
                     // persist processed remote FHIR resource and
                     processedRemoteFhirResourceRepository.process( new ProcessedRemoteFhirResource( remoteSubscriptionResource, versionedId, processedAt ), p -> {
-                        if ( queuedRemoteFhirResourceRepository.enqueue( remoteSubscriptionResource.getId(), sr.getId(), requestId ) )
+                        try
                         {
-                            fhirResourceQueueJmsTemplate.convertAndSend(
-                                new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
-                            logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
-                                sr.getId(), remoteSubscriptionResource.getId() );
-                            count.incrementAndGet();
+                            if ( queuedRemoteFhirResourceRepository.enqueue( remoteSubscriptionResource.getId(), sr.getId(), requestId ) )
+                            {
+                                fhirResourceQueueJmsTemplate.convertAndSend(
+                                    new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
+                                logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
+                                    sr.getId(), remoteSubscriptionResource.getId() );
+                                count.incrementAndGet();
+                            }
+                            else
+                            {
+                                logger.debug( "FHIR Resource {} of remote subscription resource {} is still queued.",
+                                    sr.getId(), remoteSubscriptionResource.getId() );
+                            }
                         }
-                        else
+                        catch ( IgnoredSubscriptionResourceException e )
                         {
-                            logger.debug( "FHIR Resource {} of remote subscription resource {} is still queued.",
-                                sr.getId(), remoteSubscriptionResource.getId() );
+                            // has already been logger with sufficient details
                         }
                     } );
                 }

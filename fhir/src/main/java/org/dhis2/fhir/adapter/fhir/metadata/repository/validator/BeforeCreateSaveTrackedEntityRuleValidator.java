@@ -55,21 +55,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidator extends AbstractBeforeCr
         final TrackedEntityRule rule = (TrackedEntityRule) target;
         validate( rule, TransformDataType.DHIS_TRACKED_ENTITY_INSTANCE, errors );
 
-        if ( rule.getTrackedEntityReference() == null )
+        if ( rule.getTrackedEntity() == null )
         {
-            errors.rejectValue( "trackedEntityReference", "TrackedEntityRule.trackedEntityReference.null", "Tracked entity reference is mandatory." );
-        }
-        else if ( !rule.getTrackedEntityReference().isValid() )
-        {
-            errors.rejectValue( "trackedEntityReference", "TrackedEntityRule.trackedEntityReferenceinvalid", "Tracked entity reference is not valid." );
-        }
-        if ( rule.getTrackedEntityIdentifierReference() == null )
-        {
-            errors.rejectValue( "trackedEntityIdentifierReference", "TrackedEntityRule.trackedEntityIdentifierReference.null", "Tracked entity identifier reference is mandatory." );
-        }
-        else if ( !rule.getTrackedEntityIdentifierReference().isValid() )
-        {
-            errors.rejectValue( "trackedEntityIdentifierReference", "TrackedEntityRule.trackedEntityIdentifierReference.invalid", "Tracked entity identifier reference is not valid." );
+            errors.rejectValue( "trackedEntity", "TrackedEntityRule.trackedEntity.null", "Tracked entity is mandatory." );
         }
         BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript( errors, "TrackedEntityRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript() );
         BeforeCreateSaveFhirResourceMappingValidator.checkValidLocationLookupScript( errors, "TrackedEntityRule.", "locationLookupScript", rule.getFhirResourceType(), rule.getLocationLookupScript() );

@@ -33,10 +33,12 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Scriptable
 public interface FhirToDhisTransformerContext
@@ -57,6 +59,9 @@ public interface FhirToDhisTransformerContext
     @Nullable
     Reference createReference( @Nullable String value, @Nonnull Object referenceType )
         throws TransformerScriptException;
+
+    @Nonnull
+    List<IBaseResource> createFhirResourceList();
 
     @Nonnull
     ZonedDateTime now();

@@ -100,6 +100,9 @@ data type.
 | `DATE_UNIT`
 | A date unit. Possible values are YEARS, MONTHS, DAYS.
 
+| `GENDER`
+| Gender of a person. Possible values are MALE, FEMALE.
+
 | `WEIGHT_UNIT`
 | A weight unit. Possible values are GRAM, KILO_GRAM, OUNCE, POUND.
 
@@ -135,6 +138,9 @@ data type.
 
 | `FHIR_RESOURCE`
 | A FHIR resource as defined by HAPI FHIR API. There is no string representation for this data type.
+
+| `FHIR_RESOURCE_LIST`
+| A list of FHIR resources as defined by HAPI FHIR API. There is no string representation for this data type.
 
 | `EVENT_DECISION_TYPE`
 | A decision that is made before processing an event (tracker program stage instance). Possible values are CONTINUE (use the existing event), NEW_EVENT (create a new event, just for repeatable program stages), BREAK (the complete rule is not applicable).
@@ -380,6 +386,25 @@ include::{snippets}/read-executable-script/curl-request.adoc[]
 include::{snippets}/read-executable-script/response-body.adoc[]
 
 include::{snippets}/read-executable-script/response-fields.adoc[]
+
+[[api-resources-data-tracked-entity]]
+==== Tracked Entity
+Configures the reference to a DHIS 2 tracked entity type. A tracked entity
+type must define a unique identifier in order to be able to map FHIR data
+to existing tracked entity instances.
+
+.Create resource curl snippet
+include::{snippets}/create-tracked-entity/curl-request.adoc[]
+
+include::{snippets}/create-tracked-entity/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-tracked-entity/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-tracked-entity/response-body.adoc[]
+
+include::{snippets}/read-tracked-entity/response-fields.adoc[]
 
 [[api-resources-data-tracked-entity-rule]]
 ==== Tracked Entity Rule

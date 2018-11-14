@@ -119,6 +119,8 @@ public class RemoteSubscriptionResourceRepositoryRestDocsTest extends AbstractJp
                 fields.withPath( "fhirResourceType" ).description( "The type of the subscribed FHIR resource." ).type( JsonFieldType.STRING ),
                 fields.withPath( "description" ).description( "The detailed description of the purpose of the subscribed FHIR resource." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "fhirCriteriaParameters" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "virtual" ).description( "Specifies that there is no subscription for this FHIR resource since the FHIR service may not accept subscription for this resource type (just available as contained resources)." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "hirSubscriptionId" ).description( "The ID of the automatically created FHIR subscription on the FHIR service." ).type( JsonFieldType.STRING ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );

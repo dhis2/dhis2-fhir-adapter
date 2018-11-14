@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.impl.util.ReferenceTransformUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.ReferenceFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.stereotype.Component;
@@ -49,9 +49,9 @@ import java.util.Set;
 @Scriptable
 public class Dstu3IdentifierFhirToDhisTransformerUtils extends AbstractIdentifierFhirToDhisTransformerUtils
 {
-    public Dstu3IdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceTransformUtils referenceTransformUtils )
+    public Dstu3IdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils )
     {
-        super( scriptExecutionContext, referenceTransformUtils );
+        super( scriptExecutionContext, referenceFhirToDhisTransformerUtils );
     }
 
     @Nonnull

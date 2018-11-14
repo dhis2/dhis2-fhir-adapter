@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.queue;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jms.listener.adapter.ListenerExecutionFailedException;
 import org.springframework.util.ErrorHandler;
 
 import javax.annotation.Nonnull;
@@ -48,33 +49,38 @@ public class QueueListenerErrorHandler implements ErrorHandler
     @Override
     public void handleError( @Nonnull Throwable t )
     {
-        if ( t instanceof HystrixRuntimeException )
+        Throwable exception = t;
+        if ( (exception instanceof ListenerExecutionFailedException) && (exception.getCause() != null) )
         {
-            final HystrixRuntimeException hre = (HystrixRuntimeException) t;
+            exception = exception.getCause();
+        }
+        if ( exception instanceof HystrixRuntimeException )
+        {
+            final HystrixRuntimeException hre = (HystrixRuntimeException) exception;
             switch ( hre.getFailureType() )
             {
                 case SHORTCIRCUIT:
-                    logger.debug( "Could not process JMS message due to short circuit.", t );
+                    logger.debug( "Could not process JMS message due to short circuit.", exception );
                     logger.info( "Could not process JMS message due to short circuit." );
                     break;
                 case TIMEOUT:
                 case REJECTED_THREAD_EXECUTION:
                 case REJECTED_SEMAPHORE_EXECUTION:
                 case REJECTED_SEMAPHORE_FALLBACK:
-                    logger.error( "Could not process JMS message due to a reported timeout (should not happen).", t );
+                    logger.error( "Could not process JMS message due to a reported timeout (should not happen).", exception );
                     break;
                 default:
-                    logger.error( "An error occurred when processing JMS message.", t );
+                    logger.error( "An error occurred when processing JMS message.", exception );
                     break;
             }
         }
-        else if ( t instanceof RetryQueueDeliveryException )
+        else if ( exception instanceof RetryQueueDeliveryException )
         {
-            logger.debug( "The delivery of the processed JMS message should be retried when possible.", t.getCause() );
+            logger.debug( "The delivery of the processed JMS message should be retried when possible.", exception.getCause() );
         }
         else
         {
-            logger.error( "An error occurred when processing JMS message.", t );
+            logger.error( "An error occurred when processing JMS message.", exception );
         }
     }
 }

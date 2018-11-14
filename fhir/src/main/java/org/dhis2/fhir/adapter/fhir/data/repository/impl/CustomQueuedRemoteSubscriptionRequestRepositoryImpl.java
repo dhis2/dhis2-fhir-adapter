@@ -30,12 +30,17 @@ package org.dhis2.fhir.adapter.fhir.data.repository.impl;
 
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequest;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomQueuedRemoteSubscriptionRequestRepository;
+import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.query.NativeQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.time.Instant;
 import java.util.UUID;
@@ -47,8 +52,15 @@ import java.util.UUID;
  */
 public class CustomQueuedRemoteSubscriptionRequestRepositoryImpl implements CustomQueuedRemoteSubscriptionRequestRepository
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @PersistenceContext
-    EntityManager entityManager;
+    private EntityManager entityManager;
+
+    public CustomQueuedRemoteSubscriptionRequestRepositoryImpl( @Nonnull EntityManager entityManager )
+    {
+        this.entityManager = entityManager;
+    }
 
     @Transactional
     @Override
@@ -60,7 +72,21 @@ public class CustomQueuedRemoteSubscriptionRequestRepositoryImpl implements Cust
             .setParameter( "id", subscriptionResourceId ).setParameter( "requestId", requestId ).setParameter( "queuedAt", Instant.now() );
         // avoid invalidation of complete 2nd level cache
         query.unwrap( NativeQuery.class ).addSynchronizedEntityClass( QueuedRemoteSubscriptionRequest.class );
-        return query.getResultList().stream().anyMatch( requestId::equals );
+
+        try
+        {
+            return query.getResultList().stream().anyMatch( requestId::equals );
+        }
+        catch ( PersistenceException e )
+        {
+            if ( e.getCause() instanceof ConstraintViolationException )
+            {
+                logger.error( "Could not process enqueue request for subscription resource {} due to constraint violation: {}",
+                    subscriptionResourceId, e.getCause().getMessage() );
+                throw new IgnoredSubscriptionResourceException( "Subscription resource " + subscriptionResourceId + " does no longer exist.", e );
+            }
+            throw e;
+        }
     }
 
     @Transactional

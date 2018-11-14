@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2004-2018, University of Oslo
  *  All rights reserved.
- *
+ *t
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  Redistributions of source code must retain the above copyright notice, this
@@ -42,6 +42,7 @@ INSERT INTO fhir_data_type_enum VALUES('DOUBLE');
 INSERT INTO fhir_data_type_enum VALUES('DATE_TIME');
 INSERT INTO fhir_data_type_enum VALUES('DATE_UNIT');
 INSERT INTO fhir_data_type_enum VALUES('WEIGHT_UNIT');
+INSERT INTO fhir_data_type_enum VALUES('GENDER');
 INSERT INTO fhir_data_type_enum VALUES('CONSTANT');
 INSERT INTO fhir_data_type_enum VALUES('CODE');
 INSERT INTO fhir_data_type_enum VALUES('LOCATION');
@@ -53,6 +54,7 @@ INSERT INTO fhir_data_type_enum VALUES('DATA_ELEMENT_REF');
 INSERT INTO fhir_data_type_enum VALUES('PROGRAM_REF');
 INSERT INTO fhir_data_type_enum VALUES('PROGRAM_STAGE_REF');
 INSERT INTO fhir_data_type_enum VALUES('FHIR_RESOURCE');
+INSERT INTO fhir_data_type_enum VALUES('FHIR_RESOURCE_LIST');
 INSERT INTO fhir_data_type_enum VALUES('EVENT_DECISION_TYPE');
 
 CREATE TABLE fhir_transform_data_type_enum (
@@ -67,6 +69,7 @@ INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_PATIENT');
 INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_IMMUNIZATION');
 INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_OBSERVATION');
 INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_DIAGNOSTIC_REPORT');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_RELATED_PERSON');
 
 CREATE TABLE fhir_resource_type_enum (
   value VARCHAR(30) NOT NULL,
@@ -80,6 +83,7 @@ INSERT INTO fhir_resource_type_enum VALUES('MEDICATION_REQUEST');
 INSERT INTO fhir_resource_type_enum VALUES('OBSERVATION');
 INSERT INTO fhir_resource_type_enum VALUES('ORGANIZATION');
 INSERT INTO fhir_resource_type_enum VALUES('PATIENT');
+INSERT INTO fhir_resource_type_enum VALUES('RELATED_PERSON');
 
 CREATE TABLE fhir_dhis_resource_type_enum (
   value VARCHAR(30) NOT NULL,
@@ -525,20 +529,21 @@ COMMENT ON COLUMN fhir_system_code.code_id IS 'References the adapter internal c
 COMMENT ON COLUMN fhir_system_code.system_code_value IS 'Combination of system URI and code separated by a pipe character. This is mainly used for search purpose.';
 
 CREATE TABLE fhir_rule (
-  id                      UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
-  version                 BIGINT                         NOT NULL,
-  created_at              TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-  last_updated_by         VARCHAR(11),
-  last_updated_at         TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-  name                    VARCHAR(230)                   NOT NULL,
-  description             TEXT,
-  enabled                 BOOLEAN                        NOT NULL     DEFAULT TRUE,
-  evaluation_order        INTEGER                        NOT NULL     DEFAULT 0,
-  fhir_resource_type      VARCHAR(30)                    NOT NULL,
-  dhis_resource_type      VARCHAR(30)                    NOT NULL,
-  applicable_in_script_id UUID,
-  applicable_code_set_id  UUID,
-  transform_in_script_id  UUID                           NOT NULL,
+  id                                   UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
+  version                              BIGINT                         NOT NULL,
+  created_at                           TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  last_updated_by                      VARCHAR(11),
+  last_updated_at                      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  name                                 VARCHAR(230)                   NOT NULL,
+  description                          TEXT,
+  enabled                              BOOLEAN                        NOT NULL     DEFAULT TRUE,
+  evaluation_order                     INTEGER                        NOT NULL     DEFAULT 0,
+  fhir_resource_type                   VARCHAR(30)                    NOT NULL,
+  dhis_resource_type                   VARCHAR(30)                    NOT NULL,
+  applicable_in_script_id              UUID,
+  applicable_code_set_id               UUID,
+  transform_in_script_id               UUID                           NOT NULL,
+  contained_allowed                    BOOLEAN                        NOT NULL     DEFAULT FALSE,
   CONSTRAINT fhir_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_rule_uk_name UNIQUE (name),
   CONSTRAINT fhir_rule_fk1 FOREIGN KEY (applicable_in_script_id) REFERENCES fhir_executable_script (id),
@@ -568,28 +573,63 @@ COMMENT ON COLUMN fhir_rule.dhis_resource_type IS 'The resulting DHIS2 Resource 
 COMMENT ON COLUMN fhir_rule.applicable_in_script_id IS 'References the evaluation script that is used to evaluate if the input is applicable to be processed by this rule. If no script has been specified, the rule is applicable for further processing. The script will not be executed if the code set with applicable codes do not match.';
 COMMENT ON COLUMN fhir_rule.applicable_code_set_id IS 'References the code set that is used to evaluate if the input is applicable to be processed by this rule. If no code included in the input matches the code of the specified code set, the rule will not be applicable. If no code set is specified, the applicable set (if any) will be used to evaluate if the rule is applicable for further processing.';
 COMMENT ON COLUMN fhir_rule.transform_in_script_id IS 'References the transformation script that is used to transform the input to the DHIS2 Resource.';
+COMMENT ON COLUMN fhir_rule.contained_allowed IS 'Specified if this rule can process contained resources.';
+
+CREATE TABLE fhir_tracked_entity (
+  id                            UUID                           NOT NULL     DEFAULT UUID_GENERATE_V4(),
+  version                       BIGINT                         NOT NULL,
+  created_at                    TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  last_updated_by               VARCHAR(11),
+  last_updated_at               TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL     DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  name                          VARCHAR(230)                   NOT NULL,
+  description                   TEXT,
+  enabled                       BOOLEAN                        NOT NULL     DEFAULT TRUE,
+  tracked_entity_ref            VARCHAR(230)                   NOT NULL,
+  tracked_entity_identifier_ref VARCHAR(230)                   NOT NULL,
+  CONSTRAINT fhir_tracked_entity_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_tracked_entity_uk_name UNIQUE (name),
+  CONSTRAINT fhir_tracked_entity_uk_ref UNIQUE (tracked_entity_ref)
+);
+COMMENT ON TABLE fhir_tracked_entity IS 'Contains the configuration for DHIS2 Tracked Entity Resource Types.';
+COMMENT ON COLUMN fhir_tracked_entity.id IS 'References the rule to which this tracked entity rule belongs to.';
+COMMENT ON COLUMN fhir_tracked_entity.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_tracked_entity.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_tracked_entity.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_tracked_entity.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_tracked_entity.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+COMMENT ON COLUMN fhir_tracked_entity.name IS 'The unique name of the rule.';
+COMMENT ON COLUMN fhir_tracked_entity.description IS 'The detailed description about the purpose of the rule.';
+COMMENT ON COLUMN fhir_tracked_entity.enabled IS 'Specifies if the rule has been enabled and is used for transformations.';
+COMMENT ON COLUMN fhir_tracked_entity.tracked_entity_ref IS 'The reference of the DHIS2 Tracked Entity Type (e.g. "NAME:Person").';
+COMMENT ON COLUMN fhir_tracked_entity.tracked_entity_identifier_ref IS 'The reference of the DHIS2 Tracked Entity Attribute that includes the identifier value that is also used by FHIR resources (e.g. NAME:National identifier).';
 
 CREATE TABLE fhir_tracked_entity_rule (
   id                            UUID         NOT NULL,
-  tracked_entity_ref            VARCHAR(230) NOT NULL,
-  org_lookup_script_id          UUID         NOT NULL,
-  loc_lookup_script_id          UUID         NOT NULL,
-  tracked_entity_identifier_ref VARCHAR(230) NOT NULL,
+  tracked_entity_id             UUID         NOT NULL,
+  org_lookup_script_id          UUID,
+  loc_lookup_script_id          UUID,
+ tei_lookup_script_id          UUID,
   CONSTRAINT fhir_tracked_entity_rule_pk PRIMARY KEY (id),
   CONSTRAINT fhir_tracked_entity_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE,
-  CONSTRAINT fhir_tracked_entity_rule_fk2 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id),
-  CONSTRAINT fhir_tracked_entity_rule_fk3 FOREIGN KEY (loc_lookup_script_id) REFERENCES fhir_executable_script (id)
+  CONSTRAINT fhir_tracked_entity_rule_fk2 FOREIGN KEY (tracked_entity_id) REFERENCES fhir_tracked_entity (id),
+  CONSTRAINT fhir_tracked_entity_rule_fk4 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_tracked_entity_rule_fk5 FOREIGN KEY (loc_lookup_script_id) REFERENCES fhir_executable_script (id),
+  CONSTRAINT fhir_tracked_entity_rule_fk6 FOREIGN KEY (tei_lookup_script_id) REFERENCES fhir_executable_script (id)
 );
 CREATE INDEX fhir_tracked_entity_rule_i1
-  ON fhir_tracked_entity_rule (org_lookup_script_id);
+  ON fhir_tracked_entity_rule (tracked_entity_id);
 CREATE INDEX fhir_tracked_entity_rule_i2
+  ON fhir_tracked_entity_rule (org_lookup_script_id);
+CREATE INDEX fhir_tracked_entity_rule_i3
   ON fhir_tracked_entity_rule (loc_lookup_script_id);
+CREATE INDEX fhir_tracked_entity_rule_i4
+  ON fhir_tracked_entity_rule (tei_lookup_script_id);
 COMMENT ON TABLE fhir_tracked_entity_rule IS 'Contains rules for DHIS2 Tracked Entity Resource Types.';
 COMMENT ON COLUMN fhir_tracked_entity_rule.id IS 'References the rule to which this tracked entity rule belongs to.';
-COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_ref IS 'The reference of the DHIS2 Tracked Entity Type (e.g. "NAME:Person").';
+COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_id IS 'References the DHIS2 Tracked Entity Type.';
 COMMENT ON COLUMN fhir_tracked_entity_rule.org_lookup_script_id IS 'References the executable lookup script for DHIS2 Organization Units.';
 COMMENT ON COLUMN fhir_tracked_entity_rule.loc_lookup_script_id IS 'References the executable lookup script for DHIS2 coordinates (longitude and latitude).';
-COMMENT ON COLUMN fhir_tracked_entity_rule.tracked_entity_identifier_ref IS 'The reference of the DHIS2 Tracked Entity Attribute that includes the identifier value that is also used by FHIR resources (e.g. NAME:National identifier).';
+COMMENT ON COLUMN fhir_tracked_entity_rule.tei_lookup_script_id IS 'References the executable lookup script that resolves the FHIR Resource that belongs to the tracked entity.';
 
 CREATE TABLE fhir_tracker_program (
   id                            UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -929,6 +969,7 @@ CREATE TABLE fhir_remote_subscription_resource (
   fhir_resource_type       VARCHAR(30)                    NOT NULL,
   fhir_criteria_parameters VARCHAR(200),
   description              TEXT,
+  virtual                  BOOLEAN                        NOT NULL DEFAULT FALSE,
   fhir_subscription_id     VARCHAR(100),
   CONSTRAINT fhir_remote_subscription_resource_pk PRIMARY KEY (id),
   -- do not enable cascading dequeued since remote last update date may get lost by mistake
@@ -948,6 +989,7 @@ COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_resource_type IS 'The F
 COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_criteria_parameters IS 'The parameters that have been appended to the resource type when creation the subscription on the remote FHIR Service.';
 COMMENT ON COLUMN fhir_remote_subscription_resource.description IS 'The detailed purpose of subscribing this resource with the specified criteria parameters.';
 COMMENT ON COLUMN fhir_remote_subscription_resource.fhir_subscription_id IS 'The ID of the subscription that has been set up on the remote FHIR service or unset if no subscription has been set up automatically.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.virtual IS 'Specifies that there is no subscription for this FHIR resource since the FHIR service may not accept subscription for this resource type (just available as contained resources).';
 
 CREATE TABLE fhir_remote_subscription_resource_update (
   id                       UUID                           NOT NULL,
@@ -1018,8 +1060,14 @@ INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('20f6d869-a767-461e-8c68-aa46a76ec5c4', 0, 'SNOMED CT', 'SYSTEM_SCT', 'http://snomed.info/sct',
 'SNOMED CT can be used to represent clinically relevant information consistently, reliably and comprehensively as an integral part of producing electronic health information.');
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('02d5719e-8859-445a-a815-5980d418b4e6', 0, 'RxNorm', 'SYSTEM_RXNORM', ' http://www.nlm.nih.gov/research/umls/rxnorm',
+VALUES ('02d5719e-8859-445a-a815-5980d418b4e6', 0, 'RxNorm', 'SYSTEM_RXNORM', 'http://www.nlm.nih.gov/research/umls/rxnorm',
 'RxNorm is made available by the US National Library of Medicine at http://www.nlm.nih.gov/research/umls/rxnorm.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('3ffa1fe5-8ded-4f18-afa6-d847d2b94217', 0, 'FHIR Role Code V2', 'SYSTEM_FHIR_ROLE_CODE_V2', 'http://hl7.org/fhir/v2/0131',
+'FHIR personal relationship role type V2.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 0, 'FHIR Role Code V3', 'SYSTEM_FHIR_ROLE_CODE_V3', 'http://hl7.org/fhir/v3/RoleCode',
+'FHIR personal relationship role type V3.');
 
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('9e1c64d8-82df-40e5-927b-a34c115f14e9', 0, 'Organization Unit', 'ORGANIZATION_UNIT', 'Organization units that exists on DHIS2.');
@@ -1027,6 +1075,236 @@ INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('1197b27e-3956-43dd-a75c-bfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
 INSERT INTO fhir_code_category (id, version, name, code, description)
 VALUES ('616e470e-fe84-46ac-a523-b23bbc526ae2', 0, 'Survey', 'SURVEY', 'Survey.');
+
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('91065580-f4fa-4135-969a-498e9518c0c8', 0, 'Role Code', 'ROLE_CODE', 'Personal relationship role type.');
+
+---------------------
+-- Relationship Codes
+---------------------
+INSERT INTO fhir_code(id, version, code_category_id, name, code) VALUES ('aa36eeb6-33f1-4637-936a-c934abdaf83f', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC Contact Person', 'RC_CP');
+INSERT INTO fhir_code(id, version, code_category_id, name, code) VALUES ('774ee335-a703-4753-b524-da49e4f10454', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC Emergency Contact', 'RC_C');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('4611966d-6eea-4277-bfce-a515ac879ef7', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC family member', 'RC_FAMMEMB', 'A relationship between two people characterizing their "familial" relationship');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('8ac10593-daeb-4885-ade6-abbd89d1d089', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC child', 'RC_CHILD', 'The player of the role is a child of the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('e0cf031a-9717-48c7-8f64-dd21a2dea323', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adopted child', 'RC_CHLDADOPT', 'The player of the role is a child taken into a family through legal means and raised by the scoping person (parent) as his or her own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('0836ecaa-413f-450f-9222-c648dfbe2768', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adopted daughter', 'RC_DAUADOPT', 'The player of the role is a female child taken into a family through legal means and raised by the scoping person (parent) as his or her own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2ea8b30d-b468-4f03-a3fb-26cdc1531022', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adopted son', 'RC_SONADOPT', 'The player of the role is a male child taken into a family through legal means and raised by the scoping person (parent) as his or her own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('27521b84-cdb4-4ee0-ae4e-b2d6c982fbb0', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster child', 'RC_CHLDFOST', 'The player of the role is a child receiving parental care and nurture from the scoping person (parent) but not related to him or her through legal or blood ties.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5b52db2e-9b04-464e-a6d6-3b4e1bf8760e', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster daughter', 'RC_DAUFOST', 'The player of the role is a female child receiving parental care and nurture from the scoping person (parent) but not related to him or her through legal or blood ties.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('033f40ad-54d5-49ad-991b-5d6f52e42dd8', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster son', 'RC_SONFOST', 'The player of the role is a male child receiving parental care and nurture from the scoping person (parent) but not related to him or her through legal or blood ties.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('26a2a332-9b52-4263-83fa-b4cf4e377487', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC daughter', 'RC_DAUC', 'Description: The player of the role is a female child (of any type) of scoping entity (parent)');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2e161538-99d3-49f1-b83a-1569d7652fc7', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural daughter', 'RC_DAU', 'The player of the role is a female offspring of the scoping entity (parent).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f8cf5e93-551b-4da5-b4f1-e6773807faaf', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepdaughter', 'RC_STPDAU', 'The player of the role is a daughter of the scoping person''s spouse by a previous union.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f1891d46-cd36-44af-a349-b7f542bb4e41', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural child', 'RC_NCHILD', 'The player of the role is an offspring of the scoping entity as determined by birth.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('81f449f6-b875-403f-96b1-7d5fe6b16152', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural son', 'RC_SON', 'The player of the role is a male offspring of the scoping entity (parent).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('6b262cf2-7738-463f-8a7c-6b8ef4502871', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC son', 'RC_SONC', 'Description: The player of the role is a male child (of any type) of scoping entity (parent)');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('127b6fec-2887-4635-9ed7-cd46c88f0193', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepson', 'RC_STPSON', 'The player of the role is a son of the scoping person''s spouse by a previous union.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('fe61a98b-337a-459f-aab6-d8950f73c307', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC step child', 'RC_STPCHLD', 'The player of the role is a child of the scoping person''s spouse by a previous union.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('0337c32e-01b2-4806-a893-fe8856b9f1b5', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC extended family member', 'RC_EXT', 'Description: A family member not having an immediate genetic or legal relationship e.g. Aunt, cousin, great grandparent, grandchild, grandparent, niece, nephew or uncle.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('89b92e82-15da-4d67-8f54-9ee311f52a2a', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC aunt', 'RC_AUNT', 'The player of the role is a sister of the scoping person''s mother or father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('a047f7b3-8f44-4044-84ad-5d69ec14a5e4', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal aunt', 'RC_MAUNT', 'Description:The player of the role is a biological sister of the scoping person''s biological mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('92b81681-0d2a-45fb-b06e-bde340130a19', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal aunt', 'RC_PAUNT', 'Description:The player of the role is a biological sister of the scoping person''s biological father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f88411a0-5dd6-43cc-b992-985be76c8908', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC cousin', 'RC_COUSN', 'The player of the role is a relative of the scoping person descended from a common ancestor, such as a grandparent, by two or more steps in a diverging line.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('ccba35d9-678b-49c0-8dc6-aa5908bb373d', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal cousin', 'RC_MCOUSN', 'Description:The player of the role is a biological relative of the scoping person descended from a common ancestor on the player''s mother''s side, such as a grandparent, by two or more steps in a diverging line.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('b41b75cc-e50b-480a-aefb-46ccb036fa5c', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal cousin', 'RC_PCOUSN', 'Description:The player of the role is a biological relative of the scoping person descended from a common ancestor on the player''s father''s side, such as a grandparent, by two or more steps in a diverging line.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f2bc75a7-c0c1-4ee0-898e-e632d9c11764', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC great grandparent', 'RC_GGRPRN', 'The player of the role is a parent of the scoping person''s grandparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('d5604d99-1664-4fd5-99ad-8cd093db8d02', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC great grandfather', 'RC_GGRFTH', 'The player of the role is the father of the scoping person''s grandparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('fbffd3e0-07a0-49a5-a858-46c0d5d3cfec', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal great-grandfather', 'RC_MGGRFTH', 'Description:The player of the role is the biological father of the scoping person''s biological mother''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('d98f5389-5240-4648-955f-dbc1f74affd8', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal great-grandfather', 'RC_PGGRFTH', 'Description:The player of the role is the biological father of the scoping person''s biological father''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('afdc0aa7-a2fb-4829-9c6c-a248262087f5', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC great grandmother', 'RC_GGRMTH', 'The player of the role is the mother of the scoping person''s grandparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('574b70d7-5a80-49d8-bbb8-8857d4ba7546', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal great-grandmother', 'RC_MGGRMTH', 'Description:The player of the role is the biological mother of the scoping person''s biological mother''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('87635859-f1b3-4d3d-ba8c-ff66f05d3a47', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal great-grandmother', 'RC_PGGRMTH', 'Description:The player of the role is the biological mother of the scoping person''s biological father''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2ded7f92-9cf4-4a58-9cec-3dd8a74ee011', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal great-grandparent', 'RC_MGGRPRN', 'Description:The player of the role is a biological parent of the scoping person''s biological mother''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('1cb40384-22ff-4c9e-9ab4-a733e867de6b', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal great-grandparent', 'RC_PGGRPRN', 'Description:The player of the role is a biological parent of the scoping person''s biological father''s parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('970efa00-62b2-44d9-b08d-725910450f43', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC grandchild', 'RC_GRNDCHILD', 'The player of the role is a child of the scoping person''s son or daughter.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5a47cf78-7a74-49b1-b549-af72e442e01d', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC granddaughter', 'RC_GRNDDAU', 'The player of the role is a daughter of the scoping person''s son or daughter.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('10a8a5e9-79d5-4dcb-857c-3092cedd5591', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC grandson', 'RC_GRNDSON', 'The player of the role is a son of the scoping person''s son or daughter.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('6052f4db-8354-4c78-be2a-15fd3c89a7bd', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC grandparent', 'RC_GRPRN', 'The player of the role is a parent of the scoping person''s mother or father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('21d150c4-930e-442f-b964-b34ede4fb348', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC grandfather', 'RC_GRFTH', 'The player of the role is the father of the scoping person''s mother or father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f17753a8-298d-49b7-8e37-ccfa15060157', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal grandfather', 'RC_MGRFTH', 'Description:The player of the role is the biological father of the scoping person''s biological mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('3100a18c-00a8-4aad-926b-6ebeaab4b4a1', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal grandfather', 'RC_PGRFTH', 'Description:The player of the role is the biological father of the scoping person''s biological father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('9d95989b-d071-4eb3-9ac6-d3f691bafee1', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC grandmother', 'RC_GRMTH', 'The player of the role is the mother of the scoping person''s mother or father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('ec36bc5c-acf5-4ef1-b659-1ac78ee968da', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal grandmother', 'RC_MGRMTH', 'Description:The player of the role is the biological mother of the scoping person''s biological mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('0bbece14-c188-4d5b-91b0-8999291fefc7', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal grandmother', 'RC_PGRMTH', 'Description:The player of the role is the biological mother of the scoping person''s biological father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('e8e3924f-c2e8-45a6-9400-3727b37d7f98', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal grandparent', 'RC_MGRPRN', 'Description:The player of the role is the biological parent of the scoping person''s biological mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('3e3184f0-6e90-47c2-890b-b8a284e000d5', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal grandparent', 'RC_PGRPRN', 'Description:The player of the role is the biological parent of the scoping person''s biological father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5ea797ff-ca67-4ddb-baf2-08964ca26e34', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC inlaw', 'RC_INLAW', 'A relationship between an individual and a member of their spousal partner''s immediate family.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('1e6f1da9-15e8-4512-b502-6699b7ea7c34', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC child-in-law', 'RC_CHLDINLAW', 'The player of the role is the spouse of scoping person''s child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('fcff1dc5-b860-4e8d-bee1-cfac40b33944', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC daughter in-law', 'RC_DAUINLAW', 'The player of the role is the wife of scoping person''s son.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('a8c0f886-aae3-479e-8aa3-d8e37f31b9be', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC son in-law', 'RC_SONINLAW', 'The player of the role is the husband of scoping person''s daughter.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('41d6001a-9fc9-4337-bbb6-ce1ff284e115', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC parent in-law', 'RC_PRNINLAW', 'The player of the role is the parent of scoping person''s husband or wife.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('140d4897-6355-4be8-9947-06e0ca12b1ed', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC father-in-law', 'RC_FTHINLAW', 'The player of the role is the father of the scoping person''s husband or wife.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('d5c679c8-292c-4e78-84a3-fcccbf7b4251', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC mother-in-law', 'RC_MTHINLAW', 'The player of the role is the mother of the scoping person''s husband or wife.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('8f8c7f01-9cfa-477a-b6ee-fe595f8284cd', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC sibling in-law', 'RC_SIBINLAW', 'The player of the role is: (1) a sibling of the scoping person''s spouse, or (2) the spouse of the scoping person''s sibling, or (3) the spouse of a sibling of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('19d9601f-fc97-4302-9b33-8abd194b2b06', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC brother-in-law', 'RC_BROINLAW', 'The player of the role is: (1) a brother of the scoping person''s spouse, or (2) the husband of the scoping person''s sister, or (3) the husband of a sister of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('7612c887-3ae6-4056-800d-3c9af1242e72', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC sister-in-law', 'RC_SISINLAW', 'The player of the role is: (1) a sister of the scoping person''s spouse, or (2) the wife of the scoping person''s brother, or (3) the wife of a brother of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('9162f354-4fdc-45ed-808e-41e9335ea325', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC niece/nephew', 'RC_NIENEPH', 'The player of the role is a child of scoping person''s brother or sister or of the brother or sister of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('9324244d-8199-41b1-9fb1-3bf3566d5d57', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC nephew', 'RC_NEPHEW', 'The player of the role is a son of the scoping person''s brother or sister or of the brother or sister of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('02918b92-51b6-4da0-91b0-b52ddbb5e94f', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC niece', 'RC_NIECE', 'The player of the role is a daughter of the scoping person''s brother or sister or of the brother or sister of the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('dadccbc8-dfb2-4572-8f19-d07e325fcc7c', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC uncle', 'RC_UNCLE', 'The player of the role is a brother of the scoping person''s mother or father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('d3a4de1f-3d6d-4ab3-bff5-795e7c20a075', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC maternal uncle', 'RC_MUNCLE', 'Description:The player of the role is a biological brother of the scoping person''s biological mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2d037299-1e3d-4276-8d13-1ee73cb43479', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC paternal uncle', 'RC_PUNCLE', 'Description:The player of the role is a biological brother of the scoping person''s biological father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('758fc298-86b1-4ec0-a463-91034a0e35c9', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC parent', 'RC_PRN', 'The player of the role is one who begets, gives birth to, or nurtures and raises the scoping entity (child).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('77bf1643-3352-40b3-ae63-450b2baa37f6', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adoptive parent', 'RC_ADOPTP', 'The player of the role (parent) has taken the scoper (child) into their family through legal means and raises them as his or her own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('a7925456-430d-4c2d-b3b2-7afbc3bbde0f', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adoptive father', 'RC_ADOPTF', 'The player of the role (father) is a male who has taken the scoper (child) into their family through legal means and raises them as his own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('ddd1f6d3-e362-44cd-9887-5f7d3daaa7dd', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC adoptive mother', 'RC_ADOPTM', 'The player of the role (father) is a female who has taken the scoper (child) into their family through legal means and raises them as her own child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5a395a3d-e1be-4b88-a91d-99b1965cfb3b', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC father', 'RC_FTH', 'The player of the role is a male who begets or raises or nurtures the scoping entity (child).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('7ba01ba3-54e0-4034-8ffd-ccee1454f9f1', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster father', 'RC_FTHFOST', 'The player of the role (parent) who is a male state-certified caregiver responsible for the scoper (child) who has been placed in the parent''s care. The placement of the child is usually arranged through the government or a social-service agency, and temporary. The state, via a jurisdiction recognized child protection agency, stands as in loco parentis to the child, making all legal decisions while the foster parent is responsible for the day-to-day care of the specified child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('43cd0421-72e9-449c-a70a-fd50ffaea8c9', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural father', 'RC_NFTH', 'The player of the role is a male who begets the scoping entity (child).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('cf62ae76-136d-4143-9a17-82ec94d4e0bf', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural father of fetus', 'RC_NFTHF', 'Indicates the biologic male parent of a fetus.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('edb48195-0644-4e15-b4a7-6edfe3c8062c', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepfather', 'RC_STPFTH', 'The player of the role is the husband of scoping person''s mother and not the scoping person''s natural father.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('08f80790-dda3-4ec1-939c-5884ac1a82d3', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC mother', 'RC_MTH', 'The player of the role is a female who conceives, gives birth to, or raises and nurtures the scoping entity (child).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('fcc2d4ce-c441-4542-9f70-ba72f0a3a6df', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC gestational mother', 'RC_GESTM', 'The player is a female whose womb carries the fetus of the scoper. Generally used when the gestational mother and natural mother are not the same.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('08142067-32b2-4b19-a01c-63f336e0726b', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster mother', 'RC_MTHFOST', 'The player of the role (parent) who is a female state-certified caregiver responsible for the scoper (child) who has been placed in the parent''s care. The placement of the child is usually arranged through the government or a social-service agency, and temporary. The state, via a jurisdiction recognized child protection agency, stands as in loco parentis to the child, making all legal decisions while the foster parent is responsible for the day-to-day care of the specified child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('8df34897-3048-46c5-8cad-bd9b622b9bbb', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural mother', 'RC_NMTH', 'The player of the role is a female who conceives or gives birth to the scoping entity (child).');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('95f37173-8a35-4148-9cda-a9781bd19f86', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural mother of fetus', 'RC_NMTHF', 'The player is the biologic female parent of the scoping fetus.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('cd3a2e6f-f804-4c89-839b-a42917122ec9', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepmother', 'RC_STPMTH', 'The player of the role is the wife of scoping person''s father and not the scoping person''s natural mother.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('81965cc5-984e-4c96-9102-2ad03ffbcbef', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural parent', 'RC_NPRN', 'natural parent');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('e736e6ed-f237-48ec-91ca-60840ea56d60', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC foster parent', 'RC_PRNFOST', 'The player of the role (parent) who is a state-certified caregiver responsible for the scoper (child) who has been placed in the parent''s care. The placement of the child is usually arranged through the government or a social-service agency, and temporary. The state, via a jurisdiction recognized child protection agency, stands as in loco parentis to the child, making all legal decisions while the foster parent is responsible for the day-to-day care of the specified child.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('8457ff34-8a3c-4e83-81b6-2991b2ca4aca', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC step parent', 'RC_STPPRN', 'The player of the role is the spouse of the scoping person''s parent and not the scoping person''s natural parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('315774e5-a881-4d09-b21f-b2640c9ac0e8', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC sibling', 'RC_SIB', 'The player of the role shares one or both parents in common with the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('98082eca-40c5-4d15-9ed4-8ecd844e3ae7', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC brother', 'RC_BRO', 'The player of the role is a male sharing one or both parents in common with the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('48bcbb2b-2b95-4266-a756-f277c81857eb', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC half-brother', 'RC_HBRO', 'The player of the role is a male related to the scoping entity by sharing only one biological parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f2be630f-1d57-4ae0-a094-b4d4257c33f9', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural brother', 'RC_NBRO', 'The player of the role is a male having the same biological parents as the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5181d4e6-8c98-4b43-9dfb-fd79a2daac28', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC twin brother', 'RC_TWINBRO', 'The scoper was carried in the same womb as the male player and shares common biological parents.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f24c3a34-b07a-4397-ae2d-44cef62e1a0a', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC fraternal twin brother', 'RC_FTWINBRO', 'The scoper was carried in the same womb as the male player and shares common biological parents but is the product of a distinct egg/sperm pair.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('39ab3576-1b7f-423e-89a1-75e52f7c9364', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC identical twin brother', 'RC_ITWINBRO', 'The male scoper is an offspring of the same egg-sperm pair as the male player.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('0a56be2e-819c-4ff1-87bf-0cafb9e217d0', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepbrother', 'RC_STPBRO', 'The player of the role is a son of the scoping person''s stepparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('5d52e4bd-2347-43a1-8c61-107a371163f4', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC half-sibling', 'RC_HSIB', 'The player of the role is related to the scoping entity by sharing only one biological parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('513ec433-fb86-4c22-a8d1-c9b8244e69c2', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC half-sister', 'RC_HSIS', 'The player of the role is a female related to the scoping entity by sharing only one biological parent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f84fece8-5ee3-43c4-9085-4ff3c43235ee', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural sibling', 'RC_NSIB', 'The player of the role has both biological parents in common with the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('0c409220-413e-4125-bf30-8b4f7d10ef0a', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC natural sister', 'RC_NSIS', 'The player of the role is a female having the same biological parents as the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('138fea24-3a1a-4e8e-a91b-d4b61fbd2917', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC twin sister', 'RC_TWINSIS', 'The scoper was carried in the same womb as the female player and shares common biological parents.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2f9e14dd-d88e-4522-ad05-6230a49b05fb', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC fraternal twin sister', 'RC_FTWINSIS', 'The scoper was carried in the same womb as the female player and shares common biological parents but is the product of a distinct egg/sperm pair.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('a2347904-20e4-48ad-b957-f14bf7c95cd4', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC identical twin sister', 'RC_ITWINSIS', 'The female scoper is an offspring of the same egg-sperm pair as the female player.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('4754b717-8d21-4d07-957b-be834f4b0e8d', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC twin', 'RC_TWIN', 'The scoper and player were carried in the same womb and shared common biological parents.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('768a7c4c-8cb9-4851-82f8-a104778eff0c', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC fraternal twin', 'RC_FTWIN', 'The scoper and player were carried in the same womb and share common biological parents but are the product of distinct egg/sperm pairs.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('18c47e4d-1bf1-404d-a99a-356fe0a26610', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC identical twin', 'RC_ITWIN', 'The scoper and player are offspring of the same egg-sperm pair.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('913bf937-04fe-4b67-a00f-6aeafe63c78a', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC sister', 'RC_SIS', 'The player of the role is a female sharing one or both parents in common with the scoping entity.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('11e11119-083f-4e7f-8776-713468113260', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC stepsister', 'RC_STPSIS', 'The player of the role is a daughter of the scoping person''s stepparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('b6ca53f4-29b4-42f4-baa8-e952b697d6f2', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC step sibling', 'RC_STPSIB', 'The player of the role is a child of the scoping person''s stepparent.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('6702e52b-e569-4c84-8f2f-9777c0f2276b', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC significant other', 'RC_SIGOTHR', 'A person who is important to one''s well being; especially a spouse or one in a similar relationship. (The player is the one who is important)');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('79531da0-f1e6-499e-a529-8868db390b97', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC domestic partner', 'RC_DOMPART', 'The player of the role cohabits with the scoping person but is not the scoping person''s spouse.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('dc5a3eff-d842-43a6-ae2c-63df221bb60f', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC former spouse', 'RC_FMRSPS', 'Player of the role was previously joined to the scoping person in marriage and this marriage is now dissolved and inactive. Usage Note: This is significant to indicate as some jurisdictions have different legal requirements for former spouse to access the patient''s record, from a general friend.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('bb32e6c7-667f-4cf3-9347-aa89781edc64', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC spouse', 'RC_SPS', 'The player of the role is a marriage partner of the scoping person.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('bc9352a3-63c0-4ba2-ac51-20c0cbca0ea8', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC husband', 'RC_HUSB', 'The player of the role is a man joined to a woman (scoping person) in marriage.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('b20f2abf-e6a5-4030-928f-24a71f3629bf', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC wife', 'RC_WIFE', 'The player of the role is a woman joined to a man (scoping person) in marriage.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('a543dd56-2e52-418e-a122-9372a2c26110', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC unrelated friend', 'RC_FRND', 'The player of the role is a person who is known, liked, and trusted by the scoping person.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('2f2d6977-d35a-451a-9aa8-f4aee841cbae', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC neighbor', 'RC_NBOR', 'The player of the role lives near or next to the scoping person.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('ad121009-f806-44a8-921c-cba728a81940', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC self', 'RC_ONESELF', 'The relationship that a person has with his or her self.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('935baf12-11f4-42ba-89b5-70d6acea6546', 0, '91065580-f4fa-4135-969a-498e9518c0c8', 'RC Roommate', 'RC_ROOM', 'One who shares living quarters with the subject.');
+
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('4b1d6fa3-6c6e-4643-9f6d-de14e1c36fff', 0, '3ffa1fe5-8ded-4f18-afa6-d847d2b94217', 'CP', 'aa36eeb6-33f1-4637-936a-c934abdaf83f');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('cdc6b669-7c42-460b-ad34-aa65f8655145', 0, '3ffa1fe5-8ded-4f18-afa6-d847d2b94217', 'C', '774ee335-a703-4753-b524-da49e4f10454');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('2b7b5cd5-899d-4cc7-8d66-87b90a71facc', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FAMMEMB', '4611966d-6eea-4277-bfce-a515ac879ef7');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('825d77af-3cf1-4469-8ab9-113d74909196', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'CHILD', '8ac10593-daeb-4885-ade6-abbd89d1d089');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('7bc90b3b-eb56-4969-8de7-655572cd1229', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'CHLDADOPT', 'e0cf031a-9717-48c7-8f64-dd21a2dea323');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('8bb76161-a8e9-4a96-8014-e6aecabeb83b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DAUADOPT', '0836ecaa-413f-450f-9222-c648dfbe2768');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('f234fc13-ed0b-4f07-a554-a3732a41f693', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SONADOPT', '2ea8b30d-b468-4f03-a3fb-26cdc1531022');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9dc15f69-9d94-4305-9e3c-9e9639ab4b62', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'CHLDFOST', '27521b84-cdb4-4ee0-ae4e-b2d6c982fbb0');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('ed3e088e-6dc7-4a47-bc6c-a5e74d5d3200', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DAUFOST', '5b52db2e-9b04-464e-a6d6-3b4e1bf8760e');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('5313a82e-ad97-4d22-a4b3-bdf9f4a8444d', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SONFOST', '033f40ad-54d5-49ad-991b-5d6f52e42dd8');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('a9b4ec09-1a1a-4117-b73c-6761037e6bf2', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DAUC', '26a2a332-9b52-4263-83fa-b4cf4e377487');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('60298819-e459-4ec5-a2fe-a902b01e8f3a', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DAU', '2e161538-99d3-49f1-b83a-1569d7652fc7');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('1de31616-8090-41b5-9ce9-7ce41ca596ac', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPDAU', 'f8cf5e93-551b-4da5-b4f1-e6773807faaf');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('8534108a-f10a-42be-b45f-492572bfe0ca', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NCHILD', 'f1891d46-cd36-44af-a349-b7f542bb4e41');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9460db11-81ca-48c6-b64f-4e5028bac973', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SON', '81f449f6-b875-403f-96b1-7d5fe6b16152');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9a7383d1-975c-4c55-ad48-fdff18ad993a', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SONC', '6b262cf2-7738-463f-8a7c-6b8ef4502871');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('cf5a8a43-1e24-4fd9-b91b-d710b002f4b8', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPSON', '127b6fec-2887-4635-9ed7-cd46c88f0193');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('0296ca45-fa4b-4c62-ab30-fee3db6c8523', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPCHLD', 'fe61a98b-337a-459f-aab6-d8950f73c307');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('f31157a1-b2c1-4387-a604-3f2ee1578dfe', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'EXT', '0337c32e-01b2-4806-a893-fe8856b9f1b5');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('cc0b8eca-3979-45a6-826f-11397bcaf741', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'AUNT', '89b92e82-15da-4d67-8f54-9ee311f52a2a');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('74fd41e8-ca04-47c1-a31a-6d4fae3c94f1', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MAUNT', 'a047f7b3-8f44-4044-84ad-5d69ec14a5e4');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('795d157a-74bd-4506-b93e-55f5533ebccd', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PAUNT', '92b81681-0d2a-45fb-b06e-bde340130a19');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('df3c11ac-2e51-472d-bb0f-f2e3ea9bb91c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'COUSN', 'f88411a0-5dd6-43cc-b992-985be76c8908');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('35bd825f-8477-431b-a944-5557f81d64be', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MCOUSN', 'ccba35d9-678b-49c0-8dc6-aa5908bb373d');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('856dad6f-bad9-4425-ae8e-c9485dabe3e8', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PCOUSN', 'b41b75cc-e50b-480a-aefb-46ccb036fa5c');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('122ec321-b442-42f8-81dc-931396c92418', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GGRPRN', 'f2bc75a7-c0c1-4ee0-898e-e632d9c11764');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c00dfac9-84d9-4f20-9b31-c4f8cf689524', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GGRFTH', 'd5604d99-1664-4fd5-99ad-8cd093db8d02');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('59976345-fbff-48d2-9996-e5f195ed09f7', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGGRFTH', 'fbffd3e0-07a0-49a5-a858-46c0d5d3cfec');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('5bd0877e-b204-47eb-9152-04aa8e084fc4', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGGRFTH', 'd98f5389-5240-4648-955f-dbc1f74affd8');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('e78b7bb6-4df8-4bda-996c-dbffd8b6b1cf', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GGRMTH', 'afdc0aa7-a2fb-4829-9c6c-a248262087f5');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('daeb08d9-399e-433f-b130-1adf7efb348d', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGGRMTH', '574b70d7-5a80-49d8-bbb8-8857d4ba7546');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('b7243ce1-b362-4b7b-8fe7-99d8b6f8f64f', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGGRMTH', '87635859-f1b3-4d3d-ba8c-ff66f05d3a47');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('75c86b99-f708-4889-b88f-7e0d6b593481', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGGRPRN', '2ded7f92-9cf4-4a58-9cec-3dd8a74ee011');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('bdc1ef53-e560-4436-9979-f49b7d3558c0', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGGRPRN', '1cb40384-22ff-4c9e-9ab4-a733e867de6b');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('bc4cf886-7bc2-47c4-9fa9-65d31fe87e79', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRNDCHILD', '970efa00-62b2-44d9-b08d-725910450f43');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('e4661b7e-c645-43f9-b5b6-704b163a7560', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRNDDAU', '5a47cf78-7a74-49b1-b549-af72e442e01d');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('85e11477-ef37-45f7-86ba-e1785bdf7817', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRNDSON', '10a8a5e9-79d5-4dcb-857c-3092cedd5591');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('248ab307-e0e0-4340-845a-457d6a06a826', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRPRN', '6052f4db-8354-4c78-be2a-15fd3c89a7bd');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('6896ef65-a0a4-496e-b1b9-9892d36ee220', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRFTH', '21d150c4-930e-442f-b964-b34ede4fb348');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('19e236bf-2ef0-4b69-ae4f-0eeabb9a7fef', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGRFTH', 'f17753a8-298d-49b7-8e37-ccfa15060157');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('b95a4171-911f-4ff3-940b-a61ab504ba75', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGRFTH', '3100a18c-00a8-4aad-926b-6ebeaab4b4a1');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('afa24847-2883-4a08-94f8-f23461bb0a13', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GRMTH', '9d95989b-d071-4eb3-9ac6-d3f691bafee1');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('d919dec1-a86e-4441-ad34-6b9c39b12cbb', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGRMTH', 'ec36bc5c-acf5-4ef1-b659-1ac78ee968da');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('527c2659-ca60-4cb7-8a2c-f211639dcb8c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGRMTH', '0bbece14-c188-4d5b-91b0-8999291fefc7');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('83cfd41f-5a49-4286-937e-c49e8a0e23a0', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MGRPRN', 'e8e3924f-c2e8-45a6-9400-3727b37d7f98');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('985439cc-4f63-4b64-9a7f-314b9ebcfdc6', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PGRPRN', '3e3184f0-6e90-47c2-890b-b8a284e000d5');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('4aa6a4cb-cb9c-4a58-bfa9-bfa2aa2f00c7', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'INLAW', '5ea797ff-ca67-4ddb-baf2-08964ca26e34');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('bcf6e655-dbb9-4fe3-87df-b5734db2d2f6', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'CHLDINLAW', '1e6f1da9-15e8-4512-b502-6699b7ea7c34');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('8203f346-229b-45d3-9a41-ff9d6bdb930b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DAUINLAW', 'fcff1dc5-b860-4e8d-bee1-cfac40b33944');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('1065fdc4-3478-42f8-badf-824ba7153a7a', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SONINLAW', 'a8c0f886-aae3-479e-8aa3-d8e37f31b9be');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('e79c9ccf-b0b4-4b0d-9a3b-94dd20c060e6', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PRNINLAW', '41d6001a-9fc9-4337-bbb6-ce1ff284e115');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('e1a154e5-628e-4c96-810b-f180556a0821', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTHINLAW', '140d4897-6355-4be8-9947-06e0ca12b1ed');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9cdf2bc5-7522-4b17-bb27-b519e9f3c248', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MTHINLAW', 'd5c679c8-292c-4e78-84a3-fcccbf7b4251');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('dafa6c72-59fa-4af2-9857-bb79b63404ec', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SIBINLAW', '8f8c7f01-9cfa-477a-b6ee-fe595f8284cd');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('e628ef9d-d33c-4635-927a-9a4d5544d001', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'BROINLAW', '19d9601f-fc97-4302-9b33-8abd194b2b06');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('ade7723a-01eb-4d3d-af98-a972a8965989', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SISINLAW', '7612c887-3ae6-4056-800d-3c9af1242e72');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('68da313d-8c1e-4aab-b3c1-26fbc913b423', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NIENEPH', '9162f354-4fdc-45ed-808e-41e9335ea325');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('7a031568-c381-4444-9483-b4b9b95828e5', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NEPHEW', '9324244d-8199-41b1-9fb1-3bf3566d5d57');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('21f3d7eb-6beb-4a97-a8d6-cab3db10a632', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NIECE', '02918b92-51b6-4da0-91b0-b52ddbb5e94f');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c60311c2-2c5a-400c-9312-f7cf383b5aba', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'UNCLE', 'dadccbc8-dfb2-4572-8f19-d07e325fcc7c');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('46814289-a8af-4305-a31b-a36d2ca89ff4', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MUNCLE', 'd3a4de1f-3d6d-4ab3-bff5-795e7c20a075');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('64153ad7-785a-462e-802e-4723ced03d96', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PUNCLE', '2d037299-1e3d-4276-8d13-1ee73cb43479');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('14116083-429a-437c-9023-c0f4095679a6', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PRN', '758fc298-86b1-4ec0-a463-91034a0e35c9');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('0a5fa555-57d7-482b-907f-0b76e3ae9489', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ADOPTP', '77bf1643-3352-40b3-ae63-450b2baa37f6');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('41b1d0ae-68b0-433f-a2a1-f57bbce57802', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ADOPTF', 'a7925456-430d-4c2d-b3b2-7afbc3bbde0f');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('4491d5e3-30d5-40d3-b63a-4c4d6ada0045', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ADOPTM', 'ddd1f6d3-e362-44cd-9887-5f7d3daaa7dd');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('7e5d8430-8ccb-4a6d-8e16-a11a0c0d2f75', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTH', '5a395a3d-e1be-4b88-a91d-99b1965cfb3b');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('1c4b6432-c710-474c-84e0-508be93b558c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTHFOST', '7ba01ba3-54e0-4034-8ffd-ccee1454f9f1');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c00c8856-b5b9-4ab5-b194-097d0dfb0c66', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NFTH', '43cd0421-72e9-449c-a70a-fd50ffaea8c9');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('78f78af7-6b94-44ff-bc19-7f6243c2eb08', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NFTHF', 'cf62ae76-136d-4143-9a17-82ec94d4e0bf');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('23f2f8a8-5e80-4f52-bd28-35c33db1bc90', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPFTH', 'edb48195-0644-4e15-b4a7-6edfe3c8062c');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('0b2ca2b9-4edb-4da6-9e34-b783575eea0b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MTH', '08f80790-dda3-4ec1-939c-5884ac1a82d3');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('a903d161-4440-4a22-9e04-53472db3b73c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'GESTM', 'fcc2d4ce-c441-4542-9f70-ba72f0a3a6df');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('1dd9a9c4-ed3a-4ae8-90a3-ad8efe290195', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'MTHFOST', '08142067-32b2-4b19-a01c-63f336e0726b');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('2ccf11b2-dfc0-46a1-bf0f-74fff221e6a3', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NMTH', '8df34897-3048-46c5-8cad-bd9b622b9bbb');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('d79585a2-4ac9-4c60-8bfa-2716bbe76a24', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NMTHF', '95f37173-8a35-4148-9cda-a9781bd19f86');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c95f69c3-bdea-4532-9a18-85adb6e9bfe1', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPMTH', 'cd3a2e6f-f804-4c89-839b-a42917122ec9');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('4a58a518-d876-4626-8c72-41b9a67ca61a', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NPRN', '81965cc5-984e-4c96-9102-2ad03ffbcbef');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('4d7e0578-78b5-46b6-bb09-f9290db3eda3', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'PRNFOST', 'e736e6ed-f237-48ec-91ca-60840ea56d60');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('a5737fa7-4b83-43c6-bd8c-3db6833aa4e8', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPPRN', '8457ff34-8a3c-4e83-81b6-2991b2ca4aca');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('82378873-9b73-4aee-a90d-f048c70c11a0', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SIB', '315774e5-a881-4d09-b21f-b2640c9ac0e8');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c2e9aab2-e1ad-40f8-b7da-5e347846013b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'BRO', '98082eca-40c5-4d15-9ed4-8ecd844e3ae7');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('b7321721-23c7-491c-a525-62d5c3c93e0f', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'HBRO', '48bcbb2b-2b95-4266-a756-f277c81857eb');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('949aa131-603e-46c6-bbe8-32914f9a7dcc', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NBRO', 'f2be630f-1d57-4ae0-a094-b4d4257c33f9');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('7aa5d3da-f022-46bf-85ef-a696d68cd86b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'TWINBRO', '5181d4e6-8c98-4b43-9dfb-fd79a2daac28');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('943d057d-16bb-417b-855e-05212deb63a9', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTWINBRO', 'f24c3a34-b07a-4397-ae2d-44cef62e1a0a');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('d8a5541c-3798-4d7b-8bc8-afcc0facfe1c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ITWINBRO', '39ab3576-1b7f-423e-89a1-75e52f7c9364');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('6ee1dbd0-ef9c-4f1b-9c88-cc2c4814f291', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPBRO', '0a56be2e-819c-4ff1-87bf-0cafb9e217d0');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('fa46c072-cce5-4d64-bc51-959b7be7e235', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'HSIB', '5d52e4bd-2347-43a1-8c61-107a371163f4');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('355d3c20-9919-4ec5-9b1e-7f635ca45889', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'HSIS', '513ec433-fb86-4c22-a8d1-c9b8244e69c2');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('391e1838-e07b-4262-b44f-65bc1964f7ab', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NSIB', 'f84fece8-5ee3-43c4-9085-4ff3c43235ee');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('3070d89e-1e8e-42b4-88e4-76f2bee9753d', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NSIS', '0c409220-413e-4125-bf30-8b4f7d10ef0a');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('7efd2326-c215-4167-ae8e-13e780d76eb0', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'TWINSIS', '138fea24-3a1a-4e8e-a91b-d4b61fbd2917');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('f5b76291-e710-4596-a78a-d61737faa4de', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTWINSIS', '2f9e14dd-d88e-4522-ad05-6230a49b05fb');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('2da5c71c-32d4-4128-a34a-61414e51b6ec', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ITWINSIS', 'a2347904-20e4-48ad-b957-f14bf7c95cd4');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9a7af4c5-390e-437f-a4f7-b0fe82c4a1ab', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'TWIN', '4754b717-8d21-4d07-957b-be834f4b0e8d');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('2b4058d9-299a-4a04-b01f-4cfe7d6d96a9', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FTWIN', '768a7c4c-8cb9-4851-82f8-a104778eff0c');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('9b13d40a-2388-4ca7-9203-5703e0a64d1b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ITWIN', '18c47e4d-1bf1-404d-a99a-356fe0a26610');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('96982b5c-921f-46a9-9081-99d5374e5212', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SIS', '913bf937-04fe-4b67-a00f-6aeafe63c78a');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('c02ef913-df68-40e4-b8c9-5fa76f7b276e', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPSIS', '11e11119-083f-4e7f-8776-713468113260');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('3f9feec5-e018-4a68-8d13-623a14a3a6af', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'STPSIB', 'b6ca53f4-29b4-42f4-baa8-e952b697d6f2');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('42fd8888-a40f-4d8a-95d2-ac6f1d4f6b0c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SIGOTHR', '6702e52b-e569-4c84-8f2f-9777c0f2276b');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('458f4bd2-5eb2-409e-91f7-a53ba4cd5e8c', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'DOMPART', '79531da0-f1e6-499e-a529-8868db390b97');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('74c1b842-1eaa-46cc-bbeb-a5794ff18864', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FMRSPS', 'dc5a3eff-d842-43a6-ae2c-63df221bb60f');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('5ff6010f-e121-4203-8f70-ef2df4e2085b', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'SPS', 'bb32e6c7-667f-4cf3-9347-aa89781edc64');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('3fbea517-a9a0-410b-b70a-c47f5f436009', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'HUSB', 'bc9352a3-63c0-4ba2-ac51-20c0cbca0ea8');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('75d2ae13-0c2b-4228-9ce9-a85b78b1cdc7', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'WIFE', 'b20f2abf-e6a5-4030-928f-24a71f3629bf');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('3ce08cb5-7dd4-45c1-86ae-04c02e8dd497', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'FRND', 'a543dd56-2e52-418e-a122-9372a2c26110');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('df8cbca0-54bb-4966-ae42-be09618eff2e', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'NBOR', '2f2d6977-d35a-451a-9aa8-f4aee841cbae');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('d5ef19da-6881-4acb-b5d1-f49715bb53ee', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ONESELF', 'ad121009-f806-44a8-921c-cba728a81940');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id) VALUES ('b71b8bbc-121d-4974-82c2-31d5a6cb7302', 0, '64d3e785-d6a5-4be5-9bc9-5ed9b938e2f6', 'ROOM', '935baf12-11f4-42ba-89b5-70d6acea6546');
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- BEGIN LOINC Code Descriptions
@@ -1587,7 +1865,7 @@ if (input.managingOrganization)
 }
 if (((organizationReference == null) || organizationReference.isEmpty()) && args[''useLocations''] && input.location && !input.getLocation().isEmpty())
 {
-  var location = referenceUtils.getResource(input.location);
+  var location = referenceUtils.getResource(input.location, ''LOCATION'');
   if ((location != null) && location.managingOrganization && !location.getManagingOrganization.isEmpty())
   {
     organizationReference = location.managingOrganization;
@@ -1686,6 +1964,117 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code, descript
 VALUES ('a52945b5-94b9-48d4-9c49-f67b43d9dfbc', 0, '0e780e50-9a7e-4d4a-a9fd-1b8607d17fbb', 'Org Unit Reference Code from Patient Organization', 'EXTRACT_TEI_DHIS_ORG_UNIT_ID',
 'Extracts the organization unit ID reference from the tracked entity instance.');
 
+-- Script that transforms a Related Person to contact details of a Person
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('05fb37c2-7e68-45c0-bfe7-86999492e202', 0, 'Transforms FHIR Related Person to DHIS Person', 'TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON',
+'Transforms FHIR Related Person to DHIS Person.', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_RELATED_PERSON',
+'DHIS_TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('05fb37c2-7e68-45c0-bfe7-86999492e202', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('05fb37c2-7e68-45c0-bfe7-86999492e202', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('05fb37c2-7e68-45c0-bfe7-86999492e202', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('4476320e-3efa-40cc-a2b2-67c9b1255ce6', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'personFirstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:ftFBu8mHZ4H',
+'The reference of the tracked entity attribute that contains the first name of the related Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('46936186-a2df-4f3d-9d8f-8adb7b3028cd', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'personLastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:EpbquVl5OD6',
+'The reference of the tracked entity attribute that contains the last name of the related Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('a8a6a2d5-1bef-4497-a0f4-85727a79be0e', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'personPhoneAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:pjexi5YaAPa',
+'The reference of the tracked entity attribute that contains the phone number of the related Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, array_value, mandatory, default_value, description)
+VALUES ('198df286-b613-479a-8b4d-3cb9961105e1', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'relationshipTypeCodes', 'CODE', TRUE, TRUE, 'RC_C|RC_CP|RC_PRN|RC_ADOPTM|RC_ADOPTF|RC_MTH|RC_FTH',
+'Codes of patient relationship types in their preferred order.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('bee0e77c-d2a5-4950-ae2e-2e399c1c3629', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'preferredGender', 'GENDER', FALSE, 'FEMALE',
+'The preferred gender of the person (e.g. female in case of a mother).');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('0cb05413-c78a-4b27-97fc-a73c3cb9c430', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'function getMatchingRelatedPerson(relatedPersons, relationshipTypeCodes, preferredGender)
+{
+  var groupedSystemCodeValues = codeUtils.getSystemCodeValuesByCodes(relationshipTypeCodes);
+  for (var j = 0; j < relationshipTypeCodes.length; j++ )
+  {
+    var systemCodeValues = groupedSystemCodeValues[relationshipTypeCodes[j]];
+    if (systemCodeValues != null)
+    {
+      var matchingRelatedPerson = null;
+      for (var k = 0; k < relatedPersons.length; k++)
+      {
+        if (codeUtils.containsAnyCode(relatedPersons[k].getRelationship(), systemCodeValues))
+        {
+          if (preferredGender == null)
+          {
+            return relatedPersons[k];
+          }
+          if ((relatedPersons[k].getGender() != null) && (relatedPersons[k].getGender().name() === preferredGender))
+          {
+            return relatedPersons[k];
+          }
+          if (matchingRelatedPerson == null)
+          {
+            matchingRelatedPerson = relatedPersons[k];
+          }
+        }
+      }
+      if (matchingRelatedPerson != null)
+      {
+        return matchingRelatedPerson;
+      }
+    }
+  }
+  return null;
+}
+var patient = referenceUtils.getResource(input.patient, ''PATIENT'', true);
+if ((patient != null) && patient.hasLink())
+{
+  var relatedPersons = [];
+  for (var i = 0; i < patient.getLink().size(); i++)
+  {
+    var link = patient.getLink().get(i);
+    if (!link.isEmpty() && !link.getOther().isEmpty())
+    {
+      var relatedPerson = referenceUtils.getResource(link.getOther(), ''RELATED_PERSON'');
+      if ((relatedPerson != null) && (!relatedPerson.hasActive() || relatedPerson.getActive()) && dateTimeUtils.isValidNow(relatedPerson.getPeriod()))
+      {
+        relatedPersons.push(relatedPerson);
+      }
+    }
+  }
+  if (relatedPersons.length > 0)
+  {
+    var matchingRelatedPerson = getMatchingRelatedPerson(relatedPersons, args[''relationshipTypeCodes''], args[''preferredGender'']);
+    if (matchingRelatedPerson != null)
+    {
+      var lastName = humanNameUtils.getPrimaryName(matchingRelatedPerson.name).family;
+      if ((lastName != null) || args[''resetDhisValue''])
+      {
+        output.setOptionalValue( args[''personLastNameAttribute''], lastName, context.getFhirRequest().getLastUpdated() );
+      }
+      var firstName = humanNameUtils.getSingleGiven(humanNameUtils.getPrimaryName(matchingRelatedPerson.name));
+      if ((firstName != null) || args[''resetDhisValue''])
+      {
+        output.setOptionalValue( args[''personFirstNameAttribute''], firstName, context.getFhirRequest().getLastUpdated() );
+      }
+      var phone = contactPointUtils.getPhoneContactPointValue(matchingRelatedPerson.telecom);
+      if ((phone != null) || args[''resetDhisValue''])
+      {
+        output.setOptionalValue( args[''personPhoneAttribute''], phone, context.getFhirRequest().getLastUpdated() );
+      }
+    }
+  }
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('0cb05413-c78a-4b27-97fc-a73c3cb9c430', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('c6b2d08d-3a73-434e-a5af-ee0ff13549a1', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
+'Transforms FHIR Related Person to DHIS Person', 'TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON',
+'Transforms FHIR Related Person to DHIS Person.');
+
 -- Script that transforms Patient to Person
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 0, 'Transforms FHIR Patient to DHIS Person', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'Transforms FHIR Patient to DHIS Person.', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_PATIENT', 'DHIS_TRACKED_ENTITY_INSTANCE');
@@ -1693,58 +2082,56 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'INPUT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ea887943-5e94-4e31-9441-c7661fe1063e', 'OUTPUT');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('276b26f2-ba01-41e6-89c6-b1100580b1f3', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'uniqueIdAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:KSr2yTdu1AI',
+'The reference of the tracked entity attribute that contains a unique ID and should be set to the identifier that is used by FHIR.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('0a7c26cb-7bd3-4394-9d47-a610ac231f8a', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:Last name',
+'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'ID:aW66s2QSosT',
 'The reference of the tracked entity attribute that contains the last name of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('b41dd571-a129-4fa6-a807-35ea5663e8e3', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'CODE:MMD_PER_NAM',
+'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'ID:TfdH5KvFmMy',
 'The reference of the tracked entity attribute that contains the first name of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('9c62145d-55a6-4e3f-bfb8-df81ae43146a', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
+'resetDhisValue', 'BOOLEAN', TRUE, 'false', 'Specifies if existing values in DHIS can be reset by null values (except first and last name).');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('90b3c110-38e4-4291-934c-e2569e8af1ba', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:BiTsLcJQ95V',
 'The reference of the tracked entity attribute that contains the birth date of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'genderAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
+'genderAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:CklPZdOd6H1',
 'The reference of the tracked entity attribute that contains the gender of the Person.');
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('40a28a9c-82e3-46e8-9eb9-44aaf2f5eacc', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'addressLineAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
-'The reference of the tracked entity attribute that contains the address line (e.g. street, house number) of the Person.');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('ae13ceca-86d7-4f60-8d54-25587d53a5bd', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'cityAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
-'The reference of the tracked entity attribute that contains the city of the Person.');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('6fb6bfe4-5b44-42a1-812f-be1dc8413d6e', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'stateOfCountryAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
-'The reference of the tracked entity attribute that contains the state (i.e. state of country) of the Person.');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('a77ef245-e65e-4a87-9c96-5047911f9830', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'countryAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
-'The reference of the tracked entity attribute that contains the country of the Person.');
+'addressTextAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:Y0i71Y6CVdy',
+'The reference of the tracked entity attribute that contains as most as possible from the address of the Person.');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
-'output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family, context.getFhirRequest().getLastUpdated());
+'output.setOptionalValue(args[''uniqueIdAttribute''], output.getIdentifier());
+output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family, context.getFhirRequest().getLastUpdated());
 output.setValue(args[''firstNameAttribute''], humanNameUtils.getSingleGiven(humanNameUtils.getPrimaryName(input.name)), context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''birthDateAttribute''], dateTimeUtils.getPreciseDate(input.birthDateElement), context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''genderAttribute''], input.gender, context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''addressLineAttribute''], addressUtils.getSingleLine(addressUtils.getPrimaryAddress(input.address)), context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''cityAttribute''], addressUtils.getPrimaryAddress(input.address).city, context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''stateOfCountryAttribute''], addressUtils.getPrimaryAddress(input.address).state, context.getFhirRequest().getLastUpdated());
-output.setOptionalValue(args[''countryAttribute''], addressUtils.getPrimaryAddress(input.address).country, context.getFhirRequest().getLastUpdated());
+var birthDate = dateTimeUtils.getPreciseDate(input.birthDateElement);
+if ((birthDate != null) || args[''resetDhisValue''])
+{
+  output.setOptionalValue(args[''birthDateAttribute''], birthDate, context.getFhirRequest().getLastUpdated());
+}
+if ((input.gender != null) || args[''resetDhisValue''])
+{
+  output.setOptionalValue(args[''genderAttribute''], input.gender, context.getFhirRequest().getLastUpdated());
+}
+var addressText = addressUtils.getConstructedText(addressUtils.getPrimaryAddress(input.address));
+if ((addressText != null) || args[''resetDhisValue''])
+{
+  output.setOptionalValue(args[''addressTextAttribute''], addressText, context.getFhirRequest().getLastUpdated());
+}
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('b2cfaf30-6ede-41f2-bd6c-448e76c429a1', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('72451c8f-7492-4707-90b8-a3e0796de19e', 0, 'ea887943-5e94-4e31-9441-c7661fe1063e',
 'Transforms FHIR Patient to DHIS Person', 'TRANSFORM_FHIR_PATIENT_DHIS_PERSON', 'Transforms FHIR Patient to DHIS Person.');
-INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
-VALUES ('9b832b2c-0a57-4441-8411-47b5dc65ec91', '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'CODE:MMD_PER_DOB');
-INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
-VALUES ('5ce705ce-415c-4fb3-baa7-d3ae67823ac9', '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
-INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
-VALUES ('871dde31-8da8-4345-b38a-e065236a7ffa', '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'CODE:City');
 
 -- Script that performs the lookup of TEI FHIR Resource from FHIR Observation
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -1752,7 +2139,7 @@ VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 0, 'Observation TEI Lookup', 'OB
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'referenceUtils.getResource(input.subject)', 'JAVASCRIPT');
+VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 0, '8b5ab5f1-363d-4ccb-8e63-d6ecf25b3017', 'referenceUtils.getResource(input.subject, ''PATIENT'')', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('960d2e6c-2479-48a2-b04e-b14879e71d14', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
@@ -1813,7 +2200,7 @@ INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandat
 VALUES ('f08bc5b3-0aef-4707-8959-65d7cf690134', 0, '73175d8e-faad-458f-b38f-14ff87032720',
 'mappedObservationCodes', 'CODE', TRUE, TRUE, NULL, 'Mapped observation codes that define if the FHIR Observation is applicable for processing.');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 0, '73175d8e-faad-458f-b38f-14ff87032720', 'codeUtils.containsMappedCode(input.code, args[''mappedObservationCodes''])', 'JAVASCRIPT');
+VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 0, '73175d8e-faad-458f-b38f-14ff87032720', 'codeUtils.containsMappingCode(input.code, args[''mappedObservationCodes''])', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('376386c8-e306-49c7-9395-0d334aab60fc', 'DSTU3');
 
@@ -1907,13 +2294,26 @@ VALUES ('8d26fe6a-d9ac-40ab-abc8-5a87ab340762', 0, 'f1da6937-e2fe-47a4-b0f3-8bbf
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('8d26fe6a-d9ac-40ab-abc8-5a87ab340762', 'DSTU3');
 
+-- Script that performs the lookup of TEI FHIR Resource (Patient) from FHIR Related Person
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('0cf40900-9de3-468c-bfd0-fa2a4703fb66', 0, 'Related Person TEI Lookup', 'RELATED_PERSON_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Related Person.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_RELATED_PERSON', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('0cf40900-9de3-468c-bfd0-fa2a4703fb66', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('0cf40900-9de3-468c-bfd0-fa2a4703fb66', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('1f94dda8-28ec-480f-8c6b-d8d734612414', 0, '0cf40900-9de3-468c-bfd0-fa2a4703fb66', 'referenceUtils.getResource(input.patient, ''PATIENT'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('1f94dda8-28ec-480f-8c6b-d8d734612414', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('26e88808-64ee-4469-8083-7962b74ac48a', 0, '0cf40900-9de3-468c-bfd0-fa2a4703fb66',
+'Related Person TEI Lookup', 'RELATED_PERSON_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Related Person.');
+
 -- Script that performs the lookup of TEI FHIR Resource from FHIR Immunization
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 0, 'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_IMMUNIZATION', NULL);
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a-4422-46a3-badc-cf5604c6e11f', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'referenceUtils.getResource(input.patient)', 'JAVASCRIPT');
+VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 0, 'd4e2822a-4422-46a3-badc-cf5604c6e11f', 'referenceUtils.getResource(input.patient, ''PATIENT'')', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('85b3c460-6c2a-4f50-af46-ff09bf2e69df', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
@@ -1929,7 +2329,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830-f04c-45
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830-f04c-4575-af5d-1d6fa0bf844b', 'INPUT');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('6427e6de-8426-4ab1-b66a-edd5b0e5f410', 0, 'a5079830-f04c-4575-af5d-1d6fa0bf844b',
 'var location = null;
-var locationResource = referenceUtils.getResource(input.getLocation());
+var locationResource = referenceUtils.getResource(input.getLocation(), ''LOCATION'');
 if ((locationResource != null) && locationResource.hasPosition())
 {
   var position = locationResource.getPosition();
@@ -2010,11 +2410,21 @@ VALUES ('081c4642-bb83-44ab-b90f-aa206ad347aa', 0, 'f18acd12-bc85-4f79-935d-3539
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('081c4642-bb83-44ab-b90f-aa206ad347aa', 'DSTU3');
 
+-- Tracked Entity Person
+INSERT INTO fhir_tracked_entity(id, version, name, description, tracked_entity_ref, tracked_entity_identifier_ref)
+VALUES ('4203754d-2177-4a44-86aa-2de31ee4c8ee', 0, 'Person', 'Tracked entity for a patient.', 'NAME:Person', 'ID:Ewi7FUfcHAD');
+
 -- Rule FHIR Patient to tracked entity type Person
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id)
-VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '9299b82e-b90a-4542-8b78-200cadff3d7d', '72451c8f-7492-4707-90b8-a3e0796de19e');
-INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_ref, org_lookup_script_id, loc_lookup_script_id, tracked_entity_identifier_ref)
-VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 'NAME:Person', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a', 'CODE:National identifier');
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_in_script_id)
+VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '72451c8f-7492-4707-90b8-a3e0796de19e');
+INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, org_lookup_script_id, loc_lookup_script_id)
+VALUES ('5f9ebdc9-852e-4c83-87ca-795946aabc35', '4203754d-2177-4a44-86aa-2de31ee4c8ee', '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf', 'ef90531f-4438-48bd-83b3-6370dd65875a');
+
+-- Rule FHIR Related Person to tracked entity type Person
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_in_script_id, contained_allowed)
+VALUES ('52227dd9-c79c-478b-92af-9aa1f33c76fd', 0, 'FHIR Related Person to Person', NULL, TRUE, 0, 'RELATED_PERSON', 'TRACKED_ENTITY', 'c6b2d08d-3a73-434e-a5af-ee0ff13549a1', TRUE);
+INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, tei_lookup_script_id)
+VALUES ('52227dd9-c79c-478b-92af-9aa1f33c76fd', '4203754d-2177-4a44-86aa-2de31ee4c8ee', '26e88808-64ee-4469-8083-7962b74ac48a');
 
 UPDATE fhir_system_code sc SET system_code_value = (SELECT system_uri FROM fhir_system s WHERE s.id=sc.system_id) || '|' || system_code;
 ALTER TABLE fhir_system_code ALTER COLUMN system_code_value SET NOT NULL;

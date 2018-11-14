@@ -190,11 +190,16 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             logger.info( "Could not extract organization unit reference." );
             return Optional.empty();
         }
+        return getOrgUnit( context, orgUnitReference, scriptVariables );
+    }
 
+    @Nonnull
+    protected Optional<OrganisationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull Reference orgUnitReference, @Nonnull Map<String, Object> scriptVariables )
+    {
         final Optional<OrganisationUnit> organisationUnit = organisationUnitService.findOneByReference( orgUnitReference );
         if ( !organisationUnit.isPresent() )
         {
-            logger.info( "Organization unit of extracted reference does not exist: " + orgUnitReference );
+            logger.info( "Organization unit of reference does not exist: " + orgUnitReference );
         }
         return organisationUnit;
     }
@@ -234,8 +239,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
 
         final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
-        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntityIdentifierReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntityIdentifierReference() ) );
+        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntity().getTrackedEntityIdentifierReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntity().getTrackedEntityIdentifierReference() ) );
 
         final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final Collection<TrackedEntityInstance> result;
@@ -254,7 +259,9 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             throw new TransformerMappingException( "Filtering with identifier of rule " + rule +
                 " returned more than one tracked entity instance: " + identifier );
         }
-        return result.stream().findFirst();
+
+        final String finalIdentifier = identifier;
+        return result.stream().peek( tei -> tei.setIdentifier( finalIdentifier ) ).findFirst();
     }
 
     protected String createFullQualifiedTrackedEntityInstanceIdentifier( @Nonnull FhirToDhisTransformerContext context, String identifier )

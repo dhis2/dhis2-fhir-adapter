@@ -94,10 +94,13 @@ dhis2.fhir-adapter:
   security:
     authorities:
       administration:
+      - ALL
       - F_SYSTEM_SETTING
       code-mapping:
+      - ALL
       - F_SYSTEM_SETTING
       data-mapping:
+      - ALL
       - F_SYSTEM_SETTING
   # Defines the settings for the different cached that are used by the application.
   cache:

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.OptionSet;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 @Scriptable
@@ -43,4 +44,8 @@ public interface TrackedEntityAttribute
     ValueType getValueType();
 
     boolean isGenerated();
+
+    boolean isOptionSetValue();
+
+    OptionSet getOptionSet();
 }

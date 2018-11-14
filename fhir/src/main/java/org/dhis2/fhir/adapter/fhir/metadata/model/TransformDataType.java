@@ -43,7 +43,8 @@ public enum TransformDataType
     FHIR_PATIENT( FhirResourceType.PATIENT ),
     FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),
     FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT );
+    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
+    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON );
 
     private final FhirResourceType fhirResourceType;
 

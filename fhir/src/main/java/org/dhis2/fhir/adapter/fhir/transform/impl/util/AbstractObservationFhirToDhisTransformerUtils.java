@@ -40,18 +40,18 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Scriptable
-public abstract class AbstractObservationTransformUtils extends AbstractFhirToDhisTransformerUtils
+public abstract class AbstractObservationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "observationUtils";
 
     public static final String COMPONENT_SEPARATOR = "\n";
 
-    private final AbstractFhirClientTransformUtils clientTransformUtils;
+    private final AbstractFhirClientFhirToDhisTransformerUtils clientTransformUtils;
 
     private final AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils;
 
-    protected AbstractObservationTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull AbstractFhirClientTransformUtils clientTransformUtils, @Nonnull AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils )
+    protected AbstractObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull AbstractFhirClientFhirToDhisTransformerUtils clientTransformUtils, @Nonnull AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils )
     {
         super( scriptExecutionContext );
         this.clientTransformUtils = clientTransformUtils;

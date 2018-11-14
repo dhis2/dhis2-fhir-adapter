@@ -52,6 +52,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
+    @JsonIgnore
+    private String identifier;
+
     @JsonProperty( "trackedEntityType" )
     private String typeId;
 
@@ -118,6 +121,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.id = id;
     }
 
+    public String getIdentifier()
+    {
+        return identifier;
+    }
+
+    public void setIdentifier( String identifier )
+    {
+        this.identifier = identifier;
+    }
+
     public String getTypeId()
     {
         return typeId;
@@ -161,6 +174,12 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     public boolean containsAttribute( @Nonnull String attributeId )
     {
         return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
+    }
+
+    public boolean containsAttributeWithValue( @Nonnull String attributeId )
+    {
+        return getAttributes().stream().filter( a -> (a.getValue() != null) )
+            .anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
     }
 
     public boolean isModified()

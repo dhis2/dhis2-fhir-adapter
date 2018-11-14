@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.WritableOptionSet;
 import org.dhis2.fhir.adapter.model.ValueType;
 
 import java.io.Serializable;
@@ -46,18 +47,23 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
 
     private boolean generated;
 
+    private boolean optionSetValue;
+
+    private WritableOptionSet optionSet;
+
     public WritableTrackedEntityAttribute()
     {
         super();
     }
 
-    public WritableTrackedEntityAttribute( String id, String name, String code, ValueType valueType, boolean generated )
+    public WritableTrackedEntityAttribute( String id, String name, String code, ValueType valueType, boolean generated, WritableOptionSet optionSet )
     {
         this.id = id;
         this.name = name;
         this.code = code;
         this.valueType = valueType;
         this.generated = generated;
+        this.optionSet = optionSet;
     }
 
     @Override
@@ -113,5 +119,27 @@ public class WritableTrackedEntityAttribute implements TrackedEntityAttribute, S
     public void setGenerated( boolean generated )
     {
         this.generated = generated;
+    }
+
+    @Override
+    public boolean isOptionSetValue()
+    {
+        return optionSetValue;
+    }
+
+    public void setOptionSetValue( boolean optionSetValue )
+    {
+        this.optionSetValue = optionSetValue;
+    }
+
+    @Override
+    public WritableOptionSet getOptionSet()
+    {
+        return optionSet;
+    }
+
+    public void setOptionSet( WritableOptionSet optionSet )
+    {
+        this.optionSet = optionSet;
     }
 }

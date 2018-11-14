@@ -112,6 +112,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @NotNull
     private ExecutableScript transformInScript;
 
+    private boolean containedAllowed;
+
     protected AbstractRule()
     {
         super();
@@ -214,7 +216,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.applicableCodeSet = applicableCodeSet;
     }
 
-    @ManyToOne
+    @ManyToOne( optional = false )
     @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id", nullable = false )
     public ExecutableScript getTransformInScript()
     {
@@ -224,6 +226,17 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setTransformInScript( ExecutableScript transformInScript )
     {
         this.transformInScript = transformInScript;
+    }
+
+    @Column( name = "contained_allowed", nullable = false )
+    public boolean isContainedAllowed()
+    {
+        return containedAllowed;
+    }
+
+    public void setContainedAllowed( boolean containedAllowed )
+    {
+        this.containedAllowed = containedAllowed;
     }
 
     @Override

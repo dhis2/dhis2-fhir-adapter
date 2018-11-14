@@ -42,11 +42,13 @@ import org.dhis2.fhir.adapter.fhir.model.EventDecisionType;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.model.DateUnit;
+import org.dhis2.fhir.adapter.model.Gender;
 import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.core.convert.converter.Converter;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -64,6 +66,7 @@ public enum DataType
     DATE_TIME( ZonedDateTime.class, new StringToZonedDateTimeConverter() ),
     DATE_UNIT( DateUnit.class, new StringToEnumConverter<>( DateUnit.class ) ),
     WEIGHT_UNIT( WeightUnit.class, new StringToEnumConverter<>( WeightUnit.class ) ),
+    GENDER( Gender.class, new StringToEnumConverter<>( Gender.class ) ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),
     LOCATION( Location.class, new StringToLocationConverter() ),
@@ -75,6 +78,7 @@ public enum DataType
     PROGRAM_REF( Reference.class, new StringToReferenceConverter() ),
     PROGRAM_STAGE_REF( Reference.class, new StringToReferenceConverter() ),
     FHIR_RESOURCE( IBaseResource.class, new StringToExceptionConverter<>( IBaseResource.class ) ),
+    FHIR_RESOURCE_LIST( List.class, new StringToExceptionConverter<>( List.class ) ),
     EVENT_DECISION_TYPE( EventDecisionType.class, new StringToEnumConverter<>( EventDecisionType.class ) );
 
     private final Class<?> javaType;

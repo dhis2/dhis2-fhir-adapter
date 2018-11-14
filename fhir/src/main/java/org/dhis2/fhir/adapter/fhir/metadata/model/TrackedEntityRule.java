@@ -29,18 +29,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -56,39 +50,33 @@ public class TrackedEntityRule extends AbstractRule
     private static final long serialVersionUID = -3997570895838354307L;
 
     @NotNull
-    @Valid
-    private Reference trackedEntityReference;
+    private MappedTrackedEntity trackedEntity;
 
-    @NotNull
     private ExecutableScript orgUnitLookupScript;
 
-    @NotNull
     private ExecutableScript locationLookupScript;
 
-    @NotNull
-    @Valid
-    private Reference trackedEntityIdentifierReference;
+    private ExecutableScript teiLookupScript;
 
     public TrackedEntityRule()
     {
         super( DhisResourceType.TRACKED_ENTITY );
     }
 
-    @Basic
-    @Column( name = "tracked_entity_ref", nullable = false, length = 230 )
-    @Convert( converter = ReferenceAttributeConverter.class )
-    public Reference getTrackedEntityReference()
-    {
-        return trackedEntityReference;
-    }
-
-    public void setTrackedEntityReference( Reference trackedEntityRef )
-    {
-        this.trackedEntityReference = trackedEntityRef;
-    }
-
     @ManyToOne( optional = false )
-    @JoinColumn( name = "org_lookup_script_id", nullable = false )
+    @JoinColumn( name = "tracked_entity_id", nullable = false )
+    public MappedTrackedEntity getTrackedEntity()
+    {
+        return trackedEntity;
+    }
+
+    public void setTrackedEntity( MappedTrackedEntity trackedEntity )
+    {
+        this.trackedEntity = trackedEntity;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "org_lookup_script_id" )
     public ExecutableScript getOrgUnitLookupScript()
     {
         return orgUnitLookupScript;
@@ -99,8 +87,8 @@ public class TrackedEntityRule extends AbstractRule
         this.orgUnitLookupScript = orgUnitLookupScript;
     }
 
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "loc_lookup_script_id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "loc_lookup_script_id" )
     public ExecutableScript getLocationLookupScript()
     {
         return locationLookupScript;
@@ -111,16 +99,15 @@ public class TrackedEntityRule extends AbstractRule
         this.locationLookupScript = locationLookupScript;
     }
 
-    @Basic
-    @Column( name = "tracked_entity_identifier_ref", nullable = false, length = 230 )
-    @Convert( converter = ReferenceAttributeConverter.class )
-    public Reference getTrackedEntityIdentifierReference()
+    @ManyToOne
+    @JoinColumn( name = "tei_lookup_script_id" )
+    public ExecutableScript getTeiLookupScript()
     {
-        return trackedEntityIdentifierReference;
+        return teiLookupScript;
     }
 
-    public void setTrackedEntityIdentifierReference( Reference trackedEntityIdentifierReference )
+    public void setTeiLookupScript( ExecutableScript teiLookupScript )
     {
-        this.trackedEntityIdentifierReference = trackedEntityIdentifierReference;
+        this.teiLookupScript = teiLookupScript;
     }
 }

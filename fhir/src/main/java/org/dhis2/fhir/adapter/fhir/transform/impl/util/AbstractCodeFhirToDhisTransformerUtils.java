@@ -32,8 +32,11 @@ import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
@@ -44,14 +47,18 @@ import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,12 +71,21 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
 
     private final CodeRepository codeRepository;
 
+    private final SystemCodeRepository systemCodeRepository;
+
     private volatile Map<Class<? extends IDomainResource>, Method> codeMethods = new HashMap<>();
 
-    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeRepository codeRepository )
+    protected AbstractCodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeRepository codeRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
         this.codeRepository = codeRepository;
+        this.systemCodeRepository = systemCodeRepository;
+    }
+
+    @Nonnull
+    protected SystemCodeRepository getSystemCodeRepository()
+    {
+        return systemCodeRepository;
     }
 
     @Nonnull
@@ -85,12 +101,50 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
     @Nullable
     public abstract String getCode( @Nullable ICompositeType codeableConcept, @Nullable String system );
 
-    public abstract boolean containsMappedCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappedCodes );
+    public abstract boolean containsMappingCode( @Nullable ICompositeType codeableConcept, @Nullable Object mappingCodes );
 
     public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
 
     @Nullable
     protected abstract List<SystemCodeValue> getSystemCodeValues( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod );
+
+    public boolean containsAnyCode( @Nullable ICompositeType codeableConcept, @Nullable Collection<SystemCodeValue> systemCodeValues )
+    {
+        if ( (codeableConcept == null) || (systemCodeValues == null) )
+        {
+            return false;
+        }
+        return systemCodeValues.stream().anyMatch( scv -> containsCode( codeableConcept, scv.getSystem(), scv.getCode() ) );
+    }
+
+    @Nonnull
+    public Map<String, List<SystemCodeValue>> getSystemCodeValuesByCodes( @Nullable Object[] codes )
+    {
+        if ( (codes == null) || (codes.length == 0) )
+        {
+            return Collections.emptyMap();
+        }
+
+        final List<String> convertedCodes = ScriptArgUtils.extractStringArray( codes );
+        if ( CollectionUtils.isEmpty( convertedCodes ) )
+        {
+            return Collections.emptyMap();
+        }
+
+        // map must be returned ordered
+        final Map<String, List<SystemCodeValue>> result = new LinkedHashMap<>();
+        convertedCodes.forEach( c -> result.put( c, new ArrayList<>() ) );
+
+        final Collection<SystemCode> systemCodes = getSystemCodeRepository().findAllByCodes( convertedCodes );
+        for ( final SystemCode systemCode : systemCodes )
+        {
+            result.computeIfPresent( systemCode.getCode().getCode(), ( k, v ) -> {
+                v.add( systemCode.getCalculatedSystemCodeValue() );
+                return v;
+            } );
+        }
+        return result;
+    }
 
     @Nullable
     public List<SystemCodeValue> getResourceCodes( @Nullable IBaseResource baseResource ) throws TransformerException
@@ -114,7 +168,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
     }
 
     @ScriptExecutionRequired
-    public String getMappedCode( @Nullable String code, @Nonnull String fhirResourceType )
+    public String getMappedCode( @Nullable String code, @Nonnull Object fhirResourceType )
     {
         if ( code == null )
         {
@@ -134,7 +188,8 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
         final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
 
-        final Code c = codeRepository.findBySystemCode( resourceSystem.getSystem(), code ).stream().findFirst().orElse( null );
+        final Code c = codeRepository.findAllBySystemCodes( Collections.singleton( new SystemCodeValue( resourceSystem.getSystem(), code ).toString() ) )
+            .stream().findFirst().orElse( null );
         if ( c == null )
         {
             return null;

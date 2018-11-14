@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
 import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractObservationTransformUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractObservationFhirToDhisTransformerUtils;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Observation.ObservationComponentComponent;
 import org.hl7.fhir.dstu3.model.ResourceType;
@@ -47,9 +47,9 @@ import java.util.Set;
 
 @Component
 @Scriptable
-public class Dstu3ObservationFhirToDhisTransformerUtils extends AbstractObservationTransformUtils
+public class Dstu3ObservationFhirToDhisTransformerUtils extends AbstractObservationFhirToDhisTransformerUtils
 {
-    public Dstu3ObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull Dstu3FhirClientTransformUtils clientTransformUtils,
+    public Dstu3ObservationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull Dstu3FhirClientFhirToDhisTransformerUtils clientTransformUtils,
         @Nonnull Dstu3CodeFhirToDhisTransformerUtils codeTransformerUtils )
     {
         super( scriptExecutionContext, clientTransformUtils, codeTransformerUtils );

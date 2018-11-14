@@ -52,6 +52,8 @@ public class Reference implements Serializable
 {
     private static final long serialVersionUID = 6049184293580457755L;
 
+    public static final int MAX_LENGTH = 230;
+
     public static final int MAX_VALUE_LENGTH = 200;
 
     @NotBlank

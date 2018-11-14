@@ -65,6 +65,8 @@ public class RemoteSubscriptionFhirSetup implements Serializable
     @Min( value = 0, message = "Must be a positive value." )
     private int toleranceMillis = 5_000;
 
+    private boolean supportsRelatedPerson;
+
     public String getBaseUrl()
     {
         return baseUrl;
@@ -113,5 +115,15 @@ public class RemoteSubscriptionFhirSetup implements Serializable
     public void setToleranceMillis( int toleranceMillis )
     {
         this.toleranceMillis = toleranceMillis;
+    }
+
+    public boolean isSupportsRelatedPerson()
+    {
+        return supportsRelatedPerson;
+    }
+
+    public void setSupportsRelatedPerson( boolean supportsRelatedPerson )
+    {
+        this.supportsRelatedPerson = supportsRelatedPerson;
     }
 }

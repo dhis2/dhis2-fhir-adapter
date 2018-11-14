@@ -61,7 +61,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Scriptable
-public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhisTransformerUtils
+public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     private static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
 
@@ -71,7 +71,7 @@ public abstract class AbstractFhirClientTransformUtils extends AbstractFhirToDhi
 
     private final SystemCodeRepository systemCodeRepository;
 
-    protected AbstractFhirClientTransformUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
+    protected AbstractFhirClientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
         @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
