@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -36,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractOrganizationFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.instance.model.api.IBaseBundle;

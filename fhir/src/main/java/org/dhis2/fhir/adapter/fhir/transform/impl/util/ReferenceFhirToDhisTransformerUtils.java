@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
@@ -43,6 +42,10 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
@@ -62,9 +65,11 @@ import java.util.UUID;
  */
 @Component
 @Scriptable
+@ScriptType( value = "ReferenceUtils", var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to resolve FHIR Reference to FHIR Resources when handling FHIR to DHIS2 transformations." )
 public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "referenceUtils";
+    public static final String SCRIPT_ATTR_NAME = "referenceUtils";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -106,12 +111,27 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the FHIR resource with the specified resource type for the specified FHIR reference. The returned FHIR resource may be a cached version of the resource and may not contain the latest data.",
+        args = {
+            @ScriptMethodArg( value = "reference", description = "The FHIR reference for which the resource should be returned." ),
+            @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type of the resource (upper case with under scores, e.g. RELATED_PERSON). If this is not specified the resource type must be included in the reference. " +
+                "If this is specified and the resource type is also included in the reference, then both must match." )
+        },
+        returnDescription = "The FHIR resource for the specified reference." )
     public IBaseResource getResource( @Nullable IBaseReference reference, @Nullable Object resourceType )
     {
         return getResource( reference, resourceType, false );
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the FHIR resource with the specified resource type for the specified FHIR reference.",
+        args = {
+            @ScriptMethodArg( value = "reference", description = "The FHIR reference for which the resource should be returned." ),
+            @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type of the resource (upper case with under scores, e.g. RELATED_PERSON). If this is not specified the resource type must be included in the reference. " +
+                "If this is specified and the resource type is also included in the reference, then both must match." ),
+            @ScriptMethodArg( value = "refreshed", description = "Specifies if the latest version of the resource should be returned. If this is set to false, a cached version may be returned." )
+        },
+        returnDescription = "The FHIR resource for the specified reference." )
     public IBaseResource getResource( @Nullable IBaseReference reference, @Nullable Object resourceType, boolean refreshed )
     {
         if ( reference == null )

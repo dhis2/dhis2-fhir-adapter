@@ -28,9 +28,9 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -104,6 +104,13 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     public boolean isRemoteSubscription()
     {
         return delegate.isRemoteSubscription();
+    }
+
+    @Nullable
+    @Override
+    public String getRemoteSubscriptionCode()
+    {
+        return delegate.getRemoteSubscriptionCode();
     }
 
     @Override

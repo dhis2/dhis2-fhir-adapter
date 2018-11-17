@@ -1995,7 +1995,7 @@ VALUES ('bee0e77c-d2a5-4950-ae2e-2e399c1c3629', 0, '05fb37c2-7e68-45c0-bfe7-8699
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('0cb05413-c78a-4b27-97fc-a73c3cb9c430', 0, '05fb37c2-7e68-45c0-bfe7-86999492e202',
 'function getMatchingRelatedPerson(relatedPersons, relationshipTypeCodes, preferredGender)
 {
-  var groupedSystemCodeValues = codeUtils.getSystemCodeValuesByCodes(relationshipTypeCodes);
+  var groupedSystemCodeValues = codeUtils.getSystemCodeValuesByMappingCodes(relationshipTypeCodes);
   for (var j = 0; j < relationshipTypeCodes.length; j++ )
   {
     var systemCodeValues = groupedSystemCodeValues[relationshipTypeCodes[j]];

@@ -28,20 +28,30 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Transformer utilities for FHIR patients.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "PatientUtils", var = AbstractPatientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR patients." )
 public abstract class AbstractPatientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    protected static final String BIRTH_PLACE_URI = "http://hl7.org/fhir/StructureDefinition/birthPlace";
+    public static final String SCRIPT_ATTR_NAME = "patientUtils";
 
-    private static final String SCRIPT_ATTR_NAME = "patientUtils";
+    protected static final String BIRTH_PLACE_URI = "http://hl7.org/fhir/StructureDefinition/birthPlace";
 
     protected AbstractPatientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -56,5 +66,9 @@ public abstract class AbstractPatientFhirToDhisTransformerUtils extends Abstract
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the FHIR address that contains the birth place. The FHIR extension http://hl7.org/fhir/StructureDefinition/birthPlace is used to extract the address.",
+        args = @ScriptMethodArg( value = "patient", description = "The patient resource from which the birth place address should be extracted." ),
+        returnDescription = "The extracted birth place address."
+    )
     public abstract ICompositeType getBirthPlaceAddress( @Nullable IDomainResource patient );
 }

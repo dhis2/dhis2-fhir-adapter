@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.geo;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 /**
  * Base interface for geometry objects.

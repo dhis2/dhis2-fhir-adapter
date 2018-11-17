@@ -28,22 +28,25 @@ package org.dhis2.fhir.adapter.fhir.transform;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Scriptable
+@ScriptType( value = "Context", var = "context", description = "The context of the current transformation." )
 public interface FhirToDhisTransformerContext
 {
     @Nonnull
+    @ScriptMethod( description = "Returns the FHIR request (type FhirRequest) that causes the current transformation execution." )
     FhirRequest getFhirRequest();
 
     /**
@@ -57,22 +60,23 @@ public interface FhirToDhisTransformerContext
      * @throws TransformerScriptException thrown if the specified reference type is invalid.
      */
     @Nullable
+    @ScriptMethod( description = "Returns a reference to a DHIS2 entry (type Reference).",
+        args = {
+            @ScriptMethodArg( value = "value", description = "The value of the reference (the ID, unique code or unique name of the DHIS2 entry)." ),
+            @ScriptMethodArg( value = "referenceType", description = "The reference type (ID, CODE, NAME)." )
+        },
+        returnDescription = "The created reference." )
     Reference createReference( @Nullable String value, @Nonnull Object referenceType )
         throws TransformerScriptException;
 
     @Nonnull
-    List<IBaseResource> createFhirResourceList();
-
-    @Nonnull
+    @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )
     ZonedDateTime now();
 
     /**
      * @return <code>true</code> if creation of enrollments and events has been disabled, <code>false</code> otherwise.
      */
     boolean isCreationDisabled();
-
-    @Nonnull
-    <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerDataException;
 
     /**
      * Ends the execution of the script with the specified message. This method can be used if the
@@ -81,5 +85,7 @@ public interface FhirToDhisTransformerContext
      * @param message the message that includes the reason why the transformations failed.
      * @throws TransformerDataException the thrown exception with the specified message.
      */
+    @ScriptMethod( description = "Causes that the current transformation will fail with the specified message due to invalid data.",
+        args = @ScriptMethodArg( value = "message", description = "The reason that specifies why the transformation data is invalid." ) )
     void fail( @Nonnull String message ) throws TransformerDataException;
 }

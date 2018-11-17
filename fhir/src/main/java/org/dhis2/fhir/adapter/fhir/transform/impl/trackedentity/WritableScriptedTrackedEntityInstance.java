@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.Option;
@@ -44,6 +43,10 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,7 +55,15 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Writable scripted tracked entity instance that is used in evaluation and transformation
+ * scripts and prevents accesses to the tracked entity instance domain object.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "TrackedEntityInstance", var = "trackedEntityInstance", transformDataType = "DHIS_TRACKED_ENTITY_INSTANCE",
+    description = "Tracked entity instance. If tracked entity instance is not new and will be modified, it will be persisted." )
 public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
 {
     private final TrackedEntityAttributes trackedEntityAttributes;
@@ -74,6 +85,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     }
 
     @Override
+    @ScriptMethod( description = "Returns if the tracked entity instance is new ans has not yet been saved on DHIS2." )
     public boolean isNewResource()
     {
         return trackedEntityInstance.isNewResource();
@@ -81,6 +93,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the ID of the tracked entity instance on DHIS2. Return null if the instance is new." )
     public String getId()
     {
         return trackedEntityInstance.getId();
@@ -88,12 +101,14 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nonnull
     @Override
+    @ScriptMethod( description = "Returns the ID of the tracked entity type to which this tracked entity instance belongs to on DHIS2." )
     public String getTypeId()
     {
         return trackedEntityType.getId();
     }
 
     @Nonnull
+    @ScriptMethod( description = "Returns the national identifier of the tracked entity instance." )
     public String getIdentifier()
     {
         return trackedEntityInstance.getIdentifier();
@@ -101,11 +116,13 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Override
     @Nullable
+    @ScriptMethod( description = "Returns the organization unit ID of the organization unit to which this tracked entity instance belongs to on DHIS2." )
     public String getOrganizationUnitId()
     {
         return trackedEntityInstance.getOrgUnitId();
     }
 
+    @ScriptMethod( description = "Sets the organization unit ID of the organization unit to which this tracked entity instance belongs to on DHIS2 (must not be null)." )
     public boolean setOrganizationUnitId( @Nullable String id ) throws TransformerException
     {
         if ( id == null )
@@ -121,11 +138,15 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the coordinates (normally longitude and latitude) of the tracked entity instance." )
     public String getCoordinates()
     {
         return trackedEntityInstance.getCoordinates();
     }
 
+    @ScriptMethod( description = "Sets the coordinates of the tracked entity instance. This might be a string representation of the coordinates or a location object.",
+        returnDescription = "Returns true each time (at end of script return of true can be avoided).",
+        args = @ScriptMethodArg( value = "coordinates", description = "The coordinates as string representation, location object or null." ) )
     public boolean setCoordinates( @Nullable Object coordinates )
     {
         final String convertedValue;
@@ -145,11 +166,25 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return true;
     }
 
+    @ScriptMethod( description = "Sets the value of a tracked entity attribute.",
+        returnDescription = "Returns true each time (at end of script return of true can be avoided).",
+        args = {
+            @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute." ),
+            @ScriptMethodArg( value = "value", description = "The value that should be set. The value will be converted to the required type automatically (if possible)." ),
+        } )
     public boolean setValue( @Nonnull Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
         return setValue( attributeReference, value, null );
     }
 
+    @ScriptMethod( description = "Sets the value of a tracked entity attribute. " +
+        "This will be skipped when the specified last updated date is before the current last updated data and the user which has last modified the tracked entity was not the adapter itself.",
+        returnDescription = "Returns only true if updating the value has not been skipped since the specified last updated date is before the current last updated date.",
+        args = {
+            @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute." ),
+            @ScriptMethodArg( value = "value", description = "The value that should be set. The value will be converted to the required type automatically (if possible)." ),
+            @ScriptMethodArg( value = "lastUpdated", description = "The last updated timestamp of the data that should be assigned to the tracked entity. This value can be null if check should not be made." )
+        } )
     public boolean setValue( @Nonnull Reference attributeReference, @Nullable Object value, @Nullable Object lastUpdated ) throws TransformerException
     {
         final TrackedEntityAttribute attribute = trackedEntityAttributes.getOptional( attributeReference ).orElseThrow( () ->
@@ -158,11 +193,25 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return setValue( attribute, typeAttribute, value, ScriptedDateTimeUtils.toZonedDateTime( lastUpdated, valueConverter ) );
     }
 
+    @ScriptMethod( description = "Sets the value of a tracked entity attribute. If the specified attribute reference is null, nothing will be done.",
+        returnDescription = "Returns true each time (at end of script return of true can be avoided).",
+        args = {
+            @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute (can be null)." ),
+            @ScriptMethodArg( value = "value", description = "The value that should be set. The value will be converted to the required type automatically (if possible)." ),
+        } )
     public boolean setOptionalValue( @Nullable Reference attributeReference, @Nullable Object value ) throws TransformerException
     {
         return setOptionalValue( attributeReference, value, null );
     }
 
+    @ScriptMethod( description = "Sets the value of a tracked entity attribute. If the specified attribute reference is null, nothing will be done. " +
+        "This will be skipped when the specified last updated date is before the current last updated data and the user which has last modified the tracked entity was not the adapter itself.",
+        returnDescription = "Returns only true if updating the value has not been skipped since the specified last updated date is before the current last updated date.",
+        args = {
+            @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute (can be null)." ),
+            @ScriptMethodArg( value = "value", description = "The value that should be set. The value will be converted to the required type automatically (if possible)." ),
+            @ScriptMethodArg( value = "lastUpdated", description = "The last updated timestamp of the data that should be assigned to the tracked entity. This value can be null if check should not be made." )
+        } )
     public boolean setOptionalValue( @Nullable Reference attributeReference, @Nullable Object value, @Nullable Object lastUpdated ) throws TransformerException
     {
         if ( attributeReference != null )
@@ -180,6 +229,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the value of a tracked entity instance attribute.", args = @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute." ) )
     public Object getValue( @Nonnull Reference attributeReference )
     {
         final TrackedEntityAttribute attribute = getTypeAttribute( attributeReference );
@@ -275,6 +325,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     }
 
     @Override
+    @ScriptMethod( description = "Validates the content of the tracked entity instance and throws an exception if the content is invalid." )
     public void validate() throws TransformerException
     {
         if ( trackedEntityInstance.getOrgUnitId() == null )

@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.program;
  */
 
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

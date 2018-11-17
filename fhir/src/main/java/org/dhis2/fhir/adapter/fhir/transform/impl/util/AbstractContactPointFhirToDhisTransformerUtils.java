@@ -28,18 +28,28 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for FHIR contact points.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "ContactPointUtils", var = AbstractContactPointFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations for FHIR contact points." )
 public abstract class AbstractContactPointFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "contactPointUtils";
+    public static final String SCRIPT_ATTR_NAME = "contactPointUtils";
 
     protected AbstractContactPointFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -54,6 +64,9 @@ public abstract class AbstractContactPointFhirToDhisTransformerUtils extends Abs
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the phone number contact point from the specified list of contact points. If there are multiple contact points that include a phone number then it is tried to find the most appropriate contact point.",
+        args = @ScriptMethodArg( value = "contactPoints", description = "List of FHIR contact points from which a phone contact point should be extracted." ),
+        returnDescription = "An included phone number." )
     public String getPhoneContactPointValue( @Nullable List<? extends ICompositeType> contactPoints )
     {
         return getContactPointValue( contactPoints, "phone" );

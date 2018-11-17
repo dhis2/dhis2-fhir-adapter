@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
@@ -37,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
 
 import javax.annotation.Nonnull;

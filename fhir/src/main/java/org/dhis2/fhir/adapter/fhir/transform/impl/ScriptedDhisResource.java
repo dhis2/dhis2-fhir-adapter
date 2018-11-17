@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 @Scriptable
 public interface ScriptedDhisResource

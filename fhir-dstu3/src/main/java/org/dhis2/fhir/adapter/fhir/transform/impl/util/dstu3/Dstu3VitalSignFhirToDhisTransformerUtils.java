@@ -28,13 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractVitalSignFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.model.WeightUnit;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;

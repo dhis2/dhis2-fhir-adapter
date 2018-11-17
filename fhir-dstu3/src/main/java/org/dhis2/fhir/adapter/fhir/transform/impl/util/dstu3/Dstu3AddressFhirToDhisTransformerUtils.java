@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  */
 
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractAddressFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -59,12 +59,6 @@ public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirT
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.DSTU3_ONLY;
-    }
-
-    @Override
-    public boolean hasPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses )
-    {
-        return getOptionalPrimaryAddress( addresses ).isPresent();
     }
 
     @Nullable

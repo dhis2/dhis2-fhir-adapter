@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  */
 
 import com.google.common.collect.Sets;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
@@ -38,6 +37,7 @@ import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractCodeFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.instance.model.api.ICompositeType;

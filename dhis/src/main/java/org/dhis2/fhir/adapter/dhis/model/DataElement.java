@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 /**
  * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee

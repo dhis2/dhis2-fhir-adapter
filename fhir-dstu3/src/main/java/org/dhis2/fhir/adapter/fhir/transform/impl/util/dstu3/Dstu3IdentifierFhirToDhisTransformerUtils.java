@@ -28,11 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.ReferenceFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.stereotype.Component;

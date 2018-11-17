@@ -47,6 +47,10 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -62,13 +66,16 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Transformer utilities for organization.
+ * Transformer utilities for FHIR organizations.
  *
  * @author volsch
  */
+@Scriptable
+@ScriptType( value = "OrganizationUtils", var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR organizations." )
 public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "organizationUtils";
+    public static final String SCRIPT_ATTR_NAME = "organizationUtils";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -100,23 +107,23 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
         return SCRIPT_ATTR_NAME;
     }
 
-    @ScriptExecutionRequired
+    @ScriptMethod( description = "Checks if the specified DHIS2 organization unit code exists on DHIS2.",
+        args = @ScriptMethodArg( value = "code", description = "The DHIS2 organization unit code that should be checked." ),
+        returnDescription = "If the specified DHIS2 organization unit code exists." )
     public boolean exists( @Nullable String code )
     {
         if ( code == null )
         {
             return false;
         }
-
-        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( FhirResourceType.ORGANIZATION )
-            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + FhirResourceType.ORGANIZATION + "." ) );
-
         return organisationUnitService.findOneByReference( new Reference( code, ReferenceType.CODE ) ).isPresent();
     }
 
-    @ScriptExecutionRequired
     @Nullable
+    @ScriptExecutionRequired
+    @ScriptMethod( description = "Checks if the specified DHIS2 organization unit code exists on DHIS2 with the code prefix that is defined for organizations of the remote subscription of the current transformation context.",
+        args = @ScriptMethodArg( value = "code", description = "The DHIS2 organization unit code (without prefix) that should be checked." ),
+        returnDescription = "The DHIS2 organization unit code (includin prefix, as it exists on DHIS2) or null if it does not exist." )
     public String existsWithPrefix( @Nullable String code )
     {
         if ( code == null )
@@ -137,6 +144,9 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
     }
 
     @Nullable
+    @ScriptMethod( description = "Return a list with all FHIR organizations from the specified organization reference until the root FHIR organization. The first list item is the organization resource that is referenced by the specified reference.",
+        args = @ScriptMethodArg( value = "childReference", description = "The reference to a FHIR organization resource for which all parents should be returned (including the specified child)." ),
+        returnDescription = "List of FHIR resources in the hierarchy up to the root organization." )
     public List<? extends IBaseResource> findHierarchy( @Nullable IBaseReference childReference )
     {
         return findHierarchy( childReference, new HashSet<>() );

@@ -28,9 +28,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.OptionSet;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 @Scriptable
 public interface TrackedEntityAttribute

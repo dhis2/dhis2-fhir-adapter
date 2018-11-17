@@ -29,13 +29,13 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  */
 
 import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractGeoFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Element;
 import org.hl7.fhir.dstu3.model.Extension;

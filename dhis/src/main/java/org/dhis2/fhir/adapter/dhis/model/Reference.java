@@ -32,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nonnull;
@@ -48,6 +50,7 @@ import java.util.Objects;
  *
  * @author volsch
  */
+@ScriptType( value = "Reference", description = "Reference to an entry that is stored on DHIS2 (by ID, unique name or unique code)." )
 public class Reference implements Serializable
 {
     private static final long serialVersionUID = 6049184293580457755L;
@@ -85,12 +88,14 @@ public class Reference implements Serializable
      * @return the code or name to which the reference refers to.
      */
     @Nonnull
+    @ScriptMethod( description = "Returns the value of the reference (ID, unique code or unique name)." )
     public String getValue()
     {
         return value;
     }
 
     @Nonnull
+    @ScriptMethod( description = "Returns the type of the reference (the ID, unique code or unique name)." )
     public ReferenceType getType()
     {
         return type;
@@ -103,6 +108,7 @@ public class Reference implements Serializable
     }
 
     @Override
+    @ScriptMethod
     public boolean equals( Object o )
     {
         if ( this == o ) return true;
@@ -119,6 +125,7 @@ public class Reference implements Serializable
     }
 
     @Override
+    @ScriptMethod( description = "Returns the string representation of the reference (type and value separated by colon character)." )
     public String toString()
     {
         return type + ":" + value;

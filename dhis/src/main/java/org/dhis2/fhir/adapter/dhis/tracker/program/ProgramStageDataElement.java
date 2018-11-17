@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataElement;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 /**
  * Contains read-only access to the DHIS2 Program Stage Data Element. Implementations

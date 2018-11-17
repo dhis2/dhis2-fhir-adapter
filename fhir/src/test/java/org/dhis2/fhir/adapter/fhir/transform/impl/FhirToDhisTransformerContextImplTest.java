@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.model.ImmutableFhirRequest;
 import org.junit.Assert;
@@ -98,30 +97,5 @@ public class FhirToDhisTransformerContextImplTest
     public void isCreationDisabled()
     {
         Assert.assertTrue( context.isCreationDisabled() );
-    }
-
-    @Test
-    public void failIfNullNotNull()
-    {
-        context.failIfNull( "This is a test!!!", 10 );
-    }
-
-    @Test( expected = TransformerDataException.class )
-    public void failIfNull()
-    {
-        try
-        {
-            context.failIfNull( "This is a test!!!", null );
-        }
-        catch ( TransformerDataException e )
-        {
-            Assert.assertEquals( "This is a test!!!", e.getMessage() );
-            throw e;
-        }
-    }
-
-    @Test
-    public void fail()
-    {
     }
 }

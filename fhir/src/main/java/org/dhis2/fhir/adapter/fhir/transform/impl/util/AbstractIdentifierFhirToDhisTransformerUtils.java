@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -38,6 +37,10 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.util.ReflectionUtils;
@@ -49,10 +52,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for FHIR identifiers.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "IdentifierUtils", var = AbstractIdentifierFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR identifiers." )
 public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "identifierUtils";
+    public static final String SCRIPT_ATTR_NAME = "identifierUtils";
 
     private volatile Map<Class<? extends IDomainResource>, Method> identifierMethods = new HashMap<>();
 
@@ -72,10 +82,14 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     }
 
     @Nullable
-    protected abstract String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system );
-
-    @Nullable
     @ScriptExecutionRequired
+    @ScriptMethod( description = "Returns the business identifier from the specified referenced FHIR resource with the specified FHIR resource type. If the resource type does not match null is returned. " +
+        "The system URI of the corresponding remote subscription system of the current transformation context is used (e.g. the system URI of a Patient of the remote subscription from which the resource has been retrieved).",
+        args = {
+            @ScriptMethodArg( value = "reference", description = "The FHIR reference of a domain resource from which the identifier should be extracted." ),
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." )
+        },
+        returnDescription = "The corresponding business identifier." )
     public String getReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType ) throws TransformerException
     {
         if ( (reference == null) || reference.isEmpty() )
@@ -90,8 +104,14 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         return null;
     }
 
-
     @Nullable
+    @ScriptMethod( description = "Returns the business identifier with the specified system URI from the referenced FHIR resource with the specified FHIR resource type. If the resource type does not match null is returned.",
+        args = {
+            @ScriptMethodArg( value = "reference", description = "The FHIR reference of a domain resource from which the identifier should be extracted." ),
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." ),
+            @ScriptMethodArg( value = "system", description = "The system URI for which the identifier is returned." )
+        },
+        returnDescription = "The corresponding business identifier." )
     public String getReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformerException
     {
         if ( (reference == null) || reference.isEmpty() )
@@ -108,6 +128,13 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
 
     @Nullable
     @ScriptExecutionRequired
+    @ScriptMethod( description = "Returns the business identifier  from the specified domain resource with the specified FHIR resource type. If the resource type does not match null is returned. " +
+        "The system URI of the corresponding remote subscription system of the current transformation context is used (e.g. the system URI of a Patient of the remote subscription from which the resource has been retrieved).",
+        args = {
+            @ScriptMethodArg( value = "resource", description = "The FHIR domain resource from which the identifier should be extracted." ),
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." )
+        },
+        returnDescription = "The corresponding business identifier." )
     public String getResourceIdentifier( @Nullable IDomainResource resource, @Nonnull Object fhirResourceType ) throws TransformerException
     {
         if ( resource == null )
@@ -130,26 +157,36 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     }
 
     @Nullable
-    public String getResourceIdentifier( @Nullable IDomainResource domainResource, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformerException
+    @ScriptMethod( description = "Returns the business identifier with the specified system URI from the specified domain resource with the specified FHIR resource type. If the resource type does not match null is returned.",
+        args = {
+            @ScriptMethodArg( value = "resource", description = "The FHIR domain resource from which the identifier should be extracted." ),
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." ),
+            @ScriptMethodArg( value = "system", description = "The system URI for which the identifier is returned." )
+        },
+        returnDescription = "The corresponding business identifier." )
+    public String getResourceIdentifier( @Nullable IDomainResource resource, @Nonnull Object fhirResourceType, @Nullable String system ) throws TransformerException
     {
-        if ( domainResource == null )
+        if ( resource == null )
         {
             throw new TransformerMappingException( "Cannot get identifier of undefined domain resource." );
         }
 
-        if ( !Objects.equals( String.valueOf( FhirResourceType.getByResource( domainResource ) ), String.valueOf( fhirResourceType ) ) )
+        if ( !Objects.equals( String.valueOf( FhirResourceType.getByResource( resource ) ), String.valueOf( fhirResourceType ) ) )
         {
             return null;
         }
 
-        final Method method = getIdentifierMethod( domainResource );
+        final Method method = getIdentifierMethod( resource );
         if ( method != null )
         {
-            return getIdentifierValue( domainResource, method, system );
+            return getIdentifierValue( resource, method, system );
         }
 
         return null;
     }
+
+    @Nullable
+    protected abstract String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system );
 
     @Nullable
     private Method getIdentifierMethod( @Nonnull IDomainResource domainResource )

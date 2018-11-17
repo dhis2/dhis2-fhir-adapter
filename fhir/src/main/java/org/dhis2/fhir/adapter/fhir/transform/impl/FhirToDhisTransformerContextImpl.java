@@ -34,14 +34,11 @@ import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.model.ImmutableFhirRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
@@ -87,13 +84,6 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
 
     @Nonnull
     @Override
-    public List<IBaseResource> createFhirResourceList()
-    {
-        return new ArrayList<>();
-    }
-
-    @Nonnull
-    @Override
     public ZonedDateTime now()
     {
         return ZonedDateTime.now();
@@ -103,17 +93,6 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     public boolean isCreationDisabled()
     {
         return creationDisabled;
-    }
-
-    @Nonnull
-    @Override
-    public <T> T failIfNull( @Nonnull String message, @Nullable T value ) throws TransformerDataException
-    {
-        if ( value == null )
-        {
-            throw new TransformerDataException( message );
-        }
-        return value;
     }
 
     @Override

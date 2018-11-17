@@ -28,7 +28,9 @@ package org.dhis2.fhir.adapter.geo;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -39,6 +41,7 @@ import java.util.Objects;
  * @author volsch
  */
 @Scriptable
+@ScriptType( value = "Location", description = "Point geometry with a longitude and latitude." )
 public class Location implements Geometry, Serializable
 {
     private static final long serialVersionUID = 7916805545140123930L;
@@ -58,17 +61,20 @@ public class Location implements Geometry, Serializable
         this.latitude = latitude;
     }
 
+    @ScriptMethod( description = "Returns the longitude of the point geometry." )
     public double getLongitude()
     {
         return longitude;
     }
 
+    @ScriptMethod( description = "Returns the latitude of the point geometry." )
     public double getLatitude()
     {
         return latitude;
     }
 
     @Override
+    @ScriptMethod
     public boolean equals( Object o )
     {
         if ( this == o ) return true;

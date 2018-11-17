@@ -39,6 +39,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Abstract base class for all FHIR to DHIS2 transformer utility classes.
+ *
+ * @author volsch
+ */
 public abstract class AbstractFhirToDhisTransformerUtils implements FhirToDhisTransformerUtils
 {
     protected static final Set<FhirVersion> ALL_FHIR_VERSIONS = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( FhirVersion.values() ) ) );

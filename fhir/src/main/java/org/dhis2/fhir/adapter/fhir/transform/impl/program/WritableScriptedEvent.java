@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.program;
  */
 
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -45,6 +44,7 @@ import org.dhis2.fhir.adapter.fhir.transform.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

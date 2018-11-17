@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 
@@ -101,7 +102,7 @@ public class ReferenceSetup implements Serializable
     @Nonnull
     public Reference getReference()
     {
-        return new Reference( getReferenceValue(), getReferenceType() );
+        return new Reference( StringUtils.trimToNull( getReferenceValue() ), getReferenceType() );
     }
 
     @Nonnull

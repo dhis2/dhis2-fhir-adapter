@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,11 +41,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Scriptable
+@ScriptType( value = "FhirRequest", description = "The current FHIR request that caused the execution of the transformation." )
 public interface FhirRequest
 {
     @Nullable
     FhirRequestMethod getRequestMethod();
 
+    @ScriptMethod( description = "Returns the processed FHIR resource type as Java enumeration (e.g. RELATED_PERSON as enum constant)." )
     FhirResourceType getResourceType();
 
     @Nullable
@@ -53,12 +57,18 @@ public interface FhirRequest
     String getResourceVersionId();
 
     @Nullable
+    @ScriptMethod( description = "Returns the timestamp when the processed FHIR resource has been updated the last time." )
     ZonedDateTime getLastUpdated();
 
     @Nonnull
+    @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
     FhirVersion getVersion();
 
     boolean isRemoteSubscription();
+
+    @Nullable
+    @ScriptMethod( description = "Returns the code of the remote subscription that caused the execution of the current transformation." )
+    String getRemoteSubscriptionCode();
 
     @Nullable
     UUID getRemoteSubscriptionResourceId();

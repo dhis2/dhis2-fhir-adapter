@@ -28,9 +28,20 @@ package org.dhis2.fhir.adapter.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * The combination of system URI and code.
+ *
+ * @author volsch
+ */
+@Scriptable
+@ScriptType( value = "SystemCodeValue", description = "Contains the combination of system URI and code." )
 public class SystemCodeValue implements Serializable
 {
     private static final long serialVersionUID = -4751270623619799949L;
@@ -47,17 +58,20 @@ public class SystemCodeValue implements Serializable
         this.code = code;
     }
 
+    @ScriptMethod( description = "Returns the system URI." )
     public String getSystem()
     {
         return system;
     }
 
+    @ScriptMethod( description = "Returns the code." )
     public String getCode()
     {
         return code;
     }
 
     @Override
+    @ScriptMethod
     public boolean equals( Object o )
     {
         if ( this == o ) return true;
@@ -74,6 +88,7 @@ public class SystemCodeValue implements Serializable
     }
 
     @Override
+    @ScriptMethod( description = "Returns the string representation of system URI and code. The string representation contains the system URI and the code separated by a pipe character (as used by FHIR searches)." )
     public String toString()
     {
         return (system == null) ? code : (system + SEPARATOR + code);

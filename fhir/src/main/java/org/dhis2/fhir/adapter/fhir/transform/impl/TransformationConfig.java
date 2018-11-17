@@ -28,10 +28,14 @@ package org.dhis2.fhir.adapter.fhir.transform.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.DhisBasePackage;
+import org.dhis2.fhir.adapter.fhir.FhirBasePackage;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.impl.ThreadLocalScriptExecutionContext;
+import org.dhis2.fhir.adapter.geo.GeoBasePackage;
 import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
+import org.dhis2.fhir.adapter.scriptable.generator.JavaScriptGeneratorConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -86,5 +90,15 @@ public class TransformationConfig implements Serializable
     protected ScriptCompiler scriptCompiler()
     {
         return new ScriptCompilerImpl( getScriptEngineName() );
+    }
+
+    @Bean
+    @Nonnull
+    protected JavaScriptGeneratorConfig javaScriptGeneratorConfig()
+    {
+        return new JavaScriptGeneratorConfig().setBasePackageClasses(
+            GeoBasePackage.class,
+            DhisBasePackage.class,
+            FhirBasePackage.class );
     }
 }

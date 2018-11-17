@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
  */
 
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractDateTimeFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.CastUtils;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
 import org.hl7.fhir.dstu3.model.Period;
@@ -88,11 +88,7 @@ public class Dstu3DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhi
         final Period p = (Period) period;
         final Date now = new Date();
         // start will be ignored since there may be no further notification about that event
-        if ( (p.getEnd() != null) && now.after( p.getEnd() ) )
-        {
-            return false;
-        }
-        return true;
+        return (p.getEnd() == null) || !now.after( p.getEnd() );
     }
 
     @Override

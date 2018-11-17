@@ -29,25 +29,35 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  */
 
 import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for GEO information handling.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "GeoUtils", var = AbstractGeoFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities for GEO information handling." )
 public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
+    public static final String SCRIPT_ATTR_NAME = "geoUtils";
+
     protected static final String GEO_LOCATION_URI = "http://hl7.org/fhir/StructureDefinition/geolocation";
 
     protected static final String LATITUDE_URL = "latitude";
 
     protected static final String LONGITUDE_URL = "longitude";
-
-    private static final String SCRIPT_ATTR_NAME = "geoUtils";
 
     protected AbstractGeoFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -62,6 +72,12 @@ public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhir
     }
 
     @Nullable
+    @ScriptMethod( description = "Creates a location object (type Location) from the specified longitude and latitude.",
+        args = {
+            @ScriptMethodArg( value = "longitude", description = "The longitude of the GEO point." ),
+            @ScriptMethodArg( value = "latitude", description = "The latitude of the GEO point." ),
+        },
+        returnDescription = "The created location object." )
     public Location create( @Nullable Number longitude, @Nullable Number latitude )
     {
         if ( (longitude == null) || (latitude == null) )
@@ -71,11 +87,17 @@ public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhir
         return new Location( longitude.doubleValue(), latitude.doubleValue() );
     }
 
+    @ScriptMethod( description = "Returns if the specified string representation of coordinates is a location.",
+        args = @ScriptMethodArg( value = "coordinates", description = "The coordinate string representation that should be checked." ),
+        returnDescription = "If the specified coordinates represent the string representation of a location." )
     public boolean isLocation( @Nullable String coordinates )
     {
         return StringToLocationConverter.isLocation( coordinates );
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the location from the FHIR element address (FHIR extension http://hl7.org/fhir/StructureDefinition/geolocation).",
+        args = @ScriptMethodArg( value = "element", description = "The FHIR element address from which the location should be returned." ),
+        returnDescription = "The location (type Location) that is included in the specified element or null if no location is included." )
     public abstract Location getLocation( @Nonnull IElement element ) throws TransformerException;
 }

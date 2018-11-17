@@ -60,6 +60,8 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private String dhisUsername;
 
+    private String remoteSubscriptionCode;
+
     private UUID remoteSubscriptionResourceId;
 
     private Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
@@ -174,6 +176,18 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setRemoteSubscriptionResourceId( UUID remoteSubscriptionResourceId )
     {
         this.remoteSubscriptionResourceId = remoteSubscriptionResourceId;
+    }
+
+    @Nullable
+    @Override
+    public String getRemoteSubscriptionCode()
+    {
+        return remoteSubscriptionCode;
+    }
+
+    public void setRemoteSubscriptionCode( String remoteSubscriptionCode )
+    {
+        this.remoteSubscriptionCode = remoteSubscriptionCode;
     }
 
     public Map<FhirResourceType, ResourceSystem> getResourceSystemsByType()

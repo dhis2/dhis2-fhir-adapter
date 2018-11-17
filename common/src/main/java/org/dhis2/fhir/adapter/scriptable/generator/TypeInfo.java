@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.scriptable.generator;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,22 +28,30 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.annotation.Nonnull;
+import java.util.Set;
 
-/**
- * Classes or an interfaces that are marked with this annotation belong to the API that is provided to executed
- * evaluation and transformation scripts.
- *
- * @author volsch
- */
-@Target( { ElementType.TYPE } )
-@Retention( RetentionPolicy.CLASS )
-@Documented
-public @interface Scriptable
+class TypeInfo
 {
-    // nothing to declare
+    private final Set<PropertyInfo> propertyInfo;
+
+    private final Set<MethodInfo> methodInfo;
+
+    public TypeInfo( @Nonnull Set<PropertyInfo> propertyInfo, @Nonnull Set<MethodInfo> methodInfo )
+    {
+        this.propertyInfo = propertyInfo;
+        this.methodInfo = methodInfo;
+    }
+
+    @Nonnull
+    public Set<PropertyInfo> getPropertyInfo()
+    {
+        return propertyInfo;
+    }
+
+    @Nonnull
+    public Set<MethodInfo> getMethodInfo()
+    {
+        return methodInfo;
+    }
 }

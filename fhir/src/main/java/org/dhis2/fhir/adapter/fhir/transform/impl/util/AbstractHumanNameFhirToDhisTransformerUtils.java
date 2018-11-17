@@ -28,20 +28,30 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.Scriptable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for human names.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "HumanNameUtils", var = AbstractHumanNameFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of human names." )
 public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    protected static final String DEFAULT_GIVEN_DELIMITER = " ";
+    public static final String SCRIPT_ATTR_NAME = "humanNameUtils";
 
-    private static final String SCRIPT_ATTR_NAME = "humanNameUtils";
+    protected static final String DEFAULT_GIVEN_DELIMITER = " ";
 
     protected AbstractHumanNameFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -56,10 +66,14 @@ public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends Abstra
     }
 
     @Nullable
+    @ScriptMethod( description = "Return a single given name from the specified FHIR human name. If the human name contains multiple given names these are separated by space characters.",
+        args = @ScriptMethodArg( value = "humanName", description = "The human name from which the single given name should be extracted." ),
+        returnDescription = "The extracted single given name." )
     public abstract String getSingleGiven( @Nullable ICompositeType humanName );
 
-    public abstract boolean hasPrimaryName( @Nonnull List<? extends ICompositeType> names );
-
     @Nullable
+    @ScriptMethod( description = "Extracts the name of the list of names that seems to be the most appropriate name.",
+        args = @ScriptMethodArg( value = "names", description = "The list of names from which one name should be extracted." ),
+        returnDescription = "The extracted primary name." )
     public abstract ICompositeType getPrimaryName( @Nonnull List<? extends ICompositeType> names );
 }
