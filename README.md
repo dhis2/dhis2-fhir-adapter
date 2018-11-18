@@ -1,8 +1,9 @@
 # DHIS2 FHIR Adapter
 ## Overview
 This repository contains the source code of the DHIS2 FHIR Adapter. The current scope of the Adapter is to import data into DHIS2 Tracker by using FHIR Subscriptions. Event if the adapter may support more FHIR Resource types at the moment, the initial 
- official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances.
- 
+ official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances. The adapter may be extended by export of the corresponding resource to a FHIR server. Also an import and export of medical and survey data may be available 
+ in the future.
+
 The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
@@ -28,12 +29,17 @@ Depending on the country specific use of FHIR organization and location resource
 DHIS 2.30 or newer must be installed.  
 
 The application includes a suggested tracked entity type person. The corresponding metadata for DHIS 2.30 is located at [Person Metadata](fhir/src/main/resources/static/dhis/metadata/person-metadata.json). It can also be accessed from the setup application
- that is described below. This allows also to customize the mapping to the tracked entity type for the FHIR resource patient. 
+ that is described below. This allows also to customize the mapping to the tracked entity type for the FHIR resource patient. Currently, the adapter supports text based, number based and date/time based tracked entity attributes.
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.6.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
 
 The initial subscription for FHIR Resource Patient is created by the initial setup user interface that is described later in this document. 
+
+Minimal requirements:
+- Support of FHIR subscriptions (minimum REST hook subscriptions without a payload)
+- Searches based on a last updated timestamp of the FHIR resource that is greater or equal than a specified timestamp and ordering for the last updated timestamp of the FHIR resource.
+- Either paging when searching for large amount of data or returning as many entries that last update timestamps change in one result bundle.
                                
 #### PostgreSQL Database
 The Adapter requires a PostgresSQL 10.0 database. 
@@ -104,6 +110,8 @@ The following example contains the content of configuration file application.yml
           # The password that is used to connect to DHIS2 to access the metadata.
           password: district
 
+More changeable settings can be found in the file [default-application.yml](app/src/main/resources/default-application.yml).
+
 ### Running
 The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). 
 
@@ -127,6 +135,6 @@ With the default configuration the initial setup user interface can be accessed 
 The adapter provides REST interfaces for administration and mapping. The documentation is currently generated automatically when building the adapter. Unit test execution must not be skipped in this case when building the adapter. The documentation can be 
  found at docs/api-guide.html. If the Adapter has been started by command line without changing the port, then the guide is available at http://localhost:8081/docs/api-guide.html.
  
-The JavaScript API that is used to create rules and transformations is generated automatically when running the adapter. The script can be 
- found at scripts/to-dhis2-all-mapping.js. If the Adapter has been started by command line without changing the port, then the guide is available at http://localhost:8081/scripts/to-dhis2-all-mapping.js.
+The JavaScript API that is used to create rules and transformations is generated automatically when running the adapter. The script can be found at scripts/to-dhis2-all-mapping.js. If the Adapter has been started by command line without changing the port, 
+ then the guide is available at http://localhost:8081/scripts/to-dhis2-all-mapping.js. The FHIR resources are exposed to JavaScript by [HAPI FHIR 3.6.0](http://hapifhir.io/) objects. 
     

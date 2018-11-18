@@ -99,7 +99,7 @@
 
     <h3>FHIR Setup</h3>
     <p>This sub-section contains the data of the FHIR server that is required by the Adapter to access the FHIR server and to create the FHIR subscriptions. When this form is submitted the Adapter will create a subscription for FHIR resource Patient on FHIR
-      server.</p>
+      server. A subscription can also created manually. In this case the adapter context relative REST hook endpoint URL will be /remote-fhir-rest-hook/{remoteSubscriptionId}/{remoteSubscriptionResourceId}.</p>
     <div class="value">
       <p>The base URL of the FHIR endpoints that support version DSTU3.<br/>
         Example: http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3</p>

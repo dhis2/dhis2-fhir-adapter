@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractHumanNameFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.TransformerComparatorUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.HumanName;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,9 +50,12 @@ import java.util.stream.Collectors;
 @Scriptable
 public class Dstu3HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameFhirToDhisTransformerUtils
 {
-    public Dstu3HumanNameFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils;
+
+    public Dstu3HumanNameFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils )
     {
         super( scriptExecutionContext );
+        this.dateTimeTransformerUtils = dateTimeTransformerUtils;
     }
 
     @Nonnull
@@ -79,8 +84,67 @@ public class Dstu3HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameF
     }
 
     @Nonnull
-    protected Optional<HumanName> getOptionalPrimaryName( @Nonnull List<? extends ICompositeType> names )
+    protected Optional<HumanName> getOptionalPrimaryName( @Nullable List<? extends ICompositeType> names )
     {
-        return names.stream().map( HumanName.class::cast ).findFirst();
+        if ( (names == null) || names.isEmpty() )
+        {
+            return Optional.empty();
+        }
+        if ( names.size() == 1 )
+        {
+            return Optional.of( (HumanName) names.get( 0 ) );
+        }
+        return names.stream().map( HumanName.class::cast )
+            .filter( hn -> dateTimeTransformerUtils.isValidNow( hn.getPeriod() ) )
+            .min( new HumanNameComparator() );
+    }
+
+    protected static class HumanNameComparator implements Comparator<HumanName>
+    {
+        @Override
+        public int compare( HumanName o1, HumanName o2 )
+        {
+            int value = getHumanNameUseValue( o1.getUse() ) - getHumanNameUseValue( o2.getUse() );
+            if ( value != 0 )
+            {
+                return value;
+            }
+            return comparatorValue( o1 ).compareTo( comparatorValue( o2 ) );
+        }
+
+        private int getHumanNameUseValue( @Nullable HumanName.NameUse nu )
+        {
+            if ( nu == HumanName.NameUse.OLD )
+            {
+                return 9;
+            }
+            else if ( nu == HumanName.NameUse.MAIDEN )
+            {
+                return 8;
+            }
+            else if ( nu == HumanName.NameUse.TEMP )
+            {
+                return 7;
+            }
+            else if ( nu == HumanName.NameUse.NICKNAME )
+            {
+                return 6;
+            }
+            else if ( nu == HumanName.NameUse.ANONYMOUS )
+            {
+                return 5;
+            }
+            else if ( nu == HumanName.NameUse.USUAL )
+            {
+                return 4;
+            }
+            return 0;
+        }
+
+        @Nonnull
+        private String comparatorValue( @Nonnull HumanName hu )
+        {
+            return TransformerComparatorUtils.comparatorValue( hu.getText(), hu.getGiven(), hu.getFamily(), hu.getPrefix(), hu.getSuffix() );
+        }
     }
 }

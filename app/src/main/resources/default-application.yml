@@ -32,8 +32,7 @@ server:
   port: 8081
 
 spring:
-  flyway:
-    locations: @db.flyway.locations@
+  # Settings for the database connection.
   datasource:
     # The JDBC URL of the database in which the Adapter tables are located.
     url: @db.url@
@@ -41,21 +40,56 @@ spring:
     username: @db.username@
     # The password that is required to connect to the database.
     password: @db.password@
-    driver-class-name: @db.driver@
+    # Settings of the database connection pool.
     hikari:
+      # The maximum size of the connection pool with database connections.
+      # The size should be at least double the size of the defined maximum
+      # of message queue listener concurrency that is defined below. The
+      # database must be able to handle this amount of connections.
       maximum-pool-size: 50
+  # Settings for the Redis cache (at least version 4 or later). If no cache
+  # that is specified below uses Redis, then these settings will not be used.
+  redis:
+    # Connection URL. Overrides host, port, and password. User is ignored.
+    # Example: redis://user:password@example.com:6379
+    url: redis://localhost:6379
+  # Settings of the Artemis message queueing system. For a non-clustered
+  # installation the embedded server can be used where the data is stored
+  # on the local file system.
   artemis:
+    # Settings for the embedded server, that can be used for a non-clustered
+    # installation.
     embedded:
+      # Specifies of the embedded server should be enabled. If the adapter
+      # runs in a clustered environment the embedded server must not be enabled
+      # and host, port, username and password for the Artemis broker must be
+      # specified.
       enabled: true
+      # The ID of the embedded server (should not be changed).
       server-id: 1
+      # Specifies if the queue data should be persisted or just hold in memory.
+      # In production and production-like environments data must be persisted
+      # in order to avoid a data loss.
       persistent: true
+      # Specifies the directory in which the embedded message queue stores all
+      # of its data. The directory should be included in the backup of the
+      # machine on which the adapter has been installed.
       data-directory: ${dhis2.home}/services/fhir-adapter/artemis
+    # Artemis broker host.
+    host: localhost
+    # Artemis broker port.
+    port: 61616
+    # Login user of the broker.
+    user:
+    # Login password of the broker.
+    password:
   jpa:
+    # Specifies if SQL statement should be output. This should normally
+    # be disabled and should not be changed.
     show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
 
+# Specifies the default settings of the circuit breaker. The circuit
+# breaker settings do not need to be adjusted normally.
 hystrix:
   command:
     default:
@@ -71,6 +105,7 @@ hystrix:
       fallback:
         enabled: true
 
+# Configuration of the DHIS2 FHIR adapter.
 dhis2.fhir-adapter:
   # Configuration of DHIS2 endpoint that is accessed by the adapter.
   endpoint:
@@ -91,19 +126,35 @@ dhis2.fhir-adapter:
     connectTimeout: 5000
     # The read timeout when accessing DHIS2 in milli-seconds.
     readTimeout: 30000
+  # Contains the security settings of the adapter.
   security:
+    # The adapter uses security authorities that are mapped to authorities of DHIS2.
     authorities:
+      # The mapping of the adapter ADMINISTRATION authority to DHIS2 authorities.
+      # At least one of the specified DHIS2 authorities must be assigned to the user
+      # in order to get the specified adapter authority.
       administration:
       - ALL
       - F_SYSTEM_SETTING
+      # The mapping of the adapter CODE-MAPPING authority to DHIS2 authorities.
+      # At least one of the specified DHIS2 authorities must be assigned to the user
+      # in order to get the specified adapter authority.
       code-mapping:
       - ALL
       - F_SYSTEM_SETTING
+      # The mapping of the adapter DATA-MAPPING authority to DHIS2 authorities.
+      # At least one of the specified DHIS2 authorities must be assigned to the user
+      # in order to get the specified adapter authority.
       data-mapping:
       - ALL
       - F_SYSTEM_SETTING
   # Defines the settings for the different cached that are used by the application.
+  # Three cache types are supported:
+  # - none (no caching at all, useful for mapping development)
+  # - caffeine (in memory cache, useful if there is only a single instance)
+  # - redis (Redis 4 or later)
   cache:
+    # Settings of the Adapter metadata cache (code mappings, data mappings, rules).
     metadata:
       type: caffeine
       caffeine:
@@ -111,6 +162,7 @@ dhis2.fhir-adapter:
       redis:
         time-to-live: 60s
         key-prefix: fhir-adapter:metadata
+    # Settings of the DHIS2 metadata cache.
     dhis:
       type: caffeine
       caffeine:
@@ -118,6 +170,7 @@ dhis2.fhir-adapter:
       redis:
         time-to-live: 120s
         key-prefix: fhir-adapter:dhis
+    # Settings of FHIR resource cache.
     fhir:
       type: caffeine
       caffeine:
@@ -125,33 +178,83 @@ dhis2.fhir-adapter:
       redis:
         time-to-live: 500s
         key-prefix: fhir-adapter:fhir
+  # Settings for FHIR subscriptions on remote FHIR servers and the related
+  # data processing.
   remote:
+    # Settings of the processor that retrieves the FHIR resources by last update
+    # timestamp from the FHIR remote FHIR server.
     processor:
+      # The maximum number of FHIR resources that should be returned by the FHIR
+      # server at once. The last updated timestamp that is used by the FHIR server
+      # must change at least within the specified amount of items.
       max-search-count: 10000
+      # The maximum number of minutes processed FHIR resource IDs will remain stored
+      # in order to avoid duplicate FHIR resource processing (increases load and the
+      # probability of data inconsistencies).
       max-processed-age-minutes: 2880
+    # The queue that is used to stored incoming REST hook requests. For each FHIR
+    # resource type (per FHIR server) there should be maximum one item in the queue.
+    # Also processing will be grouped. It must absolutely avoided that the data
+    # retrieval of the same FHIR resource type of one FHIR server is done more than
+    # one time.
     web-hook-request-queue:
+      # The name of the queue.
       queue-name: jms.queue.remoteWebHookRequestQueue
+      # Settings of the listener that processes the messages in the queue.
       listener:
+        # Minimum and maximum number of listener instances (concurrent processing
+        # of queued messages) on each running adapter instance.
         concurrency: 1-5
+      # Settings of the embedded queue. If the adapter is connected to an external
+      # Artemis broker, the settings for the queue and the queue creation must be done
+      # on the external Artemis broker.
       embedded-address-settings:
+        # Maximum number of attempts to process the message.
         max-delivery-attempts: 100
+        # The initial retry delay (in milli seconds) in case of an error.
         redelivery-delay: 30000
+        # The factor that is used to increase the deliver delay on each retry.
         redelivery-multiplier: 3.0
+        # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
   repository:
     fhir-resource-dl-queue:
+      # The name of the queue.
       queue-name: jms.queue.remoteFhirResourceDlQueue
+      # Settings of the embedded queue. If the adapter is connected to an external
+      # Artemis broker, the settings for the queue and the queue creation must be done
+      # on the external Artemis broker.
       embedded-address-settings:
+        # The maximum time (in milli seconds) a message remains in the queue before it
+        # is regarded as expired.
         expiry-delay: 2419200000
     fhir-resource-queue:
+      # The name of the queue.
       queue-name: jms.queue.remoteFhirResourceQueue
+      # Settings of the listener that processes the messages in the queue.
       listener:
+        # Minimum and maximum number of listener instances (concurrent processing
+        # of queued messages) on each running adapter instance.
         concurrency: 1-10
+      # Settings of the embedded queue. If the adapter is connected to an external
+      # Artemis broker, the settings for the queue and the queue creation must be done
+      # on the external Artemis broker.
       embedded-address-settings:
+        # The name of the queue into which the message is placed when the maximum
+        # delivery attempts have exceeded.
         dead-letter-address: jms.queue.remoteFhirResourceDlQueue
+        # Maximum number of attempts to process the message before it is placed in the
+        # dead letter queue.
         max-delivery-attempts: 100
+        # The initial retry delay (in milli seconds) in case of an error.
         redelivery-delay: 30000
+        # The factor that is used to increase the deliver delay on each retry.
         redelivery-multiplier: 3.0
+        # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
+  # Settings of the transformation.
   transformation:
+    # The JavaScript engine that is used to process rules, mappings and transformations.
+    # This value should not be changed normally. After changing this value, rules,
+    # mappings and transformations must be retested.
     script-engine-name: nashorn

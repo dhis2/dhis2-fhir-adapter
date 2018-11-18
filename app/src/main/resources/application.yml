@@ -27,6 +27,10 @@
 #
 
 spring:
+  flyway:
+    locations: @db.flyway.locations@
+  datasource:
+    driver-class-name: @db.driver@
   data:
     rest:
       basePath: /api

@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.impl.util.dstu3;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractContactPointFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.TransformerComparatorUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -69,11 +70,10 @@ public class Dstu3ContactPointFhirToDhisTransformerUtils extends AbstractContact
         {
             return null;
         }
-
-        final ContactPoint found = contactPoints.stream().map( cp -> (ContactPoint) cp )
+        return contactPoints.stream().map( cp -> (ContactPoint) cp )
             .filter( cp -> cp.hasSystem() && code.equalsIgnoreCase( cp.getSystem().toCode() )
-                && dateTimeTransformerUtils.isValidNow( cp.getPeriod() ) && cp.hasValue() ).min( new ContactPointComparator() ).orElse( null );
-        return (found == null) ? null : found.getValue();
+                && dateTimeTransformerUtils.isValidNow( cp.getPeriod() ) && cp.hasValue() )
+            .min( new ContactPointComparator() ).map( ContactPoint::getValue ).orElse( null );
     }
 
     protected static class ContactPointComparator implements Comparator<ContactPoint>
@@ -81,27 +81,36 @@ public class Dstu3ContactPointFhirToDhisTransformerUtils extends AbstractContact
         @Override
         public int compare( ContactPoint o1, ContactPoint o2 )
         {
-            return getOrderString( o1 ).compareTo( getOrderString( o2 ) );
+            int value = getContactPointUseValue( o1.getUse() ) - getContactPointUseValue( o2.getUse() );
+            if ( value != 0 )
+            {
+                return value;
+            }
+            value = o1.getRank() - o2.getRank();
+            if ( value != 0 )
+            {
+                return value;
+            }
+            return comparatorValue( o1 ).compareTo( comparatorValue( o2 ) );
+        }
+
+        private int getContactPointUseValue( @Nullable ContactPoint.ContactPointUse cpu )
+        {
+            if ( cpu == ContactPoint.ContactPointUse.OLD )
+            {
+                return 8;
+            }
+            else if ( cpu == ContactPoint.ContactPointUse.TEMP )
+            {
+                return 5;
+            }
+            return 0;
         }
 
         @Nonnull
-        private String getOrderString( @Nonnull ContactPoint cp )
+        private String comparatorValue( @Nonnull ContactPoint cp )
         {
-            final String use;
-            if ( cp.getUse() == ContactPoint.ContactPointUse.OLD )
-            {
-                use = "8";
-            }
-            else if ( cp.getUse() == ContactPoint.ContactPointUse.TEMP )
-            {
-                use = "5";
-            }
-            else
-            {
-                use = "0";
-            }
-            final int rank = cp.hasRank() ? cp.getRank() : Integer.MAX_VALUE;
-            return use + String.format( "0x%08x", rank );
+            return TransformerComparatorUtils.comparatorValue( cp.getValue() );
         }
     }
 }

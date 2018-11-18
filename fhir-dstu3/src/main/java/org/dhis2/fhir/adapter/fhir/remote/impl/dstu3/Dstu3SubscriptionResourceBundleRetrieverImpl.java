@@ -104,4 +104,11 @@ public class Dstu3SubscriptionResourceBundleRetrieverImpl extends AbstractSubscr
         final Bundle.BundleLinkComponent link = b.getLink( Bundle.LINK_PREV );
         return ((link != null) && !link.isEmpty()) ? client.loadPage().previous( bundle ).execute() : null;
     }
+
+    @Override
+    protected boolean isEmpty( @Nullable IBaseBundle bundle )
+    {
+        final Bundle b = (Bundle) bundle;
+        return (b == null) || b.getEntry().isEmpty();
+    }
 }

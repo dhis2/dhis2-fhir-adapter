@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.impl.util.AbstractAddressFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.impl.util.TransformerComparatorUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.PrimitiveType;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -49,9 +51,12 @@ import java.util.stream.Collectors;
 @Scriptable
 public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirToDhisTransformerUtils
 {
-    public Dstu3AddressFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils;
+
+    public Dstu3AddressFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull Dstu3DateTimeFhirToDhisTransformerUtils dateTimeTransformerUtils )
     {
         super( scriptExecutionContext );
+        this.dateTimeTransformerUtils = dateTimeTransformerUtils;
     }
 
     @Nonnull
@@ -125,8 +130,68 @@ public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirT
     }
 
     @Nonnull
-    protected Optional<Address> getOptionalPrimaryAddress( @Nonnull List<? extends ICompositeType> addresses )
+    protected Optional<Address> getOptionalPrimaryAddress( @Nullable List<? extends ICompositeType> addresses )
     {
-        return addresses.stream().map( Address.class::cast ).findFirst();
+        if ( (addresses == null) || addresses.isEmpty() )
+        {
+            return Optional.empty();
+        }
+        if ( addresses.size() == 1 )
+        {
+            return Optional.of( (Address) addresses.get( 0 ) );
+        }
+        return addresses.stream().map( Address.class::cast )
+            .filter( a -> dateTimeTransformerUtils.isValidNow( a.getPeriod() ) ).min( new AddressComparator() );
+    }
+
+    protected static class AddressComparator implements Comparator<Address>
+    {
+        @Override
+        public int compare( Address o1, Address o2 )
+        {
+            int value = getAddressUseValue( o1.getUse() ) - getAddressUseValue( o2.getUse() );
+            if ( value != 0 )
+            {
+                return value;
+            }
+            value = getAddressTypeValue( o1.getType() ) - getAddressTypeValue( o2.getType() );
+            if ( value != 0 )
+            {
+                return value;
+            }
+            return comparatorValue( o1 ).compareTo( comparatorValue( o2 ) );
+        }
+
+        private int getAddressUseValue( @Nullable Address.AddressUse au )
+        {
+            if ( au == Address.AddressUse.OLD )
+            {
+                return 8;
+            }
+            else if ( au == Address.AddressUse.WORK )
+            {
+                return 6;
+            }
+            else if ( au == Address.AddressUse.TEMP )
+            {
+                return 5;
+            }
+            return 0;
+        }
+
+        private int getAddressTypeValue( @Nullable Address.AddressType at )
+        {
+            if ( at == Address.AddressType.POSTAL )
+            {
+                return 8;
+            }
+            return 0;
+        }
+
+        @Nonnull
+        private String comparatorValue( @Nonnull Address a )
+        {
+            return TransformerComparatorUtils.comparatorValue( a.getText(), a.getLine(), a.getPostalCode(), a.getCity(), a.getState(), a.getCountry() );
+        }
     }
 }
