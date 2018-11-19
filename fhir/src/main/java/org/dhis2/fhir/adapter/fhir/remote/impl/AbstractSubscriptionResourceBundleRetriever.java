@@ -52,7 +52,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +78,6 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final FhirContext fhirContext;
-
-    private final ZoneId zoneId = ZoneId.systemDefault();
 
     protected AbstractSubscriptionResourceBundleRetriever( @Nonnull FhirContext fhirContext )
     {
@@ -111,7 +108,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
             }
             fromLastUpdated = fromLastUpdated
                 .minus( subscriptionResource.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
-            IBaseBundle bundle = createBaseQuery( client, resourceName, subscriptionResource, maxSearchCount, fromLastUpdated )
+            IBaseBundle bundle = createBaseQuery( client, resourceName, subscriptionResource, fromLastUpdated ).count( maxSearchCount )
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
             do
             {
@@ -130,15 +127,6 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                     }
                 } );
 
-                final Long totalCount = paging ? null : getTotalCount( client, resourceName, subscriptionResource, maxSearchCount, fromLastUpdated, bundle );
-                if ( !paging && (previousResources != null) && !resources.isEmpty() && previousResources.containsAll( resources ) &&
-                    (previousResources.size() >= resources.size()) && (resources.size() < totalCount) )
-                {
-                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " returned same result for last updated  " +
-                        fromLastUpdated + " (count " + resources.size() + " of maximum " + maxSearchCount + ")." );
-                }
-                previousResources = new HashSet<>( resources );
-
                 moreAvailable = false;
                 if ( resources.isEmpty() )
                 {
@@ -150,6 +138,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                     bundle = backwardPaging ? loadPreviousPage( client, currentBundle ) : loadNextPage( client, currentBundle );
                     if ( isEmpty( bundle ) )
                     {
+                        long totalCount;
                         bundle = null;
                         if ( paging )
                         {
@@ -164,10 +153,25 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                                 }
                             }
                         }
-                        else if ( resources.size() < totalCount )
+                        else if ( resources.size() < (totalCount = getTotalCount( client, resourceName, subscriptionResource, fromLastUpdated, currentBundle )) )
                         {
                             logger.debug( "Returned {} of {} for remote subscription resource {} with maximum requested {}.",
                                 resources.size(), totalCount, subscriptionResource.getId(), maxSearchCount );
+                            final Instant minLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
+                                .filter( lu -> (lu != null) ).min( Comparator.naturalOrder() ).orElse( null );
+                            if ( (minLastUpdated != null) && minLastUpdated.isBefore( fromLastUpdated ) )
+                            {
+                                logger.warn( "Remote subscription resource {} returned minimum last updated {} for lower bound {}.",
+                                    subscriptionResource.getId(), minLastUpdated, fromLastUpdated );
+                            }
+
+                            if ( (previousResources != null) && previousResources.containsAll( resources ) && (previousResources.size() >= resources.size()) )
+                            {
+                                throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " returned same result for last updated  " +
+                                    fromLastUpdated + " (count " + resources.size() + " of maximum " + maxSearchCount + ")." );
+                            }
+                            previousResources = new HashSet<>( resources );
+
                             final Instant maxLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
                                 .filter( lu -> (lu != null) ).max( Comparator.naturalOrder() ).orElse( null );
                             if ( maxLastUpdated == null )
@@ -176,15 +180,15 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                             }
                             else
                             {
-                                if ( maxLastUpdated.equals( fromLastUpdated ) )
-                                {
-                                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
-                                        fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
-                                }
-                                else
+                                if ( maxLastUpdated.isAfter( fromLastUpdated ) )
                                 {
                                     fromLastUpdated = maxLastUpdated;
                                     moreAvailable = true;
+                                }
+                                else
+                                {
+                                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
+                                        fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
                                 }
                             }
                         }
@@ -200,11 +204,14 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         while ( moreAvailable );
 
         // resources should not be consumed inside the loop above since paging may take longer
-        consumer.accept( orderedAllResources );
+        if ( !orderedAllResources.isEmpty() )
+        {
+            consumer.accept( orderedAllResources );
+        }
         return lastUpdated;
     }
 
-    protected long getTotalCount( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull RemoteSubscriptionResource subscriptionResource, int maxSearchCount, @Nonnull Instant fromLastUpdated, @Nonnull IBaseBundle bundle )
+    protected long getTotalCount( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Instant fromLastUpdated, @Nonnull IBaseBundle bundle )
     {
         Long totalCount = getBundleTotalCount( bundle );
         if ( totalCount != null )
@@ -212,8 +219,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
             return totalCount;
         }
 
-        final IBaseBundle newBundle = client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
-            .whereMap( getQuery( subscriptionResource ) ).count( maxSearchCount ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) )
+        final IBaseBundle newBundle = createBaseQuery( client, resourceName, subscriptionResource, fromLastUpdated )
             .summaryMode( SummaryEnum.COUNT ).returnBundle( getBundleClass() ).execute();
         totalCount = getBundleTotalCount( newBundle );
         if ( totalCount == null )
@@ -224,10 +230,11 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
     }
 
     @Nonnull
-    protected IQuery<? extends IBaseBundle> createBaseQuery( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull RemoteSubscriptionResource subscriptionResource, int maxSearchCount, @Nonnull Instant fromLastUpdated )
+    protected IQuery<? extends IBaseBundle> createBaseQuery( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Instant fromLastUpdated )
     {
-        return client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
-            .whereMap( getQuery( subscriptionResource ) ).count( maxSearchCount ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) );
+        return client.search().forResource( resourceName )
+            .whereMap( getQuery( subscriptionResource ) ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) )
+            .cacheControl( new CacheControlDirective().setNoCache( true ) );
     }
 
     @Nonnull
@@ -256,7 +263,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         }
 
         final String parameters = subscriptionResource.getFhirCriteriaParameters().trim();
-        final StringBuilder url = new StringBuilder( "test" );
+        final StringBuilder url = new StringBuilder();
         if ( !parameters.startsWith( "?" ) )
         {
             url.append( "?" );

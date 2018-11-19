@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.spring.YamlPropertySourceFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -38,6 +39,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.EnableJms;
+
+import java.io.File;
 
 /**
  * Main application entry point.
@@ -51,14 +54,50 @@ import org.springframework.jms.annotation.EnableJms;
 @PropertySource( value = { "classpath:default-application.yml", "file:///${dhis2.home}/services/fhir-adapter/application.yml" }, factory = YamlPropertySourceFactory.class )
 public class App extends SpringBootServletInitializer
 {
+    public static final String DHIS2_HOME_ENV = "DHIS2_HOME";
+
+    public static final String DHIS2_HOME_PROP = "dhis2.home";
+
     @Override
     protected SpringApplicationBuilder configure( SpringApplicationBuilder application )
     {
+        checkEnv();
         return application.sources( App.class );
     }
 
     public static void main( String[] args )
     {
+        try
+        {
+            checkEnv();
+        }
+        catch ( AppException e )
+        {
+            System.err.println( e.getMessage() );
+            System.exit( 10 );
+        }
+
         SpringApplication.run( App.class, args );
+    }
+
+    protected static void checkEnv() throws AppException
+    {
+        String home = System.getenv( DHIS2_HOME_ENV );
+        final String alternativeHome = System.getProperty( DHIS2_HOME_PROP );
+        if ( alternativeHome != null )
+        {
+            home = alternativeHome;
+        }
+
+        if ( StringUtils.isBlank( home ) )
+        {
+            throw new AppException( "DHIS2 home environment variable " + DHIS2_HOME_ENV + " has not been set." );
+        }
+
+        final File configFile = new File( home + "/services/fhir-adapter/application.yml" );
+        if ( !configFile.canRead() )
+        {
+            throw new AppException( "Adapter configuration file does not exist or cannot be read: " + configFile.getAbsolutePath() );
+        }
     }
 }

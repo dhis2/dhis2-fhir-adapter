@@ -37,7 +37,7 @@
   <parent>
     <groupId>org.dhis2.fhir.adapter</groupId>
     <artifactId>dhis2-fhir-adapter</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 

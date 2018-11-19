@@ -63,7 +63,7 @@ public class RemoteSubscriptionFhirSetup implements Serializable
     private SubscriptionType subscriptionType = SubscriptionType.REST_HOOK_WITH_JSON_PAYLOAD;
 
     @Min( value = 0, message = "Must be a positive value." )
-    private int toleranceMillis = 5_000;
+    private int toleranceMillis = 2_000;
 
     private boolean supportsRelatedPerson;
 

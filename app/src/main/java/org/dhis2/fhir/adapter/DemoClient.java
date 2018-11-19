@@ -33,18 +33,26 @@ import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.ContactPoint;
+import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Immunization;
 import org.hl7.fhir.dstu3.model.Location;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.RelatedPerson;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.dstu3.model.codesystems.ObservationCategory;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -71,217 +79,460 @@ public class DemoClient
             System.err.println( "Syntax: ORG_CODE MOTHER_NATIONAL_ID CHILD_NATIONAL_ID" );
             System.exit( 10 );
         }
-        int x = 61000;
-        for ( int i = 0; i < 1000; i++ )
-        {
-            final String orgCode = args[0];
-            final String motherNationalId = String.valueOf( x++ );
-            final String childNationalId = String.valueOf( x++ );
+        final String orgCode = args[0];
+        final String motherNationalId = args[1];
+        final String childNationalId = args[2];
 
-            final FhirContext ctx = FhirContext.forDstu3();
-            ctx.getRestfulClientFactory().setConnectTimeout( 20_000 );
-            ctx.getRestfulClientFactory().setSocketTimeout( 40_000 );
-            final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
-            client.registerInterceptor( new LoggingInterceptor( true ) );
+        final FhirContext ctx = FhirContext.forDstu3();
+        final IGenericClient client = ctx.newRestfulGenericClient( SERVER_BASE );
+        client.registerInterceptor( new LoggingInterceptor( true ) );
 
-            ///////////
-            // Location
-            ///////////
+        ///////////
+        // Location
+        ///////////
 
-            Location location = new Location();
-            location.setId( IdType.newRandomUuid() );
-            location.setName( "Connaught Hospital" );
-            location.addIdentifier()
-                .setSystem( "http://example.sl/locations" )
-                .setValue( orgCode );
-            location.getAddress().setCity( "Freetown" );
-            location.getPosition().setLatitude( 8.488431 ).setLongitude( -13.238409 );
+        Location location = new Location();
+        location.setId( IdType.newRandomUuid() );
+        location.setName( "Connaught Hospital" );
+        location.addIdentifier()
+            .setSystem( "http://example.sl/locations" )
+            .setValue( orgCode );
+        location.getAddress().setCity( "Freetown" );
+        location.getPosition().setLatitude( 8.488431 ).setLongitude( -13.238409 );
 
-            ///////////////
-            // Organization
-            ///////////////
+        ///////////////
+        // Organization
+        ///////////////
 
-            Organization hospitalOrg = new Organization();
-            hospitalOrg.setId( IdType.newRandomUuid() );
-            hospitalOrg.setName( "Connaught Hospital" );
-            hospitalOrg.addIdentifier()
-                .setSystem( "http://example.sl/organizations" )
-                .setValue( orgCode );
+        Organization hospitalOrg = new Organization();
+        hospitalOrg.setId( IdType.newRandomUuid() );
+        hospitalOrg.setName( "Connaught Hospital" );
+        hospitalOrg.addIdentifier()
+            .setSystem( "http://example.sl/organizations" )
+            .setValue( orgCode );
 
-            Organization org = new Organization();
-            org.setId( IdType.newRandomUuid() );
-            org.setName( "Registration Unit" );
-            org.addIdentifier()
-                .setSystem( "http://example.sl/organizations" )
-                .setValue( "XZY123456" );
-            org.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
+        Organization org = new Organization();
+        org.setId( IdType.newRandomUuid() );
+        org.setName( "Registration Unit" );
+        org.addIdentifier()
+            .setSystem( "http://example.sl/organizations" )
+            .setValue( "XZY123456" );
+        org.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
 
-            Organization birthOrg = new Organization();
-            birthOrg.setName( "Birth Unit" );
-            birthOrg.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
+        Organization birthOrg = new Organization();
+        birthOrg.setName( "Birth Unit" );
+        birthOrg.setPartOf( new Reference( hospitalOrg.getIdElement() ) );
 
-            //////////////////////////////////
-            // Create Patient (new born child)
-            //////////////////////////////////
+        //////////////////////////////////
+        // Create Patient (new born child)
+        //////////////////////////////////
 
-            final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
+        final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
 
-            Patient child = new Patient();
-            child.setIdElement( IdType.newRandomUuid() );
-            child.addIdentifier()
-                .setSystem( "http://example.sl/patients" )
-                .setValue( childNationalId );
-            child.addName()
-                .setFamily( "West" )
-                .addGiven( "Joe" ).addGiven( "Alan" ).addGiven( "Scott" );
-            child.getBirthDateElement().setValue(
-                Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
-                TemporalPrecisionEnum.DAY );
-            child.setGender( Enumerations.AdministrativeGender.MALE );
-            child.addAddress()
-                .addLine( "Water Road 675" )
-                .addLine( "Apartment 62" )
-                .setCity( "Freetown" )
-                .setCountry( "Sierra Leone" );
-            child.getAddress().get( 0 )
-                .addExtension()
-                .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
-                .addExtension( new Extension()
-                    .setUrl( "latitude" )
-                    .setValue( new DecimalType( 8.4665341 ) ) )
-                .addExtension( new Extension()
-                    .setUrl( "longitude" )
-                    .setValue( new DecimalType( -13.262743 ) ) );
-            child.setManagingOrganization( new Reference( org.getId() ) );
+        Patient child = new Patient();
+        child.setIdElement( IdType.newRandomUuid() );
+        child.addIdentifier()
+            .setSystem( "http://example.sl/patients" )
+            .setValue( childNationalId );
+        child.addName()
+            .setFamily( "West" )
+            .addGiven( "Joe" ).addGiven( "Alan" ).addGiven( "Scott" );
+        child.getBirthDateElement().setValue(
+            Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY );
+        child.setGender( Enumerations.AdministrativeGender.MALE );
+        child.addAddress()
+            .addLine( "Water Road 675" )
+            .addLine( "Apartment 62" )
+            .setCity( "Freetown" )
+            .setCountry( "Sierra Leone" );
+        child.getAddress().get( 0 )
+            .addExtension()
+            .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
+            .addExtension( new Extension()
+                .setUrl( "latitude" )
+                .setValue( new DecimalType( 8.4665341 ) ) )
+            .addExtension( new Extension()
+                .setUrl( "longitude" )
+                .setValue( new DecimalType( -13.262743 ) ) );
+        child.setManagingOrganization( new Reference( org.getId() ) );
 
-            //////////////////////////
-            // Create Patient (mother)
-            //////////////////////////
+        //////////////////////////
+        // Create Patient (mother)
+        //////////////////////////
 
-            Patient mother = new Patient();
-            mother.setIdElement( IdType.newRandomUuid() );
-            mother.addIdentifier()
-                .setSystem( "http://example.sl/patients" )
-                .setValue( motherNationalId );
-            mother.addName()
-                .setFamily( "West" )
-                .addGiven( "Elizabeth" );
-            mother.getBirthDateElement().setValue(
-                Date.from( LocalDate.now().minusYears( 16 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
-                TemporalPrecisionEnum.DAY );
-            mother.setGender( Enumerations.AdministrativeGender.FEMALE );
-            mother.addAddress()
-                .setCity( "Freetown" )
-                .setCountry( "Sierra Leone" );
-            mother.getAddress().get( 0 )
-                .addExtension()
-                .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
-                .addExtension( new Extension()
-                    .setUrl( "latitude" )
-                    .setValue( new DecimalType( 8.4665341 ) ) )
-                .addExtension( new Extension()
-                    .setUrl( "longitude" )
-                    .setValue( new DecimalType( -13.262743 ) ) );
-            mother.setManagingOrganization( new Reference( birthOrg ) );
+        Patient mother = new Patient();
+        mother.setIdElement( IdType.newRandomUuid() );
+        mother.addIdentifier()
+            .setSystem( "http://example.sl/patients" )
+            .setValue( motherNationalId );
+        mother.addName()
+            .setFamily( "West" )
+            .addGiven( "Elizabeth" );
+        mother.getBirthDateElement().setValue(
+            Date.from( LocalDate.now().minusYears( 16 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY );
+        mother.setGender( Enumerations.AdministrativeGender.FEMALE );
+        mother.addAddress()
+            .setCity( "Freetown" )
+            .setCountry( "Sierra Leone" );
+        mother.getAddress().get( 0 )
+            .addExtension()
+            .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
+            .addExtension( new Extension()
+                .setUrl( "latitude" )
+                .setValue( new DecimalType( 8.4665341 ) ) )
+            .addExtension( new Extension()
+                .setUrl( "longitude" )
+                .setValue( new DecimalType( -13.262743 ) ) );
+        mother.setManagingOrganization( new Reference( birthOrg ) );
 
-            ////////////////////////////////////////
-            // Transaction Bundle with Create/Update
-            ////////////////////////////////////////
+        //////////////////////
+        // Create Vaccinations
+        //////////////////////
 
-            Bundle bundle = new Bundle();
-            bundle.setType( Bundle.BundleType.TRANSACTION );
-            bundle.addEntry()
-                .setResource( child )
-                .setFullUrl( child.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
-            bundle.addEntry()
-                .setResource( mother )
-                .setFullUrl( mother.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
-            bundle.addEntry()
-                .setResource( location )
-                .setFullUrl( location.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Location?identifier=http://example.sl/locations|" + orgCode );
-            bundle.addEntry()
-                .setResource( hospitalOrg )
-                .setFullUrl( hospitalOrg.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Organization?identifier=http://example.sl/organizations|XZY123456" );
-            bundle.addEntry()
-                .setResource( org )
-                .setFullUrl( org.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Organization?identifier=http://example.sl/organizations|" + orgCode );
-            client.transaction().withBundle( bundle ).execute();
+        Immunization imm1 = new Immunization();
+        imm1.setId( IdType.newRandomUuid() );
+        imm1.getPatient().setReference( child.getId() );
+        imm1.getLocation().setReference( location.getId() );
+        imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm1.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm1.setNotGiven( false );
+        imm1.setPrimarySource( true );
+        imm1.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "01" )
+            .setDisplay( "DTP" );
+        imm1.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
 
-            Bundle searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
-                .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + childNationalId ) ) ).execute();
-            child = (Patient) searchResult.getEntry().get( 0 ).getResource();
-            searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
-                .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + motherNationalId ) ) ).execute();
-            mother = (Patient) searchResult.getEntry().get( 0 ).getResource();
+        Immunization imm2 = new Immunization();
+        imm2.setId( IdType.newRandomUuid() );
+        imm2.getPatient().setReference( child.getId() );
+        imm2.getLocation().setReference( location.getId() );
+        imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm2.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm2.setNotGiven( false );
+        imm2.setPrimarySource( true );
+        imm2.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "03" )
+            .setDisplay( "MMR" );
+        imm2.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
 
-            RelatedPerson childRelatedPerson = new RelatedPerson();
-            childRelatedPerson.setActive( true );
-            childRelatedPerson.getRelationship().addCoding(
-                new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
-            childRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
-            childRelatedPerson.addName().setFamily( "West" ).addGiven( "Elizabeth" );
-            childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(123) 456-7890.10" ).setRank( 1 ).setUse( ContactPoint.ContactPointUse.OLD );
-            childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.10" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
-            childRelatedPerson.getPatient().setReferenceElement( child.getIdElement().toUnqualifiedVersionless() );
-            child.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setResource( childRelatedPerson );
+        Immunization imm3 = new Immunization();
+        imm3.setId( IdType.newRandomUuid() );
+        imm3.getPatient().setReference( child.getId() );
+        imm3.getLocation().setReference( location.getId() );
+        imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm3.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm3.setNotGiven( false );
+        imm3.setPrimarySource( true );
+        imm3.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "19" )
+            .setDisplay( "BCG" );
+        imm3.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
 
-            RelatedPerson motherRelatedPerson = new RelatedPerson();
-            motherRelatedPerson.setId( IdType.newRandomUuid() );
-            motherRelatedPerson.addIdentifier().setSystem( "http://example.sl/relatedPersons" ).setValue( "mth" + motherNationalId );
-            motherRelatedPerson.setActive( true );
-            motherRelatedPerson.getRelationship().addCoding(
-                new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
-            motherRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
-            motherRelatedPerson.addName().setFamily( "West" ).addGiven( "Maria" );
-            motherRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.20" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
-            motherRelatedPerson.getPatient().setReferenceElement( mother.getIdElement().toUnqualifiedVersionless() );
+        Immunization imm4 = new Immunization();
+        imm4.setId( IdType.newRandomUuid() );
+        imm4.getPatient().setReference( child.getId() );
+        imm4.getLocation().setReference( location.getId() );
+        imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm4.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm4.setNotGiven( false );
+        imm4.setPrimarySource( true );
+        imm4.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "02" )
+            .setDisplay( "OPV" );
+        imm4.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
 
-            bundle = new Bundle();
-            bundle.setType( Bundle.BundleType.TRANSACTION );
-            bundle.addEntry()
-                .setResource( motherRelatedPerson )
-                .setFullUrl( motherRelatedPerson.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Patient?identifier=http://example.sl/relatedPersons|mth" + motherNationalId );
-            bundle.addEntry()
-                .setResource( child )
-                .setFullUrl( child.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
-            client.transaction().withBundle( bundle ).execute();
+        Immunization imm5 = new Immunization();
+        imm5.setId( IdType.newRandomUuid() );
+        imm5.getPatient().setReference( child.getId() );
+        imm5.getLocation().setReference( location.getId() );
+        imm5.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm5.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm5.setNotGiven( false );
+        imm5.setPrimarySource( true );
+        imm5.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "37" )
+            .setDisplay( "Yellow Fever" );
+        imm5.addVaccinationProtocol().setDoseSequence( 2 )
+            .setSeries( "2" );
 
-            searchResult = client.search().forResource( RelatedPerson.class ).returnBundle( Bundle.class )
-                .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/relatedPersons|mth" + motherNationalId ) ) ).execute();
-            motherRelatedPerson = (RelatedPerson) searchResult.getEntry().get( 0 ).getResource();
+        //////////////
+        // Body Weight
+        //////////////
 
-            mother.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setReferenceElement( motherRelatedPerson.getIdElement().toUnqualifiedVersionless() );
+        Observation bw1 = new Observation();
+        bw1.setId( IdType.newRandomUuid() );
+        bw1.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw1.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8339-4" ) ) );
+        bw1.getSubject().setReference( child.getId() );
+        bw1.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
 
-            bundle = new Bundle();
-            bundle.setType( Bundle.BundleType.TRANSACTION );
-            bundle.addEntry()
-                .setResource( mother )
-                .setFullUrl( mother.getId() )
-                .getRequest()
-                .setMethod( Bundle.HTTPVerb.PUT )
-                .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
-            client.transaction().withBundle( bundle ).execute();
-        }
+        Observation bw2 = new Observation();
+        bw2.setId( IdType.newRandomUuid() );
+        bw2.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "29463-7" ) ) );
+        bw2.getSubject().setReference( child.getId() );
+        bw2.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( 1 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw2.setValue( new Quantity().setValue( 20 ).setSystem( "http://unitsofmeasure.org" ).setCode( "kg" ) );
+
+        Observation bw3 = new Observation();
+        bw3.setId( IdType.newRandomUuid() );
+        bw3.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw3.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "29463-7" ) ) );
+        bw3.getSubject().setReference( child.getId() );
+        bw3.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( BABY_POSTNATAL_STAGE_DAYS ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw3.setValue( new Quantity().setValue( 3100 ).setSystem( "http://unitsofmeasure.org" ).setCode( "g" ) );
+
+        //////////////
+        // Apgar Score
+        //////////////
+
+        Observation as10 = new Observation();
+        as10.setId( IdType.newRandomUuid() );
+        as10.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
+        as10.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9273-4" ) ) );
+        as10.getSubject().setReference( child.getId() );
+        as10.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        as10.addComponent().setCode( new CodeableConcept().addCoding(
+            new Coding().setSystem( "http://loinc.org/la" ).setCode( "LA6724-4" ).setDisplay( "Good color all over" ) ) )
+            .setValue( new StringType( "2. Good color all over" ) );
+        as10.addComponent().setCode( new CodeableConcept().addCoding(
+            new Coding().setSystem( "http://loinc.org/la" ).setCode( "LA6718-6" ).setDisplay( "At least 100 beats per minute" ) ) )
+            .setValue( new StringType( "2. At least 100 beats per minute" ) );
+        as10.setValue( new Quantity().setValue( 10 ).setCode( "{score}" ) );
+
+        Observation as2 = new Observation();
+        as2.setId( IdType.newRandomUuid() );
+        as2.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SURVEY.getSystem() ).setCode( ObservationCategory.SURVEY.toCode() ) ) );
+        as2.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "9271-8" ) ) );
+        as2.getSubject().setReference( child.getId() );
+        as2.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        as2.setValue( new Quantity().setValue( 4 ).setCode( "{score}" ) );
+
+        ////////////////////////
+        // Last Menstrual Period
+        ////////////////////////
+
+        Observation lmp = new Observation();
+        lmp.setId( IdType.newRandomUuid() );
+        lmp.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.SOCIALHISTORY.getSystem() ).setCode( ObservationCategory.SOCIALHISTORY.toCode() ) ) );
+        lmp.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8665-2" ) ) );
+        lmp.getSubject().setReference( mother.getId() );
+        lmp.setValue( new DateTimeType(
+            Date.from( LocalDate.now().minusDays( 7 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ), TemporalPrecisionEnum.DAY ) );
+
+        /////////////////
+        // Blood Pressure
+        /////////////////
+
+        Observation bloodPressure = new Observation();
+        bloodPressure.setId( IdType.newRandomUuid() );
+        bloodPressure.setStatus( Observation.ObservationStatus.FINAL );
+        bloodPressure.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bloodPressure.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "85354-9" ) ) );
+        bloodPressure.getSubject().setReference( mother.getId() );
+        bloodPressure.addComponent().setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8480-6" ) ) )
+            .setValue( new Quantity().setValue( new BigDecimal( 120L ) ).setCode( "UCUM" ).setUnit( "mm[Hg]" ) );
+        bloodPressure.addComponent().setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8462-4" ) ) )
+            .setValue( new Quantity().setValue( new BigDecimal( 100L ) ).setCode( "UCUM" ).setUnit( "mm[Hg]" ) );
+
+        ////////////////////////////////////////
+        // Transaction Bundle with Create/Update
+        ////////////////////////////////////////
+
+        Bundle bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.TRANSACTION );
+        bundle.addEntry()
+            .setResource( child )
+            .setFullUrl( child.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
+        bundle.addEntry()
+            .setResource( mother )
+            .setFullUrl( mother.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
+        bundle.addEntry()
+            .setResource( location )
+            .setFullUrl( location.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Location?identifier=http://example.sl/locations|" + orgCode );
+        bundle.addEntry()
+            .setResource( hospitalOrg )
+            .setFullUrl( hospitalOrg.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Organization?identifier=http://example.sl/organizations|XZY123456" );
+        bundle.addEntry()
+            .setResource( org )
+            .setFullUrl( org.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Organization?identifier=http://example.sl/organizations|" + orgCode );
+        bundle.addEntry()
+            .setResource( imm1 )
+            .setFullUrl( imm1.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( imm2 )
+            .setFullUrl( imm2.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( imm3 )
+            .setFullUrl( imm3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( imm4 )
+            .setFullUrl( imm4.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( imm5 )
+            .setFullUrl( imm5.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( bw1 )
+            .setFullUrl( bw1.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bw2 )
+            .setFullUrl( bw2.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bw3 )
+            .setFullUrl( bw3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( as10 )
+            .setFullUrl( as10.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( as2 )
+            .setFullUrl( as2.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( lmp )
+            .setFullUrl( lmp.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bloodPressure )
+            .setFullUrl( bloodPressure.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        client.transaction().withBundle( bundle ).execute();
+
+        Bundle searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + childNationalId ) ) ).execute();
+        child = (Patient) searchResult.getEntry().get( 0 ).getResource();
+        searchResult = client.search().forResource( Patient.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/patients|" + motherNationalId ) ) ).execute();
+        mother = (Patient) searchResult.getEntry().get( 0 ).getResource();
+
+        RelatedPerson childRelatedPerson = new RelatedPerson();
+        childRelatedPerson.setActive( true );
+        childRelatedPerson.getRelationship().addCoding(
+            new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
+        childRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
+        childRelatedPerson.addName().setFamily( "West" ).addGiven( "Elizabeth" );
+        childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(123) 456-7890.10" ).setRank( 1 ).setUse( ContactPoint.ContactPointUse.OLD );
+        childRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.10" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
+        childRelatedPerson.getPatient().setReferenceElement( child.getIdElement().toUnqualifiedVersionless() );
+        child.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setResource( childRelatedPerson );
+
+        RelatedPerson motherRelatedPerson = new RelatedPerson();
+        motherRelatedPerson.setId( IdType.newRandomUuid() );
+        motherRelatedPerson.addIdentifier().setSystem( "http://example.sl/relatedPersons" ).setValue( "mth" + motherNationalId );
+        motherRelatedPerson.setActive( true );
+        motherRelatedPerson.getRelationship().addCoding(
+            new Coding().setSystem( "http://hl7.org/fhir/v3/RoleCode" ).setCode( "MTH" ) );
+        motherRelatedPerson.setGender( Enumerations.AdministrativeGender.FEMALE );
+        motherRelatedPerson.addName().setFamily( "West" ).addGiven( "Maria" );
+        motherRelatedPerson.addTelecom().setSystem( ContactPoint.ContactPointSystem.PHONE ).setValue( "(723) 456-7890.20" ).setRank( 2 ).setUse( ContactPoint.ContactPointUse.HOME );
+        motherRelatedPerson.getPatient().setReferenceElement( mother.getIdElement().toUnqualifiedVersionless() );
+
+        bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.TRANSACTION );
+        bundle.addEntry()
+            .setResource( motherRelatedPerson )
+            .setFullUrl( motherRelatedPerson.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/relatedPersons|mth" + motherNationalId );
+        bundle.addEntry()
+            .setResource( child )
+            .setFullUrl( child.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + childNationalId );
+        client.transaction().withBundle( bundle ).execute();
+
+        searchResult = client.search().forResource( RelatedPerson.class ).returnBundle( Bundle.class )
+            .whereMap( Collections.singletonMap( "identifier", Collections.singletonList( "http://example.sl/relatedPersons|mth" + motherNationalId ) ) ).execute();
+        motherRelatedPerson = (RelatedPerson) searchResult.getEntry().get( 0 ).getResource();
+
+        mother.addLink().setType( Patient.LinkType.SEEALSO ).getOther().setReferenceElement( motherRelatedPerson.getIdElement().toUnqualifiedVersionless() );
+
+        bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.TRANSACTION );
+        bundle.addEntry()
+            .setResource( mother )
+            .setFullUrl( mother.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http://example.sl/patients|" + motherNationalId );
+        client.transaction().withBundle( bundle ).execute();
     }
 }
