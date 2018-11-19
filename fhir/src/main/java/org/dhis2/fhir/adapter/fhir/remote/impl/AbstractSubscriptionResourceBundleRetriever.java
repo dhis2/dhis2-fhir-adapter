@@ -263,7 +263,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         }
 
         final String parameters = subscriptionResource.getFhirCriteriaParameters().trim();
-        final StringBuilder url = new StringBuilder();
+        final StringBuilder url = new StringBuilder( "Resource" );
         if ( !parameters.startsWith( "?" ) )
         {
             url.append( "?" );
