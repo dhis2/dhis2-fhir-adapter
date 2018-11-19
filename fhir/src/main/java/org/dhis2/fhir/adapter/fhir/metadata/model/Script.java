@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
@@ -43,7 +42,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -204,7 +202,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
     }
 
     @SuppressWarnings( "JpaAttributeTypeInspection" )
-    @ElementCollection( fetch = FetchType.EAGER )
+    @ElementCollection
     @CollectionTable( name = "fhir_script_variable", joinColumns = @JoinColumn( name = "script_id" ) )
     @Column( name = "variable" )
     @Enumerated( EnumType.STRING )
@@ -220,9 +218,8 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.variables = variables;
     }
 
-    @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER )
+    @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL )
     @OrderBy( "id" )
-    @JsonIgnore
     public List<ScriptSource> getSources()
     {
         return sources;

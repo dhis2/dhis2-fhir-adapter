@@ -81,6 +81,7 @@ public class CustomExecutableScriptRepositoryImpl implements CustomExecutableScr
         }
         Hibernate.initialize( es.getOverrideArguments() );
         Hibernate.initialize( es.getScript().getArguments() );
+        Hibernate.initialize( es.getScript().getVariables() );
 
         final ScriptSource scriptSource = entityManager.createQuery( "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions", ScriptSource.class )
             .setParameter( "script", es.getScript() ).setParameter( "fhirVersion", fhirVersion ).getResultList().stream().findFirst().orElse( null );

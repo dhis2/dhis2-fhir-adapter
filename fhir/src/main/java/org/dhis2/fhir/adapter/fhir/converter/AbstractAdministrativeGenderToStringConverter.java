@@ -56,10 +56,10 @@ public abstract class AbstractAdministrativeGenderToStringConverter<A extends En
         switch ( source.name() )
         {
             case "FEMALE":
-                return constantResolver.getByCode( GENDER_FEMALE_CONSTANT_CODE )
+                return constantResolver.findOneByCode( GENDER_FEMALE_CONSTANT_CODE )
                     .orElseThrow( () -> new ConversionException( "No constant with code " + GENDER_FEMALE_CONSTANT_CODE + " has been defined." ) ).getValue();
             case "MALE":
-                return constantResolver.getByCode( GENDER_MALE_CONSTANT_CODE )
+                return constantResolver.findOneByCode( GENDER_MALE_CONSTANT_CODE )
                     .orElseThrow( () -> new ConversionException( "No constant with code " + GENDER_MALE_CONSTANT_CODE + " has been defined." ) ).getValue();
             case "NULL":
             case "OTHER":

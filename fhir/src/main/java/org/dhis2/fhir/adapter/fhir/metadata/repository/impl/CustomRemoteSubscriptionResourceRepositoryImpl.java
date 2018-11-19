@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,25 +28,46 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceRepository;
+import org.hibernate.Hibernate;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Resolves {@linkplain Constant constants}.
+ * Implementation of {@link CustomRemoteSubscriptionResourceRepository}.
  *
  * @author volsch
  */
-public interface ConstantResolver
+public class CustomRemoteSubscriptionResourceRepositoryImpl implements CustomRemoteSubscriptionResourceRepository
 {
-    /**
-     * Resolves constants by code.
-     *
-     * @param code the code of the constant that should be resolved.
-     * @return the constant with the specified code.
-     */
-    @RestResource( exported = false )
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public CustomRemoteSubscriptionResourceRepositoryImpl( @Nonnull EntityManager entityManager )
+    {
+        this.entityManager = entityManager;
+    }
+
     @Nonnull
-    Optional<Constant> findOneByCode( @Nonnull String code );
+    @Override
+    @Cacheable( key = "#a0", cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
+    @Transactional( readOnly = true )
+    public Optional<RemoteSubscriptionResource> findByIdCached( @Nonnull UUID id )
+    {
+        final RemoteSubscriptionResource rsr = entityManager.find( RemoteSubscriptionResource.class, id );
+        if ( rsr == null )
+        {
+            return Optional.empty();
+        }
+
+        Hibernate.initialize( rsr.getRemoteSubscription().getFhirEndpoint().getHeaders() );
+        return Optional.of( rsr );
+    }
 }

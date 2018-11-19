@@ -202,7 +202,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findById( resourceId )
+        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
 
         final FhirContext fhirContext = remoteFhirRepository.findFhirContext( context.getFhirRequest().getVersion() )

@@ -128,13 +128,12 @@ For the initial setup of the Adapter a simple user interface is provided. To acc
  
     java -jar dhis2-fhir-adapter.war --adapter-setup=true
     
-With the default configuration the initial setup user interface can be accessed in any web browser by using http://localhost:8081/setup. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
+With the default configuration the initial setup user interface can be accessed in any web browser by using `http://localhost:8081/setup`. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
  successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
 
 ### API for Administration and Mapping
 The adapter provides REST interfaces for administration and mapping. The documentation is currently generated automatically when building the adapter. Unit test execution must not be skipped in this case when building the adapter. The documentation can be 
- found at docs/api-guide.html. If the Adapter has been started by command line without changing the port, then the guide is available at http://localhost:8081/docs/api-guide.html.
+ found at docs/api-guide.html. If the Adapter has been started by command line without changing the port, then the guide is available at `http://localhost:8081/docs/api-guide.html`.
  
 The JavaScript API that is used to create rules and transformations is generated automatically when running the adapter. The script can be found at scripts/to-dhis2-all-mapping.js. If the Adapter has been started by command line without changing the port, 
- then the guide is available at http://localhost:8081/scripts/to-dhis2-all-mapping.js. The FHIR resources are exposed to JavaScript by [HAPI FHIR 3.6.0](http://hapifhir.io/) objects. 
-    
+ then the guide is available at `http://localhost:8081/scripts/to-dhis2-all-mapping.js`. The FHIR resources are exposed to JavaScript by [HAPI FHIR 3.6.0](http://hapifhir.io/) objects. 

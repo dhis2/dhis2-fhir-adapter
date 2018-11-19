@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,5 +47,6 @@ public interface CustomExecutableScriptRepository
 {
     @RestResource( exported = false )
     @Nonnull
+    @PreAuthorize( "permitAll()" )
     Optional<ExecutableScriptInfo> findInfo( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion );
 }

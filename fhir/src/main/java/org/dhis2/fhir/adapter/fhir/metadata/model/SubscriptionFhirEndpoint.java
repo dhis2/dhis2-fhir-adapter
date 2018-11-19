@@ -37,7 +37,6 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OrderBy;
 import javax.validation.Valid;
@@ -83,7 +82,7 @@ public class SubscriptionFhirEndpoint implements Serializable
     }
 
     @SuppressWarnings( "JpaAttributeTypeInspection" )
-    @ElementCollection( fetch = FetchType.EAGER )
+    @ElementCollection
     @CollectionTable( name = "fhir_remote_subscription_header", joinColumns = @JoinColumn( name = "remote_subscription_id" ) )
     @OrderBy( "name,value" )
     @JsonSerialize( converter = PersistentBagConverter.class )

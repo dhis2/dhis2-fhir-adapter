@@ -56,15 +56,8 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('ADMINISTRATION')" )
-public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>, QuerydslPredicateExecutor<RemoteSubscriptionResource>
+public interface RemoteSubscriptionResourceRepository extends JpaRepository<RemoteSubscriptionResource, UUID>, QuerydslPredicateExecutor<RemoteSubscriptionResource>, CustomRemoteSubscriptionResourceRepository
 {
-    @RestResource( exported = false )
-    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE r.id=:id" )
-    @Nonnull
-    @Cacheable( key = "#a0" )
-    @PreAuthorize( "permitAll()" )
-    Optional<RemoteSubscriptionResource> findByIdCached( @Param( "id" ) @Nonnull UUID id );
-
     @RestResource( exported = false )
     @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.remoteSubscription s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType ORDER BY r.id" )
     @Nonnull

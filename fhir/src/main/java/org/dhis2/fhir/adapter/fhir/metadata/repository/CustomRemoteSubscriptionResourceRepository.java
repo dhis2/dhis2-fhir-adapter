@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,25 +28,23 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Resolves {@linkplain Constant constants}.
+ * Custom repository for {@link RemoteSubscriptionResource}.
  *
  * @author volsch
  */
-public interface ConstantResolver
+public interface CustomRemoteSubscriptionResourceRepository
 {
-    /**
-     * Resolves constants by code.
-     *
-     * @param code the code of the constant that should be resolved.
-     * @return the constant with the specified code.
-     */
     @RestResource( exported = false )
     @Nonnull
-    Optional<Constant> findOneByCode( @Nonnull String code );
+    @PreAuthorize( "permitAll()" )
+    Optional<RemoteSubscriptionResource> findByIdCached( @Nonnull UUID id );
 }
