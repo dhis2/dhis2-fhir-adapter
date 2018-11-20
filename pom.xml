@@ -210,6 +210,13 @@
         <artifactId>guava</artifactId>
         <version>25.0-jre</version>
       </dependency>
+
+      <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock</artifactId>
+        <version>2.19.0</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

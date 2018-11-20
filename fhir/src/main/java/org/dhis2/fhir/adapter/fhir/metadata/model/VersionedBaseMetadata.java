@@ -76,7 +76,7 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     }
 
     @Version
-    @Column( name = "version", nullable = false )
+    @Column( name = "version", nullable = false, columnDefinition = "BIGINT DEFAULT 0 NOT NULL" )
     public Long getVersion()
     {
         return version;
@@ -88,7 +88,7 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     }
 
     @Basic
-    @Column( name = "created_at", nullable = false, updatable = false )
+    @Column( name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
     public Instant getCreatedAt()
     {
         return createdAt;
@@ -112,7 +112,7 @@ public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<
     }
 
     @Basic
-    @Column( name = "last_updated_at", nullable = false )
+    @Column( name = "last_updated_at", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
     @LastModifiedDate
     public Instant getLastUpdatedAt()
     {

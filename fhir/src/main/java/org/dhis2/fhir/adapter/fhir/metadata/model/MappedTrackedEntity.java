@@ -96,7 +96,7 @@ public class MappedTrackedEntity extends VersionedBaseMetadata implements Serial
     }
 
     @Basic
-    @Column( name = "enabled" )
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isEnabled()
     {
         return enabled;

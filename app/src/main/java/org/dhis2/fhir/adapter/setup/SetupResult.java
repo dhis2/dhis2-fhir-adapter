@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.lock.impl;
+package org.dhis2.fhir.adapter.setup;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,64 +28,40 @@ package org.dhis2.fhir.adapter.lock.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.lock.LockContext;
-import org.dhis2.fhir.adapter.lock.LockManager;
-import org.springframework.stereotype.Service;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 
 import javax.annotation.Nonnull;
-import javax.sql.DataSource;
-import java.util.Optional;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Lock manager that creates a lock context that uses the PostgreSQL Advisory Lock
- * to implement a distributed lock.
- *
- * @author volsch
+ * The result of the setup of the FHIR adapter.
  */
-@Service
-public class LockManagerImpl implements LockManager
+public class SetupResult implements Serializable
 {
-    private final ThreadLocal<LockContext> threadLocal = new ThreadLocal<>();
+    private static final long serialVersionUID = -5493649240520618453L;
 
-    private final DataSource dataSource;
+    private final UUID remoteSubscriptionId;
 
-    public LockManagerImpl( @Nonnull DataSource dataSource )
+    private final Map<FhirResourceType, UUID> remoteSubscriptionResourceIds;
+
+    public SetupResult( @Nonnull UUID remoteSubscriptionId, @Nonnull Map<FhirResourceType, UUID> remoteSubscriptionResourceIds )
     {
-        this.dataSource = dataSource;
+        this.remoteSubscriptionId = remoteSubscriptionId;
+        this.remoteSubscriptionResourceIds = Collections.unmodifiableMap( remoteSubscriptionResourceIds );
     }
 
     @Nonnull
-    @Override
-    public LockContext begin()
+    public UUID getRemoteSubscriptionId()
     {
-        if ( threadLocal.get() != null )
-        {
-            throw new IllegalStateException( "The current thread already owns a lock context." );
-        }
-        final LockContext lockContext = new LockContextImpl( this );
-        threadLocal.set( lockContext );
-        return lockContext;
+        return remoteSubscriptionId;
     }
 
     @Nonnull
-    @Override
-    public Optional<LockContext> getCurrentLockContext()
+    public Map<FhirResourceType, UUID> getRemoteSubscriptionResourceIds()
     {
-        return Optional.ofNullable( threadLocal.get() );
-    }
-
-    @Nonnull
-    DataSource getDataSource()
-    {
-        return dataSource;
-    }
-
-    void removeFromThread( @Nonnull LockContextImpl lockContext )
-    {
-        if ( threadLocal.get() == null )
-        {
-            throw new IllegalStateException( "Current thread does not own a lock context." );
-        }
-        threadLocal.set( null );
+        return remoteSubscriptionResourceIds;
     }
 }

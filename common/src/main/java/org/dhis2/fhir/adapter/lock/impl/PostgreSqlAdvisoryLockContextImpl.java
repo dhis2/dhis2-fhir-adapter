@@ -50,11 +50,11 @@ import java.util.Set;
  *
  * @author volsch
  */
-public class LockContextImpl implements LockContext
+public class PostgreSqlAdvisoryLockContextImpl implements LockContext
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final LockManagerImpl lockManager;
+    private final PostgreSqlAdvisoryLockManagerImpl lockManager;
 
     private Connection connection;
 
@@ -62,7 +62,7 @@ public class LockContextImpl implements LockContext
 
     private Set<String> lockedKeys = new HashSet<>();
 
-    public LockContextImpl( @Nonnull LockManagerImpl lockManager )
+    public PostgreSqlAdvisoryLockContextImpl( @Nonnull PostgreSqlAdvisoryLockManagerImpl lockManager )
     {
         this.lockManager = lockManager;
     }

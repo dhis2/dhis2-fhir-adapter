@@ -236,7 +236,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         {
             return Optional.empty();
         }
-        identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, identifier );
+        identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, baseResource, identifier );
 
         final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntity().getTrackedEntityIdentifierReference() )
@@ -264,9 +264,14 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         return result.stream().peek( tei -> tei.setIdentifier( finalIdentifier ) ).findFirst();
     }
 
-    protected String createFullQualifiedTrackedEntityInstanceIdentifier( @Nonnull FhirToDhisTransformerContext context, String identifier )
+    protected String createFullQualifiedTrackedEntityInstanceIdentifier( @Nonnull FhirToDhisTransformerContext context, IBaseResource baseResource, String identifier )
     {
-        final ResourceSystem resourceSystem = context.getFhirRequest().getResourceSystem( context.getFhirRequest().getResourceType() );
+        final FhirResourceType fhirResourceType = FhirResourceType.getByResource( baseResource );
+        if ( fhirResourceType == null )
+        {
+            return identifier;
+        }
+        final ResourceSystem resourceSystem = context.getFhirRequest().getResourceSystem( fhirResourceType );
         if ( (resourceSystem != null) && StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) )
         {
             identifier = resourceSystem.getCodePrefix() + identifier;

@@ -125,7 +125,7 @@ public class ScriptArg extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "array_value", nullable = false )
+    @Column( name = "array_value", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isArray()
     {
         return array;

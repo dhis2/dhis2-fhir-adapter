@@ -61,7 +61,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     protected static final String TRACKED_ENTITY_TYPE_BY_NAME_URI = "/trackedEntityTypes.json?" +
         "paging=false&filter=name:eq:{name}&fields=" + TRACKED_ENTITY_TYPE_FIELDS;
 
-    protected static final String TRACKED_ENTITY_ATTRIBUTES_URI = "/trackedEntityAttributes.json?fields=" + TRACKED_ENTITY_ATTRIBUTE_FIELDS;
+    protected static final String TRACKED_ENTITY_ATTRIBUTES_URI = "/trackedEntityAttributes.json?paging=false&fields=" + TRACKED_ENTITY_ATTRIBUTE_FIELDS;
 
     protected static final String REQUIRED_VALUE_URI = "/trackedEntityAttributes/{attributeId}/requiredValues.json";
 

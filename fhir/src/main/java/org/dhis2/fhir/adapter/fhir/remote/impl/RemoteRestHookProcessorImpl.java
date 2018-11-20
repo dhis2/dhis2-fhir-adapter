@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.repository.AlreadyQueuedException;
 import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
@@ -50,8 +51,12 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -90,6 +95,8 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
 
     private final Map<FhirVersion, AbstractSubscriptionResourceBundleRetriever> bundleRetrievers = new HashMap<>();
 
+    private final PlatformTransactionManager platformTransactionManager;
+
     private final JmsTemplate webHookRequestQueueJmsTemplate;
 
     private final JmsTemplate fhirResourceQueueJmsTemplate;
@@ -105,6 +112,7 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
         @Nonnull ProcessedRemoteFhirResourceRepository processedRemoteFhirResourceRepository,
         @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
         @Nonnull ObjectProvider<List<AbstractSubscriptionResourceBundleRetriever>> bundleRetrievers,
+        @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull @Qualifier( "webHookRequestQueueJmsTemplate" ) JmsTemplate webHookRequestQueueJmsTemplate,
         @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate fhirResourceQueueJmsTemplate )
     {
@@ -114,6 +122,7 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
         this.remoteSubscriptionResourceUpdateRepository = remoteSubscriptionResourceUpdateRepository;
         this.processedRemoteFhirResourceRepository = processedRemoteFhirResourceRepository;
         this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
+        this.platformTransactionManager = platformTransactionManager;
         this.webHookRequestQueueJmsTemplate = webHookRequestQueueJmsTemplate;
         this.fhirResourceQueueJmsTemplate = fhirResourceQueueJmsTemplate;
 
@@ -126,32 +135,47 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
     }
 
     @HystrixCommand
-    @Transactional
     @Override
     public void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId )
     {
-        logger.debug( "Checking for a queued entry of remote subscription resource {}.", remoteSubscriptionResourceId );
+        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
-            if ( !queuedRemoteSubscriptionRequestRepository.enqueue( remoteSubscriptionResourceId, requestId ) )
+            logger.debug( "Checking for a queued entry of remote subscription resource {}.", remoteSubscriptionResourceId );
+            try
+            {
+                queuedRemoteSubscriptionRequestRepository.enqueue( remoteSubscriptionResourceId, requestId );
+            }
+            catch ( AlreadyQueuedException e )
             {
                 logger.debug( "There is already a queued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
                 return;
             }
-        }
-        catch ( IgnoredSubscriptionResourceException e )
-        {
-            // has already been logger with sufficient details
-            return;
-        }
+            catch ( IgnoredSubscriptionResourceException e )
+            {
+                // has already been logger with sufficient details
+                return;
+            }
 
-        logger.debug( "Enqueuing entry for remote subscription resource {}.", remoteSubscriptionResourceId );
-        webHookRequestQueueJmsTemplate.convertAndSend( new RemoteRestHookRequest( remoteSubscriptionResourceId, ZonedDateTime.now() ), message -> {
-            // only one message for a remote subscription resource must be processed at a specific time (grouping)
-            message.setStringProperty( "JMSXGroupID", remoteSubscriptionResourceId.toString() );
-            return message;
-        } );
-        logger.info( "Enqueued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
+            logger.debug( "Enqueuing entry for remote subscription resource {}.", remoteSubscriptionResourceId );
+            webHookRequestQueueJmsTemplate.convertAndSend( new RemoteRestHookRequest( remoteSubscriptionResourceId, ZonedDateTime.now() ), message -> {
+                // only one message for a remote subscription resource must be processed at a specific time (grouping)
+                message.setStringProperty( "JMSXGroupID", remoteSubscriptionResourceId.toString() );
+                return message;
+            } );
+            logger.info( "Enqueued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
+        }
+        finally
+        {
+            if ( transactionStatus.isRollbackOnly() )
+            {
+                platformTransactionManager.rollback( transactionStatus );
+            }
+            else
+            {
+                platformTransactionManager.commit( transactionStatus );
+            }
+        }
     }
 
     @HystrixCommand
@@ -215,25 +239,35 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
                 {
                     // persist processed remote FHIR resource and
                     processedRemoteFhirResourceRepository.process( new ProcessedRemoteFhirResource( remoteSubscriptionResource, versionedId, processedAt ), p -> {
+                        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition( TransactionDefinition.PROPAGATION_NOT_SUPPORTED ) );
                         try
                         {
-                            if ( queuedRemoteFhirResourceRepository.enqueue( remoteSubscriptionResource.getId(), sr.getId(), requestId ) )
-                            {
-                                fhirResourceQueueJmsTemplate.convertAndSend(
-                                    new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
-                                logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
-                                    sr.getId(), remoteSubscriptionResource.getId() );
-                                count.incrementAndGet();
-                            }
-                            else
-                            {
-                                logger.debug( "FHIR Resource {} of remote subscription resource {} is still queued.",
-                                    sr.getId(), remoteSubscriptionResource.getId() );
-                            }
+                            queuedRemoteFhirResourceRepository.enqueue( remoteSubscriptionResource.getId(), sr.getId(), requestId );
+                            fhirResourceQueueJmsTemplate.convertAndSend(
+                                new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
+                            logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
+                                sr.getId(), remoteSubscriptionResource.getId() );
+                            count.incrementAndGet();
+                        }
+                        catch ( AlreadyQueuedException e )
+                        {
+                            logger.debug( "FHIR Resource {} of remote subscription resource {} is still queued.",
+                                sr.getId(), remoteSubscriptionResource.getId() );
                         }
                         catch ( IgnoredSubscriptionResourceException e )
                         {
                             // has already been logger with sufficient details
+                        }
+                        finally
+                        {
+                            if ( transactionStatus.isRollbackOnly() )
+                            {
+                                platformTransactionManager.rollback( transactionStatus );
+                            }
+                            else
+                            {
+                                platformTransactionManager.commit( transactionStatus );
+                            }
                         }
                     } );
                 }

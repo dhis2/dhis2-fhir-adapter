@@ -136,7 +136,7 @@ public class SetupService
     }
 
     @Transactional
-    public void apply( @Nonnull Setup setup )
+    public SetupResult apply( @Nonnull Setup setup )
     {
         final System organizationSystem = findOrCreateSystem(
             setup.getRemoteSubscriptionSetup().getSystemUriSetup().getOrganizationSystemUri(),
@@ -145,12 +145,14 @@ public class SetupService
             setup.getRemoteSubscriptionSetup().getSystemUriSetup().getPatientSystemUri(),
             "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "Default DHIS2 patient system URI." );
 
-        createRemoteSubscription( setup.getRemoteSubscriptionSetup(), organizationSystem, patientSystem );
+        final SetupResult setupResult = createRemoteSubscription( setup.getRemoteSubscriptionSetup(), organizationSystem, patientSystem );
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         updateTrackedEntity( setup.getTrackedEntitySetup() );
+        return setupResult;
     }
 
-    private void createRemoteSubscription( @Nonnull RemoteSubscriptionSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
+    @Nonnull
+    private SetupResult createRemoteSubscription( @Nonnull RemoteSubscriptionSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
         final Set<FhirResourceType> autoCreatedSubscriptionResources = new HashSet<>();
         autoCreatedSubscriptionResources.add( FhirResourceType.PATIENT );
@@ -223,6 +225,8 @@ public class SetupService
         remoteSubscription.getSystems().add( subscriptionPatientSystem );
 
         remoteSubscriptionRepository.saveAndFlush( remoteSubscription );
+        return new SetupResult( remoteSubscription.getId(), remoteSubscription.getResources().stream()
+            .collect( Collectors.toMap( RemoteSubscriptionResource::getFhirResourceType, rsr -> rsr.getId() ) ) );
     }
 
     private void createSystemCodes( @Nonnull OrganizationCodeSetup setup, @Nonnull System organizationSystem )

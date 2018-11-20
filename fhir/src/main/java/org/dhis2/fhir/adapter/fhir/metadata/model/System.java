@@ -103,7 +103,7 @@ public class System extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "enabled", nullable = false )
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isEnabled()
     {
         return enabled;
@@ -127,7 +127,7 @@ public class System extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "description_protected", nullable = false, updatable = false )
+    @Column( name = "description_protected", nullable = false, updatable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isDescriptionProtected()
     {
         return descriptionProtected;

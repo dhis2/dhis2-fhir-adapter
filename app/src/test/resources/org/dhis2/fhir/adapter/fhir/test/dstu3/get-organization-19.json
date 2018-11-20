@@ -1,0 +1,18 @@
+{
+  "resourceType": "Organization",
+  "id": "19",
+  "meta": {
+    "versionId": "9",
+    "lastUpdated": "2018-11-21T10:55:42.191+01:00"
+  },
+  "identifier": [
+    {
+      "system": "http://example.sl/organizations",
+      "value": "U_7777"
+    }
+  ],
+  "name": "Registration Unit",
+  "partOf": {
+    "reference": "Organization/18"
+  }
+}

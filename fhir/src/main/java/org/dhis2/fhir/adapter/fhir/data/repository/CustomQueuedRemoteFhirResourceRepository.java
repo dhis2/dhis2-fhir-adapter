@@ -51,10 +51,9 @@ public interface CustomQueuedRemoteFhirResourceRepository
      * @param fhirResourceId         the ID of the FHIR resource for which a message should
      *                               be enqueued.
      * @param requestId              the unique ID of the request to enqueue this resource.
-     * @return <code>true</code> if the enqueue can be made, <code>false</code> if there
-     * are still messages inside the queue.
+     * @throws AlreadyQueuedException thrown if there are still messages inside the queue.
      */
-    boolean enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId, @Nonnull String requestId );
+    void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId, @Nonnull String requestId ) throws AlreadyQueuedException;
 
     /**
      * Tries to dequeue the entity with the specified IDs. If the entity does not

@@ -49,10 +49,9 @@ public interface CustomQueuedRemoteSubscriptionRequestRepository
      * @param subscriptionResourceId the ID of the subscription resource for which a
      *                               message should be enqueued.
      * @param requestId              the ID of the current request.
-     * @return <code>true</code> if the enqueue can be made, <code>false</code> if there
-     * are still messages inside the queue.
+     * @throws AlreadyQueuedException thrown if there are still messages inside the queue.
      */
-    boolean enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId );
+    void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId ) throws AlreadyQueuedException;
 
     /**
      * Tries to dequeue the entity with the specified ID. If the entity does not

@@ -122,7 +122,7 @@ public class ExecutableScriptArg implements Serializable, FhirAdapterMetadata<UU
     }
 
     @Basic
-    @Column( name = "enabled", nullable = false )
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isEnabled()
     {
         return enabled;

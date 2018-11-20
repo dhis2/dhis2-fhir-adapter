@@ -228,7 +228,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.transformInScript = transformInScript;
     }
 
-    @Column( name = "contained_allowed", nullable = false )
+    @Column( name = "contained_allowed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isContainedAllowed()
     {
         return containedAllowed;

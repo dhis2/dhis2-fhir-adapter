@@ -1,0 +1,130 @@
+{
+  "resourceType": "Bundle",
+  "id": "0cad0ac5-7a60-419b-9793-6467af38c0db",
+  "meta": {
+    "lastUpdated": "2018-11-21T18:18:55.560+01:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Patient?_format=json&_sort=_lastUpdated"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Patient/15",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "15",
+        "meta": {
+          "versionId": "6",
+          "lastUpdated": "2018-11-19T21:31:14.493+01:00"
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Joe Alan Scott <b>WEST </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>88589</td></tr><tr><td>Address</td><td><span>Water Road 675 </span><br/><span>Apartment 62 </span><br/><span>Freetown </span><span>Sierra Leone </span></td></tr><tr><td>Date of birth</td><td><span>11 November 2018</span></td></tr></tbody></table></div>"
+        },
+        "contained": [
+          {
+            "resourceType": "RelatedPerson",
+            "id": "1",
+            "active": true,
+            "patient": {
+              "reference": "Patient/15"
+            },
+            "relationship": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/v3/RoleCode",
+                  "code": "MTH"
+                }
+              ]
+            },
+            "name": [
+              {
+                "family": "West",
+                "given": [
+                  "Elizabeth"
+                ]
+              }
+            ],
+            "telecom": [
+              {
+                "system": "phone",
+                "value": "(123) 456-7890.10",
+                "use": "old",
+                "rank": 1
+              },
+              {
+                "system": "phone",
+                "value": "(723) 456-7890.10",
+                "use": "home",
+                "rank": 2
+              }
+            ],
+            "gender": "female"
+          }
+        ],
+        "identifier": [
+          {
+            "system": "http://example.sl/patients",
+            "value": "88589"
+          }
+        ],
+        "name": [
+          {
+            "family": "West",
+            "given": [
+              "Joe",
+              "Alan",
+              "Scott"
+            ]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "2018-11-11",
+        "address": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+                "extension": [
+                  {
+                    "url": "latitude",
+                    "valueDecimal": 8.4665341
+                  },
+                  {
+                    "url": "longitude",
+                    "valueDecimal": -13.262743
+                  }
+                ]
+              }
+            ],
+            "line": [
+              "Water Road 675",
+              "Apartment 62"
+            ],
+            "city": "Freetown",
+            "country": "Sierra Leone"
+          }
+        ],
+        "managingOrganization": {
+          "reference": "Organization/19"
+        },
+        "link": [
+          {
+            "other": {
+              "reference": "#1"
+            },
+            "type": "seealso"
+          }
+        ]
+      },
+      "search": {
+        "mode": "match"
+      }
+    }
+  ]
+}

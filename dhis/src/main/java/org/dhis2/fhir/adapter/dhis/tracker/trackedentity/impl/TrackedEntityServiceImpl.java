@@ -67,18 +67,21 @@ import java.util.stream.Collectors;
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
+    protected static final String TEI_FIELDS =
+        "trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
+            "attributes[attribute,value,lastUpdated,storedBy]";
+
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
-    protected static final String ID_URI = "/trackedEntityInstances/{id}.json?" +
-        "fields=trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
-        "attributes[attribute,value,lastUpdated]";
+    protected static final String ID_URI = "/trackedEntityInstances/{id}.json?fields=" + TEI_FIELDS;
 
-    protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
+    protected static final String UPDATE_URI = "/trackedEntityInstances/{id}.json?mergeMode=MERGE";
 
     protected static final String FIND_BY_ATTR_VALUE_URI = "/trackedEntityInstances.json?" +
-        "trackedEntityType={typeId}&ouMode=ACCESSIBLE&filter={attrId}:EQ:{attrValue}&pageSize={maxResult}";
+        "trackedEntityType={typeId}&ouMode=ACCESSIBLE&filter={attrId}:EQ:{attrValue}&pageSize={maxResult}&" +
+        "fields=" + TEI_FIELDS;
 
     protected static final int MAX_RESERVE_RETRIES = 10;
 

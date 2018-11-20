@@ -29,13 +29,20 @@ package org.dhis2.fhir.adapter.fhir.data.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequest;
+import org.dhis2.fhir.adapter.fhir.data.repository.AlreadyQueuedException;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomQueuedRemoteSubscriptionRequestRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
-import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
@@ -44,6 +51,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.time.Instant;
 import java.util.UUID;
+
+import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
  * Implementation of {@link CustomQueuedRemoteSubscriptionRequestRepository}.
@@ -57,48 +66,100 @@ public class CustomQueuedRemoteSubscriptionRequestRepositoryImpl implements Cust
     @PersistenceContext
     private EntityManager entityManager;
 
-    public CustomQueuedRemoteSubscriptionRequestRepositoryImpl( @Nonnull EntityManager entityManager )
+    private PlatformTransactionManager platformTransactionManager;
+
+    private PersistenceExceptionTranslator persistenceExceptionTranslator;
+
+    public CustomQueuedRemoteSubscriptionRequestRepositoryImpl( @Nonnull EntityManager entityManager,
+        @Nonnull PlatformTransactionManager platformTransactionManager, @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
     {
         this.entityManager = entityManager;
+        this.platformTransactionManager = platformTransactionManager;
+        this.persistenceExceptionTranslator = persistenceExceptionTranslator;
     }
 
-    @Transactional
+    @Transactional( rollbackFor = AlreadyQueuedException.class )
     @Override
     @SuppressWarnings( "unchecked" )
-    public boolean enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId )
+    public void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId ) throws AlreadyQueuedException
     {
-        final Query query = entityManager.createNativeQuery( "INSERT INTO fhir_queued_remote_subscription_request(id,request_id,queued_at) " +
-            "VALUES (:id,:requestId,:queuedAt) ON CONFLICT ON CONSTRAINT fhir_queued_remote_subscription_request_pk DO NOTHING RETURNING request_id" )
+        final Query query = entityManager.createNativeQuery( "INSERT INTO fhir_queued_remote_subscription_request" +
+            "(id,request_id,queued_at) VALUES (:id,:requestId,:queuedAt)" )
             .setParameter( "id", subscriptionResourceId ).setParameter( "requestId", requestId ).setParameter( "queuedAt", Instant.now() );
         // avoid invalidation of complete 2nd level cache
         query.unwrap( NativeQuery.class ).addSynchronizedEntityClass( QueuedRemoteSubscriptionRequest.class );
 
         try
         {
-            return query.getResultList().stream().anyMatch( requestId::equals );
+            query.executeUpdate();
         }
         catch ( PersistenceException e )
         {
-            if ( e.getCause() instanceof ConstraintViolationException )
+            final RuntimeException runtimeException = DataAccessUtils.translateIfNecessary( e, persistenceExceptionTranslator );
+            if ( runtimeException instanceof DataIntegrityViolationException )
             {
-                logger.error( "Could not process enqueue request for subscription resource {} due to constraint violation: {}",
-                    subscriptionResourceId, e.getCause().getMessage() );
-                throw new IgnoredSubscriptionResourceException( "Subscription resource " + subscriptionResourceId + " does no longer exist.", e );
+                final DataIntegrityViolationException dataIntegrityViolationException =
+                    (DataIntegrityViolationException) runtimeException;
+                if ( SqlExceptionUtils.isUniqueKeyViolation( dataIntegrityViolationException.getMostSpecificCause() ) )
+                {
+                    throw new AlreadyQueuedException();
+                }
+                if ( SqlExceptionUtils.isForeignKeyViolation( dataIntegrityViolationException.getMostSpecificCause() ) )
+                {
+                    logger.error( "Could not process enqueue request for subscription resource {} due to constraint violation: {}",
+                        subscriptionResourceId, e.getCause().getMessage() );
+                    throw new IgnoredSubscriptionResourceException( "Subscription resource " + subscriptionResourceId + " does no longer exist.", e );
+                }
             }
-            throw e;
+            throw runtimeException;
         }
     }
 
-    @Transactional
     @Override
     public boolean dequeued( @Nonnull UUID subscriptionResourceId )
     {
         // First an enqueue must be tried. There may still be a pending not committed enqueue.
         // This must be deleted. The pending enqueue will block this enqueue until it has been committed.
-        enqueue( subscriptionResourceId, "?" );
+        TransactionStatus transactionStatus = platformTransactionManager
+            .getTransaction( new DefaultTransactionDefinition( PROPAGATION_REQUIRES_NEW ) );
+        try
+        {
+            enqueue( subscriptionResourceId, "?" );
+        }
+        catch ( AlreadyQueuedException e )
+        {
+            // can be ignored
+        }
+        finally
+        {
+            if ( transactionStatus.isRollbackOnly() )
+            {
+                platformTransactionManager.rollback( transactionStatus );
+            }
+            else
+            {
+                platformTransactionManager.commit( transactionStatus );
+            }
+        }
 
-        final Query query = entityManager.createQuery( "DELETE FROM QueuedRemoteSubscriptionRequest WHERE id=:id" )
-            .setParameter( "id", subscriptionResourceId );
-        return (query.executeUpdate() > 0);
+        transactionStatus = platformTransactionManager
+            .getTransaction( new DefaultTransactionDefinition() );
+        try
+        {
+            final Query query = entityManager.createQuery( "DELETE FROM QueuedRemoteSubscriptionRequest WHERE id=:id" )
+                .setParameter( "id", subscriptionResourceId );
+            return (query.executeUpdate() > 0);
+        }
+        finally
+        {
+            if ( transactionStatus.isRollbackOnly() )
+            {
+                platformTransactionManager.rollback( transactionStatus );
+            }
+            else
+            {
+                platformTransactionManager.commit( transactionStatus );
+            }
+        }
     }
 }

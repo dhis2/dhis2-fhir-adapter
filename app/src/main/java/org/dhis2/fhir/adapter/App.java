@@ -58,6 +58,8 @@ public class App extends SpringBootServletInitializer
 
     public static final String DHIS2_HOME_PROP = "dhis2.home";
 
+    public static final String RELATIVE_APPLICATION_PROPERTY_SOURCE = "services/fhir-adapter/application.yml";
+
     @Override
     protected SpringApplicationBuilder configure( SpringApplicationBuilder application )
     {
@@ -94,7 +96,7 @@ public class App extends SpringBootServletInitializer
             throw new AppException( "DHIS2 home environment variable " + DHIS2_HOME_ENV + " has not been set." );
         }
 
-        final File configFile = new File( home + "/services/fhir-adapter/application.yml" );
+        final File configFile = new File( home + "/" + RELATIVE_APPLICATION_PROPERTY_SOURCE );
         if ( !configFile.canRead() )
         {
             throw new AppException( "Adapter configuration file does not exist or cannot be read: " + configFile.getAbsolutePath() );
