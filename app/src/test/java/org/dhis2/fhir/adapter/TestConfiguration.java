@@ -38,6 +38,8 @@ import org.dhis2.fhir.adapter.setup.Setup;
 import org.dhis2.fhir.adapter.setup.SetupResult;
 import org.dhis2.fhir.adapter.setup.SetupService;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -67,6 +69,8 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 @AutoConfigureAfter( HibernateJpaAutoConfiguration.class )
 public class TestConfiguration
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     public static final String ADAPTER_AUTHORIZATION = "Bearer 836ef9274abc828728746";
 
     public static final String DHIS2_USERNAME = "fhir_user";
@@ -142,6 +146,7 @@ public class TestConfiguration
     {
         fhirMockServer = new WireMockServer( wireMockConfig().dynamicPort() );
         fhirMockServer.start();
+        logger.info( "Started WireMock server for FHIR requests on port {}.", fhirMockServer.port() );
 
         final Setup setup = new Setup();
 

@@ -39,7 +39,8 @@ import org.springframework.test.web.client.ExpectedCount;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -55,17 +56,15 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
     public void createPatient() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        fhirMockServer.addStubMapping(
-            stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/19" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/19" ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
-                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:OU_U_7777" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-empty.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        fhirMockServer.addStubMapping(
-            stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/18" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/18" ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
-                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:OU_1234" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );

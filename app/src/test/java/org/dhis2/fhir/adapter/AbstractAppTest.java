@@ -165,19 +165,17 @@ public abstract class AbstractAppTest
             final UrlPattern urlPattern = urlMatching( TestConfiguration.BASE_DSTU3_CONTEXT +
                 "/" + resourceType.getResourceTypeName() +
                 "\\?_sort=_lastUpdated&_count=10000&_lastUpdated=ge[^&]+&_elements=meta\\%2[cC]id" );
-            final StubMapping stubMapping = stubFor( WireMock.get( urlPattern ).willReturn( aResponse()
+            previousResourceSearchStubMapping = fhirMockServer.stubFor(
+                WireMock.get( urlPattern ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
                 .withBody( resourceSearchResponse ) ) );
-            fhirMockServer.addStubMapping( stubMapping );
-            previousResourceSearchStubMapping = stubMapping;
         }
         if ( StringUtils.isNotBlank( resourceId ) && StringUtils.isNotBlank( resourceResponse ) )
         {
-            final StubMapping stubMapping = stubFor( WireMock.get( urlEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT +
+            fhirMockServer.stubFor( WireMock.get( urlEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT +
                 "/" + resourceType.getResourceTypeName() + "/" + resourceId ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
                 .withBody( resourceResponse ) ) );
-            fhirMockServer.addStubMapping( stubMapping );
         }
 
         mockMvc.perform( post( "/remote-fhir-rest-hook/{subscriptionId}/{subscriptionResourceId}",
@@ -240,15 +238,16 @@ public abstract class AbstractAppTest
     public void beforeAbstractAppTest() throws Exception
     {
         fhirMockServer.resetAll();
+        WireMock.configureFor( fhirMockServer.port() );
         previousResourceSearchStubMapping = null;
 
         systemDhis2Server = MockRestServiceServer.bindTo( systemDhis2RestTemplate ).ignoreExpectOrder( true ).build();
         userDhis2Server = MockRestServiceServer.bindTo( userDhis2RestTemplate ).build();
 
-        fhirMockServer.addStubMapping(
-            stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/metadata" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor(
+            WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/metadata" ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
-                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/metadata.json", StandardCharsets.UTF_8 ) ) ) ) );
+                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/metadata.json", StandardCharsets.UTF_8 ) ) ) );
 
         clearCache( metadataCacheManager );
         clearCache( dhisCacheManager );
