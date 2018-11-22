@@ -156,6 +156,8 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- due to asynchronous jobs stack traces must not be trimmed in non test source -->
+            <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
       </plugins>
