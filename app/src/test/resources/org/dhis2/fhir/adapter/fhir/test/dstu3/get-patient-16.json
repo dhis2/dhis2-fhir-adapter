@@ -1,0 +1,70 @@
+{
+  "resourceType": "Patient",
+  "id": "16",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+  },
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Elizabeth <b>WEST </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>88588</td></tr><tr><td>Address</td><td><span>Freetown </span><span>Sierra Leone </span></td></tr><tr><td>Date of birth</td><td><span>19 November 2002</span></td></tr></tbody></table></div>"
+  },
+  "contained": [
+    {
+      "resourceType": "Organization",
+      "id": "1",
+      "name": "Birth Unit",
+      "partOf": {
+        "reference": "Organization/18"
+      }
+    }
+  ],
+  "identifier": [
+    {
+      "system": "http://example.sl/patients",
+      "value": "88588"
+    }
+  ],
+  "name": [
+    {
+      "family": "West",
+      "given": [
+        "Elizabeth"
+      ]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "2002-11-19",
+  "address": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+          "extension": [
+            {
+              "url": "latitude",
+              "valueDecimal": 8.4665341
+            },
+            {
+              "url": "longitude",
+              "valueDecimal": -13.262743
+            }
+          ]
+        }
+      ],
+      "city": "Freetown",
+      "country": "Sierra Leone"
+    }
+  ],
+  "managingOrganization": {
+    "reference": "#1"
+  },
+  "link": [
+    {
+      "other": {
+        "reference": "RelatedPerson/20"
+      },
+      "type": "seealso"
+    }
+  ]
+}

@@ -80,6 +80,10 @@ public class BeforeCreateSaveConstantValidator implements Validator
         {
             errors.rejectValue( "value", "Constant.value.length", new Object[]{ Constant.MAX_VALUE_LENGTH }, "Value must not be longer than {0} characters." );
         }
+        if ( constant.getCategory() == null )
+        {
+            errors.rejectValue( "category", "Constant.category.null", "Category is mandatory." );
+        }
         if ( constant.getDataType() == null )
         {
             errors.rejectValue( "dataType", "Constant.dataType.null", "Data type is mandatory." );

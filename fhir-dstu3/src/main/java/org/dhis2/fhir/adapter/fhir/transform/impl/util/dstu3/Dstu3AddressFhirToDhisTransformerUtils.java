@@ -47,6 +47,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractAddressFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirToDhisTransformerUtils
@@ -82,7 +87,7 @@ public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirT
         {
             return null;
         }
-        return String.join( delimiter, convertedAddress.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
+        return convertedAddress.getLine().stream().map( PrimitiveType::getValue ).collect( Collectors.joining( delimiter ) );
     }
 
     @Nullable
@@ -184,6 +189,10 @@ public class Dstu3AddressFhirToDhisTransformerUtils extends AbstractAddressFhirT
             if ( at == Address.AddressType.POSTAL )
             {
                 return 8;
+            }
+            if ( at == Address.AddressType.BOTH )
+            {
+                return 2;
             }
             return 0;
         }

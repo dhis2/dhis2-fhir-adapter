@@ -89,14 +89,14 @@ public class BeforeCreateSaveScriptValidator implements Validator
         }
         else if ( script.getScriptType() == ScriptType.EVALUATE )
         {
-            if ( script.getReturnType() == null )
-            {
-                errors.rejectValue( "returnType", "Script.returnType.null", "Return type is mandatory when script is an evaluation script." );
-            }
             if ( script.getOutputType() != null )
             {
                 errors.rejectValue( "outputType", "Script.outputType.notNull", "Output type must not be specified when script is an evaluation script." );
             }
+        }
+        if ( script.getReturnType() == null )
+        {
+            errors.rejectValue( "returnType", "Script.returnType.null", "Return type is mandatory when script is an evaluation script." );
         }
     }
 }

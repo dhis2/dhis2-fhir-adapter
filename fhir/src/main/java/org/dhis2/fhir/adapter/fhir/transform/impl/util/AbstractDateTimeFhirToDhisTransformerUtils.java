@@ -222,7 +222,7 @@ public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends Abstrac
     @Nullable
     protected final Integer getAge( @Nonnull Temporal relativeTemporal, @Nullable Temporal temporal, @Nonnull TemporalUnit temporalUnit )
     {
-        return (temporal == null) ? null : Math.min( 0, (int) Period.between( LocalDate.from( temporal ), LocalDate.from( relativeTemporal ) ).get( temporalUnit ) );
+        return (temporal == null) ? null : Math.max( 0, (int) Period.between( LocalDate.from( temporal ), LocalDate.from( relativeTemporal ) ).get( temporalUnit ) );
     }
 
     @Nullable

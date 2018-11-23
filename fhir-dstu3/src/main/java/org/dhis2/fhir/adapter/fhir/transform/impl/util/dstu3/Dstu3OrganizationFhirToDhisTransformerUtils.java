@@ -50,6 +50,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractOrganizationFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3OrganizationFhirToDhisTransformerUtils extends AbstractOrganizationFhirToDhisTransformerUtils

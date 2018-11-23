@@ -46,6 +46,11 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractPatientFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3PatientFhirToDhisTransformerUtils extends AbstractPatientFhirToDhisTransformerUtils

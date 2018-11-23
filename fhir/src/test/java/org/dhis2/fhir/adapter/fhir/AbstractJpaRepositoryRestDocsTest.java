@@ -45,9 +45,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
  *
  * @author volsch
  */
-//@Transactional
-//@Rollback
-public abstract class AbstractJpaRepositoryRestDocsTest extends AbstractMockMvcTest
+public abstract class AbstractJpaRepositoryRestDocsTest extends AbstractJpaRepositoryTest
 {
     public static final String API_BASE_URI = "http://localhost:8081/api";
 

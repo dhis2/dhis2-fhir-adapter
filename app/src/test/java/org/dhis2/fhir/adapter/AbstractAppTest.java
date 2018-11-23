@@ -56,6 +56,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
@@ -64,7 +65,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -153,7 +153,7 @@ public abstract class AbstractAppTest
     private long resourceDlQueueCount;
 
     protected void notifyResource( @Nonnull FhirResourceType resourceType, @Nullable String resourceSearchResponse,
-        @Nullable String resourceId, @Nullable String resourceResponse ) throws Exception
+        @Nullable String resourceId, @Nullable String resourceResponse, boolean payload ) throws Exception
     {
         if ( previousResourceSearchStubMapping != null )
         {
@@ -178,10 +178,23 @@ public abstract class AbstractAppTest
                 .withBody( resourceResponse ) ) );
         }
 
-        mockMvc.perform( post( "/remote-fhir-rest-hook/{subscriptionId}/{subscriptionResourceId}",
-            testConfiguration.getRemoteSubscriptionId(), testConfiguration.getRemoteSubscriptionResourceId( resourceType ) )
-            .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
-            .andExpect( status().isOk() );
+        if ( payload )
+        {
+            Assert.assertNotNull( resourceId );
+            Assert.assertNotNull( resourceResponse );
+            mockMvc.perform( MockMvcRequestBuilders.put( "/remote-fhir-rest-hook/{subscriptionId}/{subscriptionResourceId}/{resourceType}/{resourceId}",
+                testConfiguration.getRemoteSubscriptionId(), testConfiguration.getRemoteSubscriptionResourceId( resourceType ),
+                resourceType.getResourceTypeName(), resourceId ).content( resourceResponse ).contentType( FHIR_JSON_MEDIA_TYPE )
+                .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
+                .andExpect( status().isOk() );
+        }
+        else
+        {
+            mockMvc.perform( MockMvcRequestBuilders.post( "/remote-fhir-rest-hook/{subscriptionId}/{subscriptionResourceId}",
+                testConfiguration.getRemoteSubscriptionId(), testConfiguration.getRemoteSubscriptionResourceId( resourceType ) )
+                .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
+                .andExpect( status().isOk() );
+        }
     }
 
     protected void waitForEmptyResourceQueue() throws Exception

@@ -37,6 +37,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractAdministrativeGenderToStringConverter}.
+ *
+ * @author volsch
+ */
 @Component
 @ConvertedValueTypes( types = ValueType.TEXT )
 public class Dstu3AdministrativeGenderToStringConverter extends AbstractAdministrativeGenderToStringConverter<AdministrativeGender>

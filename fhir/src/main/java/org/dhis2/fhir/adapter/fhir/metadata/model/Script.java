@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
@@ -191,6 +192,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "script" )
     @OrderBy( "id" )
+    @JsonIgnore
     public List<ScriptArg> getArguments()
     {
         return arguments;

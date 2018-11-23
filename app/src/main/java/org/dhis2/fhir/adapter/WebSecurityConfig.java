@@ -28,13 +28,10 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
-import org.dhis2.fhir.adapter.dhis.security.DhisWebApiAuthenticationProvider;
-import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.fhir.security.AdapterAuthorities;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -56,17 +53,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 {
     protected static final String DHIS_BASIC_REALM = "DHIS2";
 
-    private final RestTemplateBuilder restTemplateBuilder;
+    private final AbstractUserDetailsAuthenticationProvider userDetailsAuthenticationProvider;
 
-    private final DhisEndpointConfig dhisEndpointConfig;
-
-    private final SecurityConfig securityConfig;
-
-    public WebSecurityConfig( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig dhisEndpointConfig, @Nonnull SecurityConfig securityConfig )
+    public WebSecurityConfig( @Nonnull AbstractUserDetailsAuthenticationProvider userDetailsAuthenticationProvider )
     {
-        this.restTemplateBuilder = restTemplateBuilder;
-        this.dhisEndpointConfig = dhisEndpointConfig;
-        this.securityConfig = securityConfig;
+        this.userDetailsAuthenticationProvider = userDetailsAuthenticationProvider;
     }
 
     @Override
@@ -92,9 +83,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
     }
 
     @Override
-    protected void configure( AuthenticationManagerBuilder auth )
+    protected void configure( AuthenticationManagerBuilder auth ) throws Exception
     {
-        auth.authenticationProvider( new DhisWebApiAuthenticationProvider( restTemplateBuilder, dhisEndpointConfig, securityConfig ) );
+        auth.authenticationProvider( userDetailsAuthenticationProvider );
     }
 
     @Override
