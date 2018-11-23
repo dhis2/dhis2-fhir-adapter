@@ -53,6 +53,16 @@ VALUES ('081c4642bb8344abb90faa206ad347aa', 0, CURRENT_TIMESTAMP(), CURRENT_TIME
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('081c4642bb8344abb90faa206ad347aa', 'DSTU3');
 
+INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'TEST', 'Test script', 'Test script.',
+        'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_IMMUNIZATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'OUTPUT');
+
 INSERT INTO fhir_executable_script (id, version, created_at, last_updated_at, last_updated_by, script_id, name, code, description)
 VALUES ('1a2950cf08424dd39453284fb08789d3', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f18acd12bc854f79935d353904eadc0b', 'CP: OPV Dose', 'CP_OPV_DOSE', 'Transforms FHIR Immunization for OPV vaccines.');
 INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value, enabled)

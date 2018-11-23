@@ -30,9 +30,9 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
 
 import org.dhis2.fhir.adapter.queue.QueueConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
@@ -46,7 +46,7 @@ import java.io.Serializable;
  * @author volsch
  */
 @Configuration( "fhirRemoteConfig" )
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.remote" )
 @Validated
 public class RemoteConfig implements Serializable

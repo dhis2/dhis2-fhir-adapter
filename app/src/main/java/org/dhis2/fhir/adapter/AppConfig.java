@@ -29,11 +29,15 @@ package org.dhis2.fhir.adapter;
  */
 
 import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
+import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
+import org.dhis2.fhir.adapter.dhis.security.DhisWebApiAuthenticationProvider;
+import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -47,9 +51,15 @@ import java.util.Date;
  * @author volsch
  */
 @Configuration
-@Validated
 public class AppConfig
 {
+    @Bean
+    @Nonnull
+    public AbstractUserDetailsAuthenticationProvider dhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig dhisEndpointConfig, @Nonnull SecurityConfig securityConfig )
+    {
+        return new DhisWebApiAuthenticationProvider( restTemplateBuilder, dhisEndpointConfig, securityConfig );
+    }
+
     @Bean
     @Nonnull
     public WebMvcConfigurer mvcConfigurer()

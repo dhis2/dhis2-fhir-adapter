@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
@@ -61,17 +62,21 @@ public class BeforeCreateSaveExecutableScriptArgValidator implements Validator
         {
             errors.rejectValue( "script", "ExecutableScriptArg.script.null", "Script is mandatory." );
         }
+        else if ( !Objects.equals( executableScriptArg.getArgument().getScript().getId(), executableScriptArg.getScript().getScript().getId() ) )
+        {
+            errors.rejectValue( "argument", "ExecutableScriptArg.argument.script", "Argument does not belong to script of executable script." );
+        }
         if ( executableScriptArg.getArgument() == null )
         {
             errors.rejectValue( "argument", "ExecutableScriptArg.argument.null", "Argument is mandatory." );
         }
-        if ( !Objects.equals( executableScriptArg.getArgument().getScript().getId(), executableScriptArg.getScript().getScript().getId() ) )
-        {
-            errors.rejectValue( "argument", "ExecutableScriptArg.argument.script", "Argument does not belong to script of executable script." );
-        }
         if ( (executableScriptArg.getOverrideValue() == null) && (executableScriptArg.getArgument().isMandatory()) )
         {
             errors.rejectValue( "overrideValue", "ExecutableScriptArg.overrideValue.null", "Argument is mandatory and override value must not be null." );
+        }
+        if ( StringUtils.length( executableScriptArg.getOverrideValue() ) > ScriptArg.MAX_DEFAULT_VALUE_LENGTH )
+        {
+            errors.rejectValue( "overrideValue", "ExecutableScript.overrideValue.length", new Object[]{ ScriptArg.MAX_DEFAULT_VALUE_LENGTH }, "Override value must not be longer than {0} characters." );
         }
         if ( executableScriptArg.getOverrideValue() != null )
         {

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.security.AdapterUser;
 import org.dhis2.fhir.adapter.fhir.security.AdapterAuthorities;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,7 +38,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -77,10 +77,17 @@ public class MockMvcTestWebSecurityConfig extends WebSecurityConfigurerAdapter
             {
                 throw new UsernameNotFoundException( "Could not find user: " + username );
             }
-            return new User( "2h2maqu827d", "district", Arrays.asList(
+            return new AdapterUser( "2h2maqu827d", username, Arrays.asList(
                 new SimpleGrantedAuthority( AdapterAuthorities.CODE_MAPPING_AUTHORITY_ROLE ),
                 new SimpleGrantedAuthority( AdapterAuthorities.DATA_MAPPING_AUTHORITY_ROLE ),
-                new SimpleGrantedAuthority( AdapterAuthorities.ADMINISTRATION_AUTHORITY ) ) );
+                new SimpleGrantedAuthority( AdapterAuthorities.ADMINISTRATION_AUTHORITY ) ) )
+            {
+                @Override
+                public String getPassword()
+                {
+                    return "district";
+                }
+            };
         } ).passwordEncoder( new PasswordEncoder()
         {
             @Override

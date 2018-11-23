@@ -48,6 +48,11 @@ import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractDateTimeFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3DateTimeFhirToDhisTransformerUtils extends AbstractDateTimeFhirToDhisTransformerUtils

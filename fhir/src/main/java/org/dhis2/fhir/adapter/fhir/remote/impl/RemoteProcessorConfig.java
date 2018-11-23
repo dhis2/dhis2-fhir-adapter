@@ -29,15 +29,15 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
  */
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 @Configuration
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.remote.processor" )
 @Validated
 public class RemoteProcessorConfig implements Serializable

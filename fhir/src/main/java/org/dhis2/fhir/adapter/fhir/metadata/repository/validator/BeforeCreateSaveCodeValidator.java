@@ -79,13 +79,13 @@ public class BeforeCreateSaveCodeValidator implements Validator
         {
             errors.rejectValue( "code", "Code.code.length", new Object[]{ Code.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
         }
-        if ( StringUtils.isBlank( code.getMappedCode() ) )
+        if ( (code.getMappedCode() != null) && StringUtils.isBlank( code.getMappedCode() ) )
         {
-            errors.rejectValue( "mappedCode", "Code.mappedCode.blank", "MappedCode must not be blank." );
+            errors.rejectValue( "mappedCode", "Code.mappedCode.blank", "Mapped code must not be blank." );
         }
-        else if ( code.getMappedCode().contains( "," ) )
+        else if ( (code.getMappedCode() != null) && code.getMappedCode().contains( "," ) )
         {
-            errors.rejectValue( "mappedCode", "Code.mappedCode.comma", "MappedCode must not contain commas." );
+            errors.rejectValue( "mappedCode", "Code.mappedCode.comma", "Mapped code must not contain commas." );
         }
         if ( StringUtils.length( code.getMappedCode() ) > Code.MAX_MAPPED_CODE_LENGTH )
         {

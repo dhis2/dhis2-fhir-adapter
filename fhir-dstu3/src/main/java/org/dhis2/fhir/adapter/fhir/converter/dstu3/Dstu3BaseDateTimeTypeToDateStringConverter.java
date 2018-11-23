@@ -32,7 +32,14 @@ import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.fhir.converter.AbstractPrimitiveTypeDateToDateStringConverter;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.springframework.stereotype.Component;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractPrimitiveTypeDateToDateStringConverter}.
+ *
+ * @author volsch
+ */
+@Component
 @ConvertedValueTypes( types = ValueType.DATE )
 public class Dstu3BaseDateTimeTypeToDateStringConverter extends AbstractPrimitiveTypeDateToDateStringConverter<BaseDateTimeType>
 {

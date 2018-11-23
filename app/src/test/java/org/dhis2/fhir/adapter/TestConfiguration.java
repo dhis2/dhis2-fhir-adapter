@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter;
  */
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
 import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
@@ -47,6 +48,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
@@ -128,9 +130,10 @@ public class TestConfiguration
 
     @Nonnull
     @Bean
-    protected WireMockServer fhirMockServer()
+    @Primary
+    protected AbstractUserDetailsAuthenticationProvider testDhisWebApiAuthenticationProvider( @Nonnull SecurityConfig securityConfig )
     {
-        return fhirMockServer;
+        return new TestDhisWebApiAuthenticationProvider( securityConfig );
     }
 
     @Nonnull
@@ -139,6 +142,13 @@ public class TestConfiguration
     protected LockManager embeddedLockManager()
     {
         return new EmbeddedLockManagerImpl();
+    }
+
+    @Nonnull
+    @Bean
+    protected WireMockServer fhirMockServer()
+    {
+        return fhirMockServer;
     }
 
     @PostConstruct

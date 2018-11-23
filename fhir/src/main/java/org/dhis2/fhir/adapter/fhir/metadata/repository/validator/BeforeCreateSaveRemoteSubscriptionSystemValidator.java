@@ -55,6 +55,10 @@ public class BeforeCreateSaveRemoteSubscriptionSystemValidator implements Valida
     {
         final RemoteSubscriptionSystem remoteSubscriptionSystem = (RemoteSubscriptionSystem) target;
 
+        if ( remoteSubscriptionSystem.getRemoteSubscription() == null )
+        {
+            errors.rejectValue( "remoteSubscription", "RemoteSubscriptionSystem.remoteSubscription.null", "Remote subscription is mandatory." );
+        }
         if ( remoteSubscriptionSystem.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "RemoteSubscriptionSystem.fhirResourceType.null", "FHIR resource type is mandatory." );

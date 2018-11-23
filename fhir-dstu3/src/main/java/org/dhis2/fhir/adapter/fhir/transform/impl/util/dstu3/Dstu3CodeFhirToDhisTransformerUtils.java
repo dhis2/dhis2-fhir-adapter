@@ -58,12 +58,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractCodeFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisTransformerUtils
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
 
     public Dstu3CodeFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull CodeRepository codeRepository,
@@ -146,7 +150,7 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
             }
             checkedCodes.add( systemCode.getCode().getCode() );
         }
-        if ( logger.isDebugEnabled() && checkedCodes.size() < convertedCodes.size() )
+        if ( logger.isDebugEnabled() && (checkedCodes.size() < convertedCodes.size()) )
         {
             logger.info( "Codes have not been defined: " + Sets.difference( new HashSet<>( convertedCodes ), checkedCodes ) );
         }

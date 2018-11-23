@@ -42,6 +42,12 @@
   </parent>
 
   <name>dhis2-fhir-adapter-fhir-dstu3</name>
+  <description>
+    The FHIR version DSTU3 specific implementation of classes. This module has
+    (unlike other modules) access to DSTU3 dependencies of HAPI FHIR. Classes
+    of this module may be duplicated (with FHIR version specific code changes)
+    for other FHIR versions in other modules
+  </description>
 
   <dependencies>
     <dependency>

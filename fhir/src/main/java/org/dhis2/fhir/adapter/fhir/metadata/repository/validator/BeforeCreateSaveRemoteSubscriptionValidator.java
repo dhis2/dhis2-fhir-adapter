@@ -107,7 +107,8 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             }
             if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getAuthorizationHeader() ) > SubscriptionAdapterEndpoint.MAX_AUTHORIZATION_HEADER_LENGTH )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.adapterEndpoint.authorizationHeader.length", new Object[]{ SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH }, "Adapter endpoint authorization header must not be longer than {0} characters." );
+                errors.rejectValue( "authorizationHeader", "RemoteSubscription.adapterEndpoint.authorizationHeader.length", new Object[]{ SubscriptionAdapterEndpoint.MAX_BASE_URL_LENGTH }, "Adapter endpoint authorization header must not be longer than {0} " +
+                    "characters." );
             }
             if ( remoteSubscription.getAdapterEndpoint().getSubscriptionType() == null )
             {
@@ -133,7 +134,7 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             }
             if ( StringUtils.length( remoteSubscription.getDhisEndpoint().getUsername() ) > SubscriptionDhisEndpoint.MAX_USERNAME_LENGTH )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.dhisEndpoint.username.length", new Object[]{ SubscriptionDhisEndpoint.MAX_USERNAME_LENGTH }, "DHIS endpoint username must not be longer than {0} characters." );
+                errors.rejectValue( "username", "RemoteSubscription.dhisEndpoint.username.length", new Object[]{ SubscriptionDhisEndpoint.MAX_USERNAME_LENGTH }, "DHIS endpoint username must not be longer than {0} characters." );
             }
             if ( StringUtils.isBlank( remoteSubscription.getDhisEndpoint().getPassword() ) )
             {
@@ -141,7 +142,7 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             }
             if ( StringUtils.length( remoteSubscription.getDhisEndpoint().getPassword() ) > SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH )
             {
-                errors.rejectValue( "baseUrl", "RemoteSubscription.dhisEndpoint.password.length", new Object[]{ SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH }, "DHIS endpoint password must not be longer than {0} characters." );
+                errors.rejectValue( "password", "RemoteSubscription.dhisEndpoint.password.length", new Object[]{ SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH }, "DHIS endpoint password must not be longer than {0} characters." );
             }
         }
         errors.popNestedPath();
@@ -158,7 +159,7 @@ public class BeforeCreateSaveRemoteSubscriptionValidator implements Validator
             {
                 errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid HTTP/HTTPS URL." );
             }
-            if ( StringUtils.length( remoteSubscription.getAdapterEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
+            if ( StringUtils.length( remoteSubscription.getFhirEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
             {
                 errors.rejectValue( "baseUrl", "RemoteSubscription.fhirEndpoint.baseUrl.length", new Object[]{ SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
             }

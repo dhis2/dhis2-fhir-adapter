@@ -43,6 +43,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractContactPointFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3ContactPointFhirToDhisTransformerUtils extends AbstractContactPointFhirToDhisTransformerUtils

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.security.AdapterUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,6 +59,10 @@ public abstract class AdapterSecurityUtils
         if ( !(authentication.getPrincipal() instanceof UserDetails) )
         {
             return null;
+        }
+        if ( authentication.getPrincipal() instanceof AdapterUserDetails )
+        {
+            return ((AdapterUserDetails) authentication.getPrincipal()).getId();
         }
         return ((UserDetails) authentication.getPrincipal()).getUsername();
     }

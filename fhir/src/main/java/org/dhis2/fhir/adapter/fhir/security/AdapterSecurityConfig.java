@@ -33,10 +33,10 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -50,7 +50,7 @@ import java.util.Set;
  * @author volsch
  */
 @Configuration
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.security.authorities" )
 public class AdapterSecurityConfig implements SecurityConfig
 {

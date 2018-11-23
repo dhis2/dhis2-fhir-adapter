@@ -110,6 +110,6 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
 
         final Set<String> dhisAuthorities = new HashSet<>( Objects.requireNonNull( authorizationResponse.getBody() ) );
         final Set<GrantedAuthority> grantedAuthorities = securityConfig.createGrantedAuthorities( dhisAuthorities );
-        return new AdapterUserDetails( Objects.requireNonNull( idResponse.getBody() ).getId(), grantedAuthorities );
+        return new AdapterUser( Objects.requireNonNull( idResponse.getBody() ).getId(), username, grantedAuthorities );
     }
 }

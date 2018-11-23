@@ -30,9 +30,9 @@ package org.dhis2.fhir.adapter.dhis.config;
 
 import org.dhis2.fhir.adapter.model.UsernamePassword;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
@@ -52,7 +52,7 @@ import java.io.Serializable;
  * @author volsch
  */
 @Configuration
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.endpoint" )
 @Validated
 public class DhisEndpointConfig implements Serializable

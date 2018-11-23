@@ -45,6 +45,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractIdentifierFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3IdentifierFhirToDhisTransformerUtils extends AbstractIdentifierFhirToDhisTransformerUtils

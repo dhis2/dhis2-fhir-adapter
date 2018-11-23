@@ -33,10 +33,17 @@ import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.dstu3.model.Quantity;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * FHIR version DSTU3 implementation of a FHIR quantity converter.
+ *
+ * @author volsch
+ */
+@Component
 @ConvertedValueTypes( types = ValueType.TEXT )
 public class Dstu3QuantityToStringConverter extends TypedConverter<Quantity, String>
 {

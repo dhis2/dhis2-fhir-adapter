@@ -37,11 +37,11 @@ import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
 import org.dhis2.fhir.adapter.scriptable.generator.JavaScriptGeneratorConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.support.StandardScriptEvaluator;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
@@ -49,7 +49,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Configuration
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.transformation" )
 @Validated
 public class TransformationConfig implements Serializable

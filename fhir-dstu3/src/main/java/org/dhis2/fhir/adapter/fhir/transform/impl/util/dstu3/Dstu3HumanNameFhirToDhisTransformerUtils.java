@@ -46,6 +46,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractHumanNameFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameFhirToDhisTransformerUtils
@@ -73,7 +78,7 @@ public class Dstu3HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameF
         {
             return null;
         }
-        return String.join( DEFAULT_GIVEN_DELIMITER, ((HumanName) humanName).getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.toList() ) );
+        return ((HumanName) humanName).getGiven().stream().map( PrimitiveType::getValue ).collect( Collectors.joining( DEFAULT_GIVEN_DELIMITER ) );
     }
 
     @Override

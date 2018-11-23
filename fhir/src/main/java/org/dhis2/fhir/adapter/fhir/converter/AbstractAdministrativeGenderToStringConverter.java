@@ -63,6 +63,7 @@ public abstract class AbstractAdministrativeGenderToStringConverter<A extends En
                     .orElseThrow( () -> new ConversionException( "No constant with code " + GENDER_MALE_CONSTANT_CODE + " has been defined." ) ).getValue();
             case "NULL":
             case "OTHER":
+            case "UNKNOWN":
                 return null;
             default:
                 throw new ConversionException( "Unsupported gender: " + source.name() );

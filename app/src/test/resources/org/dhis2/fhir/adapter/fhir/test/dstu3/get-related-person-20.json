@@ -1,0 +1,43 @@
+{
+  "resourceType": "RelatedPerson",
+  "id": "20",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2018-11-19T21:31:14.488+01:00"
+  },
+  "identifier": [
+    {
+      "system": "http://example.sl/relatedPersons",
+      "value": "mth88588"
+    }
+  ],
+  "active": true,
+  "patient": {
+    "reference": "Patient/16"
+  },
+  "relationship": {
+    "coding": [
+      {
+        "system": "http://hl7.org/fhir/v3/RoleCode",
+        "code": "MTH"
+      }
+    ]
+  },
+  "name": [
+    {
+      "family": "West",
+      "given": [
+        "Maria"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "(723) 456-7890.20",
+      "use": "home",
+      "rank": 2
+    }
+  ],
+  "gender": "female"
+}

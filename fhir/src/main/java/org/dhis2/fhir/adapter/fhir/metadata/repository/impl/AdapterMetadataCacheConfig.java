@@ -31,12 +31,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Configuration
-@EnableConfigurationProperties
+@Component
 @ConfigurationProperties( "dhis2.fhir-adapter.cache.metadata" )
 @Validated
 public class AdapterMetadataCacheConfig extends AbstractSimpleCacheConfig

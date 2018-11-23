@@ -55,6 +55,10 @@ public class BeforeCreateSaveRemoteSubscriptionResourceValidator implements Vali
     {
         final RemoteSubscriptionResource remoteSubscriptionResource = (RemoteSubscriptionResource) target;
 
+        if ( remoteSubscriptionResource.getRemoteSubscription() == null )
+        {
+            errors.rejectValue( "remoteSubscription", "RemoteSubscriptionResource.remoteSubscription.null", "Remote subscription is mandatory." );
+        }
         if ( remoteSubscriptionResource.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "RemoteSubscriptionResource.fhirResourceType.null", "FHIR resource type is mandatory." );

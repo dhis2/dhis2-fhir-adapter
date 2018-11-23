@@ -99,10 +99,6 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
                 for ( final ExecutableScriptArg arg : executableScript.getOverrideArguments() )
                 {
                     errors.pushNestedPath( "overrideArguments[" + index + "]" );
-                    if ( arg.getScript() == null )
-                    {
-                        arg.setScript( executableScript );
-                    }
                     if ( !Objects.equals( arg.getScript().getId(), executableScript.getId() ) )
                     {
                         errors.rejectValue( "script", "ExecutableScript.overrideArguments.script",
@@ -124,7 +120,7 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
                 .map( ScriptArg::getName ).collect( Collectors.toSet() );
             if ( executableScript.getOverrideArguments() != null )
             {
-                executableScript.getOverrideArguments().stream().filter( oa -> oa.getArgument().isMandatory() ).forEach( oa -> {
+                executableScript.getOverrideArguments().stream().filter( oa -> oa.getArgument().isMandatory() && oa.isEnabled() ).forEach( oa -> {
                     if ( oa.getOverrideValue() == null )
                     {
                         mandatoryArgNames.add( oa.getArgument().getName() );
