@@ -61,12 +61,17 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         {
             errors.rejectValue( "name", "AbstractRule.name.length", new Object[]{ AbstractRule.MAX_NAME_LENGTH }, "Name must not be longer than {0} characters." );
         }
+        if ( rule.getTransformInScript() == null )
+        {
+            errors.rejectValue( "transformInScript", "AbstractRule.transformInScript.null", "Transformation input script is mandatory." );
+        }
         if ( rule.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "AbstractRule.fhirResourceType.null", "FHIR resource type is mandatory." );
         }
         else
         {
+
             checkValidApplicableInScript( errors, "applicableInScript", rule.getFhirResourceType(), rule.getApplicableInScript() );
             checkValidTransformInScript( errors, "transformInScript", rule.getFhirResourceType(), transformDataType, rule.getTransformInScript() );
         }
@@ -89,6 +94,26 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
         {
             errors.rejectValue( field, "AbstractRule." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for applicable script must be the same as for the rule {0}." );
+        }
+    }
+
+    protected static void checkValidTeiLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
+    {
+        if ( executableScript == null )
+        {
+            return;
+        }
+        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for TEI evaluation must be EVALUATE." );
+        }
+        if ( executableScript.getScript().getReturnType() != DataType.FHIR_RESOURCE )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for TEI evaluation script must be FHIR_RESOURCE." );
+        }
+        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for TEI evaluation script must be the same as for the rule {0}." );
         }
     }
 

@@ -34,7 +34,8 @@ import org.apache.commons.text.WordUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ResourceLoader;
@@ -48,6 +49,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -75,10 +77,11 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-@ConditionalOnBean( JavaScriptGeneratorConfig.class )
 @Controller
 public class JavaScriptGeneratorController
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     public static final String LICENSE_FILE = "classpath:/dhis2-license.txt";
 
     public static final String LINE_ENDING = "\r\n";
@@ -95,7 +98,7 @@ public class JavaScriptGeneratorController
 
     private String eTag;
 
-    public JavaScriptGeneratorController( @SuppressWarnings( "SpringJavaInjectionPointsAutowiringInspection" ) @Nonnull JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    public JavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
     {
         this.config = config;
         this.resourceLoader = resourceLoader;
@@ -104,6 +107,11 @@ public class JavaScriptGeneratorController
     @RequestMapping( path = "/scripts/to-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
     public ResponseEntity<String> getScript( @Nonnull WebRequest request )
     {
+        if ( lastModified == null )
+        {
+            return new ResponseEntity<>( HttpStatus.NOT_FOUND );
+        }
+
         if ( request.checkNotModified( eTag, lastModified.toEpochMilli() ) )
         {
             return null;
@@ -118,6 +126,12 @@ public class JavaScriptGeneratorController
     @PostConstruct
     protected void init()
     {
+        if ( config == null )
+        {
+            logger.info( "JavaScript generator configuration could not be found. Generator is not available." );
+            return;
+        }
+
         lastModified = Instant.now();
 
         final SortedMap<String, Class<?>> orderedClasses = new TreeMap<>();

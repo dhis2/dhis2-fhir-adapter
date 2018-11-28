@@ -68,6 +68,16 @@ VALUES ('1a2950cf08424dd39453284fb08789d3', 0, CURRENT_TIMESTAMP(), CURRENT_TIME
 INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value, enabled)
 VALUES ('4a8ba21510e946f2921fda3973836119', '1a2950cf08424dd39453284fb08789d3', '44134ba8d77f4c4d90c6b434ffbe7958', 'CODE:DE_2006104', TRUE);
 
+-- Script that returns boolean value true every time
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('5b37861d94424e13ac9f88a893e91ce9', 0, 'True', 'TRUE', 'Returns Boolean True.', 'EVALUATE', 'BOOLEAN', NULL, NULL);
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('edcb402e94b4495388463a4d1c0dad6e', 0, '5b37861d94424e13ac9f88a893e91ce9', 'true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('edcb402e94b4495388463a4d1c0dad6e', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('9299b82eb90a45428b78200cadff3d7d', 0, '5b37861d94424e13ac9f88a893e91ce9', 'True', 'TRUE', 'Returns Boolean True.');
+
 INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by, code, name, description, script_type, return_type, input_type, output_type)
 VALUES ('f1da6937e2fe47a4b0f38bbff7818ee1', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'TRANSFORM_FHIR_OB_BODY_WEIGHT', 'Transforms FHIR Observation Body Weight', 'Transforms FHIR Observation Body Weight to a data element and performs weight unit conversion.',
 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
@@ -123,6 +133,36 @@ INSERT INTO fhir_code_set(id, version, created_at, last_updated_at, last_updated
 VALUES ('bb66ee918e86422cbb005a90ac95a558', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '7090561ef45b411e99c065fa1d145018', 'All DTP/DTaP', 'ALL_DTP_DTAP', 'All DTP/DTaP vaccines.');
 INSERT INTO fhir_code_set_value(id, code_set_id, code_id, enabled)
   SELECT RANDOM_UUID(), 'bb66ee918e86422cbb005a90ac95a558', id, TRUE FROM fhir_code WHERE code IN ('VACCINE_106', 'VACCINE_20');
+
+-- Script that performs the lookup of TEI FHIR Resource from FHIR Observation
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 0, 'Observation TEI Lookup', 'OBSERVATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Observation.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_OBSERVATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('960d2e6c247948a2b04eb14879e71d14', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3017', 'referenceUtils.getResource(input.subject, ''PATIENT'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('960d2e6c247948a2b04eb14879e71d14', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('1b6a2f75cb4a47b18e903dfb4db07d36', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3017',
+        'Observation TEI Lookup', 'OBSERVATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Observation.');
+
+-- Script that performs the lookup of TEI FHIR Resource from FHIR Patient (the patient itself)
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3018', 0, 'Patient TEI Lookup', 'PATIENT_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Patient.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_PATIENT', NULL);
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3018', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3018', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('960d2e6c247948a2b04eb14879e71d15', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3018', 'input', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('960d2e6c247948a2b04eb14879e71d15', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('1b6a2f75cb4a47b18e903dfb4db07d37', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3018',
+        'Patient TEI Lookup', 'PATIENT_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Patient.');
   
 INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by,  name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('a250e109a13542b28bdb1c050c1d384c', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'Org Unit Code from Patient Org', 'EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE',

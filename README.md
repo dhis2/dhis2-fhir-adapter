@@ -114,10 +114,6 @@ More changeable settings can be found in the file [default-application.yml](app/
 
 ### Running
 The adapter WAR can be run with a servlet container 3.1 or later (like Apache Tomcat 8.5 or Jetty 9.3). 
-
-After successfully building the application also Maven can be used to run the application. Enter the following command in folder app in the console:
-
-    mvn jetty:run
     
 Since the created WAR file is an executable WAR file, also the following command can be entered in folder app/target in the console:
 

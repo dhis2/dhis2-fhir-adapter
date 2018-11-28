@@ -61,5 +61,6 @@ public class BeforeCreateSaveTrackedEntityRuleValidator extends AbstractBeforeCr
         }
         BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript( errors, "TrackedEntityRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript() );
         BeforeCreateSaveFhirResourceMappingValidator.checkValidLocationLookupScript( errors, "TrackedEntityRule.", "locationLookupScript", rule.getFhirResourceType(), rule.getLocationLookupScript() );
+        checkValidTeiLookupScript( errors, "teiLookupScript", rule.getFhirResourceType(), rule.getTeiLookupScript() );
     }
 }

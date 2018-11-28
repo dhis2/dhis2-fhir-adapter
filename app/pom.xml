@@ -126,19 +126,8 @@
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
           <archive>
-            <compress>false</compress>
+            <compress>true</compress>
           </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.12.v20180830</version>
-        <configuration>
-          <httpConnector>
-            <host>localhost</host>
-            <port>8081</port>
-          </httpConnector>
         </configuration>
       </plugin>
     </plugins>
@@ -155,6 +144,14 @@
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-info</id>
+                <goals>
+                  <goal>build-info</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

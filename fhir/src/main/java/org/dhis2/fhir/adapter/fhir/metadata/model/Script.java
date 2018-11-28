@@ -222,6 +222,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
 
     @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL )
     @OrderBy( "id" )
+    @JsonIgnore
     public List<ScriptSource> getSources()
     {
         return sources;

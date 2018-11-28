@@ -29,8 +29,10 @@ package org.dhis2.fhir.adapter.common.scriptabe.generator;
  */
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
+import org.dhis2.fhir.adapter.script.ScriptCompiler;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -43,12 +45,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
 {
+    @Autowired
+    private ScriptCompiler scriptCompiler;
+
     @Test
     public void scriptAvailable() throws Exception
     {
-        mockMvc.perform( get( "/scripts/to-dhis2-all-mapping.js" ) )
+        final String script = mockMvc.perform( get( "/scripts/to-dhis2-all-mapping.js" ) )
             .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
-            .andExpect( content().string( containsString( "Copyright (c)" ) ) );
+            .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
+        scriptCompiler.compile( script );
     }
 }
