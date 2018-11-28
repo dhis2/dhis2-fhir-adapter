@@ -48,7 +48,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author volsch
  */
-@SuppressWarnings( "JpaQlInspection" )
 public class BeforeCreateSaveScriptSourceValidatorTest extends AbstractJpaRepositoryTest
 {
     public static final String RESOURCE_PATH = "/api/scriptSources";

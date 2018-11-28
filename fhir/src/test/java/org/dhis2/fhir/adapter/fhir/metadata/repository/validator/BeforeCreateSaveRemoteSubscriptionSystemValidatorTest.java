@@ -47,7 +47,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author volsch
  */
-@SuppressWarnings( "JpaQlInspection" )
 public class BeforeCreateSaveRemoteSubscriptionSystemValidatorTest extends AbstractJpaRepositoryTest
 {
     public static final String RESOURCE_PATH = "/api/remoteSubscriptionSystems";

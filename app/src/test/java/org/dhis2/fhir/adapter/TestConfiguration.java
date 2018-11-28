@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter;
  */
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
@@ -189,6 +190,11 @@ public class TestConfiguration
         setup.getOrganizationCodeSetup().setFallback( true );
         setup.getOrganizationCodeSetup().setDefaultDhisCode( "OU_4567" );
         setup.getOrganizationCodeSetup().setMappings( "9876 OU_1234 \n  8765, OU_2345" );
+
+        setup.getTrackedEntitySetup().getFirstName().setReferenceType( ReferenceType.CODE );
+        setup.getTrackedEntitySetup().getFirstName().setReferenceValue( "FIRST_NAME" );
+        setup.getTrackedEntitySetup().getLastName().setReferenceType( ReferenceType.NAME );
+        setup.getTrackedEntitySetup().getLastName().setReferenceValue( "Last Name" );
 
         final SetupResult setupResult;
         SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );

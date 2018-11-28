@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequest;
 import org.dhis2.fhir.adapter.fhir.data.repository.AlreadyQueuedException;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomQueuedRemoteSubscriptionRequestRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
+import org.dhis2.fhir.adapter.util.SqlExceptionUtils;
 import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,6 @@ public class CustomQueuedRemoteSubscriptionRequestRepositoryImpl implements Cust
 
     @Transactional( rollbackFor = AlreadyQueuedException.class )
     @Override
-    @SuppressWarnings( "unchecked" )
     public void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId ) throws AlreadyQueuedException
     {
         final Query query = entityManager.createNativeQuery( "INSERT INTO fhir_queued_remote_subscription_request" +

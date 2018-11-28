@@ -36,6 +36,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -48,7 +49,10 @@ import java.io.Serializable;
  * @author volsch
  */
 @Entity
-@Table( name = "fhir_constant" )
+@Table( name = "fhir_constant", uniqueConstraints = {
+    @UniqueConstraint( name = "fhir_constant_uk_name", columnNames = "name" ),
+    @UniqueConstraint( name = "fhir_constant_uk_code", columnNames = "code" )
+} )
 public class Constant extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -4219974054617859678L;
@@ -81,7 +85,7 @@ public class Constant extends VersionedBaseMetadata implements Serializable
     private String value;
 
     @Basic
-    @Column( name = "name", nullable = false, length = 230 )
+    @Column( name = "name", nullable = false, length = MAX_NAME_LENGTH )
     public String getName()
     {
         return name;
@@ -118,7 +122,7 @@ public class Constant extends VersionedBaseMetadata implements Serializable
     }
 
     @Basic
-    @Column( name = "code", nullable = false, length = 50, unique = true )
+    @Column( name = "code", nullable = false, length = MAX_CODE_LENGTH )
     public String getCode()
     {
         return code;
