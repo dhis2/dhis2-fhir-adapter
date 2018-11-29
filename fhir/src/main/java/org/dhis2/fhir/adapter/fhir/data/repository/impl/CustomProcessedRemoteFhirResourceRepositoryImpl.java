@@ -28,41 +28,31 @@ package org.dhis2.fhir.adapter.fhir.data.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractProcessedItemRepositoryImpl;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.time.Instant;
-import java.util.function.Consumer;
 
 /**
  * Implementation of {@link CustomProcessedRemoteFhirResourceRepository}.
  *
  * @author volsch
  */
-public class CustomProcessedRemoteFhirResourceRepositoryImpl implements CustomProcessedRemoteFhirResourceRepository
+public class CustomProcessedRemoteFhirResourceRepositoryImpl extends AbstractProcessedItemRepositoryImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, RemoteSubscriptionResource> implements CustomProcessedRemoteFhirResourceRepository
 {
-    @PersistenceContext
-    EntityManager entityManager;
-
-    @Transactional
-    @Override
-    public void process( @Nonnull ProcessedRemoteFhirResource processedRemoteFhirResource, @Nonnull Consumer<ProcessedRemoteFhirResource> consumer )
+    public CustomProcessedRemoteFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager )
     {
-        entityManager.persist( processedRemoteFhirResource );
-        entityManager.flush();
-        consumer.accept( processedRemoteFhirResource );
+        super( entityManager );
     }
 
-    @Transactional
+    @Nonnull
     @Override
-    public int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp )
+    protected Class<ProcessedRemoteFhirResource> getProcessedItemClass()
     {
-        return entityManager.createQuery( "DELETE FROM ProcessedRemoteFhirResource p WHERE p.id.remoteSubscriptionResource=:remoteSubscriptionResource AND p.processedAt<:timestamp" )
-            .setParameter( "remoteSubscriptionResource", remoteSubscriptionResource ).setParameter( "timestamp", timestamp ).executeUpdate();
+        return ProcessedRemoteFhirResource.class;
     }
 }

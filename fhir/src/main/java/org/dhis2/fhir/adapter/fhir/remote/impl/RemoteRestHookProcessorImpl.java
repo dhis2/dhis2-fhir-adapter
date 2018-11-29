@@ -29,9 +29,17 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
+import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
+import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
+import org.dhis2.fhir.adapter.data.processor.impl.AbstractQueuedDataProcessorImpl;
+import org.dhis2.fhir.adapter.data.processor.impl.DataGroupQueueItem;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.data.repository.AlreadyQueuedException;
-import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
+import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequestId;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteSubscriptionRequestRepository;
@@ -40,7 +48,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourc
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceUpdateRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessor;
-import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessorException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
@@ -49,27 +56,20 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link RemoteRestHookProcessor}.
@@ -77,105 +77,40 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Service
-public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
+public class RemoteRestHookProcessorImpl extends
+    AbstractQueuedDataProcessorImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, QueuedRemoteSubscriptionRequestId, QueuedRemoteFhirResourceId, RemoteSubscriptionResource, UuidDataGroupId>
+    implements RemoteRestHookProcessor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final RemoteProcessorConfig processorConfig;
 
-    private final QueuedRemoteSubscriptionRequestRepository queuedRemoteSubscriptionRequestRepository;
-
     private final RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository;
 
-    private final RemoteSubscriptionResourceUpdateRepository remoteSubscriptionResourceUpdateRepository;
+    private final Map<FhirVersion, AbstractSubscriptionResourceItemRetriever> itemRetrievers = new HashMap<>();
 
-    private final ProcessedRemoteFhirResourceRepository processedRemoteFhirResourceRepository;
-
-    private final QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository;
-
-    private final Map<FhirVersion, AbstractSubscriptionResourceBundleRetriever> bundleRetrievers = new HashMap<>();
-
-    private final PlatformTransactionManager platformTransactionManager;
-
-    private final JmsTemplate webHookRequestQueueJmsTemplate;
-
-    private final JmsTemplate fhirResourceQueueJmsTemplate;
-
-    private final String requestIdBase = UUID.randomUUID().toString();
-
-    private final AtomicLong requestId = new AtomicLong();
-
-    public RemoteRestHookProcessorImpl( @Nonnull RemoteProcessorConfig processorConfig,
-        @Nonnull QueuedRemoteSubscriptionRequestRepository queuedRemoteSubscriptionRequestRepository,
-        @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
-        @Nonnull RemoteSubscriptionResourceUpdateRepository remoteSubscriptionResourceUpdateRepository,
-        @Nonnull ProcessedRemoteFhirResourceRepository processedRemoteFhirResourceRepository,
-        @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
-        @Nonnull ObjectProvider<List<AbstractSubscriptionResourceBundleRetriever>> bundleRetrievers,
+    public RemoteRestHookProcessorImpl(
+        @Nonnull QueuedRemoteSubscriptionRequestRepository queuedGroupRepository,
+        @Nonnull @Qualifier( "fhirRestHookRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
+        @Nonnull RemoteSubscriptionResourceUpdateRepository dataGroupUpdateRepository,
+        @Nonnull ProcessedRemoteFhirResourceRepository processedItemRepository,
+        @Nonnull QueuedRemoteFhirResourceRepository queuedItemRepository,
+        @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager,
-        @Nonnull @Qualifier( "webHookRequestQueueJmsTemplate" ) JmsTemplate webHookRequestQueueJmsTemplate,
-        @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate fhirResourceQueueJmsTemplate )
+        @Nonnull RemoteProcessorConfig processorConfig,
+        @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
+        @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers )
     {
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager );
         this.processorConfig = processorConfig;
-        this.queuedRemoteSubscriptionRequestRepository = queuedRemoteSubscriptionRequestRepository;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
-        this.remoteSubscriptionResourceUpdateRepository = remoteSubscriptionResourceUpdateRepository;
-        this.processedRemoteFhirResourceRepository = processedRemoteFhirResourceRepository;
-        this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
-        this.platformTransactionManager = platformTransactionManager;
-        this.webHookRequestQueueJmsTemplate = webHookRequestQueueJmsTemplate;
-        this.fhirResourceQueueJmsTemplate = fhirResourceQueueJmsTemplate;
 
-        bundleRetrievers.getIfAvailable( Collections::emptyList ).forEach( br -> {
+        itemRetrievers.getIfAvailable( Collections::emptyList ).forEach( br -> {
             for ( final FhirVersion version : br.getFhirVersions() )
             {
-                RemoteRestHookProcessorImpl.this.bundleRetrievers.put( version, br );
+                RemoteRestHookProcessorImpl.this.itemRetrievers.put( version, br );
             }
         } );
-    }
-
-    @HystrixCommand
-    @Override
-    public void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId )
-    {
-        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
-        try
-        {
-            logger.debug( "Checking for a queued entry of remote subscription resource {}.", remoteSubscriptionResourceId );
-            try
-            {
-                queuedRemoteSubscriptionRequestRepository.enqueue( remoteSubscriptionResourceId, requestId );
-            }
-            catch ( AlreadyQueuedException e )
-            {
-                logger.debug( "There is already a queued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
-                return;
-            }
-            catch ( IgnoredSubscriptionResourceException e )
-            {
-                // has already been logger with sufficient details
-                return;
-            }
-
-            logger.debug( "Enqueuing entry for remote subscription resource {}.", remoteSubscriptionResourceId );
-            webHookRequestQueueJmsTemplate.convertAndSend( new RemoteRestHookRequest( remoteSubscriptionResourceId, ZonedDateTime.now() ), message -> {
-                // only one message for a remote subscription resource must be processed at a specific time (grouping)
-                message.setStringProperty( "JMSXGroupID", remoteSubscriptionResourceId.toString() );
-                return message;
-            } );
-            logger.info( "Enqueued entry for remote subscription resource {}.", remoteSubscriptionResourceId );
-        }
-        finally
-        {
-            if ( transactionStatus.isRollbackOnly() )
-            {
-                platformTransactionManager.rollback( transactionStatus );
-            }
-            else
-            {
-                platformTransactionManager.commit( transactionStatus );
-            }
-        }
     }
 
     @HystrixCommand
@@ -184,119 +119,80 @@ public class RemoteRestHookProcessorImpl implements RemoteRestHookProcessor
         concurrency = "#{@fhirRemoteConfig.webHookRequestQueue.listener.concurrency}" )
     public void receive( @Nonnull RemoteRestHookRequest remoteRestHookRequest )
     {
-        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
-        try
-        {
-            receiveAuthenticated( remoteRestHookRequest );
-        }
-        finally
-        {
-            SecurityContextHolder.clearContext();
-        }
+        super.receive( remoteRestHookRequest );
     }
 
-    protected void receiveAuthenticated( @Nonnull RemoteRestHookRequest remoteRestHookRequest )
+    @Override
+    protected QueuedRemoteSubscriptionRequestId createQueuedGroupId( @Nonnull RemoteSubscriptionResource group )
     {
-        logger.info( "Processing queued web hook request {}.", remoteRestHookRequest.getRemoteSubscriptionResourceId() );
-        try
-        {
-            queuedRemoteSubscriptionRequestRepository.dequeued( remoteRestHookRequest.getRemoteSubscriptionResourceId() );
-        }
-        catch ( IgnoredSubscriptionResourceException e )
-        {
-            // has already been logger with sufficient details
-            return;
-        }
-
-        final RemoteSubscriptionResource remoteSubscriptionResource =
-            remoteSubscriptionResourceRepository.findByIdCached( remoteRestHookRequest.getRemoteSubscriptionResourceId() ).orElse( null );
-        if ( remoteSubscriptionResource == null )
-        {
-            logger.warn( "Remote subscription resource {} is no longer available. Skipping processing of updated resources.",
-                remoteRestHookRequest.getRemoteSubscriptionResourceId() );
-            return;
-        }
-
-        final FhirVersion fhirVersion = remoteSubscriptionResource.getRemoteSubscription().getFhirVersion();
-        final AbstractSubscriptionResourceBundleRetriever bundleRetriever = bundleRetrievers.get( fhirVersion );
-        if ( bundleRetriever == null )
-        {
-            throw new RemoteRestHookProcessorException( "Remote subscription resource requires FHIR version " + fhirVersion +
-                ", but no bundle retriever is available for that version." );
-        }
-
-        final Instant remoteLastUpdated = remoteSubscriptionResourceUpdateRepository.getRemoteLastUpdated( remoteSubscriptionResource );
-        final AtomicLong count = new AtomicLong();
-        final Instant lastUpdated = bundleRetriever.poll( remoteSubscriptionResource, remoteLastUpdated, processorConfig.getMaxSearchCount(), resources -> {
-            final String requestId = getCurrentRequestId();
-            final Instant processedAt = Instant.now();
-            final Set<String> processedVersionedIds = processedRemoteFhirResourceRepository.findByVersionedIds( remoteSubscriptionResource,
-                resources.stream().map( sr -> sr.toVersionString( processedAt ) ).collect( Collectors.toList() ) );
-
-            resources.forEach( sr -> {
-                final String versionedId = sr.toVersionString( processedAt );
-                if ( !processedVersionedIds.contains( versionedId ) )
-                {
-                    // persist processed remote FHIR resource and
-                    processedRemoteFhirResourceRepository.process( new ProcessedRemoteFhirResource( remoteSubscriptionResource, versionedId, processedAt ), p -> {
-                        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition( TransactionDefinition.PROPAGATION_NOT_SUPPORTED ) );
-                        try
-                        {
-                            queuedRemoteFhirResourceRepository.enqueue( remoteSubscriptionResource.getId(), sr.getId(), requestId );
-                            fhirResourceQueueJmsTemplate.convertAndSend(
-                                new RemoteFhirResource( remoteSubscriptionResource.getId(), sr.getId(), sr.getVersion(), sr.getLastUpdated() ) );
-                            logger.debug( "FHIR Resource {} of remote subscription resource {} has been enqueued.",
-                                sr.getId(), remoteSubscriptionResource.getId() );
-                            count.incrementAndGet();
-                        }
-                        catch ( AlreadyQueuedException e )
-                        {
-                            logger.debug( "FHIR Resource {} of remote subscription resource {} is still queued.",
-                                sr.getId(), remoteSubscriptionResource.getId() );
-                        }
-                        catch ( IgnoredSubscriptionResourceException e )
-                        {
-                            // has already been logger with sufficient details
-                        }
-                        finally
-                        {
-                            if ( transactionStatus.isRollbackOnly() )
-                            {
-                                platformTransactionManager.rollback( transactionStatus );
-                            }
-                            else
-                            {
-                                platformTransactionManager.commit( transactionStatus );
-                            }
-                        }
-                    } );
-                }
-            } );
-        } );
-        remoteSubscriptionResourceUpdateRepository.updateRemoteLastUpdated( remoteSubscriptionResource, lastUpdated );
-
-        // Purging old data must not be done before and also must not be done asynchronously. The remote last updated
-        // timestamp may be older than the purged data. And before purging the old data, the remote last updated
-        // timestamp of the remote subscription resource must be updated by processing the complete FHIR resources that
-        // belong to the remote subscription resource.
-        purgeOldestProcessed( remoteSubscriptionResource );
-        logger.info( "Processed queued web hook request {} with {} enqueued FHIR resources.",
-            remoteRestHookRequest.getRemoteSubscriptionResourceId(), count.longValue() );
+        return new QueuedRemoteSubscriptionRequestId( group );
     }
 
     @Nonnull
-    protected String getCurrentRequestId()
+    @Override
+    protected DataGroupQueueItem<UuidDataGroupId> createDataGroupQueueItem( @Nonnull RemoteSubscriptionResource group )
     {
-        return requestIdBase + "#" + Long.toString( requestId.getAndIncrement(), 36 );
+        return new RemoteRestHookRequest( group.getGroupId(), ZonedDateTime.now() );
     }
 
-    protected void purgeOldestProcessed( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource )
+    @Nullable
+    @Override
+    protected RemoteSubscriptionResource findGroupByGroupId( @Nonnull UuidDataGroupId groupId )
     {
-        final Instant from = Instant.now().minus( processorConfig.getMaxProcessedAgeMinutes(), ChronoUnit.MINUTES );
-        logger.debug( "Purging oldest processed remote subscription FHIR resources before {} for remote subscription resource {}.",
-            from, remoteSubscriptionResource.getId() );
-        final int count = processedRemoteFhirResourceRepository.deleteOldest( remoteSubscriptionResource, from );
-        logger.debug( "Purged {} oldest processed remote subscription FHIR resources before {} for remote subscription resource {}.",
-            count, from, remoteSubscriptionResource.getId() );
+        return remoteSubscriptionResourceRepository.findByIdCached( groupId.getId() ).orElse( null );
+    }
+
+    @Override
+    protected int getMaxProcessedAgeMinutes()
+    {
+        return processorConfig.getMaxProcessedAgeMinutes();
+    }
+
+    @Override
+    protected int getMaxSearchCount()
+    {
+        return processorConfig.getMaxSearchCount();
+    }
+
+    @Nonnull
+    @Override
+    protected DataProcessorItemRetriever<RemoteSubscriptionResource> getDataProcessorItemRetriever( @Nonnull RemoteSubscriptionResource group )
+    {
+        final FhirVersion fhirVersion = group.getRemoteSubscription().getFhirVersion();
+        final AbstractSubscriptionResourceItemRetriever itemRetriever = itemRetrievers.get( fhirVersion );
+        if ( itemRetriever == null )
+        {
+            throw new QueuedDataProcessorException( "Remote subscription resource requires FHIR version " + fhirVersion +
+                ", but no item retriever is available for that version." );
+        }
+        return itemRetriever;
+    }
+
+    @Nonnull
+    @Override
+    protected ProcessedRemoteFhirResource createProcessedItem( @Nonnull RemoteSubscriptionResource group, @Nonnull String id, @Nonnull Instant processedAt )
+    {
+        return new ProcessedRemoteFhirResource( new ProcessedRemoteFhirResourceId( group, id ), processedAt );
+    }
+
+    @Nonnull
+    @Override
+    protected QueuedRemoteFhirResourceId createQueuedItemId( @Nonnull RemoteSubscriptionResource group, @Nonnull ProcessedItemInfo processedItemInfo )
+    {
+        return new QueuedRemoteFhirResourceId( group, processedItemInfo.getId() );
+    }
+
+    @Nonnull
+    @Override
+    protected DataItemQueueItem<UuidDataGroupId> createDataItemQueueItem( @Nonnull RemoteSubscriptionResource group, @Nonnull ProcessedItemInfo processedItemInfo )
+    {
+        return new RemoteFhirResource( group.getGroupId(), processedItemInfo );
+    }
+
+    @Nonnull
+    @Override
+    protected Authentication createAuthentication()
+    {
+        return new SystemAuthenticationToken();
     }
 }

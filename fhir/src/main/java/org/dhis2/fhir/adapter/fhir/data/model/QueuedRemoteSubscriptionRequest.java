@@ -28,19 +28,15 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.QueuedItem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
+import javax.annotation.Nonnull;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Entity that contains if currently for {@linkplain RemoteSubscriptionResource remote subscription resource}
@@ -50,63 +46,33 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_queued_remote_subscription_request" )
-public class QueuedRemoteSubscriptionRequest implements Serializable
+public class QueuedRemoteSubscriptionRequest extends QueuedItem<QueuedRemoteSubscriptionRequestId, RemoteSubscriptionResource> implements Serializable
 {
     private static final long serialVersionUID = 4304414115903803395L;
 
-    private UUID id;
+    private QueuedRemoteSubscriptionRequestId id;
 
-    private RemoteSubscriptionResource subscriptionResource;
+    public QueuedRemoteSubscriptionRequest()
+    {
+        super();
+    }
 
-    private String requestId;
+    public QueuedRemoteSubscriptionRequest( @Nonnull QueuedRemoteSubscriptionRequestId id, @Nonnull Instant queuedAt )
+    {
+        super( queuedAt );
+        this.id = id;
+    }
 
-    private Instant queuedAt;
-
-    @Id
-    @Column( name = "id", nullable = false )
-    public UUID getId()
+    @EmbeddedId
+    @Override
+    public QueuedRemoteSubscriptionRequestId getId()
     {
         return id;
     }
 
-    public void setId( UUID id )
+    @Override
+    public void setId( QueuedRemoteSubscriptionRequestId id )
     {
         this.id = id;
-    }
-
-    @OneToOne( optional = false )
-    @JoinColumn( name = "id", nullable = false )
-    @MapsId
-    public RemoteSubscriptionResource getSubscriptionResource()
-    {
-        return subscriptionResource;
-    }
-
-    public void setSubscriptionResource( RemoteSubscriptionResource subscriptionResource )
-    {
-        this.subscriptionResource = subscriptionResource;
-    }
-
-    @Basic
-    @Column( name = "request_id", nullable = false )
-    public String getRequestId()
-    {
-        return requestId;
-    }
-
-    public void setRequestId( String requestId )
-    {
-        this.requestId = requestId;
-    }
-
-    @Column( name = "queued_at", nullable = false )
-    public Instant getQueuedAt()
-    {
-        return queuedAt;
-    }
-
-    public void setQueuedAt( Instant queuedAt )
-    {
-        this.queuedAt = queuedAt;
     }
 }

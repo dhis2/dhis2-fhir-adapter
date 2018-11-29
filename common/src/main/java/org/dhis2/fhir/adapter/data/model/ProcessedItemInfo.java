@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.model;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,51 +28,80 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.QueuedItem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 
 /**
- * Entity that contains if currently for {@linkplain RemoteSubscriptionResource remote subscription resource}
- * and a FHIR resource ID there is a pending queued processing request.
+ * The information about a processed item. The last updated timestamp
+ * and the version are optional.
  *
  * @author volsch
  */
-@Entity
-@Table( name = "fhir_queued_remote_resource" )
-public class QueuedRemoteFhirResource extends QueuedItem<QueuedRemoteFhirResourceId, RemoteSubscriptionResource> implements Serializable
+public class ProcessedItemInfo implements Serializable
 {
-    private static final long serialVersionUID = 3146612484665379623L;
+    private static final long serialVersionUID = 1808470990206683252L;
 
-    private QueuedRemoteFhirResourceId id;
+    private final String id;
 
-    public QueuedRemoteFhirResource()
+    private final long lastUpdated;
+
+    private final String version;
+
+    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated )
     {
-        super();
+        this( id, lastUpdated, null );
     }
 
-    public QueuedRemoteFhirResource( @Nonnull QueuedRemoteFhirResourceId id, @Nonnull Instant queuedAt )
+    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version )
     {
-        super( queuedAt );
         this.id = id;
+        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toEpochMilli();
+        this.version = version;
     }
 
-    @EmbeddedId
-    @Override
-    public QueuedRemoteFhirResourceId getId()
+    @Nonnull
+    public String getId()
     {
         return id;
     }
 
-    @Override
-    public void setId( QueuedRemoteFhirResourceId id )
+    @Nullable
+    public Instant getLastUpdated()
     {
-        this.id = id;
+        return (lastUpdated == 0) ? null : Instant.ofEpochMilli( lastUpdated );
+    }
+
+    @Nullable
+    public String getVersion()
+    {
+        return version;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        ProcessedItemInfo that = (ProcessedItemInfo) o;
+        return Objects.equals( id, that.id ) &&
+            (lastUpdated == that.lastUpdated) &&
+            Objects.equals( version, that.version );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( id, lastUpdated, version );
+    }
+
+    @Nonnull
+    public String toIdString( @Nonnull Instant defaultLastUpdated )
+    {
+        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) + "|" + lastUpdated;
     }
 }

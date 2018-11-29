@@ -29,16 +29,8 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
-import org.springframework.data.repository.query.Param;
 
-import javax.annotation.Nonnull;
-import javax.persistence.QueryHint;
-import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -48,9 +40,4 @@ import java.util.UUID;
  */
 public interface ProcessedRemoteFhirResourceRepository extends JpaRepository<ProcessedRemoteFhirResource, UUID>, CustomProcessedRemoteFhirResourceRepository
 {
-    @Nonnull
-    @Query( value = "SELECT p.id.versionedFhirResourceId FROM #{#entityName} p WHERE p.id.remoteSubscriptionResource=:remoteSubscriptionResource AND p.id.versionedFhirResourceId IN (:versionedFhirResourceIds)" )
-    @QueryHints( @QueryHint( name = "org.hibernate.fetchSize", value = "1000" ) )
-    Set<String> findByVersionedIds( @Nonnull @Param( "remoteSubscriptionResource" ) RemoteSubscriptionResource remoteSubscriptionResource,
-        @Nonnull @Param( "versionedFhirResourceIds" ) Collection<String> versionedFhirResourceIds );
 }

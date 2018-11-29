@@ -136,7 +136,7 @@ public class FhirQueueConfig
 
     @Bean
     @Nonnull
-    protected JmsTemplate webHookRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
+    protected JmsTemplate fhirRestHookRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
     {
         final JmsTemplate jmsTemplate = new JmsTemplate( connectionFactory );
         jmsTemplate.setDefaultDestinationName( remoteConfig.getWebHookRequestQueue().getQueueName() );

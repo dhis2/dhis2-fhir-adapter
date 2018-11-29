@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.processor.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,58 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.data.model.DataGroupId;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * A data group that has been queued for processing. The instance
+ * will be serialized and de-serialized to and from JSON.
+ *
+ * @param <I> the concrete type of the data group.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public class DataGroupQueueItem<I extends DataGroupId> implements Serializable
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    private static final long serialVersionUID = -7911324825049826913L;
+
+    private I dataGroupId;
+
+    private ZonedDateTime receivedAt;
+
+    public DataGroupQueueItem()
     {
-        super( entityManager );
+        super();
     }
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public DataGroupQueueItem( @Nonnull I dataGroupId, @Nonnull ZonedDateTime receivedAt )
     {
-        return RemoteSubscriptionResourceUpdate.class;
+        this.dataGroupId = dataGroupId;
+        this.receivedAt = receivedAt;
     }
 
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
+    @JsonProperty
+    public I getDataGroupId()
     {
-        return new RemoteSubscriptionResourceUpdate();
+        return dataGroupId;
+    }
+
+    public void setDataGroupId( I dataGroupId )
+    {
+        this.dataGroupId = dataGroupId;
+    }
+
+    @JsonProperty
+    public ZonedDateTime getReceivedAt()
+    {
+        return receivedAt;
+    }
+
+    public void setReceivedAt( ZonedDateTime receivedAt )
+    {
+        this.receivedAt = receivedAt;
     }
 }

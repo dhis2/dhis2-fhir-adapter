@@ -30,6 +30,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -43,6 +45,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -54,7 +57,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_remote_subscription_resource" )
-public class RemoteSubscriptionResource extends VersionedBaseMetadata implements Serializable
+public class RemoteSubscriptionResource extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;
 
@@ -128,7 +131,7 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     }
 
     @RestResource( exported = false )
-    @OneToOne( mappedBy = "remoteSubscriptionResource", cascade = { CascadeType.REMOVE, CascadeType.PERSIST } )
+    @OneToOne( mappedBy = "group", cascade = { CascadeType.REMOVE, CascadeType.PERSIST } )
     @JsonIgnore
     public RemoteSubscriptionResourceUpdate getResourceUpdate()
     {
@@ -163,5 +166,13 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     public void setFhirSubscriptionId( String fhirSubscriptionId )
     {
         this.fhirSubscriptionId = fhirSubscriptionId;
+    }
+
+    @JsonIgnore
+    @Transient
+    @Override
+    public UuidDataGroupId getGroupId()
+    {
+        return (getId() == null) ? null : new UuidDataGroupId( getId() );
     }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,66 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
-
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Contains the reference (as an ID) of an item that has already been
+ * processed recently and must not be processed again currently
+ * (e.g. overlapping polls).
+ *
+ * @param <G> the concrete type of the group of the ID.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+@MappedSuperclass
+public abstract class ProcessedItemId<G extends DataGroup> implements Serializable
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    private static final long serialVersionUID = -2744716962486660280L;
+
+    private String processedId;
+
+    public ProcessedItemId()
     {
-        super( entityManager );
+        super();
     }
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public ProcessedItemId( @Nonnull String processedId )
     {
-        return RemoteSubscriptionResourceUpdate.class;
+        this.processedId = processedId;
     }
 
-    @Nonnull
+    @Transient
+    public abstract G getGroup();
+
+    public abstract void setGroup( G group );
+
+    @Column( name = "processed_id", nullable = false )
+    public String getProcessedId()
+    {
+        return processedId;
+    }
+
+    public void setProcessedId( String processedId )
+    {
+        this.processedId = processedId;
+    }
+
     @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
+    public boolean equals( Object o )
     {
-        return new RemoteSubscriptionResourceUpdate();
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        ProcessedItemId that = (ProcessedItemId) o;
+        return Objects.equals( processedId, that.processedId );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( processedId );
     }
 }

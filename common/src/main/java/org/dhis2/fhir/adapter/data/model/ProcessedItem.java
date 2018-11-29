@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,51 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+import java.io.Serializable;
+import java.time.Instant;
+
 /**
- * Thrown if the processed subscription resource can be ignored since it does
- * no longer exist.
+ * Contains the reference of an item that has already been processed recently and
+ * must not be processed again currently (e.g. overlapping polls).
  *
+ * @param <I> the ID class of the processed items.
+ * @param <G> the concrete type of the group of the ID.
  * @author volsch
  */
-public class IgnoredSubscriptionResourceException extends RuntimeException
+@MappedSuperclass
+public abstract class ProcessedItem<I extends ProcessedItemId<G>, G extends DataGroup> implements Serializable
 {
-    private static final long serialVersionUID = 4787054440737823557L;
+    private static final long serialVersionUID = -2744716962486660280L;
 
-    public IgnoredSubscriptionResourceException( String message, Throwable cause )
+    private Instant processedAt;
+
+    public ProcessedItem()
     {
-        super( message, cause );
+        super();
+    }
+
+    public ProcessedItem( @Nonnull Instant processedAt )
+    {
+        this.processedAt = processedAt;
+    }
+
+    @Transient
+    public abstract I getId();
+
+    public abstract void setId( I id );
+
+    @Column( name = "processed_at", nullable = false )
+    public Instant getProcessedAt()
+    {
+        return processedAt;
+    }
+
+    public void setProcessedAt( Instant processedAt )
+    {
+        this.processedAt = processedAt;
     }
 }

@@ -133,8 +133,8 @@ public class CustomRemoteSubscriptionRepositoryImpl implements CustomRemoteSubsc
                         remoteSubscription.getResources().add( rsr );
 
                         final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
-                        resourceUpdate.setRemoteSubscriptionResource( rsr );
-                        resourceUpdate.setRemoteLastUpdated( Instant.now() );
+                        resourceUpdate.setGroup( rsr );
+                        resourceUpdate.setLastUpdated( Instant.now() );
                         rsr.setResourceUpdate( resourceUpdate );
 
                         autoCreatedRemoteSubscriptionResources.add( rsr );

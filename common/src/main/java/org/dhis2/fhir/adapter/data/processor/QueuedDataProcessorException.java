@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.processor;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,22 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
-
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Thrown if a critical error occurred while processing the data.
+ *
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public class QueuedDataProcessorException extends RuntimeException
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    private static final long serialVersionUID = -4539433728243920804L;
+
+    public QueuedDataProcessorException( String message )
     {
-        super( entityManager );
+        super( message );
     }
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public QueuedDataProcessorException( String message, Throwable cause )
     {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
+        super( message, cause );
     }
 }

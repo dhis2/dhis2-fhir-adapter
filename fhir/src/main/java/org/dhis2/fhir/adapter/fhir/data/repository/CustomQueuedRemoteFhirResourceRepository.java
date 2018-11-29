@@ -28,42 +28,16 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.repository.QueuedItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResource;
-
-import javax.annotation.Nonnull;
-import java.util.UUID;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 /**
  * Custom repository for {@link QueuedRemoteFhirResource} entities.
  *
  * @author volsch
  */
-public interface CustomQueuedRemoteFhirResourceRepository
+public interface CustomQueuedRemoteFhirResourceRepository extends QueuedItemRepository<QueuedRemoteFhirResourceId, RemoteSubscriptionResource>
 {
-    /**
-     * Tries to insert a new entry into queued remote FHIR resource. If the entry already
-     * exists (there are still messages inside the queue for the specified FHIR resource ID
-     * of the specified subscription resource), this method returns <code>false</code>.
-     * Otherwise this method returns <code>true</code>.
-     *
-     * @param subscriptionResourceId the ID of the subscription resource for which a
-     *                               message should be enqueued.
-     * @param fhirResourceId         the ID of the FHIR resource for which a message should
-     *                               be enqueued.
-     * @param requestId              the unique ID of the request to enqueue this resource.
-     * @throws AlreadyQueuedException thrown if there are still messages inside the queue.
-     */
-    void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId, @Nonnull String requestId ) throws AlreadyQueuedException;
-
-    /**
-     * Tries to dequeue the entity with the specified IDs. If the entity does not
-     * exist, <code>false</code> is returned.
-     *
-     * @param subscriptionResourceId the ID of the subscribtion resource to which the FHIR
-     *                               resource belongs to.
-     * @param fhirResourceId         the ID of the FHIR resource for which a message has been
-     *                               dequeued.
-     * @return <code>true</code> if the entity has been deleted, <code>false</code> otherwise.
-     */
-    boolean dequeued( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId );
 }

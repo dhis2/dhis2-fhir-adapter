@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.remote.impl.dstu3;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.remote.impl.AbstractSubscriptionResourceBundleRetriever;
+import org.dhis2.fhir.adapter.fhir.remote.impl.AbstractSubscriptionResourceItemRetriever;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -45,14 +45,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link AbstractSubscriptionResourceBundleRetriever} for DSTU3.
+ * Implementation of {@link AbstractSubscriptionResourceItemRetriever} for DSTU3.
  *
  * @author volsch
  */
 @Component
-public class Dstu3SubscriptionResourceBundleRetrieverImpl extends AbstractSubscriptionResourceBundleRetriever
+public class Dstu3SubscriptionResourceItemRetrieverImpl extends AbstractSubscriptionResourceItemRetriever
 {
-    public Dstu3SubscriptionResourceBundleRetrieverImpl( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext )
+    public Dstu3SubscriptionResourceItemRetrieverImpl( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext )
     {
         super( fhirContext );
     }

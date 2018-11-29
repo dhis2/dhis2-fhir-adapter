@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.remote;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,22 +28,51 @@ package org.dhis2.fhir.adapter.fhir.remote;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+import java.io.Serializable;
+import java.time.Instant;
+
 /**
- * Thrown if a critical error occurred while processing the web hook.
+ * Contains the update status of a data group.
  *
+ * @param <G> the group to which the update data belongs to.
  * @author volsch
  */
-public class RemoteRestHookProcessorException extends RuntimeException
+@MappedSuperclass
+public abstract class DataGroupUpdate<G extends DataGroup> implements Serializable
 {
-    private static final long serialVersionUID = -4539433728243920804L;
+    private static final long serialVersionUID = -2051276256396499975L;
 
-    public RemoteRestHookProcessorException( String message )
+    private Instant lastUpdated;
+
+    public DataGroupUpdate()
     {
-        super( message );
+        super();
     }
 
-    public RemoteRestHookProcessorException( String message, Throwable cause )
+    public DataGroupUpdate( @Nonnull Instant lastUpdated )
     {
-        super( message, cause );
+        this.lastUpdated = lastUpdated;
+    }
+
+    @Transient
+    public abstract G getGroup();
+
+    public abstract void setGroup( G group );
+
+    @Basic
+    @Column( name = "last_updated", nullable = false )
+    public Instant getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( Instant remoteLastUpdate )
+    {
+        this.lastUpdated = remoteLastUpdate;
     }
 }

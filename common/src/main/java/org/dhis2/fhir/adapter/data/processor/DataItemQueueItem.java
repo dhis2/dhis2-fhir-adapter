@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository;
+package org.dhis2.fhir.adapter.data.processor;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,86 +28,89 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.data.model.DataGroupId;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
-import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.UUID;
+import java.time.Instant;
 
 /**
- * Processing request for a remote FHIR resource that is enqueued and dequeued.
- * The class must support the initial legacy serialized format.
- * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
+ * Contains information about a data item that should be processed. The instance
+ * will be serialized and de-serialized to and from JSON.
  *
- * @author volsch
+ * @param <I> the concrete type of the data group ID.
  */
-public class RemoteFhirResource extends DataItemQueueItem<UuidDataGroupId> implements Serializable
+public class DataItemQueueItem<I extends DataGroupId> implements Serializable
 {
-    private static final long serialVersionUID = 1642564911249098319L;
+    private static final long serialVersionUID = -5179772435529403495L;
 
-    public RemoteFhirResource()
+    private I dataGroupId;
+
+    private String id;
+
+    private String version;
+
+    private Instant lastUpdated;
+
+    public DataItemQueueItem()
     {
         super();
     }
 
-    public RemoteFhirResource( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ProcessedItemInfo processedItemInfo )
+    public DataItemQueueItem( @Nonnull I dataGroupId, @Nonnull ProcessedItemInfo processedItemInfo )
     {
-        super( dataGroupId, processedItemInfo );
-    }
-
-    @JsonIgnore
-    @Override
-    public UuidDataGroupId getDataGroupId()
-    {
-        return super.getDataGroupId();
-    }
-
-    @Override
-    public void setDataGroupId( UuidDataGroupId dataGroupId )
-    {
-        super.setDataGroupId( dataGroupId );
+        this.dataGroupId = dataGroupId;
+        this.id = processedItemInfo.getId();
+        this.version = processedItemInfo.getVersion();
+        this.lastUpdated = processedItemInfo.getLastUpdated();
     }
 
     @JsonProperty
-    public UUID getRemoteSubscriptionResourceId()
+    public I getDataGroupId()
     {
-        return (getDataGroupId() == null) ? null : getDataGroupId().getId();
+        return dataGroupId;
     }
 
-    public void setRemoteSubscriptionResourceId( UUID remoteSubscriptionResourceId )
+    public void setDataGroupId( I dataGroupId )
     {
-        super.setDataGroupId( (remoteSubscriptionResourceId == null) ? null : new UuidDataGroupId( remoteSubscriptionResourceId ) );
+        this.dataGroupId = dataGroupId;
     }
 
-    @JsonProperty( "fhirResourceId" )
-    @Override
+    @JsonProperty
     public String getId()
     {
-        return super.getId();
+        return id;
     }
 
-    @Override
     public void setId( String id )
     {
-        super.setId( id );
+        this.id = id;
     }
 
-    @JsonProperty( "fhirResourceVersion" )
+    @JsonProperty
     @JsonInclude( JsonInclude.Include.NON_NULL )
-    @Override
     public String getVersion()
     {
-        return super.getVersion();
+        return version;
     }
 
-    @Override
     public void setVersion( String version )
     {
-        super.setVersion( version );
+        this.version = version;
+    }
+
+    @JsonProperty
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    public Instant getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( Instant lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.processor;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,23 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Retrieves data items for processing. The data items are polled based on the last
+ * updated timestamp.
+ *
+ * @param <G> the concrete type of the data group to which the retrieved items belong to.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public interface DataProcessorItemRetriever<G extends DataGroup>
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
-    {
-        super( entityManager );
-    }
-
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
-    {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
     @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
-    }
+    Instant poll( @Nonnull G group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

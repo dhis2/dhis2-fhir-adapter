@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,30 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.ProcessedItem;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemId;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Custom repository for {@linkplain ProcessedItem processed items}.
+ *
+ * @param <T> the concrete type of the processed item.
+ * @param <I> the concrete type of the ID of the processed item.
+ * @param <G> the group of the ID that is constant for a specific use case.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public interface ProcessedItemRepository<T extends ProcessedItem<I, G>, I extends ProcessedItemId<G>, G extends DataGroup>
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
-    {
-        super( entityManager );
-    }
-
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
-    {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
     @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
-    }
+    Set<String> find( @Nonnull G prefix, @Nonnull Collection<String> processedIds );
+
+    void process( @Nonnull T processedItem, @Nonnull Consumer<T> consumer );
+
+    int deleteOldest( @Nonnull G prefix, @Nonnull Instant timestamp );
 }

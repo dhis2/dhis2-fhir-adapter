@@ -37,9 +37,11 @@ import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
+import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
-import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessorException;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -62,6 +64,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -73,49 +76,50 @@ import java.util.function.Consumer;
  *
  * @author volsch
  */
-public abstract class AbstractSubscriptionResourceBundleRetriever implements FhirVersionRestricted
+public abstract class AbstractSubscriptionResourceItemRetriever implements DataProcessorItemRetriever<RemoteSubscriptionResource>, FhirVersionRestricted
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final FhirContext fhirContext;
 
-    protected AbstractSubscriptionResourceBundleRetriever( @Nonnull FhirContext fhirContext )
+    protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext )
     {
         this.fhirContext = fhirContext;
     }
 
+    @Override
     @Nonnull
-    public Instant poll( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Instant remoteLastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<SubscriptionResourceInfo>> consumer )
+    public Instant poll( @Nonnull RemoteSubscriptionResource group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription().getFhirEndpoint() );
-        Instant lastUpdated = null;
-        Instant fromLastUpdated = remoteLastUpdated;
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, group.getRemoteSubscription().getFhirEndpoint() );
+        Instant processedLastUpdated = null;
+        Instant fromLastUpdated = lastUpdated;
 
-        final Set<SubscriptionResourceInfo> allResources = new HashSet<>();
-        final List<SubscriptionResourceInfo> orderedAllResources = new ArrayList<>();
-        Set<SubscriptionResourceInfo> previousResources = null;
+        final Set<ProcessedItemInfo> allResources = new HashSet<>();
+        final List<ProcessedItemInfo> orderedAllResources = new ArrayList<>();
+        Set<ProcessedItemInfo> previousResources = null;
         boolean paging = false;
         boolean backwardPaging = false;
         boolean moreAvailable;
-        final String resourceName = subscriptionResource.getFhirResourceType().getResourceTypeName();
+        final String resourceName = group.getFhirResourceType().getResourceTypeName();
         do
         {
-            logger.debug( "Loading next since {} for remote subscription resource with maximum count {}.", fromLastUpdated, subscriptionResource.getId(), maxSearchCount );
-            if ( lastUpdated == null )
+            logger.debug( "Loading next since {} for remote subscription resource with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
+            if ( processedLastUpdated == null )
             {
                 // last updated must only bet set on the first search invocation
-                lastUpdated = Instant.now();
+                processedLastUpdated = Instant.now();
             }
             fromLastUpdated = fromLastUpdated
-                .minus( subscriptionResource.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
-            IBaseBundle bundle = createBaseQuery( client, resourceName, subscriptionResource, fromLastUpdated ).count( maxSearchCount )
+                .minus( group.getRemoteSubscription().getToleranceMillis(), ChronoUnit.MILLIS );
+            IBaseBundle bundle = createBaseQuery( client, resourceName, group, fromLastUpdated ).count( maxSearchCount )
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
             do
             {
-                final List<SubscriptionResourceInfo> resources = new ArrayList<>();
+                final List<ProcessedItemInfo> resources = new ArrayList<>();
                 for ( final IAnyResource resource : getResourceEntries( bundle ) )
                 {
-                    resources.add( new SubscriptionResourceInfo( resource.getIdElement().getIdPart(),
+                    resources.add( new ProcessedItemInfo( resource.getIdElement().getIdPart(),
                         (resource.getMeta().getLastUpdated() == null) ? null : resource.getMeta().getLastUpdated().toInstant(),
                         resource.getIdElement().getVersionIdPart() ) );
                 }
@@ -153,30 +157,30 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                                 }
                             }
                         }
-                        else if ( resources.size() < (totalCount = getTotalCount( client, resourceName, subscriptionResource, fromLastUpdated, currentBundle )) )
+                        else if ( resources.size() < (totalCount = getTotalCount( client, resourceName, group, fromLastUpdated, currentBundle )) )
                         {
                             logger.debug( "Returned {} of {} for remote subscription resource {} with maximum requested {}.",
-                                resources.size(), totalCount, subscriptionResource.getId(), maxSearchCount );
-                            final Instant minLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
-                                .filter( lu -> (lu != null) ).min( Comparator.naturalOrder() ).orElse( null );
+                                resources.size(), totalCount, group.getId(), maxSearchCount );
+                            final Instant minLastUpdated = resources.stream().map( ProcessedItemInfo::getLastUpdated )
+                                .filter( Objects::nonNull ).min( Comparator.naturalOrder() ).orElse( null );
                             if ( (minLastUpdated != null) && minLastUpdated.isBefore( fromLastUpdated ) )
                             {
                                 logger.warn( "Remote subscription resource {} returned minimum last updated {} for lower bound {}.",
-                                    subscriptionResource.getId(), minLastUpdated, fromLastUpdated );
+                                    group.getId(), minLastUpdated, fromLastUpdated );
                             }
 
                             if ( (previousResources != null) && previousResources.containsAll( resources ) && (previousResources.size() >= resources.size()) )
                             {
-                                throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " returned same result for last updated  " +
+                                throw new QueuedDataProcessorException( "Remote subscription resource " + group.getId() + " returned same result for last updated  " +
                                     fromLastUpdated + " (count " + resources.size() + " of maximum " + maxSearchCount + ")." );
                             }
                             previousResources = new HashSet<>( resources );
 
-                            final Instant maxLastUpdated = resources.stream().map( SubscriptionResourceInfo::getLastUpdated )
-                                .filter( lu -> (lu != null) ).max( Comparator.naturalOrder() ).orElse( null );
+                            final Instant maxLastUpdated = resources.stream().map( ProcessedItemInfo::getLastUpdated )
+                                .filter( Objects::nonNull ).max( Comparator.naturalOrder() ).orElse( null );
                             if ( maxLastUpdated == null )
                             {
-                                logger.warn( "Remote subscription resource {} does not support last updated timestamps.", subscriptionResource.getId() );
+                                logger.warn( "Remote subscription resource {} does not support last updated timestamps.", group.getId() );
                             }
                             else
                             {
@@ -187,7 +191,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
                                 }
                                 else
                                 {
-                                    throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " last updated timestamp " +
+                                    throw new QueuedDataProcessorException( "Remote subscription resource " + group.getId() + " last updated timestamp " +
                                         fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
                                 }
                             }
@@ -208,7 +212,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         {
             consumer.accept( orderedAllResources );
         }
-        return lastUpdated;
+        return processedLastUpdated;
     }
 
     protected long getTotalCount( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull Instant fromLastUpdated, @Nonnull IBaseBundle bundle )
@@ -224,7 +228,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         totalCount = getBundleTotalCount( newBundle );
         if ( totalCount == null )
         {
-            throw new RemoteRestHookProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " did not return requested total count." );
+            throw new QueuedDataProcessorException( "Remote subscription resource " + subscriptionResource.getId() + " did not return requested total count." );
         }
         return totalCount;
     }
@@ -277,7 +281,7 @@ public abstract class AbstractSubscriptionResourceBundleRetriever implements Fhi
         }
         catch ( URISyntaxException e )
         {
-            throw new RemoteRestHookProcessorException( "FHIR criteria parameters of remote subscription resource " + subscriptionResource.getId() + " are no valid query string.", e );
+            throw new QueuedDataProcessorException( "FHIR criteria parameters of remote subscription resource " + subscriptionResource.getId() + " are no valid query string.", e );
         }
 
         final Map<String, List<String>> result = new LinkedHashMap<>();

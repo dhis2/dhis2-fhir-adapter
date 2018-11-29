@@ -28,24 +28,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
+import org.dhis2.fhir.adapter.data.repository.DataGroupUpdateRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
 
 /**
  * Custom repository for {@link RemoteSubscriptionResourceUpdate}.
  *
  * @author volsch
  */
-public interface CustomRemoteSubscriptionResourceUpdateRepository
+public interface CustomRemoteSubscriptionResourceUpdateRepository extends DataGroupUpdateRepository<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
 {
-    @RestResource( exported = false )
-    @Nonnull
-    Instant getRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource );
-
-    @RestResource( exported = false )
-    boolean updateRemoteLastUpdated( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant lastUpdated );
 }

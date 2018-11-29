@@ -28,140 +28,44 @@ package org.dhis2.fhir.adapter.fhir.data.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequest;
-import org.dhis2.fhir.adapter.fhir.data.repository.AlreadyQueuedException;
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractQueuedItemRepositoryImpl;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomQueuedRemoteFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
-import org.dhis2.fhir.adapter.util.SqlExceptionUtils;
-import org.hibernate.query.NativeQuery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
 import java.time.Instant;
-import java.util.UUID;
-
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
  * Implementation of {@link CustomQueuedRemoteFhirResourceRepository}.
  *
  * @author volsch
  */
-public class CustomQueuedRemoteFhirResourceRepositoryImpl implements CustomQueuedRemoteFhirResourceRepository
+public class CustomQueuedRemoteFhirResourceRepositoryImpl extends AbstractQueuedItemRepositoryImpl<QueuedRemoteFhirResource, QueuedRemoteFhirResourceId, RemoteSubscriptionResource> implements CustomQueuedRemoteFhirResourceRepository
 {
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    private PlatformTransactionManager platformTransactionManager;
-
-    private PersistenceExceptionTranslator persistenceExceptionTranslator;
-
     public CustomQueuedRemoteFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager,
-        @Nonnull PlatformTransactionManager platformTransactionManager, @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
+        @Nonnull PlatformTransactionManager platformTransactionManager,
+        @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
     {
-        this.entityManager = entityManager;
-        this.platformTransactionManager = platformTransactionManager;
-        this.persistenceExceptionTranslator = persistenceExceptionTranslator;
+        super( entityManager, platformTransactionManager, persistenceExceptionTranslator );
     }
 
-    @Transactional( rollbackFor = AlreadyQueuedException.class )
+    @Nonnull
     @Override
-    public void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId, @Nonnull String requestId ) throws AlreadyQueuedException
+    protected Class<QueuedRemoteFhirResource> getQueuedItemClass()
     {
-        final Query query = entityManager.createNativeQuery( "INSERT INTO fhir_queued_remote_resource(remote_subscription_resource_id,fhir_resource_id,request_id,queued_at) " +
-            "VALUES (:subscriptionResourceId,:fhirResourceId,:requestId,:queuedAt)" )
-            .setParameter( "subscriptionResourceId", subscriptionResourceId ).setParameter( "fhirResourceId", fhirResourceId )
-            .setParameter( "requestId", requestId ).setParameter( "queuedAt", Instant.now() );
-        // avoid invalidation of complete 2nd level cache
-        query.unwrap( NativeQuery.class ).addSynchronizedEntityClass( QueuedRemoteSubscriptionRequest.class );
-
-        try
-        {
-            query.executeUpdate();
-        }
-        catch ( PersistenceException e )
-        {
-            final RuntimeException runtimeException = DataAccessUtils.translateIfNecessary( e, persistenceExceptionTranslator );
-            if ( runtimeException instanceof DataIntegrityViolationException )
-            {
-                final DataIntegrityViolationException dataIntegrityViolationException =
-                    (DataIntegrityViolationException) runtimeException;
-                if ( SqlExceptionUtils.isUniqueKeyViolation( dataIntegrityViolationException.getMostSpecificCause() ) )
-                {
-                    throw new AlreadyQueuedException();
-                }
-                if ( SqlExceptionUtils.isForeignKeyViolation( dataIntegrityViolationException.getMostSpecificCause() ) )
-                {
-                    logger.error( "Could not process enqueue request for subscription resource {} and FHIR resource {} due to constraint violation: {}",
-                        subscriptionResourceId, fhirResourceId, e.getCause().getMessage() );
-                    throw new IgnoredSubscriptionResourceException( "Subscription resource " + subscriptionResourceId + " does no longer exist.", e );
-                }
-            }
-            throw runtimeException;
-        }
+        return QueuedRemoteFhirResource.class;
     }
 
+    @Nonnull
     @Override
-    public boolean dequeued( @Nonnull UUID subscriptionResourceId, @Nonnull String fhirResourceId )
+    protected QueuedRemoteFhirResource createQueuedItem( @Nonnull QueuedRemoteFhirResourceId id )
     {
-        // First an enqueue must be tried. There may still be a pending not committed enqueue.
-        // This must be deleted. The pending enqueue will block this enqueue until it has been committed.
-        TransactionStatus transactionStatus = platformTransactionManager
-            .getTransaction( new DefaultTransactionDefinition( PROPAGATION_REQUIRES_NEW ) );
-        try
-        {
-            enqueue( subscriptionResourceId, fhirResourceId, "?" );
-        }
-        catch ( AlreadyQueuedException e )
-        {
-            // can be ignored
-        }
-        finally
-        {
-            if ( transactionStatus.isRollbackOnly() )
-            {
-                platformTransactionManager.rollback( transactionStatus );
-            }
-            else
-            {
-                platformTransactionManager.commit( transactionStatus );
-            }
-        }
-
-        transactionStatus = platformTransactionManager
-            .getTransaction( new DefaultTransactionDefinition() );
-        try
-        {
-            final Query query = entityManager.createQuery( "DELETE FROM QueuedRemoteFhirResource " +
-                "WHERE id.remoteSubscriptionResource.id=:subscriptionResourceId AND id.fhirResourceId=:fhirResourceId" )
-                .setParameter( "subscriptionResourceId", subscriptionResourceId ).setParameter( "fhirResourceId", fhirResourceId );
-            return (query.executeUpdate() > 0);
-        }
-        finally
-        {
-            if ( transactionStatus.isRollbackOnly() )
-            {
-                platformTransactionManager.rollback( transactionStatus );
-            }
-            else
-            {
-                platformTransactionManager.commit( transactionStatus );
-            }
-        }
+        return new QueuedRemoteFhirResource( id, Instant.now() );
     }
 }

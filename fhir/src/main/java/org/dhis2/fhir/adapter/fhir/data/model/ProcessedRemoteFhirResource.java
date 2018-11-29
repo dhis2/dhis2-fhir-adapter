@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.ProcessedItem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 import javax.annotation.Nonnull;
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -46,44 +48,34 @@ import java.time.Instant;
  */
 @Entity
 @Table( name = "fhir_processed_remote_resource" )
-public class ProcessedRemoteFhirResource implements Serializable
+public class ProcessedRemoteFhirResource extends ProcessedItem<ProcessedRemoteFhirResourceId, RemoteSubscriptionResource> implements Serializable
 {
     private static final long serialVersionUID = -6484140859863504862L;
 
     private ProcessedRemoteFhirResourceId id;
-
-    private Instant processedAt;
 
     public ProcessedRemoteFhirResource()
     {
         super();
     }
 
-    public ProcessedRemoteFhirResource( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String versionedFhirResourceId, @Nonnull Instant processedAt )
+    public ProcessedRemoteFhirResource( @Nonnull ProcessedRemoteFhirResourceId id, @Nonnull Instant processedAt )
     {
-        this.id = new ProcessedRemoteFhirResourceId( remoteSubscriptionResource, versionedFhirResourceId );
-        this.processedAt = processedAt;
+        super( processedAt );
+        this.id = id;
     }
 
     @EmbeddedId
+    @AttributeOverride( name = "processedId", column = @Column( name = "versioned_fhir_resource_id", nullable = false ) )
+    @Override
     public ProcessedRemoteFhirResourceId getId()
     {
         return id;
     }
 
+    @Override
     public void setId( ProcessedRemoteFhirResourceId id )
     {
         this.id = id;
-    }
-
-    @Column( name = "processed_at", nullable = false )
-    public Instant getProcessedAt()
-    {
-        return processedAt;
-    }
-
-    public void setProcessedAt( Instant processedAt )
-    {
-        this.processedAt = processedAt;
     }
 }

@@ -32,7 +32,6 @@ import org.dhis2.fhir.adapter.data.model.QueuedItemId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -41,28 +40,25 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The unique ID of a distinct FHIR resource that has been queued for processing.
+ * The unique ID of a a pending request for remote subscription resource processing.
  *
  * @author volsch
  */
 @Embeddable
-public class QueuedRemoteFhirResourceId extends QueuedItemId<RemoteSubscriptionResource> implements Serializable
+public class QueuedRemoteSubscriptionRequestId extends QueuedItemId<RemoteSubscriptionResource> implements Serializable
 {
     private static final long serialVersionUID = -4642534319215405587L;
 
     private RemoteSubscriptionResource group;
 
-    private String fhirResourceId;
-
-    public QueuedRemoteFhirResourceId()
+    public QueuedRemoteSubscriptionRequestId()
     {
         super();
     }
 
-    public QueuedRemoteFhirResourceId( @Nonnull RemoteSubscriptionResource group, @Nonnull String fhirResourceId )
+    public QueuedRemoteSubscriptionRequestId( @Nonnull RemoteSubscriptionResource group )
     {
         this.group = group;
-        this.fhirResourceId = fhirResourceId;
     }
 
     @ManyToOne( optional = false, fetch = FetchType.LAZY )
@@ -79,37 +75,25 @@ public class QueuedRemoteFhirResourceId extends QueuedItemId<RemoteSubscriptionR
         this.group = group;
     }
 
-    @Column( name = "fhir_resource_id", nullable = false )
-    public String getFhirResourceId()
-    {
-        return fhirResourceId;
-    }
-
-    public void setFhirResourceId( String versionedFhirResourceId )
-    {
-        this.fhirResourceId = versionedFhirResourceId;
-    }
-
     @Override
     public boolean equals( Object o )
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
-        QueuedRemoteFhirResourceId that = (QueuedRemoteFhirResourceId) o;
+        QueuedRemoteSubscriptionRequestId that = (QueuedRemoteSubscriptionRequestId) o;
         return Objects.equals( (group == null) ? null : group.getId(),
-            (that.group == null) ? null : that.group.getId() ) &&
-            Objects.equals( fhirResourceId, that.fhirResourceId );
+            (that.group == null) ? null : that.group.getId() );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( (group == null) ? null : group.getId(), fhirResourceId );
+        return Objects.hash( (group == null) ? null : group.getId() );
     }
 
     @Override
     public String toString()
     {
-        return "[Remote Subscription Resource ID " + ((group == null) ? "?" : group.getId()) + ", FHIR Resource ID " + getFhirResourceId() + "]";
+        return "[Remote Subscription Resource ID " + ((group == null) ? "?" : group.getId()) + "]";
     }
 }

@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Accepts the web hook request from the remote FHIR service and queues the request
@@ -60,10 +59,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RemoteRestHookController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    private final String requestIdBase = UUID.randomUUID().toString();
-
-    private final AtomicLong requestId = new AtomicLong();
 
     private final RemoteSubscriptionResourceRepository resourceRepository;
 
@@ -100,12 +95,6 @@ public class RemoteRestHookController
             throw new RestUnauthorizedException( "Authentication has failed." );
         }
 
-        processor.received( subscriptionResource.getId(), getCurrentRequestId() );
-    }
-
-    @Nonnull
-    protected String getCurrentRequestId()
-    {
-        return requestIdBase + "#" + Long.toString( requestId.getAndIncrement(), 36 );
+        processor.process( subscriptionResource );
     }
 }

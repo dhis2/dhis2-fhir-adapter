@@ -33,6 +33,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
@@ -40,7 +41,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
-import org.dhis2.fhir.adapter.fhir.data.repository.IgnoredSubscriptionResourceException;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -188,31 +189,30 @@ public class FhirRepositoryImpl implements FhirRepository
     protected void receiveAuthenticated( @Nonnull RemoteFhirResource remoteFhirResource )
     {
         logger.info( "Processing FHIR resource {} for remote subscription resource {}.",
-            remoteFhirResource.getFhirResourceId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
-        try
-        {
-            queuedRemoteFhirResourceRepository.dequeued(
-                remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getFhirResourceId() );
-        }
-        catch ( IgnoredSubscriptionResourceException e )
-        {
-            // has already been logger with sufficient details
-            return;
-        }
-
+            remoteFhirResource.getId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
         final RemoteSubscriptionResource remoteSubscriptionResource =
             remoteSubscriptionResourceRepository.findByIdCached( remoteFhirResource.getRemoteSubscriptionResourceId() ).orElse( null );
         if ( remoteSubscriptionResource == null )
         {
             logger.warn( "Remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
-                remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getFhirResourceId() );
+                remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getId() );
+            return;
+        }
+
+        try
+        {
+            queuedRemoteFhirResourceRepository.dequeued( new QueuedRemoteFhirResourceId( remoteSubscriptionResource, remoteFhirResource.getId() ) );
+        }
+        catch ( IgnoredQueuedItemException e )
+        {
+            // has already been logger with sufficient details
             return;
         }
 
         final RemoteSubscription remoteSubscription = remoteSubscriptionResource.getRemoteSubscription();
         final Optional<IBaseResource> resource = remoteFhirRepository.findRefreshed(
             remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-            remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getFhirResourceId() );
+            remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId() );
         if ( resource.isPresent() )
         {
             try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
@@ -239,7 +239,7 @@ public class FhirRepositoryImpl implements FhirRepository
         else
         {
             logger.info( "FHIR resource {}/{} for remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getFhirResourceId(), remoteSubscriptionResource.getId() );
+                remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId(), remoteSubscriptionResource.getId() );
         }
     }
 

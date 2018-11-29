@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,26 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import java.time.Instant;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Custom repository for {@link DataGroupUpdate}.
+ *
+ * @param <T> the concrete type of the update data.
+ * @param <G> the group to which the update data belongs to.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public interface DataGroupUpdateRepository<T extends DataGroupUpdate<G>, G extends DataGroup>
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
-    {
-        super( entityManager );
-    }
-
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
-    {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
+    @RestResource( exported = false )
     @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
-    }
+    Instant getLastUpdated( @Nonnull G group );
+
+    @RestResource( exported = false )
+    boolean updateLastUpdated( @Nonnull G group, @Nonnull Instant lastUpdated );
 }

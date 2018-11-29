@@ -28,38 +28,16 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.repository.QueuedItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequest;
-
-import javax.annotation.Nonnull;
-import java.util.UUID;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequestId;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 /**
  * Custom repository for {@link QueuedRemoteSubscriptionRequest} entities.
  *
  * @author volsch
  */
-public interface CustomQueuedRemoteSubscriptionRequestRepository
+public interface CustomQueuedRemoteSubscriptionRequestRepository extends QueuedItemRepository<QueuedRemoteSubscriptionRequestId, RemoteSubscriptionResource>
 {
-    /**
-     * Tries to insert a new entry into subscription resource. If the entry already
-     * exists (there are still messages inside the queue for the specified subscription
-     * resource), this method returns <code>false</code>. Otherwise this method
-     * returns <code>true</code>.
-     *
-     * @param subscriptionResourceId the ID of the subscription resource for which a
-     *                               message should be enqueued.
-     * @param requestId              the ID of the current request.
-     * @throws AlreadyQueuedException thrown if there are still messages inside the queue.
-     */
-    void enqueue( @Nonnull UUID subscriptionResourceId, @Nonnull String requestId ) throws AlreadyQueuedException;
-
-    /**
-     * Tries to dequeue the entity with the specified ID. If the entity does not
-     * exist, <code>false</code> is returned.
-     *
-     * @param subscriptionResourceId the ID of the entity to be deleted.
-     * @return <code>true</code> if the entity has been deleted,
-     * <code>false</code> otherwise.
-     */
-    boolean dequeued( @Nonnull UUID subscriptionResourceId );
 }

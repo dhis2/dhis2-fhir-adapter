@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo

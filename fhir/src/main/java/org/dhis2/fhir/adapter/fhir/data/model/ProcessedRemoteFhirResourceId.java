@@ -28,10 +28,10 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.ProcessedItemId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -45,46 +45,35 @@ import java.util.Objects;
  * @author volsch
  */
 @Embeddable
-public class ProcessedRemoteFhirResourceId implements Serializable
+public class ProcessedRemoteFhirResourceId extends ProcessedItemId<RemoteSubscriptionResource> implements Serializable
 {
     private static final long serialVersionUID = 143055103713986347L;
 
-    private RemoteSubscriptionResource remoteSubscriptionResource;
-
-    private String versionedFhirResourceId;
+    private RemoteSubscriptionResource group;
 
     public ProcessedRemoteFhirResourceId()
     {
         super();
     }
 
-    public ProcessedRemoteFhirResourceId( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String versionedFhirResourceId )
+    public ProcessedRemoteFhirResourceId( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String processedId )
     {
-        this.remoteSubscriptionResource = remoteSubscriptionResource;
-        this.versionedFhirResourceId = versionedFhirResourceId;
+        super( processedId );
+        this.group = remoteSubscriptionResource;
     }
 
+    @Override
     @ManyToOne( optional = false, fetch = FetchType.LAZY )
     @JoinColumn( name = "remote_subscription_resource_id" )
-    public RemoteSubscriptionResource getRemoteSubscriptionResource()
+    public RemoteSubscriptionResource getGroup()
     {
-        return remoteSubscriptionResource;
+        return group;
     }
 
-    public void setRemoteSubscriptionResource( RemoteSubscriptionResource remoteSubscriptionResource )
+    @Override
+    public void setGroup( RemoteSubscriptionResource group )
     {
-        this.remoteSubscriptionResource = remoteSubscriptionResource;
-    }
-
-    @Column( name = "versioned_fhir_resource_id", nullable = false )
-    public String getVersionedFhirResourceId()
-    {
-        return versionedFhirResourceId;
-    }
-
-    public void setVersionedFhirResourceId( String versionedFhirResourceId )
-    {
-        this.versionedFhirResourceId = versionedFhirResourceId;
+        this.group = group;
     }
 
     @Override
@@ -92,15 +81,21 @@ public class ProcessedRemoteFhirResourceId implements Serializable
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
+        if ( !super.equals( o ) ) return false;
         ProcessedRemoteFhirResourceId that = (ProcessedRemoteFhirResourceId) o;
-        return Objects.equals( (remoteSubscriptionResource == null) ? null : remoteSubscriptionResource.getId(),
-            (that.remoteSubscriptionResource == null) ? null : that.remoteSubscriptionResource.getId() ) &&
-            Objects.equals( versionedFhirResourceId, that.versionedFhirResourceId );
+        return Objects.equals( ((group == null) ? 0 : group.getId()),
+            ((that.group == null) ? 0 : that.group.getId()) );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( (remoteSubscriptionResource == null) ? null : remoteSubscriptionResource.getId(), versionedFhirResourceId );
+        return Objects.hash( super.hashCode(), (group == null ? 0 : group.getId()) );
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[Remote Subscription Resource ID " + ((group == null) ? "?" : group.getId()) + ", Processed ID " + getProcessedId() + "]";
     }
 }

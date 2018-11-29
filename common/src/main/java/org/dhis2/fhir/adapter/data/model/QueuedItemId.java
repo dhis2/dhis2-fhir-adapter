@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.remote.impl;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,75 +28,40 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.io.Serializable;
-import java.time.Instant;
-import java.util.Objects;
 
 /**
- * The information about a queried subscription resource. The last updated timestamp
- * and the version may not be returned by the server.
+ * Contains the unique ID of a queued item.
  *
+ * @param <G> the concrete type of the group of the ID.
  * @author volsch
  */
-public class SubscriptionResourceInfo implements Serializable
+@MappedSuperclass
+public abstract class QueuedItemId<G extends DataGroup> implements Serializable
 {
-    private static final long serialVersionUID = 1808470990206683252L;
+    private static final long serialVersionUID = -2744716962486660280L;
 
-    private final String id;
-
-    private final long lastUpdated;
-
-    private final String version;
-
-    public SubscriptionResourceInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version )
+    public QueuedItemId()
     {
-        this.id = id;
-        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toEpochMilli();
-        this.version = version;
+        super();
     }
 
-    @Nonnull
-    public String getId()
-    {
-        return id;
-    }
+    @Transient
+    public abstract G getGroup();
 
-    @Nullable
-    public Instant getLastUpdated()
-    {
-        return (lastUpdated == 0) ? null : Instant.ofEpochMilli( lastUpdated );
-    }
-
-    @Nullable
-    public String getVersion()
-    {
-        return version;
-    }
+    public abstract void setGroup( G group );
 
     @Override
     public boolean equals( Object o )
     {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        SubscriptionResourceInfo that = (SubscriptionResourceInfo) o;
-        return Objects.equals( id, that.id ) &&
-            (lastUpdated == that.lastUpdated) &&
-            Objects.equals( version, that.version );
+        return this == o || o != null && getClass() == o.getClass();
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( id, lastUpdated, version );
-    }
-
-    @Nonnull
-    public String toVersionString( @Nonnull Instant defaultLastUpdated )
-    {
-        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) + "|" + lastUpdated;
+        return 0;
     }
 }

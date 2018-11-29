@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,17 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
-
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Thrown if the processed queue can be ignored since it does no longer exist.
+ *
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public class IgnoredQueuedItemException extends RuntimeException
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
-    {
-        super( entityManager );
-    }
+    private static final long serialVersionUID = 4787054440737823557L;
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public IgnoredQueuedItemException( String message, Throwable cause )
     {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
+        super( message, cause );
     }
 }

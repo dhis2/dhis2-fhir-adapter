@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.remote;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import java.util.UUID;
+import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 /**
  * Processes incoming web hook requests in two steps. First the web hook request
@@ -39,7 +39,6 @@ import java.util.UUID;
  *
  * @author volsch
  */
-public interface RemoteRestHookProcessor
+public interface RemoteRestHookProcessor extends QueuedDataProcessor<RemoteSubscriptionResource>
 {
-    void received( @Nonnull UUID remoteSubscriptionResourceId, @Nonnull String requestId );
 }

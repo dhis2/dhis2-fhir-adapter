@@ -143,8 +143,8 @@ public abstract class AbstractAppTest
     private CacheManager fhirCacheManager;
 
     @Autowired
-    @Qualifier( "webHookRequestQueueJmsTemplate" )
-    private JmsTemplate webHookRequestQueueJmsTemplate;
+    @Qualifier( "fhirRestHookRequestQueueJmsTemplate" )
+    private JmsTemplate fhirRestHookRequestQueueJmsTemplate;
 
     @Autowired
     @Qualifier( "fhirResourceQueueJmsTemplate" )
@@ -203,7 +203,7 @@ public abstract class AbstractAppTest
         long messageCount;
         do
         {
-            messageCount = getQueueMessageCount( webHookRequestQueueJmsTemplate, null ) +
+            messageCount = getQueueMessageCount( fhirRestHookRequestQueueJmsTemplate, null ) +
                 getQueueMessageCount( fhirResourceQueueJmsTemplate, null );
             if ( messageCount > 0 )
             {

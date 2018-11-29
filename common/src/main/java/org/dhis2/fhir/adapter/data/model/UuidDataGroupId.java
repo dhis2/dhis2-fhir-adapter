@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,47 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Implementation of a data group ID that contains a single UUID.
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public class UuidDataGroupId implements DataGroupId
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    private static final long serialVersionUID = 4725219534024694698L;
+
+    private final UUID id;
+
+    @JsonCreator
+    public UuidDataGroupId( @JsonProperty( "id" ) UUID id )
     {
-        super( entityManager );
+        this.id = id;
     }
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public UUID getId()
     {
-        return RemoteSubscriptionResourceUpdate.class;
+        return id;
     }
 
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
+    @Override public boolean equals( Object o )
     {
-        return new RemoteSubscriptionResourceUpdate();
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        UuidDataGroupId that = (UuidDataGroupId) o;
+        return Objects.equals( id, that.id );
+    }
+
+    @Override public int hashCode()
+    {
+        return Objects.hash( id );
+    }
+
+    @Override public String toString()
+    {
+        return (id == null) ? null : id.toString();
     }
 }

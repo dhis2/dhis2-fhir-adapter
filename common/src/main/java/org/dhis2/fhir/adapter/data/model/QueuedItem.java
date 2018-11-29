@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,51 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
-
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+import java.io.Serializable;
+import java.time.Instant;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * The mapped superclass of items that are queued and should not be queued more
+ * than once.
+ *
+ * @param <I> the ID class of the queued items.
+ * @param <G> the concrete type of the group of the ID:
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+@MappedSuperclass
+public abstract class QueuedItem<I extends QueuedItemId<G>, G extends DataGroup> implements Serializable
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
+    private static final long serialVersionUID = -35090928656986160L;
+
+    private Instant queuedAt;
+
+    public QueuedItem()
     {
-        super( entityManager );
+        super();
     }
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    public QueuedItem( @Nonnull Instant queuedAt )
     {
-        return RemoteSubscriptionResourceUpdate.class;
+        this.queuedAt = queuedAt;
     }
 
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
+    @Transient
+    public abstract I getId();
+
+    public abstract void setId( I id );
+
+    @Column( name = "queued_at", nullable = false )
+    public Instant getQueuedAt()
     {
-        return new RemoteSubscriptionResourceUpdate();
+        return queuedAt;
+    }
+
+    public void setQueuedAt( Instant queuedAt )
+    {
+        this.queuedAt = queuedAt;
     }
 }

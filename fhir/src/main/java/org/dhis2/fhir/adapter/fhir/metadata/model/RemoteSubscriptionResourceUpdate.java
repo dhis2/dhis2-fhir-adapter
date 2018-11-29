@@ -29,8 +29,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
 
-import javax.persistence.Basic;
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -38,8 +39,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -49,13 +48,14 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_remote_subscription_resource_update" )
-public class RemoteSubscriptionResourceUpdate implements Serializable
+@AttributeOverride( name = "lastUpdated", column = @Column( name = "remote_last_updated", nullable = false ) )
+public class RemoteSubscriptionResourceUpdate extends DataGroupUpdate<RemoteSubscriptionResource>
 {
     private static final long serialVersionUID = -2051276256396499975L;
 
     private UUID id;
-    private RemoteSubscriptionResource remoteSubscriptionResource;
-    private Instant remoteLastUpdated;
+
+    private RemoteSubscriptionResource group;
 
     @Id
     public UUID getId()
@@ -72,25 +72,14 @@ public class RemoteSubscriptionResourceUpdate implements Serializable
     @OneToOne( optional = false )
     @MapsId
     @JsonIgnore
-    public RemoteSubscriptionResource getRemoteSubscriptionResource()
+    public RemoteSubscriptionResource getGroup()
     {
-        return remoteSubscriptionResource;
+        return group;
     }
 
-    public void setRemoteSubscriptionResource( RemoteSubscriptionResource remoteSubscriptionResource )
+    public void setGroup( RemoteSubscriptionResource group )
     {
-        this.remoteSubscriptionResource = remoteSubscriptionResource;
-    }
-
-    @Basic
-    @Column( name = "remote_last_updated", nullable = false )
-    public Instant getRemoteLastUpdated()
-    {
-        return remoteLastUpdated;
-    }
-
-    public void setRemoteLastUpdated( Instant remoteLastUpdate )
-    {
-        this.remoteLastUpdated = remoteLastUpdate;
+        this.group = group;
+        setId( (group == null) ? null : group.getId() );
     }
 }

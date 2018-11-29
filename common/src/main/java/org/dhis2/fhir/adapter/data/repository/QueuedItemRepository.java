@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,38 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResourceUpdate;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceUpdateRepository;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.QueuedItem;
+import org.dhis2.fhir.adapter.data.model.QueuedItemId;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
 
 /**
- * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
+ * Custom repository for {@link QueuedItem} entities.
+ *
+ * @param <I> the ID class of the queued items.
+ * @param <G> the concrete class of the data group.
+ * @author volsch
  */
-public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<RemoteSubscriptionResource>, RemoteSubscriptionResource>
-    implements CustomRemoteSubscriptionResourceUpdateRepository
+public interface QueuedItemRepository<I extends QueuedItemId<G>, G extends DataGroup>
 {
-    public CustomRemoteSubscriptionResourceUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
-    {
-        super( entityManager );
-    }
+    /**
+     * Tries to insert a new entry as queued item. If the item already exists
+     * (there are still messages inside the queue for the specified ID),
+     * this method returns <code>false</code>. Otherwise this method returns
+     * <code>true</code>.
+     *
+     * @param id the ID of the queued item.
+     * @throws AlreadyQueuedException thrown if there are still messages inside the queue.
+     */
+    void enqueue( @Nonnull I id ) throws AlreadyQueuedException;
 
-
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
-    {
-        return RemoteSubscriptionResourceUpdate.class;
-    }
-
-    @Nonnull
-    @Override
-    protected RemoteSubscriptionResourceUpdate createUpdate()
-    {
-        return new RemoteSubscriptionResourceUpdate();
-    }
+    /**
+     * Tries to dequeue the queued item with the specified ID. If the entity does not
+     * exist, <code>false</code> is returned.
+     *
+     * @param id the ID of the queued item for which a message should be dequeued.
+     * @return <code>true</code> if the entity has been deleted, <code>false</code> otherwise.
+     */
+    boolean dequeued( @Nonnull I id );
 }

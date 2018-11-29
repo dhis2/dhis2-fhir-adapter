@@ -28,19 +28,14 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.function.Consumer;
 
 /**
  * Custom repository for processed remote FHIR resources {@link ProcessedRemoteFhirResource}.
  */
-public interface CustomProcessedRemoteFhirResourceRepository
+public interface CustomProcessedRemoteFhirResourceRepository extends ProcessedItemRepository<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, RemoteSubscriptionResource>
 {
-    void process( @Nonnull ProcessedRemoteFhirResource processedRemoteFhirResource, @Nonnull Consumer<ProcessedRemoteFhirResource> consumer );
-
-    int deleteOldest( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull Instant timestamp );
 }
