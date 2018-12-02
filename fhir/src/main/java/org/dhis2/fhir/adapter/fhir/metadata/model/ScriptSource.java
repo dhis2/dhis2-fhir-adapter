@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.FhirVersionPersistentSortedSetConverter;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.persistence.Basic;
@@ -112,7 +113,6 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
         this.script = script;
     }
 
-    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_source_version", joinColumns = @JoinColumn( name = "script_source_id" ) )
     @Column( name = "fhir_version" )

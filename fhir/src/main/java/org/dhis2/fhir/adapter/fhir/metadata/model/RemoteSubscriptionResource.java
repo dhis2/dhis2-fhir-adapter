@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.springframework.data.rest.core.annotation.RestResource;
 

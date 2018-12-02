@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.security;
+package org.dhis2.fhir.adapter.dhis.data.repository.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,47 +28,31 @@ package org.dhis2.fhir.adapter.fhir.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.security.AdapterUserDetails;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractProcessedItemRepositoryImpl;
+import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
+import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
+import org.dhis2.fhir.adapter.dhis.data.repository.CustomProcessedDhisResourceRepository;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
- * Security utilities that are used by the adapter.
+ * Implementation of {@link CustomProcessedDhisResourceRepository}.
  *
  * @author volsch
  */
-public abstract class AdapterSecurityUtils
+public class CustomProcessedDhisResourceRepositoryImpl extends AbstractProcessedItemRepositoryImpl<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup> implements CustomProcessedDhisResourceRepository
 {
-    @Nullable
-    public static String getCurrentUsername()
+    public CustomProcessedDhisResourceRepositoryImpl( @Nonnull EntityManager entityManager )
     {
-        final SecurityContext context = SecurityContextHolder.getContext();
-        if ( context == null )
-        {
-            return null;
-        }
-        final Authentication authentication = context.getAuthentication();
-        if ( authentication == null )
-        {
-            return null;
-        }
-        if ( !(authentication.getPrincipal() instanceof UserDetails) )
-        {
-            return null;
-        }
-        if ( authentication.getPrincipal() instanceof AdapterUserDetails )
-        {
-            return ((AdapterUserDetails) authentication.getPrincipal()).getId();
-        }
-        return ((UserDetails) authentication.getPrincipal()).getUsername();
+        super( entityManager );
     }
 
-    private AdapterSecurityUtils()
+    @Nonnull
+    @Override
+    protected Class<ProcessedDhisResource> getProcessedItemClass()
     {
-        super();
+        return ProcessedDhisResource.class;
     }
 }

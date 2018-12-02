@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -130,7 +131,6 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
         this.codeCategory = codeCategory;
     }
 
-    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @OneToMany( orphanRemoval = true, mappedBy = "codeSet", cascade = CascadeType.ALL )
     @OrderBy( "id" )
     public List<CodeSetValue> getCodeSetValues()

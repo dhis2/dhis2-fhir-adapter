@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,83 +28,37 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.security.AdapterUserDetails;
-import org.springframework.security.core.GrantedAuthority;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
-import javax.annotation.Nonnull;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.UUID;
 
 /**
- * The user details that are used by the adapter.
+ * Contains a DHIS2 synchronization group (data that is synchronized together).
+ * At the moment there is just one default synchronization group since all data
+ * is synchronized together.
  *
  * @author volsch
  */
-public class AdapterUser implements AdapterUserDetails, Serializable
+@Entity
+@Table( name = "fhir_dhis_sync_group" )
+public class DhisSyncGroup extends VersionedBaseMetadata implements DataGroup, Serializable
 {
-    private static final long serialVersionUID = -5712286077463879041L;
+    private static final long serialVersionUID = -6797001318266984453L;
 
-    private final String id;
+    public static final UUID DEFAULT_ID = UUID.fromString( "22204dd4-05d9-4cdd-96a8-ed742087d469" );
 
-    private final String username;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public AdapterUser( @Nonnull String id, @Nonnull String username, @Nonnull Collection<? extends GrantedAuthority> authorities )
-    {
-        this.id = id;
-        this.username = username;
-        this.authorities = Collections.unmodifiableCollection( authorities );
-    }
-
-    @Nonnull
-    public String getId()
-    {
-        return id;
-    }
-
-    @Nonnull
+    @JsonIgnore
+    @Transient
     @Override
-    public String getUsername()
+    public UuidDataGroupId getGroupId()
     {
-        return username;
-    }
-
-    @Nonnull
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return true;
+        return (getId() == null) ? null : new UuidDataGroupId( getId() );
     }
 }

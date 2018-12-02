@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.security.AdapterSecurityUtils;
+import org.dhis2.fhir.adapter.security.AdapterSecurityUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -50,7 +50,7 @@ import java.util.UUID;
  * @author volsch
  */
 @MappedSuperclass
-public class VersionedBaseMetadata implements Serializable, FhirAdapterMetadata<UUID>
+public class VersionedBaseMetadata implements Serializable, Metadata<UUID>
 {
     private static final long serialVersionUID = 7500268787032387101L;
 

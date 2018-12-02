@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirAdapterMetadata;
-import org.dhis2.fhir.adapter.fhir.security.AdapterSecurityUtils;
+import org.dhis2.fhir.adapter.model.Metadata;
+import org.dhis2.fhir.adapter.security.AdapterSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -44,12 +44,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Order( value = 0 )
-public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventListener<FhirAdapterMetadata>
+public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventListener<Metadata>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
-    protected void onAfterCreate( FhirAdapterMetadata entity )
+    protected void onAfterCreate( Metadata entity )
     {
         final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
@@ -59,7 +59,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     }
 
     @Override
-    protected void onAfterSave( FhirAdapterMetadata entity )
+    protected void onAfterSave( Metadata entity )
     {
         final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
@@ -69,14 +69,14 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     }
 
     @Override
-    protected void onAfterLinkSave( FhirAdapterMetadata parent, Object linked )
+    protected void onAfterLinkSave( Metadata parent, Object linked )
     {
         final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
-            if ( linked instanceof FhirAdapterMetadata )
+            if ( linked instanceof Metadata )
             {
-                final FhirAdapterMetadata<?> linkedMetadata = (FhirAdapterMetadata<?>) linked;
+                final Metadata<?> linkedMetadata = (Metadata<?>) linked;
                 logger.info( "User {} added link from entity {} with ID {} to entity with ID {}.",
                     username, linkedMetadata.getClass().getSimpleName(), linkedMetadata.getId(),
                     parent.getClass().getSimpleName(), parent.getId() );
@@ -90,14 +90,14 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     }
 
     @Override
-    protected void onAfterLinkDelete( FhirAdapterMetadata parent, Object linked )
+    protected void onAfterLinkDelete( Metadata parent, Object linked )
     {
         final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )
         {
-            if ( linked instanceof FhirAdapterMetadata )
+            if ( linked instanceof Metadata )
             {
-                final FhirAdapterMetadata<?> linkedMetadata = (FhirAdapterMetadata<?>) linked;
+                final Metadata<?> linkedMetadata = (Metadata<?>) linked;
                 logger.info( "User {} removed link from entity {} with ID {} to entity with ID {}.",
                     username, linkedMetadata.getClass().getSimpleName(), linkedMetadata.getId(),
                     parent.getClass().getSimpleName(), parent.getId() );
@@ -111,7 +111,7 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
     }
 
     @Override
-    protected void onAfterDelete( FhirAdapterMetadata entity )
+    protected void onAfterDelete( Metadata entity )
     {
         final String username = AdapterSecurityUtils.getCurrentUsername();
         if ( username != null )

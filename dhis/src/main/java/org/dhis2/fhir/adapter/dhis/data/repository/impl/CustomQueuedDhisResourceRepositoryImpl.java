@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.data.repository.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,83 +28,44 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.security.AdapterUserDetails;
-import org.springframework.security.core.GrantedAuthority;
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractQueuedItemRepositoryImpl;
+import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResource;
+import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResourceId;
+import org.dhis2.fhir.adapter.dhis.data.repository.CustomQueuedDhisResourceRepository;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import javax.persistence.EntityManager;
+import java.time.Instant;
 
 /**
- * The user details that are used by the adapter.
+ * Implementation of {@link CustomQueuedDhisResourceRepository}.
  *
  * @author volsch
  */
-public class AdapterUser implements AdapterUserDetails, Serializable
+public class CustomQueuedDhisResourceRepositoryImpl extends AbstractQueuedItemRepositoryImpl<QueuedDhisResource, QueuedDhisResourceId, DhisSyncGroup> implements CustomQueuedDhisResourceRepository
 {
-    private static final long serialVersionUID = -5712286077463879041L;
-
-    private final String id;
-
-    private final String username;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public AdapterUser( @Nonnull String id, @Nonnull String username, @Nonnull Collection<? extends GrantedAuthority> authorities )
+    public CustomQueuedDhisResourceRepositoryImpl( @Nonnull EntityManager entityManager,
+        @Nonnull PlatformTransactionManager platformTransactionManager,
+        @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
     {
-        this.id = id;
-        this.username = username;
-        this.authorities = Collections.unmodifiableCollection( authorities );
-    }
-
-    @Nonnull
-    public String getId()
-    {
-        return id;
+        super( entityManager, platformTransactionManager, persistenceExceptionTranslator );
     }
 
     @Nonnull
     @Override
-    public String getUsername()
+    protected Class<QueuedDhisResource> getQueuedItemClass()
     {
-        return username;
+        return QueuedDhisResource.class;
     }
 
     @Nonnull
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
+    protected QueuedDhisResource createQueuedItem( @Nonnull QueuedDhisResourceId id )
     {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return true;
+        return new QueuedDhisResource( id, Instant.now() );
     }
 }

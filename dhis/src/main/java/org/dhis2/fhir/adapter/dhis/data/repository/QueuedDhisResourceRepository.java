@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,20 +28,17 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.security.core.userdetails.UserDetails;
+import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResource;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.annotation.Nonnull;
+import java.util.UUID;
 
 /**
- * The user details that are used by the adapter.
+ * Repository for {@link QueuedDhisResource} entities.
  *
  * @author volsch
  */
-public interface AdapterUserDetails extends UserDetails
+public interface QueuedDhisResourceRepository extends
+    JpaRepository<QueuedDhisResource, UUID>, CustomQueuedDhisResourceRepository
 {
-    /**
-     * @return the ID of the DHIS 2 user.
-     */
-    @Nonnull
-    String getId();
 }

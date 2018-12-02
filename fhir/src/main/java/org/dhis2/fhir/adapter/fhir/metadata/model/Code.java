@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;

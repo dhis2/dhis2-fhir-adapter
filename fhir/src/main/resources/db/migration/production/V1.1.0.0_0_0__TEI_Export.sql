@@ -1,7 +1,7 @@
 /*
  *  Copyright (c) 2004-2018, University of Oslo
  *  All rights reserved.
- *t
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  Redistributions of source code must retain the above copyright notice, this
@@ -30,3 +30,68 @@ ALTER TABLE fhir_queued_remote_subscription_request
   DROP COLUMN IF EXISTS request_id;
 ALTER TABLE fhir_queued_remote_resource
   DROP COLUMN IF EXISTS request_id;
+
+CREATE TABLE fhir_dhis_sync_group (
+  id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
+  version         BIGINT                         NOT NULL,
+  created_at      TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  last_updated_by VARCHAR(11),
+  last_updated_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_dhis_subscription_resource_pk PRIMARY KEY (id)
+);
+COMMENT ON TABLE fhir_dhis_sync_group IS 'Contains the DHIS2 synchronization groups. All dhis subscriptions that are combined in a DHIS2 synchronization group are synchronized together. At the moment only one synchronization group is supported and concept exists only for future extensibility.';
+COMMENT ON COLUMN fhir_dhis_sync_group.id IS 'Unique ID of entity.';
+COMMENT ON COLUMN fhir_dhis_sync_group.version IS 'The version of the entity used for optimistic locking. When changing the entity this value must be incremented.';
+COMMENT ON COLUMN fhir_dhis_sync_group.created_at IS 'The timestamp when the entity has been created.';
+COMMENT ON COLUMN fhir_dhis_sync_group.last_updated_by IS 'The ID of the user that has updated the entity the last time or NULL if the user is not known or the entity has been created with initial database setup.';
+COMMENT ON COLUMN fhir_dhis_sync_group.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
+
+CREATE TABLE fhir_dhis_sync_group_update (
+  id           UUID                           NOT NULL,
+  last_updated TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_dhis_sync_group_update_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_dhis_sync_group_update_fk1 FOREIGN KEY (id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_dhis_sync_group_update IS 'Contains the timestamp that includes when the DHIS2 synchronization group has been updated last time.';
+COMMENT ON COLUMN fhir_dhis_sync_group_update.last_updated IS 'The timestamp of the last begin of fetching data from the dhis FHIR Service for the subscribed resource.';
+
+INSERT INTO fhir_dhis_sync_group(id, version)
+VALUES ('22204dd4-05d9-4cdd-96a8-ed742087d469', 0);
+INSERT INTO fhir_dhis_sync_group_update(id)
+VALUES ('22204dd4-05d9-4cdd-96a8-ed742087d469');
+
+CREATE TABLE fhir_queued_dhis_sync_request (
+  id        UUID                           NOT NULL,
+  queued_at TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_queued_dhis_sync_request_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_queued_dhis_sync_request_fk1 FOREIGN KEY (id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_queued_dhis_sync_request IS 'Contains queued DHIS2 sync group requests.';
+COMMENT ON COLUMN fhir_queued_dhis_sync_request.id IS 'References the DHIS2 sync group.';
+COMMENT ON COLUMN fhir_queued_dhis_sync_request.queued_at IS 'The timestamp when the data has been queued last time.';
+
+CREATE TABLE fhir_processed_dhis_resource (
+  dhis_sync_group_id UUID         NOT NULL,
+  processed_id       VARCHAR(120) NOT NULL,
+  processed_at       TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_processed_dhis_resource_pk PRIMARY KEY (dhis_sync_group_id, processed_id),
+  CONSTRAINT fhir_processed_dhis_resource_fk1 FOREIGN KEY (dhis_sync_group_id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
+);
+CREATE INDEX fhir_processed_dhis_resource_i1
+  ON fhir_processed_dhis_resource (dhis_sync_group_id, processed_at);
+COMMENT ON TABLE fhir_processed_dhis_resource IS 'Contains the versioned DHIS2 IDs that have been processed in the last few hours.';
+COMMENT ON COLUMN fhir_processed_dhis_resource.dhis_sync_group_id IS 'References the DHIS2 sync group to which the processed data belongs to.';
+COMMENT ON COLUMN fhir_processed_dhis_resource.processed_id IS 'The unique string that identifies a distinct version of a DHIS2 resource.';
+COMMENT ON COLUMN fhir_processed_dhis_resource.processed_at IS 'Timestamp when the resource has been processed. Used for deleting the data after some hours mainly.';
+
+CREATE TABLE fhir_queued_dhis_resource (
+  dhis_sync_group_id UUID                           NOT NULL,
+  dhis_resource_id   VARCHAR(80)                    NOT NULL,
+  queued_at          TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_queued_dhis_resource_pk PRIMARY KEY (dhis_sync_group_id, dhis_resource_id),
+  CONSTRAINT fhir_queued_dhis_resource_fk1 FOREIGN KEY (dhis_sync_group_id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_queued_dhis_resource IS 'Contains queued DHIS2 resources that should be processed.';
+COMMENT ON COLUMN fhir_queued_dhis_resource.dhis_sync_group_id IS 'References the DHIS2 sync group to which this data belongs to.';
+COMMENT ON COLUMN fhir_queued_dhis_resource.dhis_resource_id IS 'The ID (with resource name) of the DHIS2 Resource that has been queued.';
+COMMENT ON COLUMN fhir_queued_dhis_resource.queued_at IS 'The timestamp when the data has been queued last time.';

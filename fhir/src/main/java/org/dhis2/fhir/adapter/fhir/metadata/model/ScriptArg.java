@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nullable;

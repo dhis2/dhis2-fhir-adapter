@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.model.Metadata;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -51,7 +52,7 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_code_set_value" )
-public class CodeSetValue implements Serializable, FhirAdapterMetadata<UUID>
+public class CodeSetValue implements Serializable, Metadata<UUID>
 {
     private static final long serialVersionUID = 8365594386802303061L;
 

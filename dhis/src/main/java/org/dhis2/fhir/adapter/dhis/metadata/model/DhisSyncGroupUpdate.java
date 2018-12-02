@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,83 +28,55 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.security.AdapterUserDetails;
-import org.springframework.security.core.GrantedAuthority;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import java.util.UUID;
 
 /**
- * The user details that are used by the adapter.
+ * Contains the update status of a DHIS2 synchronization.
  *
  * @author volsch
  */
-public class AdapterUser implements AdapterUserDetails, Serializable
+@Entity
+@Table( name = "fhir_dhis_sync_group_update" )
+public class DhisSyncGroupUpdate extends DataGroupUpdate<DhisSyncGroup>
 {
-    private static final long serialVersionUID = -5712286077463879041L;
+    private static final long serialVersionUID = -2051276256396499975L;
 
-    private final String id;
+    private UUID id;
 
-    private final String username;
+    private DhisSyncGroup group;
 
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public AdapterUser( @Nonnull String id, @Nonnull String username, @Nonnull Collection<? extends GrantedAuthority> authorities )
-    {
-        this.id = id;
-        this.username = username;
-        this.authorities = Collections.unmodifiableCollection( authorities );
-    }
-
-    @Nonnull
-    public String getId()
+    @Id
+    public UUID getId()
     {
         return id;
     }
 
-    @Nonnull
-    @Override
-    public String getUsername()
+    public void setId( UUID id )
     {
-        return username;
+        this.id = id;
     }
 
-    @Nonnull
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
+    @JoinColumn( name = "id", nullable = false )
+    @OneToOne( optional = false )
+    @MapsId
+    @JsonIgnore
+    public DhisSyncGroup getGroup()
     {
-        return authorities;
+        return group;
     }
 
-    @Override
-    public String getPassword()
+    public void setGroup( DhisSyncGroup group )
     {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return true;
+        this.group = group;
+        setId( (group == null) ? null : group.getId() );
     }
 }

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.model.Metadata;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -52,7 +53,7 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_executable_script_argument" )
-public class ExecutableScriptArg implements Serializable, FhirAdapterMetadata<UUID>
+public class ExecutableScriptArg implements Serializable, Metadata<UUID>
 {
     private static final long serialVersionUID = 487628755797899218L;
 

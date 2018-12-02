@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,83 +28,50 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.security.AdapterUserDetails;
-import org.springframework.security.core.GrantedAuthority;
+import org.dhis2.fhir.adapter.data.model.ProcessedItem;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.time.Instant;
 
 /**
- * The user details that are used by the adapter.
+ * A processed DHIS2 resource.
  *
  * @author volsch
  */
-public class AdapterUser implements AdapterUserDetails, Serializable
+@Entity
+@Table( name = "fhir_processed_dhis_resource" )
+public class ProcessedDhisResource extends ProcessedItem<ProcessedDhisResourceId, DhisSyncGroup> implements Serializable
 {
-    private static final long serialVersionUID = -5712286077463879041L;
+    private static final long serialVersionUID = -6484140859863504862L;
 
-    private final String id;
+    private ProcessedDhisResourceId id;
 
-    private final String username;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public AdapterUser( @Nonnull String id, @Nonnull String username, @Nonnull Collection<? extends GrantedAuthority> authorities )
+    public ProcessedDhisResource()
     {
-        this.id = id;
-        this.username = username;
-        this.authorities = Collections.unmodifiableCollection( authorities );
+        super();
     }
 
-    @Nonnull
-    public String getId()
+    public ProcessedDhisResource( @Nonnull ProcessedDhisResourceId id, @Nonnull Instant processedAt )
+    {
+        super( processedAt );
+        this.id = id;
+    }
+
+    @EmbeddedId
+    @Override
+    public ProcessedDhisResourceId getId()
     {
         return id;
     }
 
-    @Nonnull
     @Override
-    public String getUsername()
+    public void setId( ProcessedDhisResourceId id )
     {
-        return username;
-    }
-
-    @Nonnull
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isAccountNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return true;
+        this.id = id;
     }
 }

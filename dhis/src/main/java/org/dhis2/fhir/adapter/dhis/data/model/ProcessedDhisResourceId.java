@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.security;
+package org.dhis2.fhir.adapter.dhis.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,83 +28,74 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.security.AdapterUserDetails;
-import org.springframework.security.core.GrantedAuthority;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemId;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 import javax.annotation.Nonnull;
+import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Objects;
 
 /**
- * The user details that are used by the adapter.
+ * The unique ID of a distinct version of a DHIS resource (just by last updated timestamp).
  *
  * @author volsch
  */
-public class AdapterUser implements AdapterUserDetails, Serializable
+@Embeddable
+public class ProcessedDhisResourceId extends ProcessedItemId<DhisSyncGroup> implements Serializable
 {
-    private static final long serialVersionUID = -5712286077463879041L;
+    private static final long serialVersionUID = 143055103713986347L;
 
-    private final String id;
+    private DhisSyncGroup group;
 
-    private final String username;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public AdapterUser( @Nonnull String id, @Nonnull String username, @Nonnull Collection<? extends GrantedAuthority> authorities )
+    public ProcessedDhisResourceId()
     {
-        this.id = id;
-        this.username = username;
-        this.authorities = Collections.unmodifiableCollection( authorities );
+        super();
     }
 
-    @Nonnull
-    public String getId()
+    public ProcessedDhisResourceId( @Nonnull DhisSyncGroup dhisSyncGroup, @Nonnull String processedId )
     {
-        return id;
-    }
-
-    @Nonnull
-    @Override
-    public String getUsername()
-    {
-        return username;
-    }
-
-    @Nonnull
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities()
-    {
-        return authorities;
+        super( processedId );
+        this.group = dhisSyncGroup;
     }
 
     @Override
-    public String getPassword()
+    @ManyToOne( optional = false, fetch = FetchType.LAZY )
+    @JoinColumn( name = "dhis_sync_group_id" )
+    public DhisSyncGroup getGroup()
     {
-        return null;
+        return group;
     }
 
     @Override
-    public boolean isAccountNonExpired()
+    public void setGroup( DhisSyncGroup group )
     {
-        return true;
+        this.group = group;
     }
 
     @Override
-    public boolean isAccountNonLocked()
+    public boolean equals( Object o )
     {
-        return true;
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        if ( !super.equals( o ) ) return false;
+        ProcessedDhisResourceId that = (ProcessedDhisResourceId) o;
+        return Objects.equals( ((group == null) ? 0 : group.getId()),
+            ((that.group == null) ? 0 : that.group.getId()) );
     }
 
     @Override
-    public boolean isCredentialsNonExpired()
+    public int hashCode()
     {
-        return true;
+        return Objects.hash( super.hashCode(), (group == null ? 0 : group.getId()) );
     }
 
     @Override
-    public boolean isEnabled()
+    public String toString()
     {
-        return true;
+        return "[DHIS2 Sync Group ID " + ((group == null) ? "?" : group.getId()) + ", Processed ID " + getProcessedId() + "]";
     }
 }

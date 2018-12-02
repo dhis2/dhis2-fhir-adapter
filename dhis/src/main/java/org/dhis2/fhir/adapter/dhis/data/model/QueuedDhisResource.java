@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.dhis.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,15 +28,51 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.QueuedItem;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+
+import javax.annotation.Nonnull;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Entity that contains if currently for a DHIS2 resource ID
+ * there is a pending queued processing request.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface FhirAdapterMetadata<I> extends Serializable
+@Entity
+@Table( name = "fhir_queued_dhis_resource" )
+public class QueuedDhisResource extends QueuedItem<QueuedDhisResourceId, DhisSyncGroup> implements Serializable
 {
-    I getId();
+    private static final long serialVersionUID = 3146612484665379623L;
+
+    private QueuedDhisResourceId id;
+
+    public QueuedDhisResource()
+    {
+        super();
+    }
+
+    public QueuedDhisResource( @Nonnull QueuedDhisResourceId id, @Nonnull Instant queuedAt )
+    {
+        super( queuedAt );
+        this.id = id;
+    }
+
+    @EmbeddedId
+    @Override
+    public QueuedDhisResourceId getId()
+    {
+        return id;
+    }
+
+    @Override
+    public void setId( QueuedDhisResourceId id )
+    {
+        this.id = id;
+    }
 }
