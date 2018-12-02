@@ -51,7 +51,7 @@ import java.util.Optional;
 @Service
 public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataService
 {
-    protected static final String TRACKED_ENTITY_ATTRIBUTE_FIELDS = "id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]";
+    protected static final String TRACKED_ENTITY_ATTRIBUTE_FIELDS = "id,name,code,valueType,generated,optionSetValue,optionSet[id,name,options[code,name]]";
 
     protected static final String TRACKED_ENTITY_TYPE_FIELDS = "id,name,trackedEntityTypeAttributes[id,name,valueType,mandatory,trackedEntityAttribute[" +
         TRACKED_ENTITY_ATTRIBUTE_FIELDS + "]]";
