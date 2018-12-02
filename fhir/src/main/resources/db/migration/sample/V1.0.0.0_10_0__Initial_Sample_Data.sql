@@ -66,3 +66,21 @@ INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id
 VALUES ('ea9804a3-9e82-4d0d-9cd2-e417b32b1c0c', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', 'c4e9ac6a-cc8f-4c73-aab6-0fa6775c0ca3');
 INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
 VALUES ('ef7d37ae-6a02-46de-bf15-3dc522a464ed', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PATIENT', 'ff842c76-a529-4563-972d-216b887a3573');
+
+-- User Sierra Leone demo database
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('290d67ca-8177-4a1e-ac51-2072a3563c22', '72451c8f-7492-4707-90b8-a3e0796de19e', '276b26f2-ba01-41e6-89c6-b1100580b1f3', NULL);
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('9232ac8e-0160-423c-b484-52ce94aa8563', '72451c8f-7492-4707-90b8-a3e0796de19e', '0a7c26cb-7bd3-4394-9d47-a610ac231f8a', 'NAME:Last name');
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('8e2b17f6-c903-4279-8b2b-0925c15e176a', '72451c8f-7492-4707-90b8-a3e0796de19e', 'b41dd571-a129-4fa6-a807-35ea5663e8e3', 'CODE:MMD_PER_NAM');
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('dc2ba48e-d3c7-4b10-98ba-2b958aff9bbb', '72451c8f-7492-4707-90b8-a3e0796de19e', '90b3c110-38e4-4291-934c-e2569e8af1ba', 'CODE:MMD_PER_DOB');
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('e484c8cc-21eb-4905-b633-8b6674698fa6', '72451c8f-7492-4707-90b8-a3e0796de19e', '8e3efdc7-6ce4-4899-bb20-faed7d5e3279', 'NAME:Gender');
+INSERT INTO fhir_executable_script_argument (id, executable_script_id, script_argument_id, override_value)
+VALUES ('a93e4952-2725-453e-8f2d-260d3131769a', '72451c8f-7492-4707-90b8-a3e0796de19e', 'ae13ceca-86d7-4f60-8d54-25587d53a5bd', 'CODE:MMD_PER_ADR1');
+
+UPDATE fhir_tracked_entity
+SET tracked_entity_identifier_ref = 'NAME:National identifier'
+WHERE id = '4203754d-2177-4a44-86aa-2de31ee4c8ee';
