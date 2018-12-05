@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.model;
+package org.dhis2.fhir.adapter.dhis.metadata.repository.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,72 +28,39 @@ package org.dhis2.fhir.adapter.dhis.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.QueuedItemId;
+import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractDataGroupUpdateRepositoryImpl;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroupUpdate;
+import org.dhis2.fhir.adapter.dhis.metadata.repository.CustomDhisSyncGroupUpdateRepository;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import java.io.Serializable;
-import java.util.Objects;
+import javax.persistence.EntityManager;
 
 /**
- * The unique ID of a a pending request for DHIS2 sync group processing.
+ * Implementation of {@link CustomDhisSyncGroupUpdateRepository}.
  *
  * @author volsch
  */
-@Embeddable
-public class QueuedDhisSyncRequestId extends QueuedItemId<DhisSyncGroup> implements Serializable
+public class CustomDhisSyncGroupUpdateRepositoryImpl extends AbstractDataGroupUpdateRepositoryImpl<DataGroupUpdate<DhisSyncGroup>, DhisSyncGroup>
+    implements CustomDhisSyncGroupUpdateRepository
 {
-    private static final long serialVersionUID = -4642534319215405587L;
-
-    private DhisSyncGroup group;
-
-    public QueuedDhisSyncRequestId()
+    public CustomDhisSyncGroupUpdateRepositoryImpl( @Nonnull EntityManager entityManager )
     {
-        super();
+        super( entityManager );
     }
 
-    public QueuedDhisSyncRequestId( @Nonnull DhisSyncGroup group )
-    {
-        this.group = group;
-    }
-
-    @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "id" )
+    @Nonnull
     @Override
-    public DhisSyncGroup getGroup()
+    protected Class<DhisSyncGroupUpdate> getUpdateClass()
     {
-        return group;
+        return DhisSyncGroupUpdate.class;
     }
 
+    @Nonnull
     @Override
-    public void setGroup( DhisSyncGroup group )
+    protected DhisSyncGroupUpdate createUpdate()
     {
-        this.group = group;
-    }
-
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        QueuedDhisSyncRequestId that = (QueuedDhisSyncRequestId) o;
-        return Objects.equals( (group == null) ? null : group.getId(),
-            (that.group == null) ? null : that.group.getId() );
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash( (group == null) ? null : group.getId() );
-    }
-
-    @Override
-    public String toString()
-    {
-        return "[DHIS2 Sync Group ID " + ((group == null) ? "?" : group.getId()) + "]";
+        return new DhisSyncGroupUpdate();
     }
 }

@@ -50,11 +50,10 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
-import org.dhis2.fhir.adapter.fhir.queue.RetryQueueDeliveryException;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
@@ -66,6 +65,7 @@ import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
+import org.dhis2.fhir.adapter.queue.RetryQueueDeliveryException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
@@ -175,7 +175,7 @@ public class FhirRepositoryImpl implements FhirRepository
         concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
     public void receive( @Nonnull RemoteFhirResource remoteFhirResource )
     {
-        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
+        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
             receiveAuthenticated( remoteFhirResource );

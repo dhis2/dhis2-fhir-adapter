@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.queue;
+package org.dhis2.fhir.adapter.queue;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo

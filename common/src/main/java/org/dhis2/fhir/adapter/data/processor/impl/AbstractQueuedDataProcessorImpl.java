@@ -44,6 +44,7 @@ import org.dhis2.fhir.adapter.data.repository.DataGroupUpdateRepository;
 import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
 import org.dhis2.fhir.adapter.data.repository.QueuedItemRepository;
+import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
@@ -91,6 +92,8 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     private final PlatformTransactionManager platformTransactionManager;
 
+    private final SystemAuthenticationToken systemAuthenticationToken;
+
     public AbstractQueuedDataProcessorImpl(
         @Nonnull QueuedItemRepository<QG, G> queuedGroupRepository,
         @Nonnull JmsTemplate groupQueueJmsTemplate,
@@ -98,7 +101,8 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         @Nonnull ProcessedItemRepository<P, PI, G> processedItemRepository,
         @Nonnull QueuedItemRepository<QI, G> queuedItemRepository,
         @Nonnull JmsTemplate itemQueueJmsTemplate,
-        @Nonnull PlatformTransactionManager platformTransactionManager )
+        @Nonnull PlatformTransactionManager platformTransactionManager,
+        @Nonnull SystemAuthenticationToken systemAuthenticationToken )
     {
         this.queuedGroupRepository = queuedGroupRepository;
         this.groupQueueJmsTemplate = groupQueueJmsTemplate;
@@ -107,6 +111,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         this.queuedItemRepository = queuedItemRepository;
         this.itemQueueJmsTemplate = itemQueueJmsTemplate;
         this.platformTransactionManager = platformTransactionManager;
+        this.systemAuthenticationToken = systemAuthenticationToken;
     }
 
     @HystrixCommand
@@ -237,6 +242,12 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         logger.debug( "Purged {} oldest processed items before {} for group {}.", count, from, group.getGroupId() );
     }
 
+    @Nonnull
+    protected Authentication createAuthentication()
+    {
+        return systemAuthenticationToken;
+    }
+
     protected abstract QG createQueuedGroupId( @Nonnull G group );
 
     @Nonnull
@@ -260,9 +271,6 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     @Nonnull
     protected abstract DataItemQueueItem<GI> createDataItemQueueItem( @Nonnull G group, @Nonnull ProcessedItemInfo processedItemInfo );
-
-    @Nonnull
-    protected abstract Authentication createAuthentication();
 
     private void finalizeTransaction( @Nonnull TransactionStatus transactionStatus )
     {

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.queue;
+package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,20 +28,14 @@ package org.dhis2.fhir.adapter.fhir.queue;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
+import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 /**
- * Thrown if the delivered message should be redelivered in order to retry the
- * processing of the queued message. This exception will not be logged. Any logging
- * must occur before throwing this exception. This exception itself will not be
- * logged by the error handling (just debug logging).
+ * Processes the sync between DHIS2 and the remote FHIR services.
+ *
+ * @author volsch
  */
-public class RetryQueueDeliveryException extends RuntimeException
+public interface DhisSyncProcessor extends QueuedDataProcessor<DhisSyncGroup>
 {
-    private static final long serialVersionUID = 3635766099659694063L;
-
-    public RetryQueueDeliveryException( @Nonnull Throwable cause )
-    {
-        super( cause );
-    }
 }

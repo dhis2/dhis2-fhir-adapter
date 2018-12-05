@@ -28,6 +28,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Contains the different types of DHIS2 Resources that are can be created.
  *
@@ -38,15 +44,43 @@ public enum DhisResourceType
     /**
      * Resource is a tracked entity instance.
      */
-    TRACKED_ENTITY,
+    TRACKED_ENTITY( "trackedEntityInstances" ),
 
     /**
      * Resource is a program instance (aka enrollment).
      */
-    ENROLLMENT,
+    ENROLLMENT( "enrollments" ),
 
     /**
      * Resource is a program stage instance (aka event of a program instance).
      */
-    PROGRAM_STAGE_EVENT
+    PROGRAM_STAGE_EVENT( "events" );
+
+    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
+
+    @Nullable
+    public static DhisResourceType getByTypeName( @Nullable String typeName )
+    {
+        return byTypeName.get( typeName );
+    }
+
+    private final String typeName;
+
+    DhisResourceType( @Nonnull String typeName )
+    {
+        this.typeName = typeName;
+    }
+
+    @Nonnull
+    public String getTypeName()
+    {
+        return typeName;
+    }
+
+    @Nonnull
+    public String withId( @Nonnull String id )
+    {
+        return typeName + "/" + id;
+    }
 }
+

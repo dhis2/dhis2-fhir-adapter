@@ -32,7 +32,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
+import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -111,6 +113,13 @@ public class AdapterSecurityConfig implements SecurityConfig
             grantedAuthorities.add( new SimpleGrantedAuthority( AdapterAuthorities.ALL_AUTHORITY_ROLE ) );
         }
         return grantedAuthorities;
+    }
+
+    @Nonnull
+    @Bean
+    protected SystemAuthenticationToken systemAuthenticationToken()
+    {
+        return new AdapterSystemAuthenticationToken();
     }
 
     @PostConstruct

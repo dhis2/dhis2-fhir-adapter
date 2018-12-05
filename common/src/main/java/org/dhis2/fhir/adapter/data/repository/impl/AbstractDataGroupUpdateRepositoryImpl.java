@@ -71,7 +71,6 @@ public abstract class AbstractDataGroupUpdateRepositoryImpl<T extends DataGroupU
         {
             update = createUpdate();
             update.setGroup( group );
-            update.setLastUpdated( Instant.now() );
             entityManager.persist( update );
         }
         return update.getLastUpdated();

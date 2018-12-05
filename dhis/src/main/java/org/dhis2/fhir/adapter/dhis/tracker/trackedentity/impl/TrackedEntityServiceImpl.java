@@ -32,9 +32,10 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
 import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
-import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
@@ -57,11 +58,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -177,6 +181,13 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return "TrackedEntityService.findByAttrValue|" + typeId + "|" + attributeId + "|" + value + "|" + maxResult;
     }
 
+    @Nonnull
+    @Override
+    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, int toleranceMillis, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    {
+        return new TrackedEntityPolledItemRetriever( restTemplate, maxSearchCount, toleranceMillis ).poll( lastUpdated, excludedStoredBy, consumer );
+    }
+
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
     @Nonnull
     @Override
@@ -203,10 +214,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             throw e;
         }
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
-        if ( (result.getStatus() != Status.OK) ||
-            (result.getResponse().getImportSummaries().size() != 1) ||
-            (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
-            (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
+        if ( result.isNotSuccessful() )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance." );
         }

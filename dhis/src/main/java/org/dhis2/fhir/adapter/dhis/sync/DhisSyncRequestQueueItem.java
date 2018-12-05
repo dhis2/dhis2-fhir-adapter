@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.model;
+package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,72 +28,33 @@ package org.dhis2.fhir.adapter.dhis.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.QueuedItemId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.data.processor.impl.DataGroupQueueItem;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.ZonedDateTime;
 
 /**
- * The unique ID of a a pending request for DHIS2 sync group processing.
+ * Remote web hook request that will be enqueued and dequeued in a message queue as JSON.
+ * The class must support the initial legacy serialized format.
+ * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
  *
  * @author volsch
  */
-@Embeddable
-public class QueuedDhisSyncRequestId extends QueuedItemId<DhisSyncGroup> implements Serializable
+public class DhisSyncRequestQueueItem extends DataGroupQueueItem<UuidDataGroupId> implements Serializable
 {
-    private static final long serialVersionUID = -4642534319215405587L;
+    private static final long serialVersionUID = -7911324825049826913L;
 
-    private DhisSyncGroup group;
+    private ZonedDateTime receivedAt;
 
-    public QueuedDhisSyncRequestId()
+    public DhisSyncRequestQueueItem()
     {
         super();
     }
 
-    public QueuedDhisSyncRequestId( @Nonnull DhisSyncGroup group )
+    public DhisSyncRequestQueueItem( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ZonedDateTime receivedAt )
     {
-        this.group = group;
-    }
-
-    @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "id" )
-    @Override
-    public DhisSyncGroup getGroup()
-    {
-        return group;
-    }
-
-    @Override
-    public void setGroup( DhisSyncGroup group )
-    {
-        this.group = group;
-    }
-
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        QueuedDhisSyncRequestId that = (QueuedDhisSyncRequestId) o;
-        return Objects.equals( (group == null) ? null : group.getId(),
-            (that.group == null) ? null : that.group.getId() );
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash( (group == null) ? null : group.getId() );
-    }
-
-    @Override
-    public String toString()
-    {
-        return "[DHIS2 Sync Group ID " + ((group == null) ? "?" : group.getId()) + "]";
+        super( dataGroupId, receivedAt );
     }
 }

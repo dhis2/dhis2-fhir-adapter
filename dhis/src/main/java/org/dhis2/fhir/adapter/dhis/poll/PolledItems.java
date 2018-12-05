@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data;
+package org.dhis2.fhir.adapter.dhis.poll;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,11 +28,49 @@ package org.dhis2.fhir.adapter.dhis.data;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+
 /**
- * Marker interface that is used to reference package as base package.
+ * Multiple polled items with the minimum and maximum last updated timestamp.
  *
+ * @param <I> the concrete type of the polled item.
  * @author volsch
  */
-public interface DataBasePackage
+public class PolledItems<I extends PolledItem> implements Serializable
 {
+    private static final long serialVersionUID = 5667688634960766862L;
+
+    private List<I> items;
+
+    @JsonProperty
+    public List<I> getItems()
+    {
+        return items;
+    }
+
+    public void setItems( List<I> items )
+    {
+        this.items = items;
+    }
+
+    @JsonIgnore
+    @Nullable
+    public Instant getFromLastUpdated()
+    {
+        return (items == null) ? null : items.stream().map( PolledItem::getLastUpdated ).min( Comparator.naturalOrder() ).orElse( null );
+    }
+
+    @JsonIgnore
+    @Nullable
+    public Instant getToLastUpdated()
+    {
+        return (items == null) ? null : items.stream().map( PolledItem::getLastUpdated ).max( Comparator.naturalOrder() ).orElse( null );
+    }
 }

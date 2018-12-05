@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Retrieves the data for the specified subscription beginning from the last
@@ -104,7 +105,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         final String resourceName = group.getFhirResourceType().getResourceTypeName();
         do
         {
-            logger.debug( "Loading next since {} for remote subscription resource with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
+            logger.debug( "Loading next since {} for remote subscription resource {} with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
             if ( processedLastUpdated == null )
             {
                 // last updated must only bet set on the first search invocation
@@ -116,13 +117,9 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
             do
             {
-                final List<ProcessedItemInfo> resources = new ArrayList<>();
-                for ( final IAnyResource resource : getResourceEntries( bundle ) )
-                {
-                    resources.add( new ProcessedItemInfo( resource.getIdElement().getIdPart(),
-                        (resource.getMeta().getLastUpdated() == null) ? null : resource.getMeta().getLastUpdated().toInstant(),
-                        resource.getIdElement().getVersionIdPart() ) );
-                }
+                final List<ProcessedItemInfo> resources = getResourceEntries( bundle ).stream().map( iAnyResource -> new ProcessedItemInfo( iAnyResource.getIdElement().getIdPart(),
+                    (iAnyResource.getMeta().getLastUpdated() == null) ? null : iAnyResource.getMeta().getLastUpdated().toInstant(),
+                    iAnyResource.getIdElement().getVersionIdPart() ) ).collect( Collectors.toList() );
                 resources.forEach( r -> {
                     if ( allResources.add( r ) )
                     {

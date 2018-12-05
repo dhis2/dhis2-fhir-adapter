@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.remote.impl;
+package org.dhis2.fhir.adapter.dhis.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,53 +28,16 @@ package org.dhis2.fhir.adapter.fhir.remote.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
-import org.dhis2.fhir.adapter.data.processor.impl.DataGroupQueueItem;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroupUpdate;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * Remote web hook request that will be enqueued and dequeued in a message queue as JSON.
- * The class must support the initial legacy serialized format.
- * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
+ * Repository for {@link DhisSyncGroupUpdate} entities.
  *
  * @author volsch
  */
-public class RemoteRestHookRequest extends DataGroupQueueItem<UuidDataGroupId> implements Serializable
+public interface DhisSyncGroupUpdateRepository extends JpaRepository<DhisSyncGroupUpdate, UUID>, CustomDhisSyncGroupUpdateRepository
 {
-    private static final long serialVersionUID = -7911324825049826913L;
-
-    public RemoteRestHookRequest()
-    {
-        super();
-    }
-
-    public RemoteRestHookRequest( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ZonedDateTime receivedAt )
-    {
-        super( dataGroupId, receivedAt );
-    }
-
-    @JsonIgnore
-    @Override
-    public UuidDataGroupId getDataGroupId()
-    {
-        return super.getDataGroupId();
-    }
-
-    @JsonProperty
-    public UUID getRemoteSubscriptionResourceId()
-    {
-        return (getDataGroupId() == null) ? null : getDataGroupId().getId();
-    }
-
-    public void setRemoteSubscriptionResourceId( UUID remoteSubscriptionResourceId )
-    {
-        setDataGroupId( (remoteSubscriptionResourceId == null) ? null :
-            new UuidDataGroupId( remoteSubscriptionResourceId ) );
-    }
 }

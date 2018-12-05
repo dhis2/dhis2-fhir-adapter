@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.model;
+package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,72 +28,49 @@ package org.dhis2.fhir.adapter.dhis.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.QueuedItemId;
+
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import java.io.Serializable;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
- * The unique ID of a a pending request for DHIS2 sync group processing.
+ * The item retriever that polls DHIS2 resources. All relevant resources are
+ * processed during a poll.
  *
  * @author volsch
  */
-@Embeddable
-public class QueuedDhisSyncRequestId extends QueuedItemId<DhisSyncGroup> implements Serializable
+@Component
+public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetriever<DhisSyncGroup>
 {
-    private static final long serialVersionUID = -4642534319215405587L;
+    private final SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever;
 
-    private DhisSyncGroup group;
+    private final TrackedEntityService trackedEntityService;
 
-    public QueuedDhisSyncRequestId()
+    private final DhisSyncProcessorConfig processorConfig;
+
+    public DhisDataProcessorItemRetrieverImpl(
+        @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
+        @Nonnull TrackedEntityService trackedEntityService,
+        @Nonnull DhisSyncProcessorConfig processorConfig )
     {
-        super();
+        this.excludedDhisUsernameRetriever = excludedDhisUsernameRetriever;
+        this.trackedEntityService = trackedEntityService;
+        this.processorConfig = processorConfig;
     }
 
-    public QueuedDhisSyncRequestId( @Nonnull DhisSyncGroup group )
-    {
-        this.group = group;
-    }
-
-    @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "id" )
+    @Nonnull
     @Override
-    public DhisSyncGroup getGroup()
+    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        return group;
-    }
-
-    @Override
-    public void setGroup( DhisSyncGroup group )
-    {
-        this.group = group;
-    }
-
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        QueuedDhisSyncRequestId that = (QueuedDhisSyncRequestId) o;
-        return Objects.equals( (group == null) ? null : group.getId(),
-            (that.group == null) ? null : that.group.getId() );
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash( (group == null) ? null : group.getId() );
-    }
-
-    @Override
-    public String toString()
-    {
-        return "[DHIS2 Sync Group ID " + ((group == null) ? "?" : group.getId()) + "]";
+        return trackedEntityService.poll( group, lastUpdated, maxSearchCount, processorConfig.getToleranceMillis(),
+            excludedDhisUsernameRetriever.findAllDhisUsernames(), consumer );
     }
 }

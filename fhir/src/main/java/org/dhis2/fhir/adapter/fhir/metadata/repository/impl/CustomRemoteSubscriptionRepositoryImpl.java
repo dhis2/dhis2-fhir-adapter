@@ -132,9 +132,8 @@ public class CustomRemoteSubscriptionRepositoryImpl implements CustomRemoteSubsc
                         rsr.setDescription( "Automatically created subscription for FHIR Resource " + resourceType.getResourceTypeName() + "." );
                         remoteSubscription.getResources().add( rsr );
 
-                        final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
+                        final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate( Instant.now() );
                         resourceUpdate.setGroup( rsr );
-                        resourceUpdate.setLastUpdated( Instant.now() );
                         rsr.setResourceUpdate( resourceUpdate );
 
                         autoCreatedRemoteSubscriptionResources.add( rsr );

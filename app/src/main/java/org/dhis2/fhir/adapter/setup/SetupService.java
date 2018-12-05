@@ -55,7 +55,8 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
+import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.springframework.data.domain.Example;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -124,7 +125,7 @@ public class SetupService
     public boolean hasCompletedSetup()
     {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
+        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
             return (remoteSubscriptionRepository.count() > 0);
@@ -226,7 +227,7 @@ public class SetupService
 
         remoteSubscriptionRepository.saveAndFlush( remoteSubscription );
         return new SetupResult( remoteSubscription.getId(), remoteSubscription.getResources().stream()
-            .collect( Collectors.toMap( RemoteSubscriptionResource::getFhirResourceType, rsr -> rsr.getId() ) ) );
+            .collect( Collectors.toMap( RemoteSubscriptionResource::getFhirResourceType, VersionedBaseMetadata::getId ) ) );
     }
 
     private void createSystemCodes( @Nonnull OrganizationCodeSetup setup, @Nonnull System organizationSystem )

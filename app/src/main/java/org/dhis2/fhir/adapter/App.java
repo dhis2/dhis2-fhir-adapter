@@ -39,6 +39,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
 
@@ -51,6 +52,7 @@ import java.io.File;
 @EnableCircuitBreaker
 @EnableCaching
 @EnableJms
+@EnableScheduling
 @PropertySource( value = { "classpath:default-application.yml", "file:///${dhis2.home}/services/fhir-adapter/application.yml" }, factory = YamlPropertySourceFactory.class )
 public class App extends SpringBootServletInitializer
 {

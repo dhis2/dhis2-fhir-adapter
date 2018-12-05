@@ -61,9 +61,8 @@ public class RemoteSubscriptionResourceEventListener extends AbstractRepositoryE
     @Override
     protected void onBeforeCreate( RemoteSubscriptionResource entity )
     {
-        final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate();
+        final RemoteSubscriptionResourceUpdate resourceUpdate = new RemoteSubscriptionResourceUpdate( Instant.now() );
         resourceUpdate.setGroup( entity );
-        resourceUpdate.setLastUpdated( Instant.now() );
         entity.setResourceUpdate( resourceUpdate );
 
         // must not be set externally

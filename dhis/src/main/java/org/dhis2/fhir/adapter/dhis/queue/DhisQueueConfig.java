@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.queue;
+package org.dhis2.fhir.adapter.dhis.queue;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -30,8 +30,7 @@ package org.dhis2.fhir.adapter.fhir.queue;
 
 import org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationImpl;
-import org.dhis2.fhir.adapter.fhir.remote.impl.RemoteConfig;
-import org.dhis2.fhir.adapter.fhir.repository.impl.RepositoryConfig;
+import org.dhis2.fhir.adapter.dhis.sync.impl.DhisSyncConfig;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,16 +48,13 @@ import javax.jms.ConnectionFactory;
  */
 @Configuration
 @Validated
-public class FhirQueueConfig
+public class DhisQueueConfig
 {
-    private final RemoteConfig remoteConfig;
+    private final DhisSyncConfig syncConfig;
 
-    private final RepositoryConfig repositoryConfig;
-
-    public FhirQueueConfig( @Nonnull RemoteConfig remoteConfig, @Nonnull RepositoryConfig repositoryConfig )
+    public DhisQueueConfig( @Nonnull DhisSyncConfig syncConfig )
     {
-        this.remoteConfig = remoteConfig;
-        this.repositoryConfig = repositoryConfig;
+        this.syncConfig = syncConfig;
     }
 
     @Bean
@@ -66,58 +62,58 @@ public class FhirQueueConfig
     protected ArtemisConfigurationCustomizer artemisConfigurationCustomizer()
     {
         return configuration -> {
-            configuration.addAddressesSetting( remoteConfig.getWebHookRequestQueue().getQueueName(), remoteConfig.getWebHookRequestQueue().getEmbeddedAddressSettings() );
-            configuration.addAddressesSetting( repositoryConfig.getFhirResourceQueue().getQueueName(), repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings() );
-            configuration.addAddressesSetting( repositoryConfig.getFhirResourceDlQueue().getQueueName(), repositoryConfig.getFhirResourceDlQueue().getEmbeddedAddressSettings() );
+            configuration.addAddressesSetting( syncConfig.getSyncRequestQueue().getQueueName(), syncConfig.getSyncRequestQueue().getEmbeddedAddressSettings() );
+            configuration.addAddressesSetting( syncConfig.getDhisResourceQueue().getQueueName(), syncConfig.getDhisResourceQueue().getEmbeddedAddressSettings() );
+            configuration.addAddressesSetting( syncConfig.getDhisResourceDlQueue().getQueueName(), syncConfig.getDhisResourceDlQueue().getEmbeddedAddressSettings() );
         };
     }
 
     @Bean
     @Nonnull
-    protected JMSQueueConfiguration webHookRequestQueueConfiguration()
+    protected JMSQueueConfiguration syncRequestQueueConfiguration()
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
-        queueConfiguration.setName( remoteConfig.getWebHookRequestQueue().getQueueName() );
+        queueConfiguration.setName( syncConfig.getSyncRequestQueue().getQueueName() );
         queueConfiguration.setDurable( true );
         return queueConfiguration;
     }
 
     @Bean
     @Nonnull
-    protected JMSQueueConfiguration fhirResourceQueueConfiguration()
+    protected JMSQueueConfiguration dhisResourceQueueConfiguration()
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
-        queueConfiguration.setName( repositoryConfig.getFhirResourceQueue().getQueueName() );
+        queueConfiguration.setName( syncConfig.getDhisResourceQueue().getQueueName() );
         queueConfiguration.setDurable( true );
         return queueConfiguration;
     }
 
     @Bean
     @Nonnull
-    protected JMSQueueConfiguration fhirResourceDlQueueConfiguration()
+    protected JMSQueueConfiguration dhisResourceDlQueueConfiguration()
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
-        queueConfiguration.setName( repositoryConfig.getFhirResourceDlQueue().getQueueName() );
+        queueConfiguration.setName( syncConfig.getDhisResourceDlQueue().getQueueName() );
         queueConfiguration.setDurable( true );
         return queueConfiguration;
     }
 
     @Bean
     @Nonnull
-    protected JmsTemplate fhirRestHookRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
+    protected JmsTemplate dhisSyncRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
     {
         final JmsTemplate jmsTemplate = new JmsTemplate( connectionFactory );
-        jmsTemplate.setDefaultDestinationName( remoteConfig.getWebHookRequestQueue().getQueueName() );
+        jmsTemplate.setDefaultDestinationName( syncConfig.getSyncRequestQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
     }
 
     @Bean
     @Nonnull
-    protected JmsTemplate fhirResourceQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
+    protected JmsTemplate dhisResourceQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
     {
         final JmsTemplate jmsTemplate = new JmsTemplate( connectionFactory );
-        jmsTemplate.setDefaultDestinationName( repositoryConfig.getFhirResourceQueue().getQueueName() );
+        jmsTemplate.setDefaultDestinationName( syncConfig.getDhisResourceQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
     }

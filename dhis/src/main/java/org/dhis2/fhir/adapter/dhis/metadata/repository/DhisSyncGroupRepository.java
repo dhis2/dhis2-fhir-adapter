@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.dhis.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,8 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -38,59 +37,46 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 /**
- * Repository for {@link RemoteSubscription} entities.
+ * Repository for {@link org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup} entities.
  *
  * @author volsch
  */
-@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "remoteSubscription" )
-@RepositoryRestResource
-@PreAuthorize( "hasRole('ADMINISTRATION')" )
-public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscription, UUID>, QuerydslPredicateExecutor<RemoteSubscription>, CustomRemoteSubscriptionRepository, SyncExcludedDhisUsernameRetriever
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "dhisSyncGroup" )
+public interface DhisSyncGroupRepository extends JpaRepository<DhisSyncGroup, UUID>, QuerydslPredicateExecutor<DhisSyncGroup>, CustomDhisSyncGroupUpdateRepository
 {
-    @RestResource( exported = false )
+    @Query( "SELECT g FROM #{#entityName} g WHERE g.id=:id" )
     @Nonnull
-    @Query( "SELECT rs FROM #{#entityName} rs WHERE rs.id=:id" )
-    @Cacheable( key = "#a0" )
-    Optional<RemoteSubscription> findOneByIdCached( @Param( "id" ) UUID id );
-
-    @RestResource( exported = false )
-    @Nonnull
-    @Query( "SELECT DISTINCT rs.dhisEndpoint.username FROM #{#entityName} rs" )
-    @Cacheable( key = "{#root.methodName}" )
-    Set<String> findAllDhisUsernames();
+    @Cacheable( key = "{#a0}" )
+    Optional<DhisSyncGroup> findByIdCached( @Param( "id" ) @Nonnull UUID id );
 
     @Override
+    @Nonnull
+    @CacheEvict( allEntries = true )
+    <S extends DhisSyncGroup> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
     @CachePut( key = "#a0.id" )
-    @Nonnull
-    <S extends RemoteSubscription> S saveAndFlush( @Nonnull S entity );
+    <S extends DhisSyncGroup> S saveAndFlush( @Nonnull S entity );
 
     @Override
+    @Nonnull
     @CachePut( key = "#a0.id" )
-    @Nonnull
-    <S extends RemoteSubscription> S save( @Nonnull S entity );
+    <S extends DhisSyncGroup> S save( @Nonnull S entity );
 
     @Override
-    @Nonnull
-    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
-    <S extends RemoteSubscription> List<S> saveAll( @Nonnull Iterable<S> entities );
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<DhisSyncGroup> entities );
 
     @Override
-    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
-    void deleteInBatch( @Nonnull Iterable<RemoteSubscription> entities );
-
-    @Override
-    @CacheEvict( allEntries = true, cacheNames = { "remoteSubscription", "remoteSubscriptionResource" } )
+    @CacheEvict( allEntries = true )
     void deleteAllInBatch();
 
     @Override
@@ -99,11 +85,11 @@ public interface RemoteSubscriptionRepository extends JpaRepository<RemoteSubscr
 
     @Override
     @CacheEvict( key = "#a0.id" )
-    void delete( @Nonnull RemoteSubscription entity );
+    void delete( @Nonnull DhisSyncGroup entity );
 
     @Override
     @CacheEvict( allEntries = true )
-    void deleteAll( @Nonnull Iterable<? extends RemoteSubscription> entities );
+    void deleteAll( @Nonnull Iterable<? extends DhisSyncGroup> entities );
 
     @Override
     @CacheEvict( allEntries = true )

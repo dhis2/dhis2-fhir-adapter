@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
-import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.lock.impl.EmbeddedLockManagerImpl;
 import org.dhis2.fhir.adapter.script.ScriptCompiler;
@@ -197,7 +197,7 @@ public class TestConfiguration
         setup.getTrackedEntitySetup().getLastName().setReferenceValue( "Last Name" );
 
         final SetupResult setupResult;
-        SecurityContextHolder.getContext().setAuthentication( new SystemAuthenticationToken() );
+        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );

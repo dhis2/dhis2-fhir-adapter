@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
 
+import javax.annotation.Nonnull;
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -39,6 +40,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -56,6 +58,16 @@ public class RemoteSubscriptionResourceUpdate extends DataGroupUpdate<RemoteSubs
     private UUID id;
 
     private RemoteSubscriptionResource group;
+
+    public RemoteSubscriptionResourceUpdate()
+    {
+        super();
+    }
+
+    public RemoteSubscriptionResourceUpdate( @Nonnull Instant lastUpdated )
+    {
+        super( lastUpdated );
+    }
 
     @Id
     public UUID getId()

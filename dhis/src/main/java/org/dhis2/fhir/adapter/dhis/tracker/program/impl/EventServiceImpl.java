@@ -32,7 +32,6 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
-import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -117,12 +116,9 @@ public class EventServiceImpl implements EventService
             throw e;
         }
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
-        if ( (result.getStatus() != Status.OK) ||
-            (result.getResponse().getImportSummaries().size() != 1) ||
-            (result.getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
-            (result.getResponse().getImportSummaries().get( 0 ).getReference() == null) )
+        if ( result.isNotSuccessful() )
         {
-            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import." );
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful event import." );
         }
         event.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
         return event;

@@ -49,14 +49,13 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourc
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessor;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.security.SystemAuthenticationToken;
+import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
@@ -98,10 +97,11 @@ public class RemoteRestHookProcessorImpl extends
         @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull RemoteProcessorConfig processorConfig,
+        @Nonnull SystemAuthenticationToken systemAuthenticationToken,
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager );
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
         this.processorConfig = processorConfig;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
 
@@ -187,12 +187,5 @@ public class RemoteRestHookProcessorImpl extends
     protected DataItemQueueItem<UuidDataGroupId> createDataItemQueueItem( @Nonnull RemoteSubscriptionResource group, @Nonnull ProcessedItemInfo processedItemInfo )
     {
         return new RemoteFhirResource( group.getGroupId(), processedItemInfo );
-    }
-
-    @Nonnull
-    @Override
-    protected Authentication createAuthentication()
-    {
-        return new SystemAuthenticationToken();
     }
 }

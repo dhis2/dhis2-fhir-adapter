@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.metadata;
+package org.dhis2.fhir.adapter.dhis.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,11 +28,15 @@ package org.dhis2.fhir.adapter.dhis.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
+import org.dhis2.fhir.adapter.data.repository.DataGroupUpdateRepository;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+
 /**
- * Marker interface that is used to reference package as base package.
+ * Custom repository for {@link org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroupUpdate}.
  *
  * @author volsch
  */
-public interface MetadataBasePackage
+public interface CustomDhisSyncGroupUpdateRepository extends DataGroupUpdateRepository<DataGroupUpdate<DhisSyncGroup>, DhisSyncGroup>
 {
 }

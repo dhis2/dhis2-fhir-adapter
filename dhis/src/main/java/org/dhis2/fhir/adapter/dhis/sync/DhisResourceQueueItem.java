@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.model;
+package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,72 +28,57 @@ package org.dhis2.fhir.adapter.dhis.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.QueuedItemId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
 
 import javax.annotation.Nonnull;
-import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.UUID;
 
 /**
- * The unique ID of a a pending request for DHIS2 sync group processing.
+ * Processing request for a DHIS2 resource synchronization that is enqueued and dequeued.
+ * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
  *
  * @author volsch
  */
-@Embeddable
-public class QueuedDhisSyncRequestId extends QueuedItemId<DhisSyncGroup> implements Serializable
+public class DhisResourceQueueItem extends DataItemQueueItem<UuidDataGroupId> implements Serializable
 {
-    private static final long serialVersionUID = -4642534319215405587L;
+    private static final long serialVersionUID = 1642564911249098319L;
 
-    private DhisSyncGroup group;
-
-    public QueuedDhisSyncRequestId()
+    public DhisResourceQueueItem()
     {
         super();
     }
 
-    public QueuedDhisSyncRequestId( @Nonnull DhisSyncGroup group )
+    public DhisResourceQueueItem( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ProcessedItemInfo processedItemInfo )
     {
-        this.group = group;
+        super( dataGroupId, processedItemInfo );
     }
 
-    @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "id" )
+    @JsonIgnore
     @Override
-    public DhisSyncGroup getGroup()
+    public UuidDataGroupId getDataGroupId()
     {
-        return group;
-    }
-
-    @Override
-    public void setGroup( DhisSyncGroup group )
-    {
-        this.group = group;
+        return super.getDataGroupId();
     }
 
     @Override
-    public boolean equals( Object o )
+    public void setDataGroupId( UuidDataGroupId dataGroupId )
     {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        QueuedDhisSyncRequestId that = (QueuedDhisSyncRequestId) o;
-        return Objects.equals( (group == null) ? null : group.getId(),
-            (that.group == null) ? null : that.group.getId() );
+        super.setDataGroupId( dataGroupId );
     }
 
-    @Override
-    public int hashCode()
+    @JsonProperty
+    public UUID getRemoteSubscriptionResourceId()
     {
-        return Objects.hash( (group == null) ? null : group.getId() );
+        return (getDataGroupId() == null) ? null : getDataGroupId().getId();
     }
 
-    @Override
-    public String toString()
+    public void setRemoteSubscriptionResourceId( UUID remoteSubscriptionResourceId )
     {
-        return "[DHIS2 Sync Group ID " + ((group == null) ? "?" : group.getId()) + "]";
+        super.setDataGroupId( (remoteSubscriptionResourceId == null) ? null : new UuidDataGroupId( remoteSubscriptionResourceId ) );
     }
 }

@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionR
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
+import java.time.Instant;
 
 /**
  * Implementation of {@link CustomRemoteSubscriptionResourceUpdateRepository}.
@@ -49,7 +50,9 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends Abstra
     }
 
 
-    @Nonnull @Override protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
+    @Nonnull
+    @Override
+    protected Class<RemoteSubscriptionResourceUpdate> getUpdateClass()
     {
         return RemoteSubscriptionResourceUpdate.class;
     }
@@ -58,6 +61,6 @@ public class CustomRemoteSubscriptionResourceUpdateRepositoryImpl extends Abstra
     @Override
     protected RemoteSubscriptionResourceUpdate createUpdate()
     {
-        return new RemoteSubscriptionResourceUpdate();
+        return new RemoteSubscriptionResourceUpdate( Instant.now() );
     }
 }

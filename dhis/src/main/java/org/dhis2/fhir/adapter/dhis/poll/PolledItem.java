@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.security;
+package org.dhis2.fhir.adapter.dhis.poll;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,30 +28,75 @@ package org.dhis2.fhir.adapter.fhir.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
 
 /**
- * Authentication token that is used internally. The token grants all authorities.
+ * Item that is polled from DHIS2. It contains the ID of the item, the last updated
+ * timestamp and the user that has updated the item last time.
+ *
+ * @author volsch
  */
-public class SystemAuthenticationToken extends AbstractAuthenticationToken
+public class PolledItem implements Serializable
 {
-    private static final long serialVersionUID = -9193903077155576601L;
+    private static final long serialVersionUID = 5775458316433704977L;
 
-    public SystemAuthenticationToken()
+    private String id;
+
+    private Instant lastUpdated;
+
+    private String storedBy;
+
+    @JsonProperty
+    public String getId()
     {
-        super( AdapterAuthorities.ALL_AUTHORITIES );
-        setAuthenticated( true );
+        return id;
+    }
+
+    public void setId( String id )
+    {
+        this.id = id;
+    }
+
+    @JsonProperty
+    public Instant getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( Instant lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
+    }
+
+    public String getStoredBy()
+    {
+        return storedBy;
+    }
+
+    @JsonProperty
+    public void setStoredBy( String storedBy )
+    {
+        this.storedBy = storedBy;
     }
 
     @Override
-    public Object getPrincipal()
+    public boolean equals( Object o )
     {
-        return "$system$";
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        PolledItem that = (PolledItem) o;
+        return Objects.equals( getId(), that.getId() ) &&
+            Objects.equals( getLastUpdated(), that.getLastUpdated() ) &&
+            Objects.equals( getStoredBy(), that.getStoredBy() );
     }
 
     @Override
-    public Object getCredentials()
+    public int hashCode()
     {
-        return "$system$";
+        return Objects.hash( getId(), getLastUpdated(), getStoredBy() );
     }
 }

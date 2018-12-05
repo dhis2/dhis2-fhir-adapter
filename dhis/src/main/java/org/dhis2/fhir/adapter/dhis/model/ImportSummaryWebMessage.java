@@ -49,4 +49,12 @@ public class ImportSummaryWebMessage extends WebMessage
     {
         this.response = response;
     }
+
+    public boolean isNotSuccessful()
+    {
+        return (getStatus() != Status.OK) ||
+            (getResponse().getImportSummaries().size() != 1) ||
+            (getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
+            (getResponse().getImportSummaries().get( 0 ).getReference() == null);
+    }
 }

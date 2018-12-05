@@ -56,6 +56,11 @@ public abstract class DataGroupUpdate<G extends DataGroup> implements Serializab
         super();
     }
 
+    public DataGroupUpdate( @Nonnull Instant lastUpdated )
+    {
+        this( lastUpdated, lastUpdated );
+    }
+
     public DataGroupUpdate( @Nonnull Instant lastRequested, @Nonnull Instant lastUpdated )
     {
         this.lastRequested = lastRequested;
