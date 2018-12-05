@@ -47,6 +47,8 @@ public abstract class DataGroupUpdate<G extends DataGroup> implements Serializab
 {
     private static final long serialVersionUID = -2051276256396499975L;
 
+    private Instant lastRequested;
+
     private Instant lastUpdated;
 
     public DataGroupUpdate()
@@ -54,8 +56,9 @@ public abstract class DataGroupUpdate<G extends DataGroup> implements Serializab
         super();
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastUpdated )
+    public DataGroupUpdate( @Nonnull Instant lastRequested, @Nonnull Instant lastUpdated )
     {
+        this.lastRequested = lastRequested;
         this.lastUpdated = lastUpdated;
     }
 
@@ -63,6 +66,18 @@ public abstract class DataGroupUpdate<G extends DataGroup> implements Serializab
     public abstract G getGroup();
 
     public abstract void setGroup( G group );
+
+    @Basic
+    @Column( name = "last_requested", nullable = false )
+    public Instant getLastRequested()
+    {
+        return lastRequested;
+    }
+
+    public void setLastRequested( Instant lastRequested )
+    {
+        this.lastRequested = lastRequested;
+    }
 
     @Basic
     @Column( name = "last_updated", nullable = false )

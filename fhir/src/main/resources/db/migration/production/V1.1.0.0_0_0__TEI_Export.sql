@@ -31,6 +31,10 @@ ALTER TABLE fhir_queued_remote_subscription_request
 ALTER TABLE fhir_queued_remote_resource
   DROP COLUMN IF EXISTS request_id;
 
+ALTER TABLE fhir_remote_subscription_resource_update
+  ADD COLUMN last_requested TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC');
+COMMENT ON COLUMN fhir_remote_subscription_resource_update.last_requested IS 'Contains the timestamp when the update has been requested last time. This timestamp is not used for remote FHIR resources.';
+
 CREATE TABLE fhir_dhis_sync_group (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
   version         BIGINT                         NOT NULL,
@@ -47,12 +51,14 @@ COMMENT ON COLUMN fhir_dhis_sync_group.last_updated_by IS 'The ID of the user th
 COMMENT ON COLUMN fhir_dhis_sync_group.last_updated_at IS 'The timestamp when the entity has been updated the last time. When changing the entity this value must be updated to the current timestamp.';
 
 CREATE TABLE fhir_dhis_sync_group_update (
-  id           UUID                           NOT NULL,
-  last_updated TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  id             UUID                           NOT NULL,
+  last_requested TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  last_updated   TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
   CONSTRAINT fhir_dhis_sync_group_update_pk PRIMARY KEY (id),
   CONSTRAINT fhir_dhis_sync_group_update_fk1 FOREIGN KEY (id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
 );
 COMMENT ON TABLE fhir_dhis_sync_group_update IS 'Contains the timestamp that includes when the DHIS2 synchronization group has been updated last time.';
+COMMENT ON COLUMN fhir_dhis_sync_group_update.last_requested IS 'Contains the timestamp when the update has been requested last time.';
 COMMENT ON COLUMN fhir_dhis_sync_group_update.last_updated IS 'The timestamp of the last begin of fetching data from the dhis FHIR Service for the subscribed resource.';
 
 INSERT INTO fhir_dhis_sync_group(id, version)
