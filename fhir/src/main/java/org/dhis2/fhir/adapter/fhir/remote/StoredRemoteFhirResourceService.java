@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.fhir.remote;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,16 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.data.processor.StoredItemService;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Stored item service for {@link StoredRemoteFhirResource}s.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public interface StoredRemoteFhirResourceService extends StoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource>
 {
 }

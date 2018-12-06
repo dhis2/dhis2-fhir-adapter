@@ -64,5 +64,6 @@ public interface TrackedEntityService
     TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
 
     @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, int toleranceMillis, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
+        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

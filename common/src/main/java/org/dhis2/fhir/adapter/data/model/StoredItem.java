@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.sync;
+package org.dhis2.fhir.adapter.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,51 @@ package org.dhis2.fhir.adapter.dhis.sync;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
-import org.dhis2.fhir.adapter.data.processor.impl.DataGroupQueueItem;
-
 import javax.annotation.Nonnull;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 /**
- * Remote web hook request that will be enqueued and dequeued in a message queue as JSON.
- * The class must support the initial legacy serialized format.
- * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
+ * Contains the reference of an item that has already been stored recently by the adapter and
+ * must not be processed again currently. This must avoid endless synchronization loops.
  *
+ * @param <I> the ID class of the stored items.
+ * @param <G> the concrete type of the group of the ID.
  * @author volsch
  */
-public class DhisSyncRequestQueueItem extends DataGroupQueueItem<UuidDataGroupId> implements Serializable
+@MappedSuperclass
+public abstract class StoredItem<I extends StoredItemId<G>, G extends DataGroup> implements Serializable
 {
-    private static final long serialVersionUID = -7911324825049826913L;
+    private static final long serialVersionUID = -2744716962486660280L;
 
-    private ZonedDateTime receivedAt;
+    private Instant storedAt;
 
-    public DhisSyncRequestQueueItem()
+    public StoredItem()
     {
         super();
     }
 
-    public DhisSyncRequestQueueItem( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ZonedDateTime receivedAt )
+    public StoredItem( @Nonnull Instant storedAt )
     {
-        super( dataGroupId, receivedAt );
+        this.storedAt = storedAt;
+    }
+
+    @Transient
+    public abstract I getId();
+
+    public abstract void setId( I id );
+
+    @Column( name = "stored_at", nullable = false )
+    public Instant getStoredAt()
+    {
+        return storedAt;
+    }
+
+    public void setStoredAt( Instant storedAt )
+    {
+        this.storedAt = storedAt;
     }
 }

@@ -77,7 +77,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE&filter=Ewi7FUfcHAD:EQ:PT_88589&pageSize=2&fields=" +
             "trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
@@ -92,7 +96,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.PUT ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-update.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-15.json", StandardCharsets.UTF_8 ),
@@ -128,7 +136,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2xl4mZfx.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE&filter=Ewi7FUfcHAD:EQ:PT_88588&pageSize=2&fields=" +
             "trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
@@ -143,7 +155,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.PUT ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-update.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2xl4mZfx.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ).headers( createDefaultHeaders() ) );
 
         notifyResource( FhirResourceType.RELATED_PERSON,
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-related-person-20.json", StandardCharsets.UTF_8 ),
@@ -176,7 +192,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.PUT ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-17-update.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-17-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-17-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2xl4mZfz.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-17-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-17.json", StandardCharsets.UTF_8 ),
@@ -212,7 +232,11 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) ).andExpect( method( HttpMethod.PUT ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-18-update.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-18-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-18-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/keR2xl4mZfz.json?fields=lastUpdated" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-18-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-18.json", StandardCharsets.UTF_8 ),

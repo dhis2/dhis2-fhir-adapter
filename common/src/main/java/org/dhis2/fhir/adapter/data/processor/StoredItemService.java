@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.data.processor;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,31 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.StoredItem;
+import org.dhis2.fhir.adapter.data.model.StoredItemId;
+
+import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Manages already stored resources in order to avoid endless synchronizations.
  *
+ * @param <S> the concrete type of the stored item.
+ * @param <I> the concrete type of the ID of the stored item.
+ * @param <G> the concrete type of the group to which the stored item belongs to.
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public interface StoredItemService<S extends StoredItem<I, G>, I extends StoredItemId<G>, G extends DataGroup>
 {
+    boolean stored( @Nonnull G prefix, @Nonnull String storedId );
+
+    boolean contains( @Nonnull G prefix, @Nonnull String storedId );
+
+    @Nonnull
+    Set<String> findProcessedIds( @Nonnull G prefix, @Nonnull Collection<String> processedIds );
+
+    int deleteOldest( @Nonnull G prefix, @Nonnull Instant timestamp );
 }

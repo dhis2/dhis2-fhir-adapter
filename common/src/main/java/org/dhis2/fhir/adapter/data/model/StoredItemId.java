@@ -29,42 +29,37 @@ package org.dhis2.fhir.adapter.data.model;
  */
 
 import javax.annotation.Nonnull;
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 import java.io.Serializable;
-import java.time.Instant;
+import java.util.Objects;
 
 /**
- * Contains the update status of a data group.
+ * Contains the reference (as an ID) of an item that has already been
+ * stored recently and must not be processed again currently
+ * (e.g. avoid endless synchronizations). The included
+ * {@linkplain #getStoredId() stored ID}  must have the same format like
+ * the correponding {@linkplain ProcessedItemId processed item ID}.
  *
- * @param <G> the group to which the update data belongs to.
+ * @param <G> the concrete type of the group of the ID.
  * @author volsch
  */
 @MappedSuperclass
-public abstract class DataGroupUpdate<G extends DataGroup> implements Serializable
+public abstract class StoredItemId<G extends DataGroup> implements Serializable
 {
-    private static final long serialVersionUID = -2051276256396499975L;
+    private static final long serialVersionUID = -2744716962486660280L;
 
-    private Instant lastRequested;
+    private String storedId;
 
-    private Instant lastUpdated;
-
-    public DataGroupUpdate()
+    public StoredItemId()
     {
         super();
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastUpdated )
+    public StoredItemId( @Nonnull String storedId )
     {
-        this( lastUpdated, lastUpdated );
-    }
-
-    public DataGroupUpdate( @Nonnull Instant lastRequested, @Nonnull Instant lastUpdated )
-    {
-        this.lastRequested = lastRequested;
-        this.lastUpdated = lastUpdated;
+        this.storedId = storedId;
     }
 
     @Transient
@@ -72,27 +67,29 @@ public abstract class DataGroupUpdate<G extends DataGroup> implements Serializab
 
     public abstract void setGroup( G group );
 
-    @Basic
-    @Column( name = "last_requested", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastRequested()
+    @Column( name = "stored_id", nullable = false )
+    public String getStoredId()
     {
-        return lastRequested;
+        return storedId;
     }
 
-    public void setLastRequested( Instant lastRequested )
+    public void setStoredId( String storedId )
     {
-        this.lastRequested = lastRequested;
+        this.storedId = storedId;
     }
 
-    @Basic
-    @Column( name = "last_updated", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastUpdated()
+    @Override
+    public boolean equals( Object o )
     {
-        return lastUpdated;
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        StoredItemId that = (StoredItemId) o;
+        return Objects.equals( storedId, that.storedId );
     }
 
-    public void setLastUpdated( Instant remoteLastUpdate )
+    @Override
+    public int hashCode()
     {
-        this.lastUpdated = remoteLastUpdate;
+        return Objects.hash( storedId );
     }
 }

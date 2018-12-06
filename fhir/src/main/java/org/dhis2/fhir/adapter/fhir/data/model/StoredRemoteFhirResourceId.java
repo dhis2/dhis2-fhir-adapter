@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.poll;
+package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,59 +28,52 @@ package org.dhis2.fhir.adapter.dhis.poll;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.data.model.StoredItemId;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 
+import javax.annotation.Nonnull;
+import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Item that is polled from DHIS2. It contains the ID of the item, the last updated
- * timestamp and the user that has updated the item last time.
+ * The unique ID of a distinct version of a stored remote FHIR resource.
  *
  * @author volsch
  */
-public class PolledItem implements Serializable
+@Embeddable
+public class StoredRemoteFhirResourceId extends StoredItemId<RemoteSubscriptionResource> implements Serializable
 {
-    private static final long serialVersionUID = 5775458316433704977L;
+    private static final long serialVersionUID = 143055103713986347L;
 
-    private String id;
+    private RemoteSubscriptionResource group;
 
-    private LocalDateTime lastUpdated;
-
-    private String storedBy;
-
-    @JsonProperty
-    public String getId()
+    public StoredRemoteFhirResourceId()
     {
-        return id;
+        super();
     }
 
-    public void setId( String id )
+    public StoredRemoteFhirResourceId( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String storedId )
     {
-        this.id = id;
+        super( storedId );
+        this.group = remoteSubscriptionResource;
     }
 
-    @JsonProperty
-    public LocalDateTime getLastUpdated()
+    @Override
+    @ManyToOne( optional = false, fetch = FetchType.LAZY )
+    @JoinColumn( name = "remote_subscription_resource_id" )
+    public RemoteSubscriptionResource getGroup()
     {
-        return lastUpdated;
+        return group;
     }
 
-    public void setLastUpdated( LocalDateTime lastUpdated )
+    @Override
+    public void setGroup( RemoteSubscriptionResource group )
     {
-        this.lastUpdated = lastUpdated;
-    }
-
-    public String getStoredBy()
-    {
-        return storedBy;
-    }
-
-    @JsonProperty
-    public void setStoredBy( String storedBy )
-    {
-        this.storedBy = storedBy;
+        this.group = group;
     }
 
     @Override
@@ -88,15 +81,21 @@ public class PolledItem implements Serializable
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
-        PolledItem that = (PolledItem) o;
-        return Objects.equals( getId(), that.getId() ) &&
-            Objects.equals( getLastUpdated(), that.getLastUpdated() ) &&
-            Objects.equals( getStoredBy(), that.getStoredBy() );
+        if ( !super.equals( o ) ) return false;
+        StoredRemoteFhirResourceId that = (StoredRemoteFhirResourceId) o;
+        return Objects.equals( ((group == null) ? 0 : group.getId()),
+            ((that.group == null) ? 0 : that.group.getId()) );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( getId(), getLastUpdated(), getStoredBy() );
+        return Objects.hash( super.hashCode(), (group == null ? 0 : group.getId()) );
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[Remote Subscription Resource ID " + ((group == null) ? "?" : group.getId()) + ", Stored ID " + getStoredId() + "]";
     }
 }

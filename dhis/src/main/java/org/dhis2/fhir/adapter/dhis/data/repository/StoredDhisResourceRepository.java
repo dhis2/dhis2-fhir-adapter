@@ -28,16 +28,16 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Repository for {@link StoredDhisResource}s.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public interface StoredDhisResourceRepository extends JpaRepository<StoredDhisResource, UUID>, CustomStoredDhisResourceRepository
 {
 }

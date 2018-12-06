@@ -466,3 +466,8 @@ VALUES ('52227dd9c79c478b92af9aa1f33c76fd', '4203754d21774a4486aa2de31ee4c8ee', 
 UPDATE fhir_system_code sc SET system_code_value = (SELECT system_uri FROM fhir_system s WHERE s.id=sc.system_id) || '|' || system_code;
 ALTER TABLE fhir_system_code ALTER COLUMN system_code_value SET NOT NULL;
 CREATE INDEX fhir_system_code_i3 ON fhir_system_code (system_code_value);
+
+INSERT INTO fhir_dhis_sync_group(id, version)
+VALUES ('22204dd405d94cdd96a8ed742087d469', 0);
+INSERT INTO fhir_dhis_sync_group_update(id)
+VALUES ('22204dd405d94cdd96a8ed742087d469');

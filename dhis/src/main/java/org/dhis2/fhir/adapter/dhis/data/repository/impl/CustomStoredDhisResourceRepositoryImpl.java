@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.data.model;
+package org.dhis2.fhir.adapter.dhis.data.repository.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,71 +28,43 @@ package org.dhis2.fhir.adapter.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.repository.impl.AbstractStoredItemRepositoryImpl;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResourceId;
+import org.dhis2.fhir.adapter.dhis.data.repository.CustomStoredDhisResourceRepository;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import javax.annotation.Nonnull;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
-import java.io.Serializable;
+import javax.persistence.EntityManager;
 import java.time.Instant;
 
 /**
- * Contains the update status of a data group.
+ * Implementation of {@link CustomStoredDhisResourceRepository}.
  *
- * @param <G> the group to which the update data belongs to.
  * @author volsch
  */
-@MappedSuperclass
-public abstract class DataGroupUpdate<G extends DataGroup> implements Serializable
+public class CustomStoredDhisResourceRepositoryImpl extends AbstractStoredItemRepositoryImpl<StoredDhisResource, StoredDhisResourceId, DhisSyncGroup> implements CustomStoredDhisResourceRepository
 {
-    private static final long serialVersionUID = -2051276256396499975L;
-
-    private Instant lastRequested;
-
-    private Instant lastUpdated;
-
-    public DataGroupUpdate()
+    public CustomStoredDhisResourceRepositoryImpl( @Nonnull EntityManager entityManager, @Nonnull PlatformTransactionManager platformTransactionManager,
+        @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
     {
-        super();
+        super( entityManager, platformTransactionManager, persistenceExceptionTranslator );
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastUpdated )
+    @Nonnull
+    @Override
+    protected Class<StoredDhisResource> getStoredItemClass()
     {
-        this( lastUpdated, lastUpdated );
+        return StoredDhisResource.class;
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastRequested, @Nonnull Instant lastUpdated )
+    @Nonnull
+    @Override
+    protected StoredDhisResource createStoredItem( @Nonnull DhisSyncGroup prefix, @Nonnull String storedId )
     {
-        this.lastRequested = lastRequested;
-        this.lastUpdated = lastUpdated;
-    }
-
-    @Transient
-    public abstract G getGroup();
-
-    public abstract void setGroup( G group );
-
-    @Basic
-    @Column( name = "last_requested", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastRequested()
-    {
-        return lastRequested;
-    }
-
-    public void setLastRequested( Instant lastRequested )
-    {
-        this.lastRequested = lastRequested;
-    }
-
-    @Basic
-    @Column( name = "last_updated", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastUpdated()
-    {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated( Instant remoteLastUpdate )
-    {
-        this.lastUpdated = remoteLastUpdate;
+        return new StoredDhisResource( new StoredDhisResourceId( prefix, storedId ), Instant.now() );
     }
 }

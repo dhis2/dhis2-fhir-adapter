@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.dhis;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,17 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Thrown if there is any issue with a DHIS2 resource.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public class DhisResourceException extends RuntimeException
 {
+    private static final long serialVersionUID = -3955154153002268489L;
+
+    public DhisResourceException( String message )
+    {
+        super( message );
+    }
 }

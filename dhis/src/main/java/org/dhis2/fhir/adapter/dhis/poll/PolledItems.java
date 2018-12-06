@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -62,14 +62,14 @@ public class PolledItems<I extends PolledItem> implements Serializable
 
     @JsonIgnore
     @Nullable
-    public Instant getFromLastUpdated()
+    public LocalDateTime getFromLastUpdated()
     {
         return (items == null) ? null : items.stream().map( PolledItem::getLastUpdated ).min( Comparator.naturalOrder() ).orElse( null );
     }
 
     @JsonIgnore
     @Nullable
-    public Instant getToLastUpdated()
+    public LocalDateTime getToLastUpdated()
     {
         return (items == null) ? null : items.stream().map( PolledItem::getLastUpdated ).max( Comparator.naturalOrder() ).orElse( null );
     }

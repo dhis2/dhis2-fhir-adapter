@@ -44,8 +44,10 @@ public class DhisSyncProcessorConfig implements Serializable
 {
     private static final long serialVersionUID = 5043058728246300723L;
 
-    @Min( -1 )
-    private int requestRateMillis = -1;
+    private boolean enabled;
+
+    @Min( 1 )
+    private int requestRateMillis = 60_000;
 
     @Min( 0 )
     private int toleranceMillis = 2_000;
@@ -56,9 +58,14 @@ public class DhisSyncProcessorConfig implements Serializable
     @Min( value = 1 )
     private int maxProcessedAgeMinutes = 2 * 24 * 60;
 
-    public long getResultingRequestRateMillis()
+    public boolean isEnabled()
     {
-        return (requestRateMillis > 0) ? requestRateMillis : Long.MAX_VALUE;
+        return enabled;
+    }
+
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
     }
 
     public int getRequestRateMillis()

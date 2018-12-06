@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,30 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Contains the last updated timestamp of a resource and is used for serialization.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public class DhisLastUpdated implements Serializable
 {
+    private static final long serialVersionUID = -5941141643584655773L;
+
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private ZonedDateTime lastUpdated;
+
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
+    }
 }

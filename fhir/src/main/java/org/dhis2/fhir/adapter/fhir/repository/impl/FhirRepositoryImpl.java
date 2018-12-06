@@ -421,9 +421,17 @@ public class FhirRepositoryImpl implements FhirRepository
     private DhisResource persistTrackedEntityOutcome( @Nonnull FhirToDhisTransformOutcome<TrackedEntityInstance> outcome )
     {
         final DhisResource dhisResource;
-        logger.debug( "Persisting tracked entity instance." );
-        dhisResource = trackedEntityService.createOrUpdate( outcome.getResource() );
-        logger.info( "Persisted tracked entity instance {}.", dhisResource.getId() );
+        if ( outcome.getResource().isNewResource() || outcome.getResource().isModified() )
+        {
+            logger.debug( "Persisting tracked entity instance." );
+            dhisResource = trackedEntityService.createOrUpdate( outcome.getResource() );
+            logger.info( "Persisted tracked entity instance {}.", dhisResource.getId() );
+        }
+        else
+        {
+            dhisResource = outcome.getResource();
+            logger.info( "Tracked entity instance {} has not been modified.", dhisResource.getId() );
+        }
         return dhisResource;
     }
 
@@ -465,9 +473,8 @@ public class FhirRepositoryImpl implements FhirRepository
             }
             if ( dhisResource == null )
             {
-                logger.debug( "Persisting event." );
-                dhisResource = eventService.createOrMinimalUpdate( event );
-                logger.info( "Persisted event {}.", dhisResource.getId() );
+                dhisResource = event;
+                logger.info( "Event {} has not been modified.", dhisResource.getId() );
             }
         }
         return dhisResource;

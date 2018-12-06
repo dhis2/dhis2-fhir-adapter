@@ -29,11 +29,15 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  */
 
 
+import org.dhis2.fhir.adapter.auth.Authorization;
+import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
+import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -52,15 +56,24 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
 {
     private final SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever;
 
+    private final AuthorizationContext authorizationContext;
+
+    private final Authorization systemDhis2Authorization;
+
     private final TrackedEntityService trackedEntityService;
 
     private final DhisSyncProcessorConfig processorConfig;
 
     public DhisDataProcessorItemRetrieverImpl(
+        @Nonnull AuthorizationContext authorizationContext,
+        @Nonnull @Qualifier( "systemDhis2Authorization" ) Authorization systemDhis2Authorization,
         @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
         @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull DhisSyncProcessorConfig processorConfig )
+        @Nonnull DhisSyncProcessorConfig processorConfig,
+        @Nonnull DhisConfig config )
     {
+        this.authorizationContext = authorizationContext;
+        this.systemDhis2Authorization = systemDhis2Authorization;
         this.excludedDhisUsernameRetriever = excludedDhisUsernameRetriever;
         this.trackedEntityService = trackedEntityService;
         this.processorConfig = processorConfig;
@@ -70,7 +83,15 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
     @Override
     public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        return trackedEntityService.poll( group, lastUpdated, maxSearchCount, processorConfig.getToleranceMillis(),
-            excludedDhisUsernameRetriever.findAllDhisUsernames(), consumer );
+        authorizationContext.setAuthorization( systemDhis2Authorization );
+        try
+        {
+            return trackedEntityService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
+                excludedDhisUsernameRetriever.findAllDhisUsernames(), consumer );
+        }
+        finally
+        {
+            authorizationContext.resetAuthorization();
+        }
     }
 }

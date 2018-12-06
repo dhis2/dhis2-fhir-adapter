@@ -90,6 +90,34 @@ COMMENT ON COLUMN fhir_processed_dhis_resource.dhis_sync_group_id IS 'References
 COMMENT ON COLUMN fhir_processed_dhis_resource.processed_id IS 'The unique string that identifies a distinct version of a DHIS2 resource.';
 COMMENT ON COLUMN fhir_processed_dhis_resource.processed_at IS 'Timestamp when the resource has been processed. Used for deleting the data after some hours mainly.';
 
+CREATE TABLE fhir_stored_dhis_resource (
+  dhis_sync_group_id UUID         NOT NULL,
+  stored_id          VARCHAR(120) NOT NULL,
+  stored_at          TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_stored_dhis_resource_pk PRIMARY KEY (dhis_sync_group_id, stored_id),
+  CONSTRAINT fhir_stored_dhis_resource_fk1 FOREIGN KEY (dhis_sync_group_id) REFERENCES fhir_dhis_sync_group (id) ON DELETE CASCADE
+);
+CREATE INDEX fhir_stored_dhis_resource_i1
+  ON fhir_stored_dhis_resource (dhis_sync_group_id, stored_at);
+COMMENT ON TABLE fhir_stored_dhis_resource IS 'Contains the versioned DHIS2 IDs that have been stored in the last few hours.';
+COMMENT ON COLUMN fhir_stored_dhis_resource.dhis_sync_group_id IS 'References the DHIS2 sync group to which the stored data belongs to.';
+COMMENT ON COLUMN fhir_stored_dhis_resource.stored_id IS 'The unique string that identifies a distinct version of a DHIS2 resource.';
+COMMENT ON COLUMN fhir_stored_dhis_resource.stored_at IS 'Timestamp when the resource has been stored. Used for deleting the data after some hours mainly.';
+
+CREATE TABLE fhir_stored_remote_resource (
+  remote_subscription_resource_id UUID         NOT NULL,
+  stored_id                       VARCHAR(120) NOT NULL,
+  stored_at                       TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_stored_remote_resource_pk PRIMARY KEY (remote_subscription_resource_id, stored_id),
+  CONSTRAINT fhir_stored_remote_resource_fk1 FOREIGN KEY (remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource (id) ON DELETE CASCADE
+);
+CREATE INDEX fhir_stored_remote_resource_i1
+  ON fhir_stored_remote_resource (remote_subscription_resource_id, stored_at);
+COMMENT ON TABLE fhir_stored_remote_resource IS 'Contains the versioned FHIR resource IDs that have been stored in the last few hours.';
+COMMENT ON COLUMN fhir_stored_remote_resource.remote_subscription_resource_id IS 'References the remote subscription resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_stored_remote_resource.stored_id IS 'The unique string that identifies a distinct version of a remote FHIR resource.';
+COMMENT ON COLUMN fhir_stored_remote_resource.stored_at IS 'Timestamp when the resource has been stored. Used for deleting the data after some hours mainly.';
+
 CREATE TABLE fhir_queued_dhis_resource (
   dhis_sync_group_id UUID                           NOT NULL,
   dhis_resource_id   VARCHAR(80)                    NOT NULL,

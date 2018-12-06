@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.data.model;
+package org.dhis2.fhir.adapter.data.processor.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,71 +28,56 @@ package org.dhis2.fhir.adapter.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.StoredItem;
+import org.dhis2.fhir.adapter.data.model.StoredItemId;
+import org.dhis2.fhir.adapter.data.processor.StoredItemService;
+import org.dhis2.fhir.adapter.data.repository.StoredItemRepository;
+
 import javax.annotation.Nonnull;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
-import java.io.Serializable;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
 
 /**
- * Contains the update status of a data group.
+ * Manages already stored resources in order to avoid endless synchronizations.
  *
- * @param <G> the group to which the update data belongs to.
+ * @param <S> the concrete type of the stored item.
+ * @param <I> the concrete type of the ID of the stored item.
+ * @param <G> the concrete type of the group to which the stored item belongs to.
  * @author volsch
  */
-@MappedSuperclass
-public abstract class DataGroupUpdate<G extends DataGroup> implements Serializable
+public abstract class AbstractStoredItemService<S extends StoredItem<I, G>, I extends StoredItemId<G>, G extends DataGroup> implements StoredItemService<S, I, G>
 {
-    private static final long serialVersionUID = -2051276256396499975L;
+    private final StoredItemRepository<S, I, G> repository;
 
-    private Instant lastRequested;
-
-    private Instant lastUpdated;
-
-    public DataGroupUpdate()
+    protected AbstractStoredItemService( @Nonnull StoredItemRepository<S, I, G> repository )
     {
-        super();
+        this.repository = repository;
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastUpdated )
+    @Override
+    public boolean stored( @Nonnull G prefix, @Nonnull String storedId )
     {
-        this( lastUpdated, lastUpdated );
+        return repository.stored( prefix, storedId );
     }
 
-    public DataGroupUpdate( @Nonnull Instant lastRequested, @Nonnull Instant lastUpdated )
+    @Override
+    public boolean contains( @Nonnull G prefix, @Nonnull String storedId )
     {
-        this.lastRequested = lastRequested;
-        this.lastUpdated = lastUpdated;
+        return repository.contains( prefix, storedId );
     }
 
-    @Transient
-    public abstract G getGroup();
-
-    public abstract void setGroup( G group );
-
-    @Basic
-    @Column( name = "last_requested", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastRequested()
+    @Nonnull
+    @Override
+    public Set<String> findProcessedIds( @Nonnull G prefix, @Nonnull Collection<String> processedIds )
     {
-        return lastRequested;
+        return repository.findProcessedIds( prefix, processedIds );
     }
 
-    public void setLastRequested( Instant lastRequested )
+    @Override
+    public int deleteOldest( @Nonnull G prefix, @Nonnull Instant timestamp )
     {
-        this.lastRequested = lastRequested;
-    }
-
-    @Basic
-    @Column( name = "last_updated", nullable = false, columnDefinition = "TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP() NOT NULL" )
-    public Instant getLastUpdated()
-    {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated( Instant remoteLastUpdate )
-    {
-        this.lastUpdated = remoteLastUpdate;
+        return repository.deleteOldest( prefix, timestamp );
     }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.fhir.remote.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,26 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.data.processor.impl.AbstractStoredItemService;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.repository.StoredRemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nonnull;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Stored item service for {@link StoredRemoteFhirResource}s.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+@Service
+public class StoredRemoteFhirResourceServiceImpl extends AbstractStoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource> implements StoredRemoteFhirResourceService
 {
+    public StoredRemoteFhirResourceServiceImpl( @Nonnull StoredRemoteFhirResourceRepository repository )
+    {
+        super( repository );
+    }
 }

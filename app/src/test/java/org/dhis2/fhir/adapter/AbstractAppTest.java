@@ -50,6 +50,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.core.JmsTemplate;
@@ -151,6 +152,14 @@ public abstract class AbstractAppTest
     private JmsTemplate fhirResourceQueueJmsTemplate;
 
     private long resourceDlQueueCount;
+
+    @Nonnull
+    protected HttpHeaders createDefaultHeaders()
+    {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setDate( System.currentTimeMillis() );
+        return headers;
+    }
 
     protected void notifyResource( @Nonnull FhirResourceType resourceType, @Nullable String resourceSearchResponse,
         @Nullable String resourceId, @Nullable String resourceResponse, boolean payload ) throws Exception

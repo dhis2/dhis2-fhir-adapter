@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.poll;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Lists;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.slf4j.Logger;
@@ -38,6 +39,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -73,6 +76,10 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
 
     private final Class<P> polledItemsClass;
 
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
+    private int maxConsumedSize = 1000;
+
     protected AbstractPolledItemRetriever( @Nonnull DhisResourceType resourceType, @Nonnull RestTemplate restTemplate, @Nonnull String queryUri, int toleranceMillis, int maxSearchCount, @Nonnull Class<P> polledItemsClass )
     {
         this.resourceType = resourceType;
@@ -81,6 +88,16 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         this.toleranceMillis = toleranceMillis;
         this.maxSearchCount = maxSearchCount;
         this.polledItemsClass = polledItemsClass;
+    }
+
+    public int getMaxConsumedSize()
+    {
+        return maxConsumedSize;
+    }
+
+    public void setMaxConsumedSize( int maxConsumedSize )
+    {
+        this.maxConsumedSize = maxConsumedSize;
     }
 
     @Nonnull
@@ -106,7 +123,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
             final P polledItems = getPolledItems( fromLastUpdated, currentToLastUpdated );
             final List<ProcessedItemInfo> resources =
                 polledItems.getItems().stream().filter( pi -> !excludedStoredBy.contains( pi.getStoredBy() ) )
-                    .map( pi -> new ProcessedItemInfo( resourceType.withId( pi.getId() ), pi.getLastUpdated() ) )
+                    .map( pi -> new ProcessedItemInfo( resourceType.withId( pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant() ) )
                     .collect( Collectors.toList() );
             resources.forEach( r -> {
                 if ( allResources.add( r ) )
@@ -119,7 +136,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
             moreAvailable = false;
             if ( !polledItems.getItems().isEmpty() )
             {
-                final Instant nextToLastUpdated = Objects.requireNonNull( polledItems.getFromLastUpdated() );
+                final Instant nextToLastUpdated = Objects.requireNonNull( polledItems.getFromLastUpdated() ).atZone( zoneId ).toInstant();
                 if ( (currentToLastUpdated != null) && !nextToLastUpdated.isBefore( currentToLastUpdated ) && hasMorePolledItems( fromLastUpdated, currentToLastUpdated ) )
                 {
                     throw new PolledItemRetrieverException( "DHIS2 resource " + resourceType + " returned minimum last updated timestamp that is not before current last updated timestamp (" +
@@ -138,7 +155,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         if ( !orderedAllResources.isEmpty() )
         {
             Collections.reverse( orderedAllResources );
-            consumer.accept( orderedAllResources );
+            Lists.partition( orderedAllResources, maxConsumedSize ).forEach( consumer );
         }
         return processedLastUpdated;
     }
@@ -162,10 +179,15 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         {
             queryParams.append( '?' );
         }
+        else
+        {
+            queryParams.append( '&' );
+        }
         queryParams.append( "lastUpdatedStartDate=" ).append( formatLastUpdated( fromLastUpdated ) );
         if ( currentToLastUpdated != null )
         {
-            queryParams.append( "&lastUpdatedEndDate=" ).append( formatLastUpdated( currentToLastUpdated ) );
+            queryParams.append( "&lastUpdatedEndDate=" )
+                .append( formatLastUpdated( currentToLastUpdated.plus( 1, ChronoUnit.MILLIS ) ) );
         }
         queryParams.append( "&pageSize=" ).append( maxSearchCount );
         queryParams.append( "&page=" ).append( page );
@@ -177,6 +199,6 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
     @Nonnull
     private String formatLastUpdated( @Nonnull Instant lastUpdated )
     {
-        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format( lastUpdated );
+        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format( LocalDateTime.ofInstant( lastUpdated, zoneId ) );
     }
 }

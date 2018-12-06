@@ -35,15 +35,21 @@ import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
+import org.dhis2.fhir.adapter.dhis.DhisResourceException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
+import org.dhis2.fhir.adapter.dhis.sync.DhisLastUpdated;
+import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -59,6 +65,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -68,9 +75,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link TrackedEntityService}.
+ *
+ * @author volsch
+ */
 @Service
 public class TrackedEntityServiceImpl implements TrackedEntityService
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     protected static final String TEI_FIELDS =
         "trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
             "attributes[attribute,value,lastUpdated,storedBy]";
@@ -80,6 +94,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String ID_URI = "/trackedEntityInstances/{id}.json?fields=" + TEI_FIELDS;
+
+    protected static final String LAST_UPDATED_URI = "/trackedEntityInstances/{id}.json?fields=lastUpdated";
 
     protected static final String UPDATE_URI = "/trackedEntityInstances/{id}.json?mergeMode=MERGE";
 
@@ -93,11 +109,16 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     private final TrackedEntityMetadataService metadataService;
 
+    private final StoredDhisResourceService storedItemService;
+
+    private final Instant epochStartInstant = Instant.ofEpochMilli( 0 );
+
     @Autowired
-    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull TrackedEntityMetadataService metadataService )
+    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull StoredDhisResourceService storedItemService )
     {
         this.restTemplate = restTemplate;
         this.metadataService = metadataService;
+        this.storedItemService = storedItemService;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
@@ -183,9 +204,9 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     @Nonnull
     @Override
-    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, int toleranceMillis, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis, int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        return new TrackedEntityPolledItemRetriever( restTemplate, maxSearchCount, toleranceMillis ).poll( lastUpdated, excludedStoredBy, consumer );
+        return new TrackedEntityPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount ).poll( lastUpdated, excludedStoredBy, consumer );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
@@ -199,6 +220,9 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Nonnull
     protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
+        final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
+            .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
+
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
         {
@@ -220,12 +244,17 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         }
         trackedEntityInstance.setNewResource( false );
         trackedEntityInstance.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
+
+        storeItem( syncGroup, trackedEntityInstance.getId(), response );
         return trackedEntityInstance;
     }
 
     @Nonnull
     protected TrackedEntityInstance update( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
+        final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
+            .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
+
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
         {
@@ -245,7 +274,58 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance: " + result.getStatus() );
         }
+
+        storeItem( syncGroup, trackedEntityInstance.getId(), response );
         return trackedEntityInstance;
+    }
+
+    protected void storeItem( @Nonnull DhisSyncGroup syncGroup, @Nonnull String id, @Nonnull ResponseEntity<?> responseEntity )
+    {
+        getProcessedItemInfo( id, responseEntity ).ifPresent( pii -> {
+            storedItemService.stored( syncGroup, pii.toIdString( epochStartInstant ) );
+        } );
+    }
+
+    @Nonnull
+    protected Optional<ProcessedItemInfo> getProcessedItemInfo( @Nonnull String id, @Nonnull ResponseEntity<?> responseEntity )
+    {
+        final DhisLastUpdated lastUpdated;
+        try
+        {
+            lastUpdated = Objects.requireNonNull( restTemplate.getForObject( LAST_UPDATED_URI, DhisLastUpdated.class, id ) );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                logger.warn( "DHIS2 Tracked entity instance {} does no longer exist!", id );
+                return Optional.empty();
+            }
+            throw e;
+        }
+
+        final long date;
+        try
+        {
+            date = responseEntity.getHeaders().getDate();
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new DhisResourceException( "DHIS2 returned invalid date header." );
+        }
+        if ( date == -1 )
+        {
+            throw new DhisResourceException( "DHIS2 did not return a date header in its response." );
+        }
+        // HTTP header date has only second precision
+        final Instant instantDate = Instant.ofEpochMilli( date ).with( ChronoField.NANO_OF_SECOND, 999_999_999 );
+
+        // has been updated in the meantime again
+        if ( lastUpdated.getLastUpdated().toInstant().isAfter( instantDate ) )
+        {
+            return Optional.empty();
+        }
+        return Optional.of( new ProcessedItemInfo( DhisResourceType.TRACKED_ENTITY.withId( id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant() ) );
     }
 
     @Nonnull

@@ -117,6 +117,9 @@ dhis2.fhir-adapter:
     # The complete metadata (organization units, tracked entity types,
     # tracked entity attributes, tracker programs, tracker program stages)
     # must be accessible.
+    # If synchronization from DHIS2 resources to FHIR servers has been
+    # enabled, the account must also be able to create, read and update
+    # tracked entity instances, enrollments and events.
     system-authentication:
       # The username that is used to connect to DHIS2 to access the metadata.
       username: @dhis2.username@
@@ -259,10 +262,16 @@ dhis2.fhir-adapter:
   # Settings for the retrieval of the synchronization data from DHIS2. The retrieved data
   # can be stored on connected remote FHIR services.
   sync:
+    # Retrieves new and updated DHIS2 resources periodically.
     processor:
-      # Specifies how often the DHIS2 resources should be synchronized. A negative value
-      # disables synchronization completely.
-      request-rate-millis: -1
+      # Specifies how often the DHIS2 resources should be synchronized. Event if the
+      # processor has been disabled, this value is used to periodically clean-up
+      # information about DHIS2 resources that have been stored by the adapter.
+      enabled: false
+      # Specifies how often the DHIS2 resources should be synchronized. Event if the
+      # processor has been disabled, this value is used to periodically clean-up
+      # information about DHIS2 resources that have been stored by the adapter.
+      request-rate-millis: 60000
       # Specifies the number of milli seconds that are subtracted from the stored last
       # updated timestamp when synchronizing the DHIS2 resources the next time. This is
       # used to avoid missing data due to inaccuracies of clocks and time windows when
@@ -271,7 +280,7 @@ dhis2.fhir-adapter:
       # The maximum number of DHIS2 resources that should be returned by the DHIS2
       # server at once. The last updated timestamp that is used by the DHIS2 server
       # must change at least within the specified amount of items.
-      max-search-count: 10000
+      max-search-count: 50000
       # The maximum number of minutes processed DHIS2 resource IDs will remain stored
       # in order to avoid duplicate DHIS2 resource processing (increases load and the
       # probability of data inconsistencies).
@@ -315,7 +324,7 @@ dhis2.fhir-adapter:
     # should be synchronized with remote FHIR servers.
     dhis-resource-queue:
       # The name of the queue.
-      queue-name: jms.queue.remoteFhirResourceQueue
+      queue-name: jms.queue.dhisResourceQueue
       # Settings of the listener that processes the messages in the queue.
       listener:
         # Minimum and maximum number of listener instances (concurrent processing

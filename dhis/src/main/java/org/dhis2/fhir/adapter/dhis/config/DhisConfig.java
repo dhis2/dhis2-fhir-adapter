@@ -39,6 +39,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.auth.AuthorizedRestTemplate;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
@@ -53,11 +54,13 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
@@ -102,6 +105,21 @@ public class DhisConfig
         return builder.rootUri( getRootUri( endpointConfig, false ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
             .basicAuthorization( endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
+    }
+
+    /**
+     * Returns the system authorization.
+     *
+     * @param endpointConfig the endpoint configuration of the DHIS2 endpoint.
+     * @return the system authorization.
+     */
+    @Bean
+    @Nonnull
+    public Authorization systemDhis2Authorization( @Nonnull DhisEndpointConfig endpointConfig )
+    {
+        return new Authorization( "Basic " + Base64.getEncoder().encodeToString(
+            (endpointConfig.getSystemAuthentication().getUsername() + ":" + endpointConfig.getSystemAuthentication().getPassword())
+                .getBytes( StandardCharsets.UTF_8 ) ) );
     }
 
     /**

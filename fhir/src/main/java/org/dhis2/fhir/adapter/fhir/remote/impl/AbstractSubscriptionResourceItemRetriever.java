@@ -34,6 +34,7 @@ import ca.uhn.fhir.rest.api.SummaryEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IQuery;
 import ca.uhn.fhir.rest.param.DateRangeParam;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -83,9 +84,21 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
 
     private final FhirContext fhirContext;
 
+    private int maxConsumedSize = 1000;
+
     protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext )
     {
         this.fhirContext = fhirContext;
+    }
+
+    public int getMaxConsumedSize()
+    {
+        return maxConsumedSize;
+    }
+
+    public void setMaxConsumedSize( int maxConsumedSize )
+    {
+        this.maxConsumedSize = maxConsumedSize;
     }
 
     @Override
@@ -207,7 +220,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         // resources should not be consumed inside the loop above since paging may take longer
         if ( !orderedAllResources.isEmpty() )
         {
-            consumer.accept( orderedAllResources );
+            Lists.partition( orderedAllResources, maxConsumedSize ).forEach( consumer );
         }
         return processedLastUpdated;
     }

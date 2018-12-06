@@ -40,6 +40,8 @@ import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteSubscriptionRequestId;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteSubscriptionRequestRepository;
@@ -48,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourc
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceUpdateRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.remote.RemoteRestHookProcessor;
+import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
 import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
@@ -77,7 +80,7 @@ import java.util.Map;
  */
 @Service
 public class RemoteRestHookProcessorImpl extends
-    AbstractQueuedDataProcessorImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, QueuedRemoteSubscriptionRequestId, QueuedRemoteFhirResourceId, RemoteSubscriptionResource, UuidDataGroupId>
+    AbstractQueuedDataProcessorImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, StoredRemoteFhirResource, StoredRemoteFhirResourceId, QueuedRemoteSubscriptionRequestId, QueuedRemoteFhirResourceId, RemoteSubscriptionResource, UuidDataGroupId>
     implements RemoteRestHookProcessor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -92,6 +95,7 @@ public class RemoteRestHookProcessorImpl extends
         @Nonnull QueuedRemoteSubscriptionRequestRepository queuedGroupRepository,
         @Nonnull @Qualifier( "fhirRestHookRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
         @Nonnull RemoteSubscriptionResourceUpdateRepository dataGroupUpdateRepository,
+        @Nonnull StoredRemoteFhirResourceService storedItemService,
         @Nonnull ProcessedRemoteFhirResourceRepository processedItemRepository,
         @Nonnull QueuedRemoteFhirResourceRepository queuedItemRepository,
         @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
@@ -101,7 +105,7 @@ public class RemoteRestHookProcessorImpl extends
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
         this.processorConfig = processorConfig;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
 

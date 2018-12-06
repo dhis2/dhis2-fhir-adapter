@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,51 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.data.model.StoredItem;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+
+import javax.annotation.Nonnull;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.time.Instant;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * A stored remote FHIR resource that contains also the distinct version of the
+ * remote FHIR resource.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+@Entity
+@Table( name = "fhir_stored_remote_resource" )
+public class StoredRemoteFhirResource extends StoredItem<StoredRemoteFhirResourceId, RemoteSubscriptionResource> implements Serializable
 {
+    private static final long serialVersionUID = -6484140859863504862L;
+
+    private StoredRemoteFhirResourceId id;
+
+    public StoredRemoteFhirResource()
+    {
+        super();
+    }
+
+    public StoredRemoteFhirResource( @Nonnull StoredRemoteFhirResourceId id, @Nonnull Instant storedAt )
+    {
+        super( storedAt );
+        this.id = id;
+    }
+
+    @EmbeddedId
+    @Override
+    public StoredRemoteFhirResourceId getId()
+    {
+        return id;
+    }
+
+    @Override
+    public void setId( StoredRemoteFhirResourceId id )
+    {
+        this.id = id;
+    }
 }

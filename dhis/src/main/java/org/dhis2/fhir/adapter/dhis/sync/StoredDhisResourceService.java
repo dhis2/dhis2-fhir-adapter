@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.data.repository;
+package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,16 +28,22 @@ package org.dhis2.fhir.adapter.dhis.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
+import org.dhis2.fhir.adapter.data.processor.StoredItemService;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
+import javax.annotation.Nonnull;
+import java.util.Optional;
+import java.util.UUID;
+
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Stored item service for {@link StoredDhisResource}s.
  *
  * @author volsch
  */
-public interface CustomProcessedDhisResourceRepository extends ProcessedItemRepository<ProcessedDhisResource, ProcessedDhisResourceId, DhisSyncGroup>
+public interface StoredDhisResourceService extends StoredItemService<StoredDhisResource, StoredDhisResourceId, DhisSyncGroup>
 {
+    @Nonnull
+    Optional<DhisSyncGroup> findSyncGroupById( @Nonnull UUID id );
 }

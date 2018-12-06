@@ -65,18 +65,20 @@ public abstract class AbstractProcessedItemRepositoryImpl<T extends ProcessedIte
         this.entityManager = entityManager;
     }
 
+    @Override
     @Nonnull
-    public Set<String> find( @Nonnull G prefix, @Nonnull Collection<String> suffixes )
+    public Set<String> find( @Nonnull G prefix, @Nonnull Collection<String> processedIds )
     {
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         final CriteriaQuery<String> criteria = cb.createQuery( String.class );
         final Root<T> root = criteria.from( getProcessedItemClass() );
         return new HashSet<>( entityManager.createQuery( criteria.select( root.get( "id" ).get( "processedId" ) )
             .where( cb.equal( root.get( "id" ).get( "group" ), prefix ),
-                root.get( "id" ).get( "processedId" ).in( suffixes ) ) )
+                root.get( "id" ).get( "processedId" ).in( processedIds ) ) )
             .setHint( "org.hibernate.fetchSize", 1000 ).getResultList() );
     }
 
+    @Override
     @Transactional
     public void process( @Nonnull T processedItem, @Nonnull Consumer<T> consumer )
     {
@@ -85,6 +87,7 @@ public abstract class AbstractProcessedItemRepositoryImpl<T extends ProcessedIte
         consumer.accept( processedItem );
     }
 
+    @Override
     @Transactional
     public int deleteOldest( @Nonnull G prefix, @Nonnull Instant timestamp )
     {

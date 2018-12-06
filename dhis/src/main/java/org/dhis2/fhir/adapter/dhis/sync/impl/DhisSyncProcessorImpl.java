@@ -38,6 +38,8 @@ import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResource;
 import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisSyncRequestId;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
+import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.data.repository.ProcessedDhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.data.repository.QueuedDhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.data.repository.QueuedDhisSyncRequestRepository;
@@ -47,7 +49,7 @@ import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupUpdateReposi
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.DhisSyncProcessor;
 import org.dhis2.fhir.adapter.dhis.sync.DhisSyncProcessorException;
-import org.dhis2.fhir.adapter.dhis.sync.DhisSyncRequestQueueItem;
+import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +74,7 @@ import java.time.ZonedDateTime;
  */
 @Service
 public class DhisSyncProcessorImpl extends
-    AbstractQueuedDataProcessorImpl<ProcessedDhisResource, ProcessedDhisResourceId, QueuedDhisSyncRequestId, QueuedDhisResourceId, DhisSyncGroup, UuidDataGroupId>
+    AbstractQueuedDataProcessorImpl<ProcessedDhisResource, ProcessedDhisResourceId, StoredDhisResource, StoredDhisResourceId, QueuedDhisSyncRequestId, QueuedDhisResourceId, DhisSyncGroup, UuidDataGroupId>
     implements DhisSyncProcessor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -84,26 +86,33 @@ public class DhisSyncProcessorImpl extends
     private final DataProcessorItemRetriever<DhisSyncGroup> dataProcessorItemRetriever;
 
     public DhisSyncProcessorImpl( @Nonnull QueuedDhisSyncRequestRepository queuedGroupRepository, @Nonnull @Qualifier( "dhisSyncRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
-        @Nonnull DhisSyncGroupUpdateRepository dataGroupUpdateRepository, @Nonnull ProcessedDhisResourceRepository processedItemRepository,
+        @Nonnull DhisSyncGroupUpdateRepository dataGroupUpdateRepository, @Nonnull StoredDhisResourceService storedItemService, @Nonnull ProcessedDhisResourceRepository processedItemRepository,
         @Nonnull QueuedDhisResourceRepository queuedItemRepository, @Nonnull @Qualifier( "dhisResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager, @Nonnull SystemAuthenticationToken systemAuthenticationToken,
         @Nonnull DhisSyncProcessorConfig processorConfig, @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull DataProcessorItemRetriever<DhisSyncGroup> dataProcessorItemRetriever )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
         this.processorConfig = processorConfig;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.dataProcessorItemRetriever = dataProcessorItemRetriever;
     }
 
-    @Scheduled( initialDelayString = "#{@dhisSyncProcessorConfig.resultingRequestRateMillis}",
-        fixedDelayString = "#{@dhisSyncProcessorConfig.resultingRequestRateMillis}" )
+    @HystrixCommand
+    @Scheduled( initialDelayString = "#{@dhisSyncProcessorConfig.requestRateMillis}", fixedRateString = "#{@dhisSyncProcessorConfig.requestRateMillis}" )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public void process()
     {
         final DhisSyncGroup group = dhisSyncGroupRepository.findByIdCached( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisSyncProcessorException( "DHIS2 Sync Group with default ID could not be found." ) );
-        process( group );
+        if ( processorConfig.isEnabled() )
+        {
+            process( group );
+        }
+        else
+        {
+            purgeOldestProcessed( group );
+        }
     }
 
     @HystrixCommand
@@ -113,6 +122,13 @@ public class DhisSyncProcessorImpl extends
     public void receive( @Nonnull DhisSyncRequestQueueItem dhisSyncRequestQueueItem )
     {
         super.receive( dhisSyncRequestQueueItem );
+    }
+
+    @Override
+    protected boolean isPeriodicInfoLogging()
+    {
+        // since requests are triggered by a timer, no logging information should be output on each timer period
+        return false;
     }
 
     @Override
