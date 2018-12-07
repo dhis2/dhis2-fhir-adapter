@@ -76,11 +76,5 @@ public enum DhisResourceType
     {
         return typeName;
     }
-
-    @Nonnull
-    public String withId( @Nonnull String id )
-    {
-        return typeName + "/" + id;
-    }
 }
 

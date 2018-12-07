@@ -195,6 +195,12 @@ dhis2.fhir-adapter:
       # in order to avoid duplicate FHIR resource processing (increases load and the
       # probability of data inconsistencies).
       max-processed-age-minutes: 2880
+      # The maximum number of parallel executions that are used to process found new
+      # or updated FHIR resources. The value must be at least as big as the maximum
+      # number of listeners that are specified for the request queue. Increasing this
+      # value may also require more database connections (double amount of the parallel
+      # count).
+      parallel-count: 10
     # The queue that is used to store incoming REST hook requests. For each FHIR
     # resource type (per FHIR server) there should be maximum one item in the queue.
     # Also processing will be grouped. It must absolutely avoided that the data
@@ -285,12 +291,18 @@ dhis2.fhir-adapter:
       # in order to avoid duplicate DHIS2 resource processing (increases load and the
       # probability of data inconsistencies).
       max-processed-age-minutes: 2880
+      # The maximum number of parallel executions that are used to process found new
+      # or updated DHIS2 resources. Increasing this value may also require more database
+      # connections (double amount of the parallel count).
+      parallel-count: 10
     # The queue that is used to store distributed requests to synchronize the data from
     # DHIS2 with connected FHIR servers. There should be maximum one item in the queue.
     sync-request-queue:
       # The name of the queue.
       queue-name: jms.queue.dhisSyncRequestQueue
-      # Settings of the listener that processes the messages in the queue.
+      # Settings of the listener that processes the messages in the queue. Even if the
+      # synchronization has been disabled, this queue is used for purging the information
+      # of old stored DHIS2 resources.
       listener:
         # Minimum and maximum number of listener instances (concurrent processing
         # of queued messages) on each running adapter instance. Only one message

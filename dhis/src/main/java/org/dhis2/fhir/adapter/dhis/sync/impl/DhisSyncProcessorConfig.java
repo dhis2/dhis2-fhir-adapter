@@ -58,6 +58,9 @@ public class DhisSyncProcessorConfig implements Serializable
     @Min( value = 1 )
     private int maxProcessedAgeMinutes = 2 * 24 * 60;
 
+    @Min( value = 1 )
+    private int parallelCount = 1;
+
     public boolean isEnabled()
     {
         return enabled;
@@ -106,5 +109,15 @@ public class DhisSyncProcessorConfig implements Serializable
     public void setMaxProcessedAgeMinutes( int maxProcessedAgeMinutes )
     {
         this.maxProcessedAgeMinutes = maxProcessedAgeMinutes;
+    }
+
+    public int getParallelCount()
+    {
+        return parallelCount;
+    }
+
+    public void setParallelCount( int parallelCount )
+    {
+        this.parallelCount = parallelCount;
     }
 }

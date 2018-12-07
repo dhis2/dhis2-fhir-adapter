@@ -66,6 +66,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Implementation of {@link DhisSyncProcessor}.
@@ -92,27 +93,24 @@ public class DhisSyncProcessorImpl extends
         @Nonnull DhisSyncProcessorConfig processorConfig, @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull DataProcessorItemRetriever<DhisSyncGroup> dataProcessorItemRetriever )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate,
+            platformTransactionManager, systemAuthenticationToken, new ForkJoinPool( processorConfig.getParallelCount() ) );
         this.processorConfig = processorConfig;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.dataProcessorItemRetriever = dataProcessorItemRetriever;
+
+        // no every execution by the scheduler must result in a logging
+        setPeriodicInfoLogging( false );
     }
 
     @HystrixCommand
-    @Scheduled( initialDelayString = "#{@dhisSyncProcessorConfig.requestRateMillis}", fixedRateString = "#{@dhisSyncProcessorConfig.requestRateMillis}" )
+    @Scheduled( initialDelayString = "#{@dhisSyncProcessorConfig.requestRateMillis}", fixedDelayString = "#{@dhisSyncProcessorConfig.requestRateMillis}" )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public void process()
     {
         final DhisSyncGroup group = dhisSyncGroupRepository.findByIdCached( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisSyncProcessorException( "DHIS2 Sync Group with default ID could not be found." ) );
-        if ( processorConfig.isEnabled() )
-        {
-            process( group );
-        }
-        else
-        {
-            purgeOldestProcessed( group );
-        }
+        process( group, processorConfig.getRequestRateMillis() );
     }
 
     @HystrixCommand
@@ -121,14 +119,21 @@ public class DhisSyncProcessorImpl extends
         concurrency = "#{@dhisSyncConfig.syncRequestQueue.listener.concurrency}" )
     public void receive( @Nonnull DhisSyncRequestQueueItem dhisSyncRequestQueueItem )
     {
-        super.receive( dhisSyncRequestQueueItem );
-    }
-
-    @Override
-    protected boolean isPeriodicInfoLogging()
-    {
-        // since requests are triggered by a timer, no logging information should be output on each timer period
-        return false;
+        if ( processorConfig.isEnabled() )
+        {
+            super.receive( dhisSyncRequestQueueItem );
+        }
+        else
+        {
+            final DhisSyncGroup group = findGroupByGroupId( dhisSyncRequestQueueItem.getDataGroupId() );
+            if ( group == null )
+            {
+                logger.warn( "Group {} is no longer available. Skipping processing of updated group.",
+                    dhisSyncRequestQueueItem.getDataGroupId() );
+                return;
+            }
+            purgeOldestProcessed( group );
+        }
     }
 
     @Override

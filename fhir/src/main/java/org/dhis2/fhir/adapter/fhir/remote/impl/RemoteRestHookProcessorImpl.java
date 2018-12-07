@@ -72,6 +72,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Implementation of {@link RemoteRestHookProcessor}.
@@ -105,7 +106,8 @@ public class RemoteRestHookProcessorImpl extends
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate, platformTransactionManager, systemAuthenticationToken );
+        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate,
+            platformTransactionManager, systemAuthenticationToken, new ForkJoinPool( processorConfig.getParallelCount() ) );
         this.processorConfig = processorConfig;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
 

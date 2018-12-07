@@ -50,4 +50,7 @@ public interface DataGroupUpdateRepository<T extends DataGroupUpdate<G>, G exten
 
     @RestResource( exported = false )
     boolean updateLastUpdated( @Nonnull G group, @Nonnull Instant lastUpdated );
+
+    @RestResource( exported = false )
+    boolean requested( @Nonnull G group, int rateMillis );
 }

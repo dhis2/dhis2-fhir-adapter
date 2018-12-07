@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.DhisResourceException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
@@ -281,9 +282,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     protected void storeItem( @Nonnull DhisSyncGroup syncGroup, @Nonnull String id, @Nonnull ResponseEntity<?> responseEntity )
     {
-        getProcessedItemInfo( id, responseEntity ).ifPresent( pii -> {
-            storedItemService.stored( syncGroup, pii.toIdString( epochStartInstant ) );
-        } );
+        getProcessedItemInfo( id, responseEntity )
+            .ifPresent( pii -> storedItemService.stored( syncGroup, pii.toIdString( epochStartInstant ) ) );
     }
 
     @Nonnull
@@ -325,7 +325,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         {
             return Optional.empty();
         }
-        return Optional.of( new ProcessedItemInfo( DhisResourceType.TRACKED_ENTITY.withId( id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant() ) );
+        return Optional.of( new ProcessedItemInfo( DhisResourceId.toString( DhisResourceType.TRACKED_ENTITY, id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant() ) );
     }
 
     @Nonnull

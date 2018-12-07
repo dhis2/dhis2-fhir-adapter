@@ -33,6 +33,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
@@ -50,6 +51,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
+import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
@@ -81,6 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
@@ -113,6 +116,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository;
 
+    private final StoredRemoteFhirResourceService storedItemService;
+
     private final RemoteFhirRepository remoteFhirRepository;
 
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
@@ -129,6 +134,7 @@ public class FhirRepositoryImpl implements FhirRepository
         @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
+        @Nonnull StoredRemoteFhirResourceService storedItemService,
         @Nonnull RemoteFhirRepository remoteFhirRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
         @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
     {
@@ -137,6 +143,7 @@ public class FhirRepositoryImpl implements FhirRepository
         this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
         this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
+        this.storedItemService = storedItemService;
         this.remoteFhirRepository = remoteFhirRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.trackedEntityService = trackedEntityService;
@@ -215,25 +222,34 @@ public class FhirRepositoryImpl implements FhirRepository
             remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId() );
         if ( resource.isPresent() )
         {
-            try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
+            final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource.get() );
+            if ( storedItemService.contains( remoteSubscriptionResource, processedItemInfo.toIdString( Instant.now() ) ) )
             {
-                logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
-                    resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
-                try
+                logger.info( "FHIR resource {} of remote subscription resource {} has already been stored.",
+                    resource.get().getIdElement().toUnqualified(), remoteSubscriptionResource.getId() );
+            }
+            else
+            {
+                try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
                 {
-                    save( remoteSubscriptionResource, resource.get() );
+                    logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
+                        resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+                    try
+                    {
+                        save( remoteSubscriptionResource, resource.get() );
+                    }
+                    catch ( DhisConflictException e )
+                    {
+                        logger.warn( "Processing of data of FHIR resource caused a conflict on DHIS2. Skipping FHIR resource because of the occurred conflict: {}", e.getMessage() );
+                    }
+                    catch ( TransformerDataException | TransformerMappingException e )
+                    {
+                        logger.warn( "Processing of data of FHIR resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
+                        throw new RetryQueueDeliveryException( e );
+                    }
+                    logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
+                        resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
                 }
-                catch ( DhisConflictException e )
-                {
-                    logger.warn( "Processing of data of FHIR resource caused a conflict on DHIS2. Skipping FHIR resource because of the occurred conflict: {}", e.getMessage() );
-                }
-                catch ( TransformerDataException | TransformerMappingException e )
-                {
-                    logger.warn( "Processing of data of FHIR resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
-                    throw new RetryQueueDeliveryException( e );
-                }
-                logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
-                    resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
             }
         }
         else
@@ -241,6 +257,15 @@ public class FhirRepositoryImpl implements FhirRepository
             logger.info( "FHIR resource {}/{} for remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource.",
                 remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId(), remoteSubscriptionResource.getId() );
         }
+    }
+
+    @Nonnull
+    private ProcessedItemInfo getProcessedItemInfo( @Nonnull IBaseResource resource )
+    {
+        return new ProcessedItemInfo( resource.getIdElement().getIdPart(),
+            ((resource.getMeta().getLastUpdated() == null) ?
+                null : resource.getMeta().getLastUpdated().toInstant()),
+            resource.getMeta().getVersionId() );
     }
 
     protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )

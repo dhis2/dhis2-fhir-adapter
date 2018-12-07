@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.data.model;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,70 @@ package org.dhis2.fhir.adapter.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Objects;
 
 /**
- * The information about a processed item. The last updated timestamp
- * and the version are optional.
+ * The unique ID of a DHIS2 resource including its resource type.
  *
  * @author volsch
  */
-public class ProcessedItemInfo implements Serializable
+public class DhisResourceId implements Serializable
 {
-    private static final long serialVersionUID = 1808470990206683252L;
+    private static final long serialVersionUID = -2135456188739405510L;
+
+    protected static final char SEPARATOR = '/';
+
+    private final DhisResourceType type;
 
     private final String id;
 
-    private final long lastUpdated;
-
-    private final String version;
-
-    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated )
+    @Nullable
+    public static DhisResourceId parse( @Nullable String resourceId )
     {
-        this( id, lastUpdated, null );
-    }
-
-    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version )
-    {
-        this.id = id;
-        this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toEpochMilli();
-        this.version = version;
+        if ( resourceId == null )
+        {
+            return null;
+        }
+        final int index = resourceId.indexOf( SEPARATOR );
+        if ( (index <= 0) || (index + 1 == resourceId.length()) )
+        {
+            throw new IllegalArgumentException( "Invalid DHIS resource ID syntax: " + resourceId );
+        }
+        final DhisResourceType type = DhisResourceType.getByTypeName( resourceId.substring( 0, index ) );
+        if ( type == null )
+        {
+            throw new IllegalArgumentException( "Invalid DHIS resource type in resource ID: " + resourceId );
+        }
+        return new DhisResourceId( type, resourceId.substring( index + 1 ) );
     }
 
     @Nonnull
+    public static String toString( @Nonnull DhisResourceType type, @Nonnull String id )
+    {
+        return type.getTypeName() + SEPARATOR + id;
+    }
+
+    @JsonCreator
+    public DhisResourceId( @JsonProperty( "type" ) @Nonnull DhisResourceType type, @JsonProperty( "id" ) @Nonnull String id )
+    {
+        this.type = type;
+        this.id = id;
+    }
+
+    public DhisResourceType getType()
+    {
+        return type;
+    }
+
     public String getId()
     {
         return id;
-    }
-
-    @Nullable
-    public Instant getLastUpdated()
-    {
-        return (lastUpdated == 0) ? null : Instant.ofEpochMilli( lastUpdated );
-    }
-
-    @Nullable
-    public String getVersion()
-    {
-        return version;
     }
 
     @Override
@@ -87,22 +99,20 @@ public class ProcessedItemInfo implements Serializable
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
-        ProcessedItemInfo that = (ProcessedItemInfo) o;
-        return Objects.equals( id, that.id ) &&
-            (lastUpdated == that.lastUpdated) &&
-            Objects.equals( version, that.version );
+        DhisResourceId that = (DhisResourceId) o;
+        return getType() == that.getType() &&
+            Objects.equals( getId(), that.getId() );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( id, lastUpdated, version );
+        return Objects.hash( getType(), getId() );
     }
 
-    @Nonnull
-    public String toIdString( @Nonnull Instant defaultLastUpdated )
+    @Override
+    public String toString()
     {
-        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) +
-            "|" + ((lastUpdated == 0) ? defaultLastUpdated.toEpochMilli() : lastUpdated);
+        return toString( type, id );
     }
 }

@@ -121,9 +121,9 @@ public abstract class AbstractStoredItemRepositoryImpl<T extends StoredItem<I, G
     public boolean contains( @Nonnull G prefix, @Nonnull String storedId )
     {
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        final CriteriaDelete<T> criteriaDelete = cb.createCriteriaDelete( getStoredItemClass() );
-        final Root<T> root = criteriaDelete.from( getStoredItemClass() );
-        return !entityManager.createQuery( criteriaDelete.where(
+        final CriteriaQuery<T> criteria = cb.createQuery( getStoredItemClass() );
+        final Root<T> root = criteria.from( getStoredItemClass() );
+        return !entityManager.createQuery( criteria.where(
             cb.equal( root.get( "id" ).get( "group" ), prefix ),
             cb.equal( root.get( "id" ).get( "storedId" ), storedId ) ) )
             .getResultList().isEmpty();

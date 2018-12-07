@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.poll;
 
 import com.google.common.collect.Lists;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +124,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
             final P polledItems = getPolledItems( fromLastUpdated, currentToLastUpdated );
             final List<ProcessedItemInfo> resources =
                 polledItems.getItems().stream().filter( pi -> !excludedStoredBy.contains( pi.getStoredBy() ) )
-                    .map( pi -> new ProcessedItemInfo( resourceType.withId( pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant() ) )
+                    .map( pi -> new ProcessedItemInfo( DhisResourceId.toString( resourceType, pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant() ) )
                     .collect( Collectors.toList() );
             resources.forEach( r -> {
                 if ( allResources.add( r ) )

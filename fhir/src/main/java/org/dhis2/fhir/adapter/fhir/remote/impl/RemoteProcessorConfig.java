@@ -50,6 +50,9 @@ public class RemoteProcessorConfig implements Serializable
     @Min( value = 1 )
     private int maxProcessedAgeMinutes = 2 * 24 * 60;
 
+    @Min( value = 1 )
+    private int parallelCount = 1;
+
     public int getMaxSearchCount()
     {
         return maxSearchCount;
@@ -68,5 +71,15 @@ public class RemoteProcessorConfig implements Serializable
     public void setMaxProcessedAgeMinutes( int maxProcessedAgeMinutes )
     {
         this.maxProcessedAgeMinutes = maxProcessedAgeMinutes;
+    }
+
+    public int getParallelCount()
+    {
+        return parallelCount;
+    }
+
+    public void setParallelCount( int parallelCount )
+    {
+        this.parallelCount = parallelCount;
     }
 }

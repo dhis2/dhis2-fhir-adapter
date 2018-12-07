@@ -43,6 +43,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Implementation of {@link DataGroupUpdateRepository}.
@@ -87,6 +88,26 @@ public abstract class AbstractDataGroupUpdateRepositoryImpl<T extends DataGroupU
             return false;
         }
         update.setLastUpdated( lastUpdated );
+        return true;
+    }
+
+    @RestResource( exported = false )
+    @Transactional
+    @Override
+    public boolean requested( @Nonnull G group, int rateMillis )
+    {
+        final T update = find( group, true );
+        if ( update == null )
+        {
+            return false;
+        }
+        final Instant requestedAt = Instant.now();
+        final Instant maxLastRequestedAt = requestedAt.minus( rateMillis, ChronoUnit.MILLIS );
+        if ( update.getLastRequested().isAfter( maxLastRequestedAt ) )
+        {
+            return false;
+        }
+        update.setLastRequested( requestedAt );
         return true;
     }
 

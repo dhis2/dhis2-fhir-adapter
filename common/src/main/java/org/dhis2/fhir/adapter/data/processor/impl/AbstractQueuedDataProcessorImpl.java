@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.data.model.StoredItemId;
 import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
+import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
 import org.dhis2.fhir.adapter.data.processor.StoredItemService;
 import org.dhis2.fhir.adapter.data.repository.AlreadyQueuedException;
 import org.dhis2.fhir.adapter.data.repository.DataGroupUpdateRepository;
@@ -60,10 +61,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -103,6 +108,10 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     private final SystemAuthenticationToken systemAuthenticationToken;
 
+    private final ForkJoinPool itemProcessorForkJoinPool;
+
+    private boolean periodicInfoLogging = true;
+
     public AbstractQueuedDataProcessorImpl(
         @Nonnull QueuedItemRepository<QG, G> queuedGroupRepository,
         @Nonnull JmsTemplate groupQueueJmsTemplate,
@@ -112,7 +121,8 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         @Nonnull QueuedItemRepository<QI, G> queuedItemRepository,
         @Nonnull JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager,
-        @Nonnull SystemAuthenticationToken systemAuthenticationToken )
+        @Nonnull SystemAuthenticationToken systemAuthenticationToken,
+        @Nonnull ForkJoinPool itemProcessorForkJoinPool )
     {
         this.queuedGroupRepository = queuedGroupRepository;
         this.groupQueueJmsTemplate = groupQueueJmsTemplate;
@@ -123,12 +133,34 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         this.itemQueueJmsTemplate = itemQueueJmsTemplate;
         this.platformTransactionManager = platformTransactionManager;
         this.systemAuthenticationToken = systemAuthenticationToken;
+        this.itemProcessorForkJoinPool = itemProcessorForkJoinPool;
+    }
+
+    protected boolean isPeriodicInfoLogging()
+    {
+        return periodicInfoLogging;
+    }
+
+    public void setPeriodicInfoLogging( boolean periodicInfoLogging )
+    {
+        this.periodicInfoLogging = periodicInfoLogging;
     }
 
     @HystrixCommand
     @Override
     public void process( @Nonnull G group )
     {
+        process( group, null );
+    }
+
+    protected void process( @Nonnull G group, @Nullable Integer rateMillis )
+    {
+        if ( (rateMillis != null) && !dataGroupUpdateRepository.requested( group, rateMillis ) )
+        {
+            logger.debug( "Rate {} has not yet been reached.", rateMillis );
+            return;
+        }
+
         final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
@@ -210,6 +242,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             return;
         }
 
+        final Instant begin = Instant.now();
         final DataProcessorItemRetriever<G> itemRetriever = getDataProcessorItemRetriever( group );
         final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
         final AtomicLong count = new AtomicLong();
@@ -219,7 +252,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             final Set<String> processedIds = processedItemRepository.find( group, processableIds );
             final Set<String> storedIds = storedItemService.findProcessedIds( group, processableIds );
 
-            items.forEach( item -> {
+            final ForkJoinTask<?> task = itemProcessorForkJoinPool.submit( () -> items.parallelStream().forEach( item -> {
                 final String processedId = item.toIdString( processedAt );
                 if ( !processedIds.contains( processedId ) && !storedIds.contains( processedId ) )
                 {
@@ -240,7 +273,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                         }
                         catch ( IgnoredQueuedItemException e )
                         {
-                            // has already been logger with sufficient details
+                            // has already been logged with sufficient details
                         }
                         finally
                         {
@@ -248,9 +281,11 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                         }
                     } );
                 }
-            } );
+            } ) );
+            awaitTaskTermination( task );
         } );
         dataGroupUpdateRepository.updateLastUpdated( group, lastUpdated );
+        final Instant end = Instant.now();
 
         // Purging old data must not be done before and also must not be done asynchronously. The ast updated
         // timestamp may be older than the purged data. And before purging the old data, the last updated
@@ -258,11 +293,41 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         purgeOldestProcessed( group );
         if ( count.longValue() > 0 )
         {
-            logger.info( "Processed queued group {} with {} enqueued items.", dataGroupQueueItem.getDataGroupId(), count.longValue() );
+            logger.info( "Processed queued group {} with {} enqueued items in {} ms.",
+                dataGroupQueueItem.getDataGroupId(), count.longValue(), Duration.between( begin, end ).toMillis() );
         }
         else
         {
             logger.debug( "Processed queued group {} with no enqueued items.", dataGroupQueueItem.getDataGroupId() );
+        }
+    }
+
+    private void awaitTaskTermination( @Nonnull ForkJoinTask<?> task )
+    {
+        try
+        {
+            task.get();
+        }
+        catch ( InterruptedException e )
+        {
+            throw new QueuedDataProcessorException( "Parallel execution of item queueing has been interrupted.", e );
+        }
+        catch ( ExecutionException e )
+        {
+            final Throwable cause = e.getCause();
+            if ( cause == null )
+            {
+                throw new QueuedDataProcessorException( "Unexpected error when enqueuing items.", e );
+            }
+            if ( cause instanceof Error )
+            {
+                throw (Error) cause;
+            }
+            if ( cause instanceof RuntimeException )
+            {
+                throw (RuntimeException) cause;
+            }
+            throw new QueuedDataProcessorException( "Unexpected error when enqueuing items.", cause );
         }
     }
 
@@ -272,22 +337,23 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
         logger.debug( "Purging oldest processed items before {} for group {}.", from, group.getGroupId() );
         int count = processedItemRepository.deleteOldest( group, from );
-        logger.debug( "Purged {} oldest processed items before {} for group {}.", count, from, group.getGroupId() );
+        if ( count > 0 )
+        {
+            logger.info( "Purged {} oldest processed items before {} for group {}.", count, from, group.getGroupId() );
+        }
 
         logger.debug( "Purging oldest stored items before {} for group {}.", from, group.getGroupId() );
         count = storedItemService.deleteOldest( group, from );
-        logger.debug( "Purged {} oldest stored items before {} for group {}.", count, from, group.getGroupId() );
+        if ( count > 0 )
+        {
+            logger.info( "Purged {} oldest stored items before {} for group {}.", count, from, group.getGroupId() );
+        }
     }
 
     @Nonnull
     protected Authentication createAuthentication()
     {
         return systemAuthenticationToken;
-    }
-
-    protected boolean isPeriodicInfoLogging()
-    {
-        return true;
     }
 
     protected abstract QG createQueuedGroupId( @Nonnull G group );
