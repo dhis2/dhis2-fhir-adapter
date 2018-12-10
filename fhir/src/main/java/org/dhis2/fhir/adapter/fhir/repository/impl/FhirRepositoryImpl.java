@@ -37,11 +37,7 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
@@ -53,18 +49,19 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourc
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformOutcome;
-import org.dhis2.fhir.adapter.fhir.transform.FhirToDhisTransformerService;
-import org.dhis2.fhir.adapter.fhir.transform.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.model.FhirRequestMethod;
-import org.dhis2.fhir.adapter.fhir.transform.model.ResourceSystem;
-import org.dhis2.fhir.adapter.fhir.transform.model.WritableFhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerService;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.WritableFhirRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.queue.RetryQueueDeliveryException;
@@ -88,9 +85,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -118,15 +113,11 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final StoredRemoteFhirResourceService storedItemService;
 
-    private final RemoteFhirRepository remoteFhirRepository;
+    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
 
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
 
-    private final TrackedEntityService trackedEntityService;
-
-    private final EnrollmentService enrollmentService;
-
-    private final EventService eventService;
+    private final DhisResourceRepository dhisResourceRepository;
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
@@ -135,8 +126,8 @@ public class FhirRepositoryImpl implements FhirRepository
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
         @Nonnull StoredRemoteFhirResourceService storedItemService,
-        @Nonnull RemoteFhirRepository remoteFhirRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
-        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
+        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
+        @Nonnull DhisResourceRepository dhisResourceRepository )
     {
         this.authorizationContext = authorizationContext;
         this.lockManager = lockManager;
@@ -144,11 +135,9 @@ public class FhirRepositoryImpl implements FhirRepository
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
         this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
         this.storedItemService = storedItemService;
-        this.remoteFhirRepository = remoteFhirRepository;
+        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
-        this.trackedEntityService = trackedEntityService;
-        this.enrollmentService = enrollmentService;
-        this.eventService = eventService;
+        this.dhisResourceRepository = dhisResourceRepository;
     }
 
     @Override
@@ -217,7 +206,7 @@ public class FhirRepositoryImpl implements FhirRepository
         }
 
         final RemoteSubscription remoteSubscription = remoteSubscriptionResource.getRemoteSubscription();
-        final Optional<IBaseResource> resource = remoteFhirRepository.findRefreshed(
+        final Optional<IBaseResource> resource = remoteFhirResourceRepository.findRefreshed(
             remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
             remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId() );
         if ( resource.isPresent() )
@@ -291,7 +280,9 @@ public class FhirRepositoryImpl implements FhirRepository
             try
             {
                 if ( !saveRetried( subscriptionResource, resource, false ) )
+                {
                     return false;
+                }
             }
             catch ( TrackedEntityInstanceNotFoundException e2 )
             {
@@ -360,7 +351,7 @@ public class FhirRepositoryImpl implements FhirRepository
         }
 
         final RemoteSubscription remoteSubscription = trackedEntityRemoteSubscriptionResource.getRemoteSubscription();
-        final Optional<IBaseResource> optionalRefreshedResource = remoteFhirRepository.findRefreshed(
+        final Optional<IBaseResource> optionalRefreshedResource = remoteFhirResourceRepository.findRefreshed(
             remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
             fhirResourceType.getResourceTypeName(), resource.getIdElement().getIdPart() );
         if ( !optionalRefreshedResource.isPresent() )
@@ -392,7 +383,6 @@ public class FhirRepositoryImpl implements FhirRepository
         throw lastException;
     }
 
-    @SuppressWarnings( "unchecked" )
     protected boolean saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource, boolean contained )
     {
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( subscriptionResource.getRemoteSubscription() );
@@ -411,98 +401,36 @@ public class FhirRepositoryImpl implements FhirRepository
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
-        final FhirToDhisTransformOutcome<? extends DhisResource> outcome;
-        try ( final LockContext lockContext = lockManager.begin() )
+        boolean saved = false;
+        FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, resource, contained );
+        do
         {
-            final HystrixRequestContext context = HystrixRequestContext.initializeContext();
-            try
+            FhirToDhisTransformOutcome<? extends DhisResource> outcome;
+            try ( final LockContext lockContext = lockManager.begin() )
             {
-                outcome = fhirToDhisTransformerService.transform( fhirToDhisTransformerService.createContext( fhirRequest ), resource, contained );
-            }
-            finally
-            {
-                context.shutdown();
-            }
-
-            if ( outcome != null )
-            {
-                switch ( outcome.getResource().getResourceType() )
+                final HystrixRequestContext context = HystrixRequestContext.initializeContext();
+                try
                 {
-                    case TRACKED_ENTITY:
-                        persistTrackedEntityOutcome( (FhirToDhisTransformOutcome<TrackedEntityInstance>) outcome );
-                        break;
-                    case PROGRAM_STAGE_EVENT:
-                        persistProgramStageEventOutcome( (FhirToDhisTransformOutcome<Event>) outcome );
-                        break;
-                    default:
-                        throw new AssertionError( "Unhandled DHIS resource type: " + outcome.getResource().getResourceType() );
+                    outcome = fhirToDhisTransformerService.transform( transformerRequest );
+                }
+                finally
+                {
+                    context.shutdown();
+                }
+                if ( outcome == null )
+                {
+                    transformerRequest = null;
+                }
+                else
+                {
+                    dhisResourceRepository.save( outcome.getResource() );
+                    saved = true;
+                    transformerRequest = outcome.getNextTransformerRequest();
                 }
             }
         }
-        return (outcome != null);
-    }
-
-    @Nonnull
-    private DhisResource persistTrackedEntityOutcome( @Nonnull FhirToDhisTransformOutcome<TrackedEntityInstance> outcome )
-    {
-        final DhisResource dhisResource;
-        if ( outcome.getResource().isNewResource() || outcome.getResource().isModified() )
-        {
-            logger.debug( "Persisting tracked entity instance." );
-            dhisResource = trackedEntityService.createOrUpdate( outcome.getResource() );
-            logger.info( "Persisted tracked entity instance {}.", dhisResource.getId() );
-        }
-        else
-        {
-            dhisResource = outcome.getResource();
-            logger.info( "Tracked entity instance {} has not been modified.", dhisResource.getId() );
-        }
-        return dhisResource;
-    }
-
-    @Nonnull
-    private DhisResource persistProgramStageEventOutcome( @Nonnull FhirToDhisTransformOutcome<Event> outcome )
-    {
-        DhisResource dhisResource = null;
-        final Event event = outcome.getResource();
-        if ( (event.getTrackedEntityInstance() != null) && event.getTrackedEntityInstance().isModified() )
-        {
-            logger.debug( "Persisting tracked entity instance." );
-            trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
-            logger.info( "Persisted tracked entity instance {}.", event.getTrackedEntityInstance().getId() );
-        }
-        if ( event.getEnrollment().isNewResource() )
-        {
-            logger.info( "Creating new enrollment." );
-            event.getEnrollment().setEvents( Collections.singletonList( event ) );
-            dhisResource = enrollmentService.create( event.getEnrollment() ).getEvents().get( 0 );
-            logger.info( "Created new enrollment {} with new event.", event.getEnrollment().getId(), event.getId() );
-        }
-        else
-        {
-            final List<Event> events = event.getEnrollment().getEvents();
-            if ( event.getEnrollment().isModified() )
-            {
-                logger.info( "Updating existing enrollment." );
-                event.setEnrollment( enrollmentService.update( event.getEnrollment() ) );
-                logger.info( "Updated existing enrollment {}.", event.getEnrollment().getId() );
-            }
-            for ( final Event e : events )
-            {
-                if ( e.isModified() || e.isAnyDataValueModified() )
-                {
-                    logger.debug( "Persisting event." );
-                    dhisResource = eventService.createOrMinimalUpdate( event );
-                    logger.info( "Persisted event {}.", dhisResource.getId() );
-                }
-            }
-            if ( dhisResource == null )
-            {
-                dhisResource = event;
-                logger.info( "Event {} has not been modified.", dhisResource.getId() );
-            }
-        }
-        return dhisResource;
+        while ( transformerRequest != null );
+        return saved;
     }
 
     @Nullable

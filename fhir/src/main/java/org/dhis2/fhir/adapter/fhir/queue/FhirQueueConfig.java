@@ -28,9 +28,13 @@ package org.dhis2.fhir.adapter.fhir.queue;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationImpl;
+import org.dhis2.fhir.adapter.dhis.queue.JmsJsonTypeIdMapping;
 import org.dhis2.fhir.adapter.fhir.remote.impl.RemoteConfig;
+import org.dhis2.fhir.adapter.fhir.remote.impl.RemoteRestHookRequest;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.repository.impl.RepositoryConfig;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +45,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
 import javax.jms.ConnectionFactory;
+import java.util.Map;
 
 /**
  * Configuration of queues that are used by the adapter.
@@ -120,5 +125,22 @@ public class FhirQueueConfig
         jmsTemplate.setDefaultDestinationName( repositoryConfig.getFhirResourceQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
+    }
+
+    @Bean
+    @Nonnull
+    protected JmsJsonTypeIdMapping dhisJmsJsonTypeIdMapping()
+    {
+        return new JmsJsonTypeIdMapping()
+        {
+            @Nonnull
+            @Override
+            public Map<String, Class<?>> getTypeIdMappings()
+            {
+                return ImmutableMap.of(
+                    "fhirRestHookRequest", RemoteRestHookRequest.class,
+                    "fhirResource", RemoteFhirResource.class );
+            }
+        };
     }
 }

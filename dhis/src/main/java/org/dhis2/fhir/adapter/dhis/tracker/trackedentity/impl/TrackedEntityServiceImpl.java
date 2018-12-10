@@ -156,7 +156,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @HystrixCommand
     @Nonnull
     @Override
-    public Optional<TrackedEntityInstance> getById( @Nonnull String id )
+    public Optional<TrackedEntityInstance> findById( @Nonnull String id )
     {
         TrackedEntityInstance instance;
         try

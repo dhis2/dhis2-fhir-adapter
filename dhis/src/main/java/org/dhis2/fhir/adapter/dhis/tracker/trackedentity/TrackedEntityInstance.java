@@ -32,11 +32,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -51,6 +53,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
+
+    @JsonProperty( access = JsonProperty.Access.READ_ONLY )
+    private ZonedDateTime lastUpdated;
 
     @JsonIgnore
     private String identifier;
@@ -91,11 +96,29 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     }
 
     @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return (getId() == null) ? null : new DhisResourceId( DhisResourceType.TRACKED_ENTITY, getId() );
+    }
+
+    @JsonIgnore
     @Nonnull
     @Override
     public DhisResourceType getResourceType()
     {
         return DhisResourceType.TRACKED_ENTITY;
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 
     @Override

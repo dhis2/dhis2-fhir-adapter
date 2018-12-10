@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.model;
 import org.dhis2.fhir.adapter.model.Identifiable;
 
 import javax.annotation.Nonnull;
+import java.time.ZonedDateTime;
 
 /**
  * Base interface of DHIS2 Resources.
@@ -39,6 +40,22 @@ import javax.annotation.Nonnull;
  */
 public interface DhisResource extends Identifiable<String>
 {
+    /**
+     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
+     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
+     */
+    String getOrgUnitId();
+
+    /**
+     * @return the unique ID of the resource (including the type of the resource).
+     */
+    DhisResourceId getResourceId();
+
+    /**
+     * @return the timestamp when the resource has been updated the last time.
+     */
+    ZonedDateTime getLastUpdated();
+
     /**
      * @return the concrete resource type of the resource.
      */

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -60,6 +61,9 @@ public class Enrollment implements DhisResource, Serializable
     @JsonProperty( "enrollment" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
+
+    @JsonProperty( access = JsonProperty.Access.READ_ONLY )
+    private ZonedDateTime lastUpdated;
 
     @JsonProperty( "orgUnit" )
     private String orgUnitId;
@@ -96,6 +100,13 @@ public class Enrollment implements DhisResource, Serializable
         this.events = new ArrayList<>();
     }
 
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return (getId() == null) ? null : new DhisResourceId( DhisResourceType.ENROLLMENT, getId() );
+    }
+
     @Override
     public boolean isNewResource()
     {
@@ -108,6 +119,17 @@ public class Enrollment implements DhisResource, Serializable
     public DhisResourceType getResourceType()
     {
         return DhisResourceType.ENROLLMENT;
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated( ZonedDateTime lastUpdated )
+    {
+        this.lastUpdated = lastUpdated;
     }
 
     public String getId()

@@ -29,14 +29,12 @@ package org.dhis2.fhir.adapter.dhis.sync;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * Processing request for a DHIS2 resource synchronization that is enqueued and dequeued.
@@ -69,16 +67,5 @@ public class DhisResourceQueueItem extends DataItemQueueItem<UuidDataGroupId> im
     public void setDataGroupId( UuidDataGroupId dataGroupId )
     {
         super.setDataGroupId( dataGroupId );
-    }
-
-    @JsonProperty
-    public UUID getRemoteSubscriptionResourceId()
-    {
-        return (getDataGroupId() == null) ? null : getDataGroupId().getId();
-    }
-
-    public void setRemoteSubscriptionResourceId( UUID remoteSubscriptionResourceId )
-    {
-        super.setDataGroupId( (remoteSubscriptionResourceId == null) ? null : new UuidDataGroupId( remoteSubscriptionResourceId ) );
     }
 }

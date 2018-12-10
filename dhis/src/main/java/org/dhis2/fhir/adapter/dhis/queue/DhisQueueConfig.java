@@ -28,9 +28,12 @@ package org.dhis2.fhir.adapter.dhis.queue;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationImpl;
+import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.impl.DhisSyncConfig;
+import org.dhis2.fhir.adapter.dhis.sync.impl.DhisSyncRequestQueueItem;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +43,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
 import javax.jms.ConnectionFactory;
+import java.util.Map;
 
 /**
  * Configuration of queues that are used by the adapter.
@@ -116,5 +120,22 @@ public class DhisQueueConfig
         jmsTemplate.setDefaultDestinationName( syncConfig.getDhisResourceQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
+    }
+
+    @Bean
+    @Nonnull
+    protected JmsJsonTypeIdMapping dhisJmsJsonTypeIdMapping()
+    {
+        return new JmsJsonTypeIdMapping()
+        {
+            @Nonnull
+            @Override
+            public Map<String, Class<?>> getTypeIdMappings()
+            {
+                return ImmutableMap.of(
+                    "dhisSyncRequest", DhisSyncRequestQueueItem.class,
+                    "dhisResource", DhisResourceQueueItem.class );
+            }
+        };
     }
 }

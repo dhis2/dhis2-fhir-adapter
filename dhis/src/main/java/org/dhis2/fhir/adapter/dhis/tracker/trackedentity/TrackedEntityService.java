@@ -50,7 +50,7 @@ public interface TrackedEntityService
         @Nonnull Map<RequiredValueType, String> requiredValues );
 
     @Nonnull
-    Optional<TrackedEntityInstance> getById( @Nonnull String id );
+    Optional<TrackedEntityInstance> findById( @Nonnull String id );
 
     @Nonnull
     Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,

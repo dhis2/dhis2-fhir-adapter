@@ -43,6 +43,9 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
 import javax.jms.ConnectionFactory;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * General configuration of queues that are used by the adapter.
@@ -56,12 +59,16 @@ public class QueueConfig
     @Primary
     @Bean
     @Nonnull
-    protected MessageConverter jacksonJmsMessageConverter( @Nonnull ObjectMapper objectMapper )
+    protected MessageConverter jacksonJmsMessageConverter( @Nonnull ObjectMapper objectMapper, @Nonnull Collection<JmsJsonTypeIdMapping> typeIdMappings )
     {
+        final Map<String, Class<?>> resultingMappings = new HashMap<>();
+        typeIdMappings.forEach( tim -> resultingMappings.putAll( tim.getTypeIdMappings() ) );
+
         final MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setObjectMapper( objectMapper );
         converter.setTargetType( MessageType.TEXT );
         converter.setTypeIdPropertyName( "_type" );
+        converter.setTypeIdMappings( resultingMappings );
         return converter;
     }
 

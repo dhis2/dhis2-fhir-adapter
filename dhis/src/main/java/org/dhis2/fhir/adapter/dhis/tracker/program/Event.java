@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -58,6 +59,9 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     @JsonProperty( "event" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
+
+    @JsonProperty( access = JsonProperty.Access.READ_ONLY )
+    private ZonedDateTime lastUpdated;
 
     @JsonProperty( "orgUnit" )
     private String orgUnitId;
@@ -91,9 +95,6 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
 
     private Location coordinate;
 
-    @JsonInclude( JsonInclude.Include.NON_NULL )
-    private ZonedDateTime lastUpdated;
-
     private List<WritableDataValue> dataValues;
 
     @JsonIgnore
@@ -109,6 +110,13 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         this.newResource = newResource;
         this.modified = newResource;
         this.dataValues = new ArrayList<>();
+    }
+
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return (getId() == null) ? null : new DhisResourceId( DhisResourceType.PROGRAM_STAGE_EVENT, getId() );
     }
 
     @JsonIgnore
@@ -247,6 +255,7 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         this.coordinate = coordinate;
     }
 
+    @Override
     public ZonedDateTime getLastUpdated()
     {
         return lastUpdated;
