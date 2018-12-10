@@ -212,7 +212,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
         final IBaseBundle hierarchyBundle = remoteHierarchicallyFhirResourceRepository.findWithParents( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
             FhirResourceType.ORGANIZATION.getResourceTypeName(), childReference.getReferenceElement().getIdPart(), "organizationPartOf", this::getParentReference );
         final List<IBaseResource> hierarchy = extractResources( hierarchyBundle );
-        return hierarchy.isEmpty() ? null : BeanTransformerUtils.clone( fhirContext, hierarchy );
+        return hierarchy.isEmpty() ? null : FhirBeanTransformerUtils.clone( fhirContext, hierarchy );
     }
 
     @Nullable

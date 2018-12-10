@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -40,7 +41,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program.FhirToDhisOptionSetUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -93,6 +93,13 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public String getId()
     {
         return event.getId();
+    }
+
+    @Nullable
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return event.getResourceId();
     }
 
     @Nullable

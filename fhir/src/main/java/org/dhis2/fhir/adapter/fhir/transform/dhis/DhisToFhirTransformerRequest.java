@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -48,5 +48,5 @@ public interface DhisToFhirTransformerRequest extends Serializable
     DhisToFhirTransformerContext getContext();
 
     @Nonnull
-    IBaseResource getInput();
+    ScriptedDhisResource getInput();
 }

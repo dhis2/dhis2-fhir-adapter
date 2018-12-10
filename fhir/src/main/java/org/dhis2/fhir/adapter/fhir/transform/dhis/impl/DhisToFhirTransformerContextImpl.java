@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,66 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Implementation of {@link DhisToFhirTransformerContext}.
  *
  * @author volsch
  */
-public interface DhisToFhirTransformerService
+public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerContext, Serializable
 {
-    @Nullable
-    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+    private static final long serialVersionUID = -3205126998737677714L;
 
-    @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;
+    private final DhisRequest dhisRequest;
+
+    private final RemoteSubscription remoteSubscription;
+
+    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription )
+    {
+        this.dhisRequest = dhisRequest;
+        this.remoteSubscription = remoteSubscription;
+    }
+
+    @Nonnull
+    @Override
+    public DhisRequest getDhisRequest()
+    {
+        return dhisRequest;
+    }
+
+    @Nonnull
+    @Override
+    public FhirVersion getVersion()
+    {
+        return remoteSubscription.getFhirVersion();
+    }
+
+    @Nonnull
+    @Override
+    public String getRemoteSubscriptionCode()
+    {
+        return remoteSubscription.getCode();
+    }
+
+    @Nonnull
+    @Override
+    public ZonedDateTime now()
+    {
+        return ZonedDateTime.now();
+    }
+
+    @Override
+    public void fail( @Nonnull String message ) throws TransformerDataException
+    {
+        throw new TransformerDataException( message );
+    }
 }

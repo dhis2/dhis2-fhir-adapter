@@ -46,7 +46,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractCodeFhirToDhisTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.BeanTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
@@ -65,6 +65,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link FhirToDhisTransformerService}.
+ *
+ * @author volsch
+ */
 @Service
 public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerService
 {
@@ -132,7 +137,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
         final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
-        final IBaseResource input = Objects.requireNonNull( BeanTransformerUtils.clone( fhirContext, originalInput ) );
+        final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
         final List<? extends AbstractRule> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
             .stream().filter( r -> !contained || r.isContainedAllowed() ).collect( Collectors.toList() );
 

@@ -34,12 +34,18 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ImmutableFhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
+/**
+ * Implementation of {@link FhirToDhisTransformerContext}.
+ *
+ * @author volsch
+ */
 public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
 {
     private static final long serialVersionUID = -3205126998737677714L;

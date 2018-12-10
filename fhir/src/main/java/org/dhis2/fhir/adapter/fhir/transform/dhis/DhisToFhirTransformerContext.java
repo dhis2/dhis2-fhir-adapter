@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
@@ -50,6 +51,14 @@ public interface DhisToFhirTransformerContext
     @Nonnull
     @ScriptMethod( description = "Returns the DHIS request (type DhisRequest) that causes the current transformation execution." )
     DhisRequest getDhisRequest();
+
+    @Nonnull
+    @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
+    FhirVersion getVersion();
+
+    @Nonnull
+    @ScriptMethod( description = "Returns the code of the remote subscription that is associated with the execution of the current transformation." )
+    String getRemoteSubscriptionCode();
 
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )

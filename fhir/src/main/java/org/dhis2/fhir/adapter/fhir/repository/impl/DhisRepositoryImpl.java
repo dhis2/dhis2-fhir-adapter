@@ -67,7 +67,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,8 +110,7 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull QueuedDhisResourceRepository queuedDhisResourceRepository,
         @Nonnull StoredDhisResourceService storedItemService,
         @Nonnull DhisResourceRepository dhisResourceRepository,
-        // TODO
-        @Nullable DhisToFhirTransformerService dhisToFhirTransformerService,
+        @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
         @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
     {
         this.authorizationContext = authorizationContext;
@@ -227,8 +225,13 @@ public class DhisRepositoryImpl implements DhisRepository
         dhisRequest.setResourceType( resource.getResourceType() );
         dhisRequest.setLastUpdated( resource.getLastUpdated() );
 
-        boolean saved = false;
         DhisToFhirTransformerRequest transformerRequest = dhisToFhirTransformerService.createTransformerRequest( dhisRequest, resource );
+        if ( transformerRequest == null )
+        {
+            return false;
+        }
+
+        boolean saved = false;
         do
         {
             DhisToFhirTransformOutcome<? extends IBaseResource> outcome;

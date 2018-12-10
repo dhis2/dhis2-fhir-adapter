@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;

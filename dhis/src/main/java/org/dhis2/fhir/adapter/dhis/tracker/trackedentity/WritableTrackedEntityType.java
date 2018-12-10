@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.AbstractDhisType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class WritableTrackedEntityType implements TrackedEntityType, Serializable
+public class WritableTrackedEntityType extends AbstractDhisType implements TrackedEntityType, Serializable
 {
     private static final long serialVersionUID = 797154293863611491L;
 
@@ -93,6 +94,13 @@ public class WritableTrackedEntityType implements TrackedEntityType, Serializabl
     public void setName( String name )
     {
         this.name = name;
+    }
+
+    @Override
+    public String getCode()
+    {
+        // tracked entity types do no have a code
+        return null;
     }
 
     @Override

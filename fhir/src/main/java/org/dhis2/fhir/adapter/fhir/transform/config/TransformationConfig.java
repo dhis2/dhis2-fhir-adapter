@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
+package org.dhis2.fhir.adapter.fhir.transform.config;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo

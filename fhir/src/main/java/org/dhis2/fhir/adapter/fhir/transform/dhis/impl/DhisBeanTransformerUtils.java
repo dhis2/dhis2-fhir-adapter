@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,41 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Transformer utilities that clone a bean (cached instances must not be modified
+ * by several thread, e.g. DHIS 2 objects).
  *
  * @author volsch
  */
-public interface DhisToFhirTransformerService
+public abstract class DhisBeanTransformerUtils
 {
     @Nullable
-    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+    @SuppressWarnings( { "unchecked" } )
+    public static <T extends DhisResource> T clone( @Nullable T object )
+    {
+        if ( object == null )
+        {
+            return null;
+        }
+        try
+        {
+            return (T) BeanUtils.cloneBean( object );
+        }
+        catch ( IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e )
+        {
+            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
+        }
+    }
 
-    @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;
+    private DhisBeanTransformerUtils()
+    {
+        super();
+    }
 }

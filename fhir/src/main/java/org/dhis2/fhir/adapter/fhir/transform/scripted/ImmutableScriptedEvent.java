@@ -28,34 +28,100 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * Mutable or immutable DHIS 2 resource that can be used by scripts safely.
+ * Immutable scripted event.
  *
  * @author volsch
  */
 @Scriptable
-public interface ScriptedDhisResource
+public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
 {
-    @Nullable
-    String getId();
+    private static final long serialVersionUID = -3248712035742910069L;
+
+    private final ScriptedEvent delegate;
+
+    public ImmutableScriptedEvent( @Nonnull ScriptedEvent delegate )
+    {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public boolean isNewResource()
+    {
+        return delegate.isNewResource();
+    }
 
     @Nullable
-    DhisResourceId getResourceId();
-
-    boolean isNewResource();
+    @Override
+    public String getId()
+    {
+        return delegate.getId();
+    }
 
     @Nullable
-    ZonedDateTime getLastUpdated();
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
+    }
 
     @Nullable
-    String getOrganizationUnitId();
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
+    }
 
-    void validate() throws TransformerException;
+    @Nullable
+    @Override
+    public String getOrganizationUnitId()
+    {
+        return delegate.getOrganizationUnitId();
+    }
+
+    @Nullable
+    @Override
+    public ZonedDateTime getEventDate()
+    {
+        return delegate.getEventDate();
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime getDueDate()
+    {
+        return delegate.getDueDate();
+    }
+
+    @Nullable
+    @Override
+    public EventStatus getStatus()
+    {
+        return delegate.getStatus();
+    }
+
+    @Override
+    @Nullable
+    public Location getCoordinate()
+    {
+        return delegate.getCoordinate();
+    }
+
+    @Override
+    public void validate() throws TransformerException
+    {
+        delegate.validate();
+    }
 }

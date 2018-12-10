@@ -41,7 +41,7 @@ import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
@@ -66,7 +66,7 @@ import java.util.UUID;
 @Component
 @Scriptable
 @ScriptType( value = "ReferenceUtils", var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to resolve FHIR Reference to FHIR Resources when handling FHIR to DHIS2 transformations." )
+    description = "Utilities to resolveRule FHIR Reference to FHIR Resources when handling FHIR to DHIS2 transformations." )
 public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "referenceUtils";
@@ -215,7 +215,7 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
                 finalResourceType, reference.getReferenceElement().getIdPart() ) :
             remoteFhirResourceRepository.find( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
                 finalResourceType, reference.getReferenceElement().getIdPart() );
-        final IBaseResource resource = optionalResource.map( r -> BeanTransformerUtils.clone( fhirContext, r ) )
+        final IBaseResource resource = optionalResource.map( r -> FhirBeanTransformerUtils.clone( fhirContext, r ) )
             .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for remote subscription resource " + resourceId ) );
         reference.setResource( resource );
         return resource;

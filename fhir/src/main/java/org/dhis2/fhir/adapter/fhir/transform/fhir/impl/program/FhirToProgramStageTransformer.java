@@ -62,6 +62,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEvent;
@@ -618,7 +619,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     protected boolean initAndValidateTrackedEntity( @Nonnull Program program, @Nonnull Map<String, Object> variables )
     {
-        final ScriptedTrackedEntityInstance trackedEntityInstance = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
+        final WritableScriptedTrackedEntityInstance trackedEntityInstance = getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, WritableScriptedTrackedEntityInstance.class );
         for ( final ProgramTrackedEntityAttribute attribute : program.getTrackedEntityAttributes() )
         {
             trackedEntityInstance.initValue( Reference.createIdReference( attribute.getAttributeId() ) );

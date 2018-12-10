@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,10 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -40,14 +38,19 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
+/**
+ * Immutable scripted enrollment.
+ *
+ * @author volsch
+ */
 @Scriptable
-public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
+public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializable
 {
-    private static final long serialVersionUID = -3248712035742910069L;
+    private static final long serialVersionUID = 3106142635120155470L;
 
-    private final ScriptedEvent delegate;
+    private final ScriptedEnrollment delegate;
 
-    public ImmutableScriptedEvent( @Nonnull ScriptedEvent delegate )
+    public ImmutableScriptedEnrollment( @Nonnull ScriptedEnrollment delegate )
     {
         this.delegate = delegate;
     }
@@ -58,11 +61,18 @@ public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
         return delegate.isNewResource();
     }
 
-    @Nullable
     @Override
+    @Nullable
     public String getId()
     {
         return delegate.getId();
+    }
+
+    @Nullable
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
     }
 
     @Nullable
@@ -72,32 +82,25 @@ public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
         return delegate.getLastUpdated();
     }
 
-    @Nullable
     @Override
+    @Nullable
     public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
     }
 
-    @Nullable
     @Override
-    public ZonedDateTime getEventDate()
+    @Nullable
+    public ZonedDateTime getEnrollmentDate()
     {
-        return delegate.getEventDate();
+        return delegate.getEnrollmentDate();
     }
 
     @Override
     @Nullable
-    public ZonedDateTime getDueDate()
+    public ZonedDateTime getIncidentDate()
     {
-        return delegate.getDueDate();
-    }
-
-    @Nullable
-    @Override
-    public EventStatus getStatus()
-    {
-        return delegate.getStatus();
+        return delegate.getIncidentDate();
     }
 
     @Override

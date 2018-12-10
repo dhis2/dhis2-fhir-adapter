@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ImmutableProgramStage implements ProgramStage, Serializable
@@ -55,9 +56,24 @@ public class ImmutableProgramStage implements ProgramStage, Serializable
 
     @JsonIgnore
     @Override
+    @Nonnull
+    public Set<Reference> getAllReferences()
+    {
+        return delegate.getAllReferences();
+    }
+
+    @JsonIgnore
+    @Override
     public String getId()
     {
         return delegate.getId();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getCode()
+    {
+        return delegate.getCode();
     }
 
     @JsonIgnore

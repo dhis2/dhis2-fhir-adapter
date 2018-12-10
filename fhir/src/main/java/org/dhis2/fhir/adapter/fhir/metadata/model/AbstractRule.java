@@ -67,10 +67,10 @@ import java.io.Serializable;
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
 @NamedQueries( {
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
-        "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true" ),
+        "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true AND r.inEnabled=true" ),
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query =
-        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true AND " +
-            "(r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true " +
+            "AND r.inEnabled=true AND (r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
             "(SELECT 1 FROM CodeSetValue csv JOIN csv.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
             "JOIN sc.system s ON s.enabled=true WHERE csv.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ) } )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
@@ -106,9 +106,15 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
 
+    private boolean inEnabled;
+
+    private boolean outEnabled;
+
     private ExecutableScript applicableInScript;
 
     private CodeSet applicableCodeSet;
+
+    private ExecutableScript applicableOutScript;
 
     @NotNull
     private ExecutableScript transformInScript;
@@ -217,7 +223,43 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.applicableCodeSet = applicableCodeSet;
     }
 
-    @ManyToOne( optional = false )
+    @ManyToOne
+    @JoinColumn( name = "applicable_out_script_id", referencedColumnName = "id" )
+    public ExecutableScript getApplicableOutScript()
+    {
+        return applicableOutScript;
+    }
+
+    public void setApplicableOutScript( ExecutableScript applicableOutScript )
+    {
+        this.applicableOutScript = applicableOutScript;
+    }
+
+    @Basic
+    @Column( name = "in_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isInEnabled()
+    {
+        return inEnabled;
+    }
+
+    public void setInEnabled( boolean inEnabled )
+    {
+        this.inEnabled = inEnabled;
+    }
+
+    @Basic
+    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isOutEnabled()
+    {
+        return outEnabled;
+    }
+
+    public void setOutEnabled( boolean outEnabled )
+    {
+        this.outEnabled = outEnabled;
+    }
+
+    @ManyToOne
     @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id", nullable = false )
     public ExecutableScript getTransformInScript()
     {

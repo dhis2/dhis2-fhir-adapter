@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,47 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEnrollment;
-import org.dhis2.fhir.adapter.geo.Location;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 
-@Scriptable
-public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializable
+/**
+ * Immutable scripted tracked entity instance.
+ *
+ * @author volsch
+ */
+public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
 {
-    private static final long serialVersionUID = 3106142635120155470L;
+    private final ScriptedTrackedEntityInstance delegate;
 
-    private final ScriptedEnrollment delegate;
-
-    public ImmutableScriptedEnrollment( @Nonnull ScriptedEnrollment delegate )
+    public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
     {
         this.delegate = delegate;
     }
 
     @Override
-    public boolean isNewResource()
+    @Nonnull
+    public String getTypeId()
     {
-        return delegate.isNewResource();
+        return delegate.getTypeId();
+    }
+
+    @Override
+    @Nullable
+    public String getCoordinates()
+    {
+        return delegate.getCoordinates();
+    }
+
+    @Override
+    @Nullable
+    public Object getValue( @Nonnull Reference attributeReference )
+    {
+        return delegate.getValue( attributeReference );
     }
 
     @Override
@@ -65,6 +80,19 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializ
 
     @Nullable
     @Override
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
+    }
+
+    @Override
+    public boolean isNewResource()
+    {
+        return delegate.isNewResource();
+    }
+
+    @Override
+    @Nullable
     public ZonedDateTime getLastUpdated()
     {
         return delegate.getLastUpdated();
@@ -75,27 +103,6 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Serializ
     public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
-    }
-
-    @Override
-    @Nullable
-    public ZonedDateTime getEnrollmentDate()
-    {
-        return delegate.getEnrollmentDate();
-    }
-
-    @Override
-    @Nullable
-    public ZonedDateTime getIncidentDate()
-    {
-        return delegate.getIncidentDate();
-    }
-
-    @Override
-    @Nullable
-    public Location getCoordinate()
-    {
-        return delegate.getCoordinate();
     }
 
     @Override

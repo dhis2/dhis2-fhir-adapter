@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
 import org.dhis2.fhir.adapter.dhis.model.Option;
 import org.dhis2.fhir.adapter.dhis.model.OptionSet;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +65,7 @@ public abstract class FhirToDhisOptionSetUtils
         }
         if ( matcher.groupCount() != 1 )
         {
-            throw new TransformerScriptException( "Pattern to resolve integer options must have exactly one group: " + pattern.pattern() );
+            throw new TransformerScriptException( "Pattern to resolveRule integer options must have exactly one group: " + pattern.pattern() );
         }
         return matcher.group( 1 );
     }
@@ -93,12 +93,12 @@ public abstract class FhirToDhisOptionSetUtils
                 {
                     if ( options.put( Integer.parseInt( value ), code ) != null )
                     {
-                        throw new TransformerScriptException( "Pattern to resolve integer options results in duplicate integer value " + value + ": " + resultingPattern.pattern() );
+                        throw new TransformerScriptException( "Pattern to resolveRule integer options results in duplicate integer value " + value + ": " + resultingPattern.pattern() );
                     }
                 }
                 catch ( NumberFormatException e )
                 {
-                    throw new TransformerScriptException( "Pattern to resolve integer options results in non-integer value \"" + value + "\": " + resultingPattern.pattern() );
+                    throw new TransformerScriptException( "Pattern to resolveRule integer options results in non-integer value \"" + value + "\": " + resultingPattern.pattern() );
                 }
             }
         }
@@ -111,7 +111,7 @@ public abstract class FhirToDhisOptionSetUtils
     {
         if ( options.isEmpty() )
         {
-            throw new TransformerScriptException( "Pattern to resolve integer options does not result in any option: " + pattern.pattern() );
+            throw new TransformerScriptException( "Pattern to resolveRule integer options does not result in any option: " + pattern.pattern() );
         }
 
         int expectedValue = options.firstKey();
@@ -119,7 +119,7 @@ public abstract class FhirToDhisOptionSetUtils
         {
             if ( value != expectedValue )
             {
-                throw new TransformerScriptException( "Pattern to resolve integer options does not result subsequent ordered integer values: " + pattern.pattern() );
+                throw new TransformerScriptException( "Pattern to resolveRule integer options does not result subsequent ordered integer values: " + pattern.pattern() );
             }
             expectedValue++;
         }

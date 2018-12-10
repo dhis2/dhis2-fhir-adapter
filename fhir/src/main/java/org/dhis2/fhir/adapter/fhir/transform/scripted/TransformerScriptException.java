@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,24 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Thrown if a transformation script caused an exception.
  *
  * @author volsch
  */
-public interface DhisToFhirTransformerService
+public class TransformerScriptException extends TransformerException
 {
-    @Nullable
-    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+    private static final long serialVersionUID = -1296515465059154893L;
 
-    @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;
+    public TransformerScriptException( String message )
+    {
+        super( message );
+    }
+
+    public TransformerScriptException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

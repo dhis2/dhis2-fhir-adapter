@@ -70,6 +70,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Abstract base class for all transformers from FHIR to DHIS 2 resources.
+ *
+ * @param <R> the concrete type of the FHIR resource.
+ * @param <U> the concrete type of transformation rule that this transformer processes.
+ * @author volsch
+ */
 public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U extends AbstractRule> implements FhirToDhisTransformer<R, U>
 {
     protected final Logger logger = LoggerFactory.getLogger( getClass() );

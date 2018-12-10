@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -80,6 +81,13 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     public String getId()
     {
         return enrollment.getId();
+    }
+
+    @Nullable
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return enrollment.getResourceId();
     }
 
     @Nullable

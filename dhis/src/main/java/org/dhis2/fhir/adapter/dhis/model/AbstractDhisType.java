@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,19 +28,40 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class TransformerScriptException extends TransformerException
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Abstract implementation of {@link DhisType}.
+ *
+ * @author volsch
+ */
+public abstract class AbstractDhisType implements DhisType, Serializable
 {
-    private static final long serialVersionUID = -1296515465059154893L;
+    private static final long serialVersionUID = 7960220674294587120L;
 
-    public TransformerScriptException( String message )
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public Set<Reference> getAllReferences()
     {
-        super( message );
-    }
-
-    public TransformerScriptException( String message, Throwable cause )
-    {
-        super( message, cause );
+        final Set<Reference> references = new HashSet<>();
+        if ( getId() != null )
+        {
+            references.add( new Reference( getId(), ReferenceType.ID ) );
+        }
+        if ( getCode() != null )
+        {
+            references.add( new Reference( getCode(), ReferenceType.CODE ) );
+        }
+        if ( getName() != null )
+        {
+            references.add( new Reference( getName(), ReferenceType.NAME ) );
+        }
+        return references;
     }
 }

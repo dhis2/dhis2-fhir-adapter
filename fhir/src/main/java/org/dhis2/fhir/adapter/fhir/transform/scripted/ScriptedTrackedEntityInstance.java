@@ -50,6 +50,4 @@ public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 
     @Nullable
     Object getValue( @Nonnull Reference attributeReference );
-
-    void initValue( @Nonnull Reference attributeReference );
 }

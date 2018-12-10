@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,43 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Transforms a DHIS 2 resource to a FHIR resource.
  *
+ * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
+ * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
-public interface DhisToFhirTransformerService
+public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends AbstractRule> extends FhirVersionRestricted
 {
-    @Nullable
-    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+    @Nonnull
+    DhisResourceType getDhisResourceType();
+
+    @Nonnull
+    Class<R> getDhisResourceClass();
+
+    @Nonnull
+    Class<U> getRuleClass();
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;
+    DhisToFhirTransformOutcome<IBaseResource> transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull U rule,
+        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+
+    @Nullable
+    DhisToFhirTransformOutcome<IBaseResource> transformCasted( @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull ScriptedDhisResource input, @Nonnull AbstractRule rule,
+        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 }

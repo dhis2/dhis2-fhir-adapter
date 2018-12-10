@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,52 +28,35 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. HAPI FHIR objects).
+ * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
+ * depending on the DHIS 2 resource type.
  *
  * @author volsch
  */
-public abstract class BeanTransformerUtils
+public interface DhisToFhirRuleResolver
 {
-    @Nullable
-    @SuppressWarnings( { "unchecked" } )
-    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
-    {
-        if ( object == null )
-        {
-            return null;
-        }
-        final IParser parser = fhirContext.newJsonParser();
-        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
-    }
+    @Nonnull
+    DhisResourceType getDhisResourceType();
+
+    @Nonnull
+    List<? extends AbstractRule> resolveRule( @Nonnull DhisResource dhisResource );
 
     @Nullable
-    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
-    {
-        if ( objects == null )
-        {
-            return null;
-        }
-        if ( objects.isEmpty() )
-        {
-            return Collections.emptyList();
-        }
-        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
-    }
+    RemoteSubscription resolveRemoteSubscription( @Nonnull DhisResource dhisResource,
+        Collection<? extends AbstractRule> possibleRules );
 
-    private BeanTransformerUtils()
-    {
-        super();
-    }
+    @Nonnull
+    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
 }

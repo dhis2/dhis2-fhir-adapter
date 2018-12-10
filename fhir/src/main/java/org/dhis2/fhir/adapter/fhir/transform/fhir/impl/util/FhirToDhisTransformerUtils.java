@@ -34,6 +34,12 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
+/**
+ * Base interface for FHIR version restricted domain specific transformations
+ * utilities methods for FHIR resource to DHIS 2 resource transformations.
+ *
+ * @author volsch
+ */
 public interface FhirToDhisTransformerUtils extends FhirVersionRestricted
 {
     @Nonnull

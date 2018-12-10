@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.Option;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
@@ -97,6 +98,13 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     public String getId()
     {
         return trackedEntityInstance.getId();
+    }
+
+    @Nullable
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return trackedEntityInstance.getResourceId();
     }
 
     @Nullable
@@ -229,7 +237,6 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return true;
     }
 
-    @Override
     public void initValue( @Nonnull Reference attributeReference )
     {
         trackedEntityType.getOptionalTypeAttribute( attributeReference ).ifPresent( ta -> trackedEntityInstance.getAttribute( ta.getAttributeId() ) );

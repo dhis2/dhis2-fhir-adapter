@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ImmutableProgram implements Program, Serializable
@@ -51,6 +52,14 @@ public class ImmutableProgram implements Program, Serializable
     public ImmutableProgram( @Nonnull @JsonProperty( "delegate" ) WritableProgram delegate )
     {
         this.delegate = delegate;
+    }
+
+    @JsonIgnore
+    @Override
+    @Nonnull
+    public Set<Reference> getAllReferences()
+    {
+        return delegate.getAllReferences();
     }
 
     @JsonIgnore

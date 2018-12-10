@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirToDhisTransformerUtils;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,25 +40,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link FhirToDhisTransformerRequest}.
+ * Implementation of {@link DhisToFhirTransformerRequest}.
  *
  * @author volsch
  */
-public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRequest
+public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRequest
 {
     private static final long serialVersionUID = 4181923310602004074L;
 
-    private final FhirToDhisTransformerContext context;
+    private final DhisToFhirTransformerContext context;
 
-    private final IBaseResource input;
+    private final ScriptedDhisResource input;
 
-    private final Map<String, FhirToDhisTransformerUtils> transformerUtils;
+    private final Map<String, DhisToFhirTransformerUtils> transformerUtils;
 
     private final List<? extends AbstractRule> rules;
 
     private int ruleIndex;
 
-    public FhirToDhisTransformerRequestImpl( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils, @Nonnull List<? extends AbstractRule> rules )
+    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils, @Nonnull List<? extends AbstractRule> rules )
     {
         this.context = context;
         this.input = input;
@@ -68,20 +68,20 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     @Nonnull
     @Override
-    public FhirToDhisTransformerContext getContext()
+    public DhisToFhirTransformerContext getContext()
     {
         return context;
     }
 
     @Nonnull
     @Override
-    public IBaseResource getInput()
+    public ScriptedDhisResource getInput()
     {
         return input;
     }
 
     @Nonnull
-    public Map<String, FhirToDhisTransformerUtils> getTransformerUtils()
+    public Map<String, DhisToFhirTransformerUtils> getTransformerUtils()
     {
         return transformerUtils;
     }

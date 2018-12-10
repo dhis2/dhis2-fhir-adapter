@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,24 +28,52 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Transformer utilities that clone a bean (cached instances must not be modified
+ * by several thread, e.g. HAPI FHIR objects).
  *
  * @author volsch
  */
-public interface DhisToFhirTransformerService
+public abstract class FhirBeanTransformerUtils
 {
     @Nullable
-    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+    @SuppressWarnings( { "unchecked" } )
+    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
+    {
+        if ( object == null )
+        {
+            return null;
+        }
+        final IParser parser = fhirContext.newJsonParser();
+        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
+    }
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;
+    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
+    {
+        if ( objects == null )
+        {
+            return null;
+        }
+        if ( objects.isEmpty() )
+        {
+            return Collections.emptyList();
+        }
+        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
+    }
+
+    private FhirBeanTransformerUtils()
+    {
+        super();
+    }
 }

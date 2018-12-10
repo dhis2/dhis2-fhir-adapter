@@ -34,7 +34,9 @@ import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +59,22 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private final TrackedEntityService trackedEntityService;
 
+    private final TrackedEntityMetadataService trackedEntityMetadataService;
+
     private final EnrollmentService enrollmentService;
 
     private final EventService eventService;
 
-    public DhisResourceRepositoryImpl(
-        @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull EnrollmentService enrollmentService,
-        @Nonnull EventService eventService )
+    private final ProgramMetadataService programMetadataService;
+
+    public DhisResourceRepositoryImpl( @Nonnull TrackedEntityService trackedEntityService, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
+        @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService, @Nonnull ProgramMetadataService programMetadataService )
     {
         this.trackedEntityService = trackedEntityService;
+        this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.enrollmentService = enrollmentService;
         this.eventService = eventService;
+        this.programMetadataService = programMetadataService;
     }
 
     @Nonnull
@@ -174,5 +180,4 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
         return updated;
     }
-
 }

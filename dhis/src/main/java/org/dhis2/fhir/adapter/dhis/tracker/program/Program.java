@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -44,14 +45,8 @@ import java.util.Optional;
  * @author volsch
  */
 @Scriptable
-public interface Program
+public interface Program extends DhisType
 {
-    String getId();
-
-    String getName();
-
-    String getCode();
-
     String getTrackedEntityTypeId();
 
     boolean isSelectIncidentDatesInFuture();
