@@ -28,15 +28,20 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Implementation of {@link DhisToFhirTransformerContext}.
@@ -51,10 +56,13 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
 
     private final RemoteSubscription remoteSubscription;
 
-    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription )
+    private final Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
+
+    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription, @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType )
     {
         this.dhisRequest = dhisRequest;
         this.remoteSubscription = remoteSubscription;
+        this.resourceSystemsByType = resourceSystemsByType;
     }
 
     @Nonnull
@@ -83,6 +91,20 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public ZonedDateTime now()
     {
         return ZonedDateTime.now();
+    }
+
+    @Nullable
+    @Override
+    public ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType )
+    {
+        return resourceSystemsByType.get( resourceType );
+    }
+
+    @Nonnull
+    @Override
+    public Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType )
+    {
+        return Optional.ofNullable( getResourceSystem( resourceType ) );
     }
 
     @Override

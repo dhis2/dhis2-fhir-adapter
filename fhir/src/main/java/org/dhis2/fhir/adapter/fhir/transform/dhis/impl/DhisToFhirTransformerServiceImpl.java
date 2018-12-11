@@ -31,8 +31,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -44,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.util.DhisBeanTransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
@@ -56,10 +60,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link DhisToFhirTransformerService}.
@@ -73,6 +79,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final LockManager lockManager;
 
+    private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
+
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
     private final Map<FhirVersionedValue<DhisResourceType>, DhisToFhirTransformer<?, ?>> transformers = new HashMap<>();
@@ -82,12 +90,14 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
+        @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<DhisToFhirTransformerUtils>> transformUtilsProvider,
         @Nonnull ScriptExecutor scriptExecutor )
     {
         this.lockManager = lockManager;
+        this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.scriptExecutor = scriptExecutor;
 
         requestResolvers.ifAvailable( resolvers ->
@@ -140,6 +150,10 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             logger.info( "Could not determine remote subscription to process DHIS resource." );
             return null;
         }
+        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( remoteSubscription );
+        final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
+            .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
         final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( remoteSubscription.getFhirVersion() );
         if ( transformerUtils == null )
@@ -147,7 +161,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + remoteSubscription.getFhirVersion() );
         }
 
-        return new DhisToFhirTransformerRequestImpl( new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription ),
+        return new DhisToFhirTransformerRequestImpl( new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription, resourceSystemsByType ),
             scriptedInput, rules, transformerUtils );
     }
 

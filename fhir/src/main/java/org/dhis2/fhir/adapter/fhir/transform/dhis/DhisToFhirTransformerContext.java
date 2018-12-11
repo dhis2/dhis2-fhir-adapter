@@ -28,16 +28,20 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * The context of the current transformation between a DHIS 2 resource to a FHIR resource.
@@ -59,6 +63,12 @@ public interface DhisToFhirTransformerContext
     @Nonnull
     @ScriptMethod( description = "Returns the code of the remote subscription that is associated with the execution of the current transformation." )
     String getRemoteSubscriptionCode();
+
+    @Nullable
+    ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType );
+
+    @Nonnull
+    Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )
