@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 /**
  * Custom repository for {@link RemoteSubscription}.
@@ -39,6 +40,9 @@ import javax.annotation.Nonnull;
  */
 public interface CustomRemoteSubscriptionRepository
 {
+    @Nonnull
+    Optional<RemoteSubscription> findOnly();
+
     @Nonnull
     <S extends RemoteSubscription> S saveAndFlush( @Nonnull S entity );
 

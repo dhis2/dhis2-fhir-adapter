@@ -31,12 +31,13 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataElement;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 
-public class ImmutableProgramStageDataElement implements ProgramStageDataElement, Serializable
+public class ImmutableProgramStageDataElement implements ProgramStageDataElement, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -5845301607041878968L;
 

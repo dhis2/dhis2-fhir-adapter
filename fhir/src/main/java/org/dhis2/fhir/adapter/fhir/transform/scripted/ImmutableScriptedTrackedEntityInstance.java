@@ -29,7 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 
 import javax.annotation.Nonnull;
@@ -41,7 +44,7 @@ import java.time.ZonedDateTime;
  *
  * @author volsch
  */
-public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance
+public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEntityInstance, ImmutableDhisObject
 {
     private final ScriptedTrackedEntityInstance delegate;
 
@@ -96,6 +99,31 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
     public ZonedDateTime getLastUpdated()
     {
         return delegate.getLastUpdated();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        if ( delegate instanceof ImmutableDhisObject )
+        {
+            return delegate;
+        }
+        return new ImmutableScriptedTrackedEntityInstance( delegate );
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityAttributes getTrackedEntityAttributes()
+    {
+        return delegate.getTrackedEntityAttributes();
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityType getType()
+    {
+        return delegate.getType();
     }
 
     @Override

@@ -83,7 +83,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
             .andExpect( method( HttpMethod.GET ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/program.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
@@ -96,7 +96,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
@@ -107,7 +107,7 @@ public class ProgramMetadataServiceImplTest
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
-        service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
+        service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/programs.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
@@ -131,7 +131,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/emptyPrograms.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
@@ -143,7 +143,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/programs.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
@@ -156,7 +156,7 @@ public class ProgramMetadataServiceImplTest
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/emptyPrograms.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertFalse( ou.isPresent() );
     }
 

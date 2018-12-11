@@ -42,6 +42,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -63,9 +64,12 @@ import java.util.Set;
 @Entity
 @Table( name = "fhir_remote_subscription" )
 @JsonFilter( ToManyPropertyFilter.FILTER_NAME )
+@NamedQuery( name = RemoteSubscription.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM RemoteSubscription rs" )
 public class RemoteSubscription extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
+
+    public static final String ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "allRemoteSubscriptions";
 
     public static final int MAX_NAME_LENGTH = 50;
 
@@ -82,6 +86,8 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     private boolean enabled = true;
 
     private boolean locked;
+
+    private boolean outEnabled;
 
     private String description;
 
@@ -136,7 +142,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     }
 
     @Basic
-    @Column( name = "enabled", nullable = false )
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isEnabled()
     {
         return enabled;
@@ -148,7 +154,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     }
 
     @Basic
-    @Column( name = "locked", nullable = false )
+    @Column( name = "locked", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isLocked()
     {
         return locked;
@@ -157,6 +163,18 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     public void setLocked( boolean locked )
     {
         this.locked = locked;
+    }
+
+    @Basic
+    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isOutEnabled()
+    {
+        return outEnabled;
+    }
+
+    public void setOutEnabled( boolean outEnabled )
+    {
+        this.outEnabled = outEnabled;
     }
 
     @Basic

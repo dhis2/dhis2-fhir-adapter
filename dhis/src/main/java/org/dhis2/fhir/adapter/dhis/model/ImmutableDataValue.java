@@ -43,7 +43,7 @@ import java.time.ZonedDateTime;
  *
  * @author volsch
  */
-public class ImmutableDataValue implements DataValue, Serializable
+public class ImmutableDataValue implements DataValue, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = 5577400306112844124L;
 

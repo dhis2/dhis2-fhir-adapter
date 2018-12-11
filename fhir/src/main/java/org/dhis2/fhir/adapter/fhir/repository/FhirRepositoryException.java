@@ -41,4 +41,9 @@ public class FhirRepositoryException extends RuntimeException
     {
         super( message );
     }
+
+    public FhirRepositoryException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

@@ -178,7 +178,17 @@ public class DhisRepositoryImpl implements DhisRepository
             return;
         }
 
-        final Optional<? extends DhisResource> resource = dhisResourceRepository.findRefreshed( Objects.requireNonNull( DhisResourceId.parse( queueItem.getId() ) ) );
+        final Optional<? extends DhisResource> resource;
+        authorizationContext.setAuthorization( systemDhis2Authorization );
+        try
+        {
+            resource = dhisResourceRepository.findRefreshed( Objects.requireNonNull( DhisResourceId.parse( queueItem.getId() ) ) );
+        }
+        finally
+        {
+            authorizationContext.resetAuthorization();
+        }
+
         if ( resource.isPresent() )
         {
             final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource.get() );

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,41 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.apache.commons.beanutils.BeanUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 
-public interface ProgramMetadataService
+/**
+ * Transformer utilities that clone a bean (cached instances must not be modified
+ * by several thread, e.g. DHIS 2 objects).
+ *
+ * @author volsch
+ */
+public abstract class DhisBeanTransformerUtils
 {
-    @Nonnull
-    Optional<? extends Program> findProgramByReference( @Nonnull Reference reference );
+    @Nullable
+    @SuppressWarnings( { "unchecked" } )
+    public static <T extends DhisResource> T clone( @Nullable T object )
+    {
+        if ( object == null )
+        {
+            return null;
+        }
+        try
+        {
+            return (T) BeanUtils.cloneBean( object );
+        }
+        catch ( IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e )
+        {
+            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
+        }
+    }
+
+    private DhisBeanTransformerUtils()
+    {
+        super();
+    }
 }

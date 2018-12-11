@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,35 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Marker interface that marks immutable DHIS objects.
  *
  * @author volsch
  */
-public interface DhisToFhirRuleResolver
+public interface ImmutableDhisObject
 {
-    @Nonnull
-    DhisResourceType getDhisResourceType();
-
-    @Nonnull
-    List<? extends AbstractRule> resolveRule( @Nonnull DhisResource dhisResource );
-
-    @Nullable
-    RemoteSubscription resolveRemoteSubscription( @Nonnull DhisResource dhisResource,
-        Collection<? extends AbstractRule> possibleRules );
-
-    @Nonnull
-    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
 }

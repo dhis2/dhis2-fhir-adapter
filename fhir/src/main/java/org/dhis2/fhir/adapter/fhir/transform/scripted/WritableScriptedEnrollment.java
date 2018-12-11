@@ -61,12 +61,15 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     private final Enrollment enrollment;
 
+    private final ScriptedTrackedEntityInstance trackedEntityInstance;
+
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEnrollment( @Nonnull Program program, @Nonnull Enrollment enrollment, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEnrollment( @Nonnull Program program, @Nonnull Enrollment enrollment, @Nonnull ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
     {
         this.program = program;
         this.enrollment = enrollment;
+        this.trackedEntityInstance = trackedEntityInstance;
         this.valueConverter = valueConverter;
     }
 
@@ -103,6 +106,13 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     public String getOrganizationUnitId()
     {
         return enrollment.getOrgUnitId();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return trackedEntityInstance;
     }
 
     @Nullable

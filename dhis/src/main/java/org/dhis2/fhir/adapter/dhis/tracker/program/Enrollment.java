@@ -62,7 +62,8 @@ public class Enrollment implements DhisResource, Serializable
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
-    @JsonProperty( access = JsonProperty.Access.READ_ONLY )
+    @JsonProperty
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 
     @JsonProperty( "orgUnit" )

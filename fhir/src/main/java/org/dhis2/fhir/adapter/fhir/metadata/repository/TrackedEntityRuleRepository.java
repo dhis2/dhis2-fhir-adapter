@@ -28,16 +28,22 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +57,13 @@ import java.util.UUID;
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntityRule, UUID>, QuerydslPredicateExecutor<TrackedEntityRule>
 {
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT ter FROM #{#entityName} ter JOIN ter.trackedEntity te WHERE ter.enabled=true AND ter.outEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) AND " +
+        "te.enabled=true AND te.outEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
+    @Cacheable( keyGenerator = "trackedEntityRuleFindAllByTypeKeyGenerator" )
+    Collection<TrackedEntityRule> findAllByType( @Param( "typeReferences" ) @Nonnull Collection<Reference> typeReferences );
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

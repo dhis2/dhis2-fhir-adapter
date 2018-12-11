@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionR
 import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedRemoteSubscriptionResourceEvent;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,7 @@ import javax.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementation of {@link CustomRemoteSubscriptionRepository}.
@@ -62,6 +64,19 @@ public class CustomRemoteSubscriptionRepositoryImpl implements CustomRemoteSubsc
     {
         this.entityManager = entityManager;
         this.applicationEventPublisher = applicationEventPublisher;
+    }
+
+    @Nonnull
+    @Cacheable( key = "{#root.methodName}", cacheManager = "metadataCacheManager", cacheNames = "remoteSubscription" )
+    public Optional<RemoteSubscription> findOnly()
+    {
+        final List<RemoteSubscription> result = entityManager.createNamedQuery( RemoteSubscription.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, RemoteSubscription.class )
+            .setMaxResults( 2 ).getResultList();
+        if ( (result.isEmpty()) || (result.size() > 1) )
+        {
+            return Optional.empty();
+        }
+        return Optional.of( result.get( 0 ) );
     }
 
     @Override

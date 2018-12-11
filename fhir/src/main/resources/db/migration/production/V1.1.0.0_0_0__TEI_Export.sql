@@ -131,10 +131,14 @@ COMMENT ON COLUMN fhir_queued_dhis_resource.dhis_resource_id IS 'The ID (with re
 COMMENT ON COLUMN fhir_queued_dhis_resource.queued_at IS 'The timestamp when the data has been queued last time.';
 
 ALTER TABLE fhir_rule
-  ADD in_enabled BOOLEAN DEFAULT TRUE NOT NULL,
-  ADD out_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+  ADD COLUMN in_enabled BOOLEAN DEFAULT TRUE NOT NULL,
+  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
+  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
 COMMENT ON COLUMN fhir_rule.in_enabled IS 'Specifies if transformation from FHIR to DHIS resource is enabled.';
 COMMENT ON COLUMN fhir_rule.out_enabled IS 'Specifies if transformation from DHIS to FHIR resource is enabled.';
+COMMENT ON COLUMN fhir_rule.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
+COMMENT ON COLUMN fhir_rule.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 
 ALTER TABLE fhir_rule
   ADD COLUMN applicable_out_script_id UUID,
@@ -144,11 +148,27 @@ CREATE INDEX fhir_rule_i4
 COMMENT ON COLUMN fhir_rule.applicable_out_script_id IS 'References the evaluation script that is used to evaluate if the DHIS 2 resource is applicable to be processed by this rule. If no script has been specified, the rule is applicable for further processing.';
 
 ALTER TABLE fhir_rule
+  ADD COLUMN stop BOOLEAN DEFAULT FALSE NOT NULL;
+COMMENT ON COLUMN fhir_rule.stop IS 'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well.';
+
+ALTER TABLE fhir_rule
   ADD COLUMN transform_out_script_id UUID,
-  ADD CONSTRAINT fhir_rule_fk6 FOREIGN KEY (transform_out_script_id) REFERENCES fhir_executable_script (id);
+  ADD CONSTRAINT fhir_rule_fk7 FOREIGN KEY (transform_out_script_id) REFERENCES fhir_executable_script (id);
 CREATE INDEX fhir_rule_i5
   ON fhir_rule (transform_out_script_id);
 COMMENT ON COLUMN fhir_rule.transform_out_script_id IS 'References the transformation script that is used to transform the DHIS 2 resource to the FHIR resource.';
 
 ALTER TABLE fhir_rule
   ALTER COLUMN transform_in_script_id DROP NOT NULL;
+
+ALTER TABLE fhir_tracked_entity
+  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
+  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+COMMENT ON COLUMN fhir_tracked_entity.out_enabled IS 'Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled.';
+COMMENT ON COLUMN fhir_tracked_entity.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type.';
+COMMENT ON COLUMN fhir_tracked_entity.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type.';
+
+ALTER TABLE fhir_remote_subscription
+  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+COMMENT ON COLUMN fhir_remote_subscription.out_enabled IS 'Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled.';

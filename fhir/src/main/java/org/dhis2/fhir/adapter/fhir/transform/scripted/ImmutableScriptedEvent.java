@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -39,6 +40,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * Immutable scripted event.
@@ -46,7 +48,7 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
+public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -3248712035742910069L;
 
@@ -89,6 +91,17 @@ public class ImmutableScriptedEvent implements ScriptedEvent, Serializable
     public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        if ( delegate.getTrackedEntityInstance() instanceof ImmutableDhisObject )
+        {
+            return delegate.getTrackedEntityInstance();
+        }
+        return new ImmutableScriptedTrackedEntityInstance( Objects.requireNonNull( delegate.getTrackedEntityInstance() ) );
     }
 
     @Nullable

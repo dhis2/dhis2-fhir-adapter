@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,33 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Optional;
 
-public interface ProgramMetadataService
+/**
+ * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
+ * depending on the DHIS 2 resource type.
+ *
+ * @author volsch
+ */
+public interface DhisToFhirRequestResolver
 {
     @Nonnull
-    Optional<? extends Program> findProgramByReference( @Nonnull Reference reference );
+    DhisResourceType getDhisResourceType();
+
+    @Nonnull
+    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
+
+    @Nonnull
+    List<? extends AbstractRule> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
+
+    @Nonnull
+    Optional<RemoteSubscription> resolveRemoteSubscription( @Nonnull ScriptedDhisResource scriptedDhisResource );
 }

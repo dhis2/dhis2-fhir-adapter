@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.cache;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,52 +28,40 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. HAPI FHIR objects).
+ * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository#findAllByType(Collection)}
+ * Since cache may be serialized to external storage, cache is automatically a string representation.
  *
  * @author volsch
  */
-public abstract class FhirBeanTransformerUtils
+@Component
+public class TrackedEntityRuleFindAllByTypeKeyGenerator implements KeyGenerator
 {
-    @Nullable
-    @SuppressWarnings( { "unchecked" } )
-    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
+    @Override
+    @Nonnull
+    public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
     {
-        if ( object == null )
-        {
-            return null;
-        }
-        final IParser parser = fhirContext.newJsonParser();
-        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
-    }
+        @SuppressWarnings( "unchecked" ) final Collection<Reference> references = (Collection<Reference>) params[0];
+        final SortedSet<String> referenceStrings = references.stream().map( Reference::toString )
+            .collect( Collectors.toCollection( TreeSet::new ) );
 
-    @Nullable
-    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
-    {
-        if ( objects == null )
+        final StringBuilder sb = new StringBuilder( "findAllByType" );
+        // codes must have same order every time
+        for ( final String string : referenceStrings )
         {
-            return null;
+            sb.append( ',' ).append( string );
         }
-        if ( objects.isEmpty() )
-        {
-            return Collections.emptyList();
-        }
-        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
-    }
-
-    private FhirBeanTransformerUtils()
-    {
-        super();
+        return sb.toString();
     }
 }

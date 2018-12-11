@@ -44,21 +44,24 @@ import java.util.stream.Collectors;
  * Defines the supported FHIR resource types. For every FHIR Resource type the name of
  * the simple name of the HAPI FHIR class that implements this FHIR Resource type can
  * be specified. This enabled version independent lookups. Since HAPI FHIR Resource
- * class maty have been extended, also the super class hierarchy of that class is
- * checked.
+ * class may have been extended, also the super class hierarchy of that class is
+ * checked.<br>
+ * Resources may depend on each other. A lower order means that the resource does
+ * not depend on resources with a lower order than its order or it least can be created.
+ * without the need that the other resources must be present.
  *
  * @author volsch
  */
 public enum FhirResourceType
 {
-    DIAGNOSTIC_REPORT( "DiagnosticReport", "DiagnosticReport" ),
-    IMMUNIZATION( "Immunization", "Immunization" ),
-    LOCATION( "Location", "Location" ),
-    MEDICATION_REQUEST( "MedicationRequest", "MedicationRequest" ),
-    OBSERVATION( "Observation", "Observation" ),
-    ORGANIZATION( "Organization", "Organization" ),
-    PATIENT( "Patient", "Patient" ),
-    RELATED_PERSON( "RelatedPerson", "RelatedPerson" );
+    DIAGNOSTIC_REPORT( "DiagnosticReport", 30, "DiagnosticReport" ),
+    IMMUNIZATION( "Immunization", 22, "Immunization" ),
+    LOCATION( "Location", 2, "Location" ),
+    MEDICATION_REQUEST( "MedicationRequest", 21, "MedicationRequest" ),
+    OBSERVATION( "Observation", 20, "Observation" ),
+    ORGANIZATION( "Organization", 1, "Organization" ),
+    PATIENT( "Patient", 10, "Patient" ),
+    RELATED_PERSON( "RelatedPerson", 11, "RelatedPerson" );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
@@ -86,11 +89,14 @@ public enum FhirResourceType
 
     private final String resourceTypeName;
 
+    private final int order;
+
     private final Set<String> simpleClassNames;
 
-    FhirResourceType( String resourceTypeName, String... simpleClassNames )
+    FhirResourceType( String resourceTypeName, int order, String... simpleClassNames )
     {
         this.resourceTypeName = resourceTypeName;
+        this.order = order;
         this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( simpleClassNames ) ) );
     }
 
@@ -98,6 +104,11 @@ public enum FhirResourceType
     public String getResourceTypeName()
     {
         return resourceTypeName;
+    }
+
+    public int getOrder()
+    {
+        return order;
     }
 
     @Nonnull

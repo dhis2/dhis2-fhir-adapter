@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
@@ -50,4 +52,10 @@ public interface ScriptedTrackedEntityInstance extends ScriptedDhisResource
 
     @Nullable
     Object getValue( @Nonnull Reference attributeReference );
+
+    @Nonnull
+    TrackedEntityAttributes getTrackedEntityAttributes();
+
+    @Nonnull
+    TrackedEntityType getType();
 }

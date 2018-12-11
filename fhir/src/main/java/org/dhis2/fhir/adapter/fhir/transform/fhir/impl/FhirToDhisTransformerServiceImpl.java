@@ -46,9 +46,9 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractCodeFhirToDhisTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
+import org.dhis2.fhir.adapter.fhir.transform.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -139,7 +139,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
         final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
         final List<? extends AbstractRule> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
-            .stream().filter( r -> !contained || r.isContainedAllowed() ).collect( Collectors.toList() );
+            .stream().filter( r -> !contained || r.isContainedAllowed() ).sorted().collect( Collectors.toList() );
 
         return new FhirToDhisTransformerRequestImpl( new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }
@@ -180,8 +180,9 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables );
                 if ( outcome != null )
                 {
-                    logger.info( "Rule {} used successfully for transformation of {}.", rule, transformerRequestImpl.getInput().getIdElement() );
-                    return new FhirToDhisTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
+                    logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
+                        rule, transformerRequestImpl.getInput().getIdElement(), rule.isStop() );
+                    return new FhirToDhisTransformOutcome<>( outcome, (rule.isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );

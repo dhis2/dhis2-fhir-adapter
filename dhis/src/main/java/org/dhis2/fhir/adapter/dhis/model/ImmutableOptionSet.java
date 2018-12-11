@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-public class ImmutableOptionSet implements OptionSet, Serializable
+public class ImmutableOptionSet implements OptionSet, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -5542523378884979052L;
 

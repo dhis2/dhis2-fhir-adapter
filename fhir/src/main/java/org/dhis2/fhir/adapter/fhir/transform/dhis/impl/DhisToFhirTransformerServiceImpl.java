@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.util.DhisBeanTransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -72,7 +73,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final LockManager lockManager;
 
-    private final Map<DhisResourceType, DhisToFhirRuleResolver> ruleResolvers = new HashMap<>();
+    private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
     private final Map<FhirVersionedValue<DhisResourceType>, DhisToFhirTransformer<?, ?>> transformers = new HashMap<>();
 
@@ -81,7 +82,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
-        @Nonnull ObjectProvider<List<DhisToFhirRuleResolver>> ruleResolvers,
+        @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<DhisToFhirTransformerUtils>> transformUtilsProvider,
         @Nonnull ScriptExecutor scriptExecutor )
@@ -89,8 +90,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         this.lockManager = lockManager;
         this.scriptExecutor = scriptExecutor;
 
-        ruleResolvers.ifAvailable( resolvers ->
-            resolvers.forEach( r -> this.ruleResolvers.put( r.getDhisResourceType(), r ) ) );
+        requestResolvers.ifAvailable( resolvers ->
+            resolvers.forEach( r -> this.requestResolvers.put( r.getDhisResourceType(), r ) ) );
         transformersProvider.ifAvailable( transformers ->
         {
             for ( final DhisToFhirTransformer<?, ?> transformer : transformers )
@@ -119,19 +120,21 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     {
         final DhisResource input = Objects.requireNonNull( DhisBeanTransformerUtils.clone( originalInput ) );
 
-        final DhisToFhirRuleResolver ruleResolver = ruleResolvers.get( dhisRequest.getResourceType() );
-        if ( ruleResolver == null )
+        final DhisToFhirRequestResolver requestResolver = requestResolvers.get( dhisRequest.getResourceType() );
+        if ( requestResolver == null )
         {
-            throw new TransformerMappingException( "No rule resolver can be found for DHIS resource type " + dhisRequest.getResourceType() );
+            throw new TransformerMappingException( "No request resolver can be found for DHIS resource type " + dhisRequest.getResourceType() );
         }
-        final List<? extends AbstractRule> rules = ruleResolver.resolveRule( input );
+
+        final ScriptedDhisResource scriptedInput = requestResolver.convert( input );
+        final List<? extends AbstractRule> rules = requestResolver.resolveRules( scriptedInput );
         if ( rules.isEmpty() )
         {
             logger.info( "Could not find any rule to process DHIS resource." );
             return null;
         }
 
-        final RemoteSubscription remoteSubscription = ruleResolver.resolveRemoteSubscription( input, rules );
+        final RemoteSubscription remoteSubscription = requestResolver.resolveRemoteSubscription( scriptedInput ).orElse( null );
         if ( remoteSubscription == null )
         {
             logger.info( "Could not determine remote subscription to process DHIS resource." );
@@ -145,7 +148,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         }
 
         return new DhisToFhirTransformerRequestImpl( new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription ),
-            ruleResolver.convert( input ), transformerUtils, rules );
+            scriptedInput, rules, transformerUtils );
     }
 
     @Nullable
@@ -176,9 +179,9 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables );
                 if ( outcome != null )
                 {
-                    logger.info( "Rule {} used successfully for transformation of {}.",
-                        rule, transformerRequestImpl.getInput().getResourceId() );
-                    return new DhisToFhirTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
+                    logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
+                        rule, transformerRequestImpl.getInput().getResourceId(), rule.isStop() );
+                    return new DhisToFhirTransformOutcome<>( outcome, (rule.isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );

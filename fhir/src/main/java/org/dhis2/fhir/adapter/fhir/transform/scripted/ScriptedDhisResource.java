@@ -57,5 +57,13 @@ public interface ScriptedDhisResource
     @Nullable
     String getOrganizationUnitId();
 
+    /**
+     * @return the tracked entity instance that is associated with this resource
+     * (may be this resource itself if it is the tracked entity) or <code>null</code>
+     * if resource is not associated with a tracked entity.
+     */
+    @Nullable
+    ScriptedTrackedEntityInstance getTrackedEntityInstance();
+
     void validate() throws TransformerException;
 }

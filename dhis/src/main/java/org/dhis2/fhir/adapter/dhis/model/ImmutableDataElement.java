@@ -45,7 +45,7 @@ import java.io.Serializable;
  * @author volsch
  */
 @Scriptable
-public class ImmutableDataElement implements DataElement, Serializable
+public class ImmutableDataElement implements DataElement, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -7040983692879273412L;
 

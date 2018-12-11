@@ -42,7 +42,7 @@ import java.io.Serializable;
  *
  * @author volsch
  */
-public class ImmutableOption implements Option, Serializable
+public class ImmutableOption implements Option, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -4836329163657710844L;
 

@@ -128,7 +128,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
 
         final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
-            context, trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
+            trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedTrackedEntityInstance );
 
         final Optional<OrganisationUnit> organisationUnit;
@@ -171,7 +171,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     {
         final TrackedEntityAttributes trackedEntityAttributes = trackedEntityMetadataService.getAttributes();
         arguments.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), trackedEntityAttributes );
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.getType(
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference(
             rule.getTrackedEntity().getTrackedEntityReference() )
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity type in rule " + rule + " could not be found: " +
                 rule.getTrackedEntity().getTrackedEntityReference() ) );
@@ -199,15 +199,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        final IBaseResource baseResource;
-        if ( rule.getTeiLookupScript() == null )
-        {
-            baseResource = getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
-        }
-        else
-        {
-            baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
-        }
+        final IBaseResource baseResource = getTeiResource( context, rule, scriptVariables );
         if ( baseResource == null )
         {
             return Optional.empty();
@@ -269,6 +261,17 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Nullable
     protected String getIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
     {
+        final IBaseResource baseResource = getTeiResource( context, rule, scriptVariables );
+        if ( baseResource == null )
+        {
+            return null;
+        }
+        return getIdentifier( context, baseResource, scriptVariables );
+    }
+
+    @Nullable
+    private IBaseResource getTeiResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables )
+    {
         final IBaseResource baseResource;
         if ( rule.getTeiLookupScript() == null )
         {
@@ -278,10 +281,6 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         {
             baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
         }
-        if ( baseResource == null )
-        {
-            return null;
-        }
-        return getIdentifier( context, baseResource, scriptVariables );
+        return baseResource;
     }
 }

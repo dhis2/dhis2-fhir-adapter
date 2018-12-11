@@ -81,6 +81,7 @@ public class RemoteSubscriptionRepositoryRestDocsTest extends AbstractJpaReposit
                     "If the remote subscription has not been enabled, no subscription notifications are processed from the corresponding FHIR service." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "locked" ).description( "Specifies if this remote subscription has been locked. " +
                     "If the remote subscription has been locked (i.e. by automatic processes), no subscription notifications are processed from the corresponding FHIR service." ).type( JsonFieldType.BOOLEAN ),
+                fields.withPath( "outEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the remote FHIR service." ).type( JsonFieldType.STRING ),
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +
@@ -117,6 +118,7 @@ public class RemoteSubscriptionRepositoryRestDocsTest extends AbstractJpaReposit
             .andExpect( jsonPath( "description", is( "Main FHIR service on which the adapter has subscriptions." ) ) )
             .andExpect( jsonPath( "enabled", is( true ) ) )
             .andExpect( jsonPath( "locked", is( false ) ) )
+            .andExpect( jsonPath( "outEnabled", is( false ) ) )
             .andExpect( jsonPath( "autoCreatedSubscriptionResources" ).doesNotExist() )
             .andExpect( jsonPath( "adapterEndpoint.baseUrl", is( "http://localhist:8081" ) ) )
             .andExpect( jsonPath( "adapterEndpoint.subscriptionType", is( "REST_HOOK" ) ) )
@@ -154,6 +156,7 @@ public class RemoteSubscriptionRepositoryRestDocsTest extends AbstractJpaReposit
                     "If the remote subscription has not been enabled, no subscription notifications are processed from the corresponding FHIR service." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "locked" ).description( "Specifies if this remote subscription has been locked. " +
                     "If the remote subscription has been locked (i.e. by automatic processes), no subscription notifications are processed from the corresponding FHIR service." ).type( JsonFieldType.BOOLEAN ),
+                fields.withPath( "outEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the remote FHIR service." ).type( JsonFieldType.STRING ),
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +

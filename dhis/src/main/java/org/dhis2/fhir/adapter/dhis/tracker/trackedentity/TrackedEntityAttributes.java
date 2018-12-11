@@ -89,7 +89,8 @@ public class TrackedEntityAttributes implements Serializable
         Map<String, TrackedEntityAttribute> attributesById = this.attributesById;
         if ( attributesById == null )
         {
-            this.attributesById = attributesById = attributes.stream().collect( Collectors.toMap( TrackedEntityAttribute::getId, a -> a ) );
+            this.attributesById = attributesById = attributes.stream().map( ImmutableTrackedEntityAttribute::new )
+                .collect( Collectors.toMap( TrackedEntityAttribute::getId, a -> a ) );
         }
         return Optional.ofNullable( attributesById.get( id ) );
     }
@@ -100,7 +101,8 @@ public class TrackedEntityAttributes implements Serializable
         Map<String, TrackedEntityAttribute> attributesByCode = this.attributesByCode;
         if ( attributesByCode == null )
         {
-            this.attributesByCode = attributesByCode = attributes.stream().filter( a -> StringUtils.isNotBlank( a.getCode() ) ).collect( Collectors.toMap( TrackedEntityAttribute::getCode, a -> a ) );
+            this.attributesByCode = attributesByCode = attributes.stream().filter( a -> StringUtils.isNotBlank( a.getCode() ) )
+                .map( ImmutableTrackedEntityAttribute::new ).collect( Collectors.toMap( TrackedEntityAttribute::getCode, a -> a ) );
         }
         return Optional.ofNullable( attributesByCode.get( code ) );
     }
@@ -111,7 +113,8 @@ public class TrackedEntityAttributes implements Serializable
         Map<String, TrackedEntityAttribute> attributesByName = this.attributesByName;
         if ( attributesByName == null )
         {
-            this.attributesByName = attributesByName = attributes.stream().collect( Collectors.toMap( TrackedEntityAttribute::getName, a -> a ) );
+            this.attributesByName = attributesByName = attributes.stream().map( ImmutableTrackedEntityAttribute::new )
+                .collect( Collectors.toMap( TrackedEntityAttribute::getName, a -> a ) );
         }
         return Optional.ofNullable( attributesByName.get( name ) );
     }

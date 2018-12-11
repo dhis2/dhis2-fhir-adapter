@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,87 +28,64 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformerRequest}.
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2 tracked
+ * entity instances to FHIR resources.
  *
  * @author volsch
  */
-public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRequest
+@Component
+public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedTrackedEntityInstance, TrackedEntityRule>
 {
-    private static final long serialVersionUID = 4181923310602004074L;
-
-    private final DhisToFhirTransformerContext context;
-
-    private final ScriptedDhisResource input;
-
-    private final List<? extends AbstractRule> rules;
-
-    private final Map<String, DhisToFhirTransformerUtils> transformerUtils;
-
-    private int ruleIndex;
-
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull List<? extends AbstractRule> rules, @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
     {
-        this.context = context;
-        this.input = input;
-        this.rules = rules;
-        this.transformerUtils = transformerUtils;
+        return DhisResourceType.TRACKED_ENTITY;
     }
 
     @Nonnull
     @Override
-    public DhisToFhirTransformerContext getContext()
+    public Class<ScriptedTrackedEntityInstance> getDhisResourceClass()
     {
-        return context;
+        return ScriptedTrackedEntityInstance.class;
     }
 
     @Nonnull
     @Override
-    public ScriptedDhisResource getInput()
+    public Class<TrackedEntityRule> getRuleClass()
     {
-        return input;
+        return TrackedEntityRule.class;
     }
 
     @Nonnull
-    public List<? extends AbstractRule> getRules()
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return rules;
-    }
-
-    @Nonnull
-    public Map<String, DhisToFhirTransformerUtils> getTransformerUtils()
-    {
-        return transformerUtils;
-    }
-
-    public boolean isFirstRule()
-    {
-        return (ruleIndex == 0);
-    }
-
-    public boolean isLastRule()
-    {
-        return (ruleIndex >= rules.size());
+        return FhirVersion.ALL;
     }
 
     @Nullable
-    public AbstractRule nextRule()
+    @Override
+    public DhisToFhirTransformOutcome<IBaseResource> transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( ruleIndex >= rules.size() )
-        {
-            return null;
-        }
-        return rules.get( ruleIndex++ );
+        return null;
     }
 }

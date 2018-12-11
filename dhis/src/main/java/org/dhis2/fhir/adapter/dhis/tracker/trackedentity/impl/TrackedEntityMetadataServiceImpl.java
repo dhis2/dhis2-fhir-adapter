@@ -77,7 +77,7 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     @Cacheable( value = "trackedEntityTypes", cacheManager = "dhisCacheManager" )
     @Nonnull
     @Override
-    public Optional<? extends TrackedEntityType> getType( @Nonnull Reference reference )
+    public Optional<? extends TrackedEntityType> findTypeByReference( @Nonnull Reference reference )
     {
         switch ( reference.getType() )
         {

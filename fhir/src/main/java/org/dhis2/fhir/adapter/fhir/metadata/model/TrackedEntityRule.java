@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.persistence.DiscriminatorValue;
@@ -35,6 +36,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -109,5 +111,19 @@ public class TrackedEntityRule extends AbstractRule
     public void setTeiLookupScript( ExecutableScript teiLookupScript )
     {
         this.teiLookupScript = teiLookupScript;
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirCreateEnable()
+    {
+        return isOutEnabled() && isFhirCreateEnabled() && getTrackedEntity().isFhirCreateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirUpdateEnable()
+    {
+        return isOutEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isFhirUpdateEnabled();
     }
 }

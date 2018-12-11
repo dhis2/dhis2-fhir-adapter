@@ -72,13 +72,16 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     private final Event event;
 
+    private final ScriptedTrackedEntityInstance trackedEntityInstance;
+
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEvent( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEvent( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
     {
         this.transformerContext = transformerContext;
         this.programStage = programStage;
         this.event = event;
+        this.trackedEntityInstance = trackedEntityInstance;
         this.valueConverter = valueConverter;
     }
 
@@ -115,6 +118,13 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public String getOrganizationUnitId()
     {
         return event.getOrgUnitId();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return trackedEntityInstance;
     }
 
     @Nullable

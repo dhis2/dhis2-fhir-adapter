@@ -74,14 +74,14 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
         if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
         {
             rules = new ArrayList<>(
-                entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, AbstractRule.class )
+                entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
                     .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
         }
         else
         {
             final Set<String> systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
                 .collect( Collectors.toCollection( TreeSet::new ) );
-            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
+            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
                 .setParameter( "fhirResourceType", fhirResourceType )
                 .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }

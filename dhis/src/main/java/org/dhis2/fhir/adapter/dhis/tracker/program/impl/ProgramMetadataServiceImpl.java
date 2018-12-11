@@ -84,7 +84,7 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
     @Cacheable
     @Nonnull
     @Override
-    public Optional<? extends Program> findOneByReference( @Nonnull Reference reference )
+    public Optional<? extends Program> findProgramByReference( @Nonnull Reference reference )
     {
         final ResponseEntity<DhisPrograms> result;
         switch ( reference.getType() )

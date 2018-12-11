@@ -29,86 +29,30 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link DhisToFhirTransformerRequest}.
+ * Transforms a DHIS 2 resource to a FHIR resource.
  *
+ * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
+ * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
-public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRequest
+public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResource, U extends AbstractRule>
+    implements DhisToFhirTransformer<R, U>
 {
-    private static final long serialVersionUID = 4181923310602004074L;
-
-    private final DhisToFhirTransformerContext context;
-
-    private final ScriptedDhisResource input;
-
-    private final List<? extends AbstractRule> rules;
-
-    private final Map<String, DhisToFhirTransformerUtils> transformerUtils;
-
-    private int ruleIndex;
-
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull List<? extends AbstractRule> rules, @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
-    {
-        this.context = context;
-        this.input = input;
-        this.rules = rules;
-        this.transformerUtils = transformerUtils;
-    }
-
-    @Nonnull
-    @Override
-    public DhisToFhirTransformerContext getContext()
-    {
-        return context;
-    }
-
-    @Nonnull
-    @Override
-    public ScriptedDhisResource getInput()
-    {
-        return input;
-    }
-
-    @Nonnull
-    public List<? extends AbstractRule> getRules()
-    {
-        return rules;
-    }
-
-    @Nonnull
-    public Map<String, DhisToFhirTransformerUtils> getTransformerUtils()
-    {
-        return transformerUtils;
-    }
-
-    public boolean isFirstRule()
-    {
-        return (ruleIndex == 0);
-    }
-
-    public boolean isLastRule()
-    {
-        return (ruleIndex >= rules.size());
-    }
-
     @Nullable
-    public AbstractRule nextRule()
+    @Override
+    public DhisToFhirTransformOutcome<IBaseResource> transformCasted( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( ruleIndex >= rules.size() )
-        {
-            return null;
-        }
-        return rules.get( ruleIndex++ );
+        return transform( context, getDhisResourceClass().cast( input ), getRuleClass().cast( rule ), scriptVariables );
     }
 }

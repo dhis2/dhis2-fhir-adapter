@@ -29,9 +29,11 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -53,6 +55,15 @@ public interface RemoteFhirResourceRepository
 
     @Nonnull
     Optional<IBaseResource> find( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
+
+    @Nonnull
+    Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
+
+    @Nonnull
+    Optional<IBaseResource> findByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
+
+    @Nonnull
+    IBaseResource createTransient( @Nonnull FhirResourceType fhirResourceType );
 
     @Nonnull
     IBaseResource save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource );

@@ -64,6 +64,12 @@ public class MappedTrackedEntity extends VersionedBaseMetadata implements Serial
 
     private boolean enabled = true;
 
+    private boolean outEnabled;
+
+    private boolean fhirCreateEnabled = true;
+
+    private boolean fhirUpdateEnabled;
+
     @NotNull
     @Valid
     private Reference trackedEntityReference;
@@ -106,6 +112,42 @@ public class MappedTrackedEntity extends VersionedBaseMetadata implements Serial
     public void setEnabled( boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Basic
+    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isOutEnabled()
+    {
+        return outEnabled;
+    }
+
+    public void setOutEnabled( boolean outEnabled )
+    {
+        this.outEnabled = outEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_create_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isFhirCreateEnabled()
+    {
+        return fhirCreateEnabled;
+    }
+
+    public void setFhirCreateEnabled( boolean fhirCreateEnabled )
+    {
+        this.fhirCreateEnabled = fhirCreateEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_update_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirUpdateEnabled()
+    {
+        return fhirUpdateEnabled;
+    }
+
+    public void setFhirUpdateEnabled( boolean fhirUpdateEnabled )
+    {
+        this.fhirUpdateEnabled = fhirUpdateEnabled;
     }
 
     @Basic

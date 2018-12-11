@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,33 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.Comparator;
 
-public interface ProgramMetadataService
+/**
+ * Comparator for rules when transforming from DHIS to FHIR. The dependencies of the
+ * FHIR resources are taken into account as well.
+ *
+ * @author volsch
+ */
+public class DhisToFhirRuleComparator implements Comparator<TrackedEntityRule>
 {
-    @Nonnull
-    Optional<? extends Program> findProgramByReference( @Nonnull Reference reference );
+    public static final DhisToFhirRuleComparator INSTANCE = new DhisToFhirRuleComparator();
+
+    protected DhisToFhirRuleComparator()
+    {
+        super();
+    }
+
+    @Override
+    public int compare( TrackedEntityRule o1, TrackedEntityRule o2 )
+    {
+        int value = o1.getFhirResourceType().getOrder() - o2.getFhirResourceType().getOrder();
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return o1.compareTo( o2 );
+    }
 }

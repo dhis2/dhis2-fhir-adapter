@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,52 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public interface ProgramMetadataService
+/**
+ * Transformer utilities that clone a bean (cached instances must not be modified
+ * by several thread, e.g. HAPI FHIR objects).
+ *
+ * @author volsch
+ */
+public abstract class FhirBeanTransformerUtils
 {
-    @Nonnull
-    Optional<? extends Program> findProgramByReference( @Nonnull Reference reference );
+    @Nullable
+    @SuppressWarnings( { "unchecked" } )
+    public static <T extends IBaseResource> T clone( @Nonnull FhirContext fhirContext, @Nullable T object )
+    {
+        if ( object == null )
+        {
+            return null;
+        }
+        final IParser parser = fhirContext.newJsonParser();
+        return (T) parser.parseResource( object.getClass(), parser.encodeResourceToString( object ) );
+    }
+
+    @Nullable
+    public static <T extends IBaseResource> List<T> clone( @Nonnull FhirContext fhirContext, @Nullable List<T> objects )
+    {
+        if ( objects == null )
+        {
+            return null;
+        }
+        if ( objects.isEmpty() )
+        {
+            return Collections.emptyList();
+        }
+        return objects.stream().map( o -> clone( fhirContext, o ) ).collect( Collectors.toList() );
+    }
+
+    private FhirBeanTransformerUtils()
+    {
+        super();
+    }
 }

@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import ca.uhn.fhir.rest.server.exceptions.BaseServerResponseException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -40,10 +41,12 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedRemoteSubscriptionResourceEvent;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.rest.RestBadRequestException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +58,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +130,33 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
     }
 
     @HystrixCommand
+    @CachePut( key = "{#root.methodName, #remoteSubscriptionId, #fhirVersion, #resourceType, #identifier}", unless = "#result==null" )
+    @Nonnull
+    @Override
+    public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    {
+        final FhirContext fhirContext = fhirContexts.get( fhirVersion );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
+
+        logger.debug( "Reading {}?identifier={} from FHIR endpoints {}.", resourceType, identifier, fhirEndpoint.getBaseUrl() );
+        final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( getBundleClass() )
+            .where( new TokenClientParam( "identifier" ).exactly().systemAndIdentifier( identifier.getSystem(), identifier.getCode() ) )
+            .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
+        final IBaseResource resource = getFirstResource( bundle );
+        logger.debug( "Read {}?identifier={} from FHIR endpoints {} (found={}).", resourceType, identifier, fhirEndpoint.getBaseUrl(), (resource != null) );
+        return Optional.ofNullable( resource );
+    }
+
+    @HystrixCommand
+    @Cacheable( key = "{#root.methodName, #remoteSubscriptionId, #fhirVersion, #resourceType, #identifier}", unless = "#result==null" )
+    @Nonnull
+    @Override
+    public Optional<IBaseResource> findByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    {
+        return findRefreshedByIdentifier( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, identifier );
+    }
+
+    @HystrixCommand
     @Cacheable( key = "{#subscriptionResource.remoteSubscription.id, #subscriptionResource.remoteSubscription.fhirVersion, " +
         "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart()}", unless = "#result==null" )
     @Nonnull
@@ -170,4 +201,10 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
         url.append( subscriptionResource.getId() );
         return url.toString();
     }
+
+    @Nullable
+    protected abstract IBaseResource getFirstResource( @Nonnull IBaseBundle bundle );
+
+    @Nonnull
+    protected abstract Class<? extends IBaseBundle> getBundleClass();
 }

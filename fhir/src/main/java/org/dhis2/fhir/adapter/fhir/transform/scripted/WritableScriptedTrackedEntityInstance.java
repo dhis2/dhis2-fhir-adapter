@@ -41,7 +41,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityTypeAttribute;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
@@ -75,7 +74,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext transformerContext,
+    public WritableScriptedTrackedEntityInstance(
         @Nonnull TrackedEntityAttributes trackedEntityAttributes, @Nonnull TrackedEntityType trackedEntityType,
         @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
     {
@@ -121,6 +120,27 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     public String getTypeId()
     {
         return trackedEntityType.getId();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityAttributes getTrackedEntityAttributes()
+    {
+        return trackedEntityAttributes;
+    }
+
+    @Nonnull
+    @Override
+    public TrackedEntityType getType()
+    {
+        return trackedEntityType;
     }
 
     @Nonnull

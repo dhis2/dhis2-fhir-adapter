@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ImmutableProgramStage implements ProgramStage, Serializable
+public class ImmutableProgramStage implements ProgramStage, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = 6563663856499434307L;
 

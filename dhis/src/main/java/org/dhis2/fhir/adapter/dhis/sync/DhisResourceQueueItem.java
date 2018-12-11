@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.dhis.sync;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.data.processor.DataItemQueueItem;
@@ -54,18 +53,5 @@ public class DhisResourceQueueItem extends DataItemQueueItem<UuidDataGroupId> im
     public DhisResourceQueueItem( @Nonnull UuidDataGroupId dataGroupId, @Nonnull ProcessedItemInfo processedItemInfo )
     {
         super( dataGroupId, processedItemInfo );
-    }
-
-    @JsonIgnore
-    @Override
-    public UuidDataGroupId getDataGroupId()
-    {
-        return super.getDataGroupId();
-    }
-
-    @Override
-    public void setDataGroupId( UuidDataGroupId dataGroupId )
-    {
-        super.setDataGroupId( dataGroupId );
     }
 }

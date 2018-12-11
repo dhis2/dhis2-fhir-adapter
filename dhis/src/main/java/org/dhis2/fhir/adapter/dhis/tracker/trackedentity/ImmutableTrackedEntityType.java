@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -43,7 +44,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Scriptable
-public class ImmutableTrackedEntityType implements TrackedEntityType, Serializable
+public class ImmutableTrackedEntityType implements TrackedEntityType, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = 797154293863611491L;
 

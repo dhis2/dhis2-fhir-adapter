@@ -28,41 +28,43 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
+import javax.annotation.Nonnull;
+import java.util.Optional;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. DHIS 2 objects).
+ * Abstract implementation of {@link DhisToFhirRequestResolver} that provides
+ * support for resolving the remote subscription that is stored to store this
+ * resource.
  *
  * @author volsch
  */
-public abstract class DhisBeanTransformerUtils
+public abstract class AbstractDhisToFhirRequestResolver implements DhisToFhirRequestResolver
 {
-    @Nullable
-    @SuppressWarnings( { "unchecked" } )
-    public static <T extends DhisResource> T clone( @Nullable T object )
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final RemoteSubscriptionRepository remoteSubscriptionRepository;
+
+    public AbstractDhisToFhirRequestResolver( @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository )
     {
-        if ( object == null )
-        {
-            return null;
-        }
-        try
-        {
-            return (T) BeanUtils.cloneBean( object );
-        }
-        catch ( IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e )
-        {
-            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
-        }
+        this.remoteSubscriptionRepository = remoteSubscriptionRepository;
     }
 
-    private DhisBeanTransformerUtils()
+    @Nonnull
+    public Optional<RemoteSubscription> resolveRemoteSubscription( @Nonnull ScriptedDhisResource scriptedDhisResource )
     {
-        super();
+        // TODO add support for script based remote subscription resolving
+
+        Optional<RemoteSubscription> remoteSubscription = remoteSubscriptionRepository.findOnly();
+        if ( remoteSubscription.isPresent() && remoteSubscription.get().isEnabled() && remoteSubscription.get().isOutEnabled() )
+        {
+            return remoteSubscription;
+        }
+        return Optional.empty();
     }
 }

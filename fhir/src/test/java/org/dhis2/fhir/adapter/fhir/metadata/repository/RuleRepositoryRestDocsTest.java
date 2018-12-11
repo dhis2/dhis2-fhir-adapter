@@ -95,6 +95,9 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "inEnabled" ).description( "Specifies if transformation of a FHIR to a DHIS2 resource has been enabled (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "outEnabled" ).description( "Specifies if transformation of a DHIS2 to a FHIR resource has been enabled (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirCreateEnabled" ).description( "Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirUpdateEnabled" ).description( "Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "stop" ).description( "'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "applicableInScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming from a FHIR to a DHIS2 resource. " +
@@ -119,6 +122,11 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "name", is( "FHIR Patient to Person (disabled)" ) ) )
             .andExpect( jsonPath( "enabled", is( false ) ) )
+            .andExpect( jsonPath( "inEnabled", is( true ) ) )
+            .andExpect( jsonPath( "outEnabled", is( false ) ) )
+            .andExpect( jsonPath( "fhirCreateEnabled", is( true ) ) )
+            .andExpect( jsonPath( "fhirUpdateEnabled", is( false ) ) )
+            .andExpect( jsonPath( "stop", is( false ) ) )
             .andExpect( jsonPath( "evaluationOrder", is( 0 ) ) )
             .andExpect( jsonPath( "dhisResourceType", is( "TRACKED_ENTITY" ) ) )
             .andExpect( jsonPath( "fhirResourceType", is( "PATIENT" ) ) )
@@ -157,6 +165,9 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                     fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "inEnabled" ).description( "Specifies if transformation of a FHIR to a DHIS2 resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "outEnabled" ).description( "Specifies if transformation of a DHIS2 to a FHIR resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
+                    fields.withPath( "fhirCreateEnabled" ).description( "Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "fhirUpdateEnabled" ).description( "Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "stop" ).description( "'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                     fields.withPath( "containedAllowed" ).description( "Specified if this rule can process contained resources." ).type( JsonFieldType.BOOLEAN ).optional(),
                     subsectionWithPath( "_links" ).description( "Links to other resources" )
@@ -177,7 +188,8 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
     {
         final AbstractRule example = new TrackedEntityRule();
         example.setName( name );
-        return ruleRepository.findOne( Example.of( example, ExampleMatcher.matching().withIgnorePaths( "enabled", "evaluationOrder", "inEnabled", "outEnabled" ) ) )
+        return ruleRepository.findOne( Example.of( example, ExampleMatcher.matching().withIgnorePaths( "enabled", "evaluationOrder",
+            "inEnabled", "outEnabled", "fhirCreateEnabled", "fhirUpdateEnabled" ) ) )
             .orElseThrow( () -> new AssertionError( "Rule does not exist: " + name ) );
     }
 

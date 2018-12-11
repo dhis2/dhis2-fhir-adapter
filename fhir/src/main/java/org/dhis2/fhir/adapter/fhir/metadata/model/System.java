@@ -28,16 +28,25 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collection;
 
+/**
+ * Defines coding systems.
+ *
+ * @author volsch
+ */
 @Entity
 @Table( name = "fhir_system" )
 public class System extends VersionedBaseMetadata implements Serializable
@@ -67,6 +76,8 @@ public class System extends VersionedBaseMetadata implements Serializable
     private String description;
 
     private boolean descriptionProtected;
+
+    private Collection<SystemCode> systemCodes;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -138,5 +149,18 @@ public class System extends VersionedBaseMetadata implements Serializable
     public void setDescriptionProtected( boolean descriptionProtected )
     {
         this.descriptionProtected = descriptionProtected;
+    }
+
+    @RestResource( exported = false )
+    @JsonIgnore
+    @OneToMany( mappedBy = "system" )
+    public Collection<SystemCode> getSystemCodes()
+    {
+        return systemCodes;
+    }
+
+    public void setSystemCodes( Collection<SystemCode> systemCodes )
+    {
+        this.systemCodes = systemCodes;
     }
 }

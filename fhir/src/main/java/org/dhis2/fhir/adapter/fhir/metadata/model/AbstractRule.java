@@ -66,9 +66,9 @@ import java.io.Serializable;
 @Inheritance( strategy = InheritanceType.JOINED )
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
 @NamedQueries( {
-    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
+    @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
         "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true AND r.inEnabled=true" ),
-    @NamedQuery( name = AbstractRule.FIND_RULES_BY_TYPE_CODES_NAMED_QUERY, query =
+    @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, query =
         "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true " +
             "AND r.inEnabled=true AND (r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
             "(SELECT 1 FROM CodeSetValue csv JOIN csv.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
@@ -82,9 +82,9 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
-    public static final String FIND_RULES_BY_TYPE_NAMED_QUERY = "findRulesByType";
+    public static final String FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY = "findRulesByFhirType";
 
-    public static final String FIND_RULES_BY_TYPE_CODES_NAMED_QUERY = "findRulesByTypeAndCodes";
+    public static final String FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY = "findRulesByFhirTypeAndCodes";
 
     public static final int MAX_NAME_LENGTH = 230;
 
@@ -106,9 +106,15 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
 
-    private boolean inEnabled;
+    private boolean inEnabled = true;
 
     private boolean outEnabled;
+
+    private boolean fhirCreateEnabled = true;
+
+    private boolean fhirUpdateEnabled;
+
+    private boolean stop;
 
     private ExecutableScript applicableInScript;
 
@@ -257,6 +263,42 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setOutEnabled( boolean outEnabled )
     {
         this.outEnabled = outEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_create_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isFhirCreateEnabled()
+    {
+        return fhirCreateEnabled;
+    }
+
+    public void setFhirCreateEnabled( boolean fhirCreateEnabled )
+    {
+        this.fhirCreateEnabled = fhirCreateEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_update_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirUpdateEnabled()
+    {
+        return fhirUpdateEnabled;
+    }
+
+    public void setFhirUpdateEnabled( boolean fhirUpdateEnabled )
+    {
+        this.fhirUpdateEnabled = fhirUpdateEnabled;
+    }
+
+    @Basic
+    @Column( name = "stop", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isStop()
+    {
+        return stop;
+    }
+
+    public void setStop( boolean stop )
+    {
+        this.stop = stop;
     }
 
     @ManyToOne
