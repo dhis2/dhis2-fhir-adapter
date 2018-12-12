@@ -79,14 +79,15 @@ import java.util.stream.Collectors;
  * @param <PI> the concrete type of the ID of the processed item.
  * @param <S>  the concrete type of the stored item.
  * @param <SI> the concrete type of the ID of the stored item.
+ * @param <SG> the concrete type of the group of the stored item <code>S</code>.
  * @param <QG> the concrete type of the queued item that is used for queuing the data group.
  * @param <QI> the concrete type of the queued item that is used for queuing the item.
  * @param <G>  the concrete type of the group of the ID that is constant for a specific use case.
  * @param <GI> the concrete type of the group ID of the group <code>G</code>.
  * @author volsch
  */
-public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI, G>, PI extends ProcessedItemId<G>, S extends StoredItem<SI, G>, SI extends StoredItemId<G>, QG extends QueuedItemId<G>, QI extends QueuedItemId<G>, G extends DataGroup,
-    GI extends DataGroupId> implements QueuedDataProcessor<G>
+public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI, G>, PI extends ProcessedItemId<G>, S extends StoredItem<SI, SG>, SI extends StoredItemId<SG>, SG extends DataGroup, QG extends QueuedItemId<G>, QI extends QueuedItemId<G>,
+    G extends DataGroup, GI extends DataGroupId> implements QueuedDataProcessor<G>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -96,7 +97,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     private final DataGroupUpdateRepository<DataGroupUpdate<G>, G> dataGroupUpdateRepository;
 
-    private final StoredItemService<S, SI, G> storedItemService;
+    private final StoredItemService<S, SI, SG> storedItemService;
 
     private final ProcessedItemRepository<P, PI, G> processedItemRepository;
 
@@ -116,7 +117,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         @Nonnull QueuedItemRepository<QG, G> queuedGroupRepository,
         @Nonnull JmsTemplate groupQueueJmsTemplate,
         @Nonnull DataGroupUpdateRepository<DataGroupUpdate<G>, G> dataGroupUpdateRepository,
-        @Nonnull StoredItemService<S, SI, G> storedItemService,
+        @Nonnull StoredItemService<S, SI, SG> storedItemService,
         @Nonnull ProcessedItemRepository<P, PI, G> processedItemRepository,
         @Nonnull QueuedItemRepository<QI, G> queuedItemRepository,
         @Nonnull JmsTemplate itemQueueJmsTemplate,
@@ -231,6 +232,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                 dataGroupQueueItem.getDataGroupId() );
             return;
         }
+        final SG storedItemGroup = getStoredItemGroup( group );
 
         try
         {
@@ -250,7 +252,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             final Instant processedAt = Instant.now();
             final List<String> processableIds = items.stream().map( sr -> sr.toIdString( processedAt ) ).collect( Collectors.toList() );
             final Set<String> processedIds = processedItemRepository.find( group, processableIds );
-            final Set<String> storedIds = storedItemService.findProcessedIds( group, processableIds );
+            final Set<String> storedIds = storedItemService.findProcessedIds( storedItemGroup, processableIds );
 
             final ForkJoinTask<?> task = itemProcessorForkJoinPool.submit( () -> items.parallelStream().forEach( item -> {
                 final String processedId = item.toIdString( processedAt );
@@ -290,11 +292,15 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         // Purging old data must not be done before and also must not be done asynchronously. The ast updated
         // timestamp may be older than the purged data. And before purging the old data, the last updated
         // timestamp of the group must be updated by processing the complete items that belong to the group.
-        purgeOldestProcessed( group );
+        purgeOldestProcessed( group, storedItemGroup );
         if ( count.longValue() > 0 )
         {
             logger.info( "Processed queued group {} with {} enqueued items in {} ms.",
                 dataGroupQueueItem.getDataGroupId(), count.longValue(), Duration.between( begin, end ).toMillis() );
+        }
+        else if ( isPeriodicInfoLogging() )
+        {
+            logger.info( "Processed queued group {} with no enqueued items.", dataGroupQueueItem.getDataGroupId() );
         }
         else
         {
@@ -331,7 +337,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         }
     }
 
-    protected void purgeOldestProcessed( @Nonnull G group )
+    protected void purgeOldestProcessed( @Nonnull G group, @Nonnull SG storedItemGroup )
     {
         final Instant from = Instant.now().minus( getMaxProcessedAgeMinutes(), ChronoUnit.MINUTES );
 
@@ -343,7 +349,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         }
 
         logger.debug( "Purging oldest stored items before {} for group {}.", from, group.getGroupId() );
-        count = storedItemService.deleteOldest( group, from );
+        count = storedItemService.deleteOldest( storedItemGroup, from );
         if ( count > 0 )
         {
             logger.info( "Purged {} oldest stored items before {} for group {}.", count, from, group.getGroupId() );
@@ -379,6 +385,9 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     @Nonnull
     protected abstract DataItemQueueItem<GI> createDataItemQueueItem( @Nonnull G group, @Nonnull ProcessedItemInfo processedItemInfo );
+
+    @Nonnull
+    protected abstract SG getStoredItemGroup( @Nonnull G group );
 
     private void finalizeTransaction( @Nonnull TransactionStatus transactionStatus )
     {

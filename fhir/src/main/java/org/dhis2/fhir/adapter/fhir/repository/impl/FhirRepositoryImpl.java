@@ -47,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
+import org.dhis2.fhir.adapter.fhir.remote.ProcessedFhirItemInfoUtils;
 import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
@@ -211,8 +212,8 @@ public class FhirRepositoryImpl implements FhirRepository
             remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId() );
         if ( resource.isPresent() )
         {
-            final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource.get() );
-            if ( storedItemService.contains( remoteSubscriptionResource, processedItemInfo.toIdString( Instant.now() ) ) )
+            final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource.get() );
+            if ( storedItemService.contains( remoteSubscription, processedItemInfo.toIdString( Instant.now() ) ) )
             {
                 logger.info( "FHIR resource {} of remote subscription resource {} has already been stored.",
                     resource.get().getIdElement().toUnqualified(), remoteSubscriptionResource.getId() );
@@ -222,7 +223,7 @@ public class FhirRepositoryImpl implements FhirRepository
                 try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
                 {
                     logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
-                        resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+                        resource.get().getIdElement().toUnqualified(), remoteSubscriptionResource.getId() );
                     try
                     {
                         save( remoteSubscriptionResource, resource.get() );
@@ -246,15 +247,6 @@ public class FhirRepositoryImpl implements FhirRepository
             logger.info( "FHIR resource {}/{} for remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource.",
                 remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId(), remoteSubscriptionResource.getId() );
         }
-    }
-
-    @Nonnull
-    private ProcessedItemInfo getProcessedItemInfo( @Nonnull IBaseResource resource )
-    {
-        return new ProcessedItemInfo( resource.getIdElement().getIdPart(),
-            ((resource.getMeta().getLastUpdated() == null) ?
-                null : resource.getMeta().getLastUpdated().toInstant()),
-            resource.getMeta().getVersionId() );
     }
 
     protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )

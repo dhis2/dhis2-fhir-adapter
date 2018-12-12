@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -47,7 +48,7 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "GeoUtils", var = AbstractGeoFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "GeoUtils", transformType = ScriptTransformType.IN, var = AbstractGeoFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for GEO information handling." )
 public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

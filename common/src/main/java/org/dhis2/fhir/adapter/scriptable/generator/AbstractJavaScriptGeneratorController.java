@@ -33,6 +33,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.text.WordUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +44,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nonnull;
@@ -66,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -73,12 +72,11 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * The controller that provides the downloadable script.
+ * The abstract controller that provides the downloadable script.
  *
  * @author volsch
  */
-@Controller
-public class JavaScriptGeneratorController
+public abstract class AbstractJavaScriptGeneratorController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -92,19 +90,21 @@ public class JavaScriptGeneratorController
 
     private final ResourceLoader resourceLoader;
 
+    private final ScriptTransformType scriptTransformType;
+
     private String script;
 
     private Instant lastModified;
 
     private String eTag;
 
-    public JavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    protected AbstractJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader, @Nonnull ScriptTransformType scriptTransformType )
     {
         this.config = config;
         this.resourceLoader = resourceLoader;
+        this.scriptTransformType = scriptTransformType;
     }
 
-    @RequestMapping( path = "/scripts/to-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
     public ResponseEntity<String> getScript( @Nonnull WebRequest request )
     {
         if ( lastModified == null )
@@ -139,7 +139,8 @@ public class JavaScriptGeneratorController
         final List<ScriptTypeInfo> scriptTypeInfoList = new ArrayList<>();
         findAllScriptTypes().forEach( c -> {
             final ScriptType scriptType = AnnotationUtils.findAnnotation( c, ScriptType.class );
-            if ( (scriptType != null) && processedAnnotations.add( scriptType ) )
+            if ( (scriptType != null) && processedAnnotations.add( scriptType ) &&
+                ((scriptType.transformType() == ScriptTransformType.NONE) || (scriptType.transformType() == scriptTransformType)) )
             {
                 if ( orderedClasses.put( scriptType.value(), c ) != null )
                 {
@@ -278,7 +279,8 @@ public class JavaScriptGeneratorController
         componentProvider.addIncludeFilter( new AnnotationTypeFilter( ScriptType.class, false, true ) );
 
         final Set<Class<?>> scriptTypeClasses = new HashSet<>();
-        Arrays.stream( config.getBasePackageClasses() ).map( c -> c.getPackage().getName() ).forEach( packageName -> componentProvider.findCandidateComponents( packageName ).forEach( c -> {
+        Arrays.stream( Objects.requireNonNull( config ).getBasePackageClasses() ).map( c -> c.getPackage().getName() )
+            .forEach( packageName -> componentProvider.findCandidateComponents( packageName ).forEach( c -> {
             try
             {
                 scriptTypeClasses.add( Class.forName( c.getBeanClassName(), false, resourceLoader.getClassLoader() ) );

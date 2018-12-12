@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.springframework.hateoas.core.Relation;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -230,5 +231,30 @@ public class ProgramStageRule extends AbstractRule
     public int getResultingAfterPeriodDays()
     {
         return (getAfterPeriodDays() == null) ? getProgramStage().getAfterPeriodDays() : getAfterPeriodDays();
+    }
+
+    @JsonIgnore
+    @Transient
+    @Nonnull
+    @Override
+    public String getRuleTypeAbbreviation()
+    {
+        return "ps";
+    }
+
+    @JsonIgnore
+    @Transient
+    @Override
+    public boolean isEffectiveFhirCreateEnable()
+    {
+        return isFhirCreateEnabled();
+    }
+
+    @JsonIgnore
+    @Transient
+    @Override
+    public boolean isEffectiveFhirUpdateEnable()
+    {
+        return isFhirUpdateEnabled();
     }
 }

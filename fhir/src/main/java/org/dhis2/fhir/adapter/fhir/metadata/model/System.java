@@ -53,6 +53,8 @@ public class System extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1072841132452061822L;
 
+    public static final String DHIS2_FHIR_IDENTIFIER_CODE = "SYSTEM_DHIS2_FHIR_IDENTIFIER";
+
     public static final int MAX_NAME_LENGTH = 230;
 
     public static final int MAX_CODE_LENGTH = 50;

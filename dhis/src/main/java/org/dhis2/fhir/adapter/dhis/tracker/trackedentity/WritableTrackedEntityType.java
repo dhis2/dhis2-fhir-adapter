@@ -96,6 +96,7 @@ public class WritableTrackedEntityType extends AbstractDhisType implements Track
         this.name = name;
     }
 
+    @JsonIgnore
     @Override
     public String getCode()
     {

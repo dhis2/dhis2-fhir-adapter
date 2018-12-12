@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -40,8 +41,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link DhisToFhirTransformerContext}.
@@ -56,13 +59,17 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
 
     private final RemoteSubscription remoteSubscription;
 
+    private final Map<FhirResourceType, AvailableRemoteSubscriptionResource> availableResourcesByType;
+
     private final Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
 
-    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription, @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType )
+    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription,
+        @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType, @Nonnull Collection<AvailableRemoteSubscriptionResource> availableResources )
     {
         this.dhisRequest = dhisRequest;
         this.remoteSubscription = remoteSubscription;
         this.resourceSystemsByType = resourceSystemsByType;
+        this.availableResourcesByType = availableResources.stream().collect( Collectors.toMap( AvailableRemoteSubscriptionResource::getResourceType, a -> a ) );
     }
 
     @Nonnull
@@ -105,6 +112,26 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType )
     {
         return Optional.ofNullable( getResourceSystem( resourceType ) );
+    }
+
+    @Nullable
+    @Override
+    public AvailableRemoteSubscriptionResource getAvailableResource( @Nonnull FhirResourceType resourceType )
+    {
+        return availableResourcesByType.get( resourceType );
+    }
+
+    @Nonnull
+    @Override
+    public Optional<AvailableRemoteSubscriptionResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType )
+    {
+        return Optional.ofNullable( getAvailableResource( resourceType ) );
+    }
+
+    @Override
+    public boolean isUseAdapterIdentifier()
+    {
+        return remoteSubscription.isUseAdapterIdentifier();
     }
 
     @Override

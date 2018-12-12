@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "ContactPointUtils", var = AbstractContactPointFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "ContactPointUtils", transformType = ScriptTransformType.IN, var = AbstractContactPointFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations for FHIR contact points." )
 public abstract class AbstractContactPointFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

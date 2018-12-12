@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
@@ -49,4 +50,7 @@ public interface DhisToFhirTransformerRequest extends Serializable
 
     @Nonnull
     ScriptedDhisResource getInput();
+
+    @Nonnull
+    RemoteSubscription getRemoteSubscription();
 }

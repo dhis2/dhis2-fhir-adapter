@@ -75,8 +75,8 @@ import java.util.concurrent.ForkJoinPool;
  */
 @Service
 public class DhisSyncProcessorImpl extends
-    AbstractQueuedDataProcessorImpl<ProcessedDhisResource, ProcessedDhisResourceId, StoredDhisResource, StoredDhisResourceId, QueuedDhisSyncRequestId, QueuedDhisResourceId, DhisSyncGroup, UuidDataGroupId>
-    implements DhisSyncProcessor
+    AbstractQueuedDataProcessorImpl<ProcessedDhisResource, ProcessedDhisResourceId, StoredDhisResource, StoredDhisResourceId, DhisSyncGroup, QueuedDhisSyncRequestId, QueuedDhisResourceId,
+        DhisSyncGroup, UuidDataGroupId> implements DhisSyncProcessor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -132,7 +132,7 @@ public class DhisSyncProcessorImpl extends
                     dhisSyncRequestQueueItem.getDataGroupId() );
                 return;
             }
-            purgeOldestProcessed( group );
+            purgeOldestProcessed( group, getStoredItemGroup( group ) );
         }
     }
 
@@ -194,5 +194,12 @@ public class DhisSyncProcessorImpl extends
     protected DhisResourceQueueItem createDataItemQueueItem( @Nonnull DhisSyncGroup group, @Nonnull ProcessedItemInfo processedItemInfo )
     {
         return new DhisResourceQueueItem( group.getGroupId(), processedItemInfo );
+    }
+
+    @Nonnull
+    @Override
+    protected DhisSyncGroup getStoredItemGroup( @Nonnull DhisSyncGroup group )
+    {
+        return group;
     }
 }

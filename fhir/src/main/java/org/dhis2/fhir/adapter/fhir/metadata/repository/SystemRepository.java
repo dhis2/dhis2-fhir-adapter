@@ -32,13 +32,16 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -51,6 +54,12 @@ import java.util.UUID;
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
 public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>
 {
+    @RestResource( exported = false )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName, #a0}" )
+    Optional<System> findAllByCode( @Nonnull String code );
+
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

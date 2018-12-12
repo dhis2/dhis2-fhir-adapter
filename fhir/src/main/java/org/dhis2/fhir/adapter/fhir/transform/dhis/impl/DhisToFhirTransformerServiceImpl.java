@@ -31,10 +31,12 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
@@ -45,8 +47,8 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.util.DhisBeanTransformerUtils;
@@ -79,6 +81,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final LockManager lockManager;
 
+    private final RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository;
+
     private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
 
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
@@ -90,6 +94,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
+        @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
@@ -97,6 +102,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         @Nonnull ScriptExecutor scriptExecutor )
     {
         this.lockManager = lockManager;
+        this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
         this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.scriptExecutor = scriptExecutor;
 
@@ -137,7 +143,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         }
 
         final ScriptedDhisResource scriptedInput = requestResolver.convert( input );
-        final List<? extends AbstractRule> rules = requestResolver.resolveRules( scriptedInput );
+        List<? extends AbstractRule> rules = requestResolver.resolveRules( scriptedInput );
         if ( rules.isEmpty() )
         {
             logger.info( "Could not find any rule to process DHIS resource." );
@@ -150,6 +156,10 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             logger.info( "Could not determine remote subscription to process DHIS resource." );
             return null;
         }
+
+        final Collection<AvailableRemoteSubscriptionResource> availableResources = remoteSubscriptionResourceRepository.findAllAvailable( remoteSubscription );
+        rules = filterAvailableResourceRules( rules, availableResources );
+
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( remoteSubscription );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
@@ -161,8 +171,25 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + remoteSubscription.getFhirVersion() );
         }
 
-        return new DhisToFhirTransformerRequestImpl( new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription, resourceSystemsByType ),
-            scriptedInput, rules, transformerUtils );
+        return new DhisToFhirTransformerRequestImpl(
+            new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription, resourceSystemsByType, availableResources ),
+            scriptedInput, remoteSubscription, rules, transformerUtils );
+    }
+
+    @Nonnull
+    private List<? extends AbstractRule> filterAvailableResourceRules( @Nonnull List<? extends AbstractRule> rules, @Nonnull Collection<AvailableRemoteSubscriptionResource> availableResources )
+    {
+        final Map<FhirResourceType, AvailableRemoteSubscriptionResource> availableResourcesByType = availableResources.stream()
+            .collect( Collectors.toMap( AvailableRemoteSubscriptionResource::getResourceType, a -> a ) );
+        // not all resources may be available on FHIR server
+        return rules.stream().filter( r -> {
+            final AvailableRemoteSubscriptionResource availableResource = availableResourcesByType.get( r.getFhirResourceType() );
+            if ( availableResource == null )
+            {
+                return false;
+            }
+            return !availableResource.isVirtual() || r.isContainedAllowed();
+        } ).collect( Collectors.toList() );
     }
 
     @Nullable
@@ -189,7 +216,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables ) )
             {
-                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted(
+                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getRemoteSubscription(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables );
                 if ( outcome != null )
                 {

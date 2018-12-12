@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseReference;
@@ -66,7 +67,7 @@ import java.util.UUID;
  */
 @Component
 @Scriptable
-@ScriptType( value = "ReferenceUtils", var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "ReferenceUtils", transformType = ScriptTransformType.IN, var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to resolveRule FHIR Reference to FHIR Resources when handling FHIR to DHIS2 transformations." )
 public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

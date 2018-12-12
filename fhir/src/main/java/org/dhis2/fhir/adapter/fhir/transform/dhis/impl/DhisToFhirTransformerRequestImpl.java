@@ -29,9 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.util.DhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
@@ -52,16 +53,20 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private final ScriptedDhisResource input;
 
+    private final RemoteSubscription remoteSubscription;
+
     private final List<? extends AbstractRule> rules;
 
     private final Map<String, DhisToFhirTransformerUtils> transformerUtils;
 
     private int ruleIndex;
 
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull List<? extends AbstractRule> rules, @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
+    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull RemoteSubscription remoteSubscription, @Nonnull List<? extends AbstractRule> rules, @Nonnull Map<String,
+        DhisToFhirTransformerUtils> transformerUtils )
     {
         this.context = context;
         this.input = input;
+        this.remoteSubscription = remoteSubscription;
         this.rules = rules;
         this.transformerUtils = transformerUtils;
     }
@@ -78,6 +83,13 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
     public ScriptedDhisResource getInput()
     {
         return input;
+    }
+
+    @Nonnull
+    @Override
+    public RemoteSubscription getRemoteSubscription()
+    {
+        return remoteSubscription;
     }
 
     @Nonnull

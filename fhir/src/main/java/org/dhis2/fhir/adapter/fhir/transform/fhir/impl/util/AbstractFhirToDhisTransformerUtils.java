@@ -28,16 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Abstract base class for all FHIR to DHIS2 transformer utility classes.
@@ -46,8 +40,6 @@ import java.util.Set;
  */
 public abstract class AbstractFhirToDhisTransformerUtils implements FhirToDhisTransformerUtils
 {
-    protected static final Set<FhirVersion> ALL_FHIR_VERSIONS = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( FhirVersion.values() ) ) );
-
     private final ScriptExecutionContext scriptExecutionContext;
 
     public AbstractFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
@@ -58,12 +50,6 @@ public abstract class AbstractFhirToDhisTransformerUtils implements FhirToDhisTr
     @Nonnull
     protected <T> T getScriptVariable( @Nonnull String name, @Nonnull Class<T> c )
     {
-        final ScriptExecution scriptExecution = scriptExecutionContext.getScriptExecution();
-        final T value = c.cast( scriptExecution.getVariables().get( name ) );
-        if ( value == null )
-        {
-            throw new TransformerScriptException( "Script tried to access variable \"" + name + "\" that has not been defined." );
-        }
-        return value;
+        return TransformerUtils.getScriptVariable( scriptExecutionContext, name, c );
     }
 }

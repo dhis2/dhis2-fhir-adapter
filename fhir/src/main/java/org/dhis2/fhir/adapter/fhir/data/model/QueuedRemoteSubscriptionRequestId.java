@@ -62,7 +62,7 @@ public class QueuedRemoteSubscriptionRequestId extends QueuedItemId<RemoteSubscr
     }
 
     @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "remote_subscription_resource_id" )
+    @JoinColumn( name = "id" )
     @Override
     public RemoteSubscriptionResource getGroup()
     {

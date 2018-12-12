@@ -41,6 +41,11 @@ public enum ScriptType
     TRANSFORM_TO_DHIS,
 
     /**
+     * The script performs a transformation from DHIS2 to FHIR data.
+     */
+    TRANSFORM_TO_FHIR,
+
+    /**
      * The script performs an evaluation (e.g. ifa rule can be applied).
      */
     EVALUATE

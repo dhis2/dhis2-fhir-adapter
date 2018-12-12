@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -35,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -49,7 +51,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DhisContext", var = "context", description = "The context of the current transformation." )
+@ScriptType( value = "DhisContext", var = "context", transformType = ScriptTransformType.OUT, description = "The context of the current transformation." )
 public interface DhisToFhirTransformerContext
 {
     @Nonnull
@@ -64,11 +66,20 @@ public interface DhisToFhirTransformerContext
     @ScriptMethod( description = "Returns the code of the remote subscription that is associated with the execution of the current transformation." )
     String getRemoteSubscriptionCode();
 
+    @ScriptMethod( description = "Returns if the adapter should add an adapter specific identifier when creating or updating resources." )
+    boolean isUseAdapterIdentifier();
+
     @Nullable
     ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
     Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
+
+    @Nullable
+    AvailableRemoteSubscriptionResource getAvailableResource( @Nonnull FhirResourceType resourceType );
+
+    @Nonnull
+    Optional<AvailableRemoteSubscriptionResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )

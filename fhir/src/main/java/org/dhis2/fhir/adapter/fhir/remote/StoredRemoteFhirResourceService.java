@@ -31,13 +31,13 @@ package org.dhis2.fhir.adapter.fhir.remote;
 import org.dhis2.fhir.adapter.data.processor.StoredItemService;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 
 /**
  * Stored item service for {@link StoredRemoteFhirResource}s.
  *
  * @author volsch
  */
-public interface StoredRemoteFhirResourceService extends StoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource>
+public interface StoredRemoteFhirResourceService extends StoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscription>
 {
 }

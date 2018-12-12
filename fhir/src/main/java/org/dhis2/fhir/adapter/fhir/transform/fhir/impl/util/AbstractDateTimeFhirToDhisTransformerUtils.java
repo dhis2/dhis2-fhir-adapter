@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException
 import org.dhis2.fhir.adapter.model.DateUnit;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -53,7 +54,7 @@ import java.util.Date;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DateTimeUtils", var = AbstractDateTimeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "DateTimeUtils", transformType = ScriptTransformType.IN, var = AbstractDateTimeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for date and time handling." )
 public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

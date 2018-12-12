@@ -91,6 +91,7 @@ public class WritableProgramStage extends AbstractDhisType implements ProgramSta
         this.name = name;
     }
 
+    @JsonIgnore
     @Override
     public String getCode()
     {

@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
+import org.dhis2.fhir.adapter.fhir.remote.ProcessedFhirItemInfoUtils;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -130,9 +131,8 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
             do
             {
-                final List<ProcessedItemInfo> resources = getResourceEntries( bundle ).stream().map( iAnyResource -> new ProcessedItemInfo( iAnyResource.getIdElement().getIdPart(),
-                    (iAnyResource.getMeta().getLastUpdated() == null) ? null : iAnyResource.getMeta().getLastUpdated().toInstant(),
-                    iAnyResource.getIdElement().getVersionIdPart() ) ).collect( Collectors.toList() );
+                final List<ProcessedItemInfo> resources = getResourceEntries( bundle ).stream()
+                    .map( ProcessedFhirItemInfoUtils::create ).collect( Collectors.toList() );
                 resources.forEach( r -> {
                     if ( allResources.add( r ) )
                     {

@@ -26,6 +26,8 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+-- @formatter:off
+
 ALTER TABLE fhir_queued_remote_subscription_request
   DROP COLUMN IF EXISTS request_id;
 ALTER TABLE fhir_queued_remote_resource
@@ -105,16 +107,16 @@ COMMENT ON COLUMN fhir_stored_dhis_resource.stored_id IS 'The unique string that
 COMMENT ON COLUMN fhir_stored_dhis_resource.stored_at IS 'Timestamp when the resource has been stored. Used for deleting the data after some hours mainly.';
 
 CREATE TABLE fhir_stored_remote_resource (
-  remote_subscription_resource_id UUID         NOT NULL,
-  stored_id                       VARCHAR(120) NOT NULL,
-  stored_at                       TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
-  CONSTRAINT fhir_stored_remote_resource_pk PRIMARY KEY (remote_subscription_resource_id, stored_id),
-  CONSTRAINT fhir_stored_remote_resource_fk1 FOREIGN KEY (remote_subscription_resource_id) REFERENCES fhir_remote_subscription_resource (id) ON DELETE CASCADE
+  remote_subscription_id UUID         NOT NULL,
+  stored_id              VARCHAR(120) NOT NULL,
+  stored_at              TIMESTAMP(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  CONSTRAINT fhir_stored_remote_resource_pk PRIMARY KEY (remote_subscription_id, stored_id),
+  CONSTRAINT fhir_stored_remote_resource_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription (id) ON DELETE CASCADE
 );
 CREATE INDEX fhir_stored_remote_resource_i1
-  ON fhir_stored_remote_resource (remote_subscription_resource_id, stored_at);
+  ON fhir_stored_remote_resource (remote_subscription_id, stored_at);
 COMMENT ON TABLE fhir_stored_remote_resource IS 'Contains the versioned FHIR resource IDs that have been stored in the last few hours.';
-COMMENT ON COLUMN fhir_stored_remote_resource.remote_subscription_resource_id IS 'References the remote subscription resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_stored_remote_resource.remote_subscription_id IS 'References the remote subscription to which the subscription belongs to.';
 COMMENT ON COLUMN fhir_stored_remote_resource.stored_id IS 'The unique string that identifies a distinct version of a remote FHIR resource.';
 COMMENT ON COLUMN fhir_stored_remote_resource.stored_at IS 'Timestamp when the resource has been stored. Used for deleting the data after some hours mainly.';
 
@@ -170,5 +172,48 @@ COMMENT ON COLUMN fhir_tracked_entity.fhir_create_enabled IS 'Specifies if the c
 COMMENT ON COLUMN fhir_tracked_entity.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type.';
 
 ALTER TABLE fhir_remote_subscription
-  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN use_adapter_identifier BOOLEAN DEFAULT TRUE NOT NULL;
 COMMENT ON COLUMN fhir_remote_subscription.out_enabled IS 'Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled.';
+COMMENT ON COLUMN fhir_remote_subscription.use_adapter_identifier IS 'Specifies if the adapter should add an adapter specific identifier to created and updated resources. Using such identifiers makes it easier to map resources between FHIR and DHIS 2.';
+
+-- Systems (the value is the systemAuthentication URI)
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('fa133f34-280f-40d0-ac9a-523d8ea8f23b', 0, 'DHIS2 FHIR Adapter Identifier', 'SYSTEM_DHIS2_FHIR_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/identifier',
+        'DHIS2 FHIR Adapter generated identifiers.');
+
+INSERT INTO fhir_script_type_enum
+VALUES ('TRANSFORM_TO_FHIR');
+
+-- Script that transforms DHIS2 Person to FHIR Patient
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 0, 'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms FHIR Patient to DHIS Person.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('0f2b7998-7d7e-44a9-95f2-2d2243f1320a', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+        'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:Last name',
+        'The reference of the tracked entity attribute that contains the last name of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('2917c220-cc70-43be-8164-6b129390368d', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+        'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'CODE:MMD_PER_NAM',
+        'The reference of the tracked entity attribute that contains the first name of the Person.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('f0a48e63-cc1d-4d02-85fa-80c7e79a5d9e', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+'output.getName().clear();
+output.getNameFirstRep().setFamily(input.getValue(args[''lastNameAttribute'']));
+output.getNameFirstRep().addGiven(input.getValue(args[''firstNameAttribute'']));
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('f0a48e63-cc1d-4d02-85fa-80c7e79a5d9e', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('6a014e53-6a7e-4bb6-8cfc-817e4756ed4d', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+        'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms DHIS Person to FHIR Patient.');
+
+UPDATE fhir_rule
+SET transform_out_script_id = '6a014e53-6a7e-4bb6-8cfc-817e4756ed4d'
+WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';

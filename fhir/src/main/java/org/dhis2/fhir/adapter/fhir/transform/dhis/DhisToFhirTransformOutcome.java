@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -45,38 +44,27 @@ public class DhisToFhirTransformOutcome<R extends IBaseResource> implements Seri
 {
     private static final long serialVersionUID = -1022009827965716982L;
 
-    private final RemoteSubscriptionResource subscriptionResource;
-
     private final R resource;
 
     private final DhisToFhirTransformerRequest nextTransformerRequest;
 
-    public DhisToFhirTransformOutcome( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull R resource )
+    public DhisToFhirTransformOutcome( @Nullable R resource )
     {
-        this.subscriptionResource = subscriptionResource;
         this.resource = resource;
         this.nextTransformerRequest = null;
     }
 
     public DhisToFhirTransformOutcome( @Nonnull DhisToFhirTransformOutcome<R> outcome, @Nullable DhisToFhirTransformerRequest nextTransformerRequest )
     {
-        this.subscriptionResource = outcome.getSubscriptionResource();
         this.resource = outcome.getResource();
         this.nextTransformerRequest = nextTransformerRequest;
     }
 
-    @Nonnull
-    public RemoteSubscriptionResource getSubscriptionResource()
-    {
-        return subscriptionResource;
-    }
-
-    @Nonnull
+    @Nullable
     public R getResource()
     {
         return resource;
     }
-
 
     @Nullable
     public DhisToFhirTransformerRequest getNextTransformerRequest()

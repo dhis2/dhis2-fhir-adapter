@@ -48,6 +48,7 @@ public enum ScriptVariable
     DATE_TIME( "dateTime" ),
     IDENTIFIER_UTILS( "identifierUtils" ),
     CODE_UTILS( "codeUtils" ),
+    FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
     PROGRAM_STAGE_EVENTS( "programStageEvents" ),
     ORGANIZATION_UNIT_ID( "organizationUnitId" );
 

@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -72,7 +73,7 @@ import java.util.UUID;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "OrganizationUtils", var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "OrganizationUtils", transformType = ScriptTransformType.IN, var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR organizations." )
 public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

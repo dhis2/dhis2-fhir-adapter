@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
+import org.dhis2.fhir.adapter.fhir.repository.OptimisticFhirResourceLockException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -211,6 +212,12 @@ public class DhisRepositoryImpl implements DhisRepository
                         logger.warn( "Processing of data of DHIS resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
                         throw new RetryQueueDeliveryException( e );
                     }
+                    catch ( OptimisticFhirResourceLockException e )
+                    {
+                        logger.debug( e.getMessage(), e );
+                        logger.info( "Processing of data of DHIS resource caused an optimistic locking error. Retrying processing later because of resolvable issue." );
+                        throw new RetryQueueDeliveryException( e );
+                    }
                     logger.info( "Processed DHIS resource {} for sync group {}.", resource.get().getResourceId(), syncGroup.getId() );
                 }
             }
@@ -229,7 +236,7 @@ public class DhisRepositoryImpl implements DhisRepository
             Objects.requireNonNull( resource.getLastUpdated() ).toInstant() );
     }
 
-    protected boolean saveInternally( @Nonnull DhisSyncGroup subscriptionResource, @Nonnull DhisResource resource )
+    protected boolean saveInternally( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )
     {
         final WritableDhisRequest dhisRequest = new WritableDhisRequest();
         dhisRequest.setResourceType( resource.getResourceType() );
@@ -262,7 +269,12 @@ public class DhisRepositoryImpl implements DhisRepository
                 }
                 else
                 {
-                    remoteFhirResourceRepository.save( outcome.getSubscriptionResource(), outcome.getResource() );
+                    if ( outcome.getResource() != null )
+                    {
+                        final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                        logger.info( "Saved FHIR resource {} for remote subscription {}.",
+                            resultingResource.getIdElement().toUnqualified(), transformerRequest.getRemoteSubscription().getId() );
+                    }
                     saved = true;
                     transformerRequest = outcome.getNextTransformerRequest();
                 }

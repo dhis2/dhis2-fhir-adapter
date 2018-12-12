@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.StoredItemId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Embeddable;
@@ -45,33 +45,33 @@ import java.util.Objects;
  * @author volsch
  */
 @Embeddable
-public class StoredRemoteFhirResourceId extends StoredItemId<RemoteSubscriptionResource> implements Serializable
+public class StoredRemoteFhirResourceId extends StoredItemId<RemoteSubscription> implements Serializable
 {
     private static final long serialVersionUID = 143055103713986347L;
 
-    private RemoteSubscriptionResource group;
+    private RemoteSubscription group;
 
     public StoredRemoteFhirResourceId()
     {
         super();
     }
 
-    public StoredRemoteFhirResourceId( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull String storedId )
+    public StoredRemoteFhirResourceId( @Nonnull RemoteSubscription remoteSubscription, @Nonnull String storedId )
     {
         super( storedId );
-        this.group = remoteSubscriptionResource;
+        this.group = remoteSubscription;
     }
 
     @Override
     @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "remote_subscription_resource_id" )
-    public RemoteSubscriptionResource getGroup()
+    @JoinColumn( name = "remote_subscription_id" )
+    public RemoteSubscription getGroup()
     {
         return group;
     }
 
     @Override
-    public void setGroup( RemoteSubscriptionResource group )
+    public void setGroup( RemoteSubscription group )
     {
         this.group = group;
     }
@@ -96,6 +96,6 @@ public class StoredRemoteFhirResourceId extends StoredItemId<RemoteSubscriptionR
     @Override
     public String toString()
     {
-        return "[Remote Subscription Resource ID " + ((group == null) ? "?" : group.getId()) + ", Stored ID " + getStoredId() + "]";
+        return "[Remote Subscription ID " + ((group == null) ? "?" : group.getId()) + ", Stored ID " + getStoredId() + "]";
     }
 }

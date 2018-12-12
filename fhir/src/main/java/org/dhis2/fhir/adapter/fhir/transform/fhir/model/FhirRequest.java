@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -47,7 +48,7 @@ import java.util.UUID;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirRequest", description = "The current FHIR request that caused the execution of the transformation." )
+@ScriptType( value = "FhirRequest", transformType = ScriptTransformType.IN, description = "The current FHIR request that caused the execution of the transformation." )
 public interface FhirRequest
 {
     @Nullable

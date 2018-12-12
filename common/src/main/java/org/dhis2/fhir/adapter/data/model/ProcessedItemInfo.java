@@ -102,7 +102,13 @@ public class ProcessedItemInfo implements Serializable
     @Nonnull
     public String toIdString( @Nonnull Instant defaultLastUpdated )
     {
-        return getId() + "|" + StringUtils.defaultString( getVersion(), "?" ) +
-            "|" + ((lastUpdated == 0) ? defaultLastUpdated.toEpochMilli() : lastUpdated);
+        if ( StringUtils.isBlank( getVersion() ) )
+        {
+            return getId() + "|?|" + ((lastUpdated == 0) ? defaultLastUpdated.toEpochMilli() : lastUpdated);
+        }
+        else
+        {
+            return getId() + "|" + getVersion();
+        }
     }
 }

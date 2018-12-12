@@ -28,22 +28,37 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractIdentifierDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
+import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 /**
  * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2 tracked
@@ -54,6 +69,13 @@ import java.util.Set;
 @Component
 public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedTrackedEntityInstance, TrackedEntityRule>
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    public TrackedEntityToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+    {
+        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository );
+    }
+
     @Nonnull
     @Override
     public DhisResourceType getDhisResourceType()
@@ -75,17 +97,173 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         return TrackedEntityRule.class;
     }
 
+    @Nullable
+    @Override
+    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input, @Nonnull TrackedEntityRule rule,
+        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final Map<String, Object> variables = new HashMap<>( scriptVariables );
+        if ( !addScriptVariables( variables, rule, input ) )
+        {
+            return null;
+        }
+
+        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
+        if ( resource == null )
+        {
+            return null;
+        }
+
+        final IBaseResource modifiedResource = clone( context, resource );
+        variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
+
+        if ( !transform( context, rule, variables ) )
+        {
+            return null;
+        }
+
+        if ( equalsDeep( context, variables, resource, modifiedResource ) )
+        {
+            // resource has not been changed and do not need to be updated
+            return new DhisToFhirTransformOutcome<>( null );
+        }
+        return new DhisToFhirTransformOutcome<>( modifiedResource );
+    }
+
+    protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance ) throws TransformerException
+    {
+        variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), scriptedTrackedEntityInstance.getTrackedEntityAttributes() );
+        variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), scriptedTrackedEntityInstance.getType() );
+
+        // is applicable for further processing
+        return true;
+    }
+
     @Nonnull
     @Override
-    public Set<FhirVersion> getFhirVersions()
+    protected Optional<? extends IBaseResource> getResourceByAdapterIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return FhirVersion.ALL;
+        if ( !context.isUseAdapterIdentifier() )
+        {
+            return Optional.empty();
+        }
+
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
+        final SystemCodeValue identifier = new SystemCodeValue( getAdapterIdentifierSystem().getSystemUri(), createAdapterIdentifierValue( rule, scriptedTrackedEntityInstance ) );
+        return getRemoteFhirResourceRepository().findRefreshedByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(), rule.getFhirResourceType().getResourceTypeName(), identifier )
+            .map( r -> clone( context, r ) );
+    }
+
+    @Nonnull
+    @Override
+    protected Optional<? extends IBaseResource> getResourceBySystemIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final ResourceSystem resourceSystem = context.getResourceSystem( rule.getFhirResourceType() );
+        if ( resourceSystem == null )
+        {
+            return Optional.empty();
+        }
+
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
+        final String identifierValue = getIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
+        if ( identifierValue == null )
+        {
+            logger.info( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", rule.getFhirResourceType() );
+            return Optional.empty();
+        }
+        if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+        {
+            logger.info( "Tracked entity identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
+                identifierValue, resourceSystem.getCodePrefix(), rule.getFhirResourceType() );
+            return Optional.empty();
+        }
+
+        final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+        return getRemoteFhirResourceRepository().findRefreshedByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(), rule.getFhirResourceType().getResourceTypeName(), identifier )
+            .map( r -> clone( context, r ) );
+    }
+
+    @Nonnull
+    @Override
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        // TODO retrieving active resource by scripts must be implemented
+        return Optional.empty();
     }
 
     @Nullable
     @Override
-    public DhisToFhirTransformOutcome<IBaseResource> transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input, @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected IBaseResource createResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        return null;
+        final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceUtils =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.FHIR_RESOURCE_UTILS, AbstractFhirResourceDhisToFhirTransformerUtils.class );
+        final IBaseResource resource = fhirResourceUtils.createResource( rule.getFhirResourceType() );
+
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
+        final AbstractIdentifierDhisToFhirTransformerUtils identifierUtils =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierDhisToFhirTransformerUtils.class );
+
+        final ResourceSystem resourceSystem = context.getResourceSystem( rule.getFhirResourceType() );
+        if ( resourceSystem != null )
+        {
+            final String identifierValue = getIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
+            if ( identifierValue == null )
+            {
+                logger.info( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", rule.getFhirResourceType() );
+                return null;
+            }
+            if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+            {
+                logger.info( "Tracked entity identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
+                    identifierValue, resourceSystem.getCodePrefix(), rule.getFhirResourceType() );
+                return null;
+            }
+            final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+            if ( sync )
+            {
+                lockFhirIdentifier( identifier );
+            }
+            identifierUtils.addOrUpdateIdentifier( resource, identifier );
+        }
+
+        if ( context.isUseAdapterIdentifier() )
+        {
+            final SystemCodeValue identifier = new SystemCodeValue( getAdapterIdentifierSystem().getSystemUri(), createAdapterIdentifierValue( rule, scriptedTrackedEntityInstance ) );
+            if ( sync )
+            {
+                lockFhirIdentifier( identifier );
+            }
+            identifierUtils.addOrUpdateIdentifier( resource, identifier );
+        }
+
+        return resource;
+    }
+
+    @Override
+    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
+        getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
+            .lock( "out-te:" + scriptedTrackedEntityInstance.getId() );
+    }
+
+    @Nullable
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
+    {
+        final Object value = scriptedTrackedEntityInstance.getValue( rule.getTrackedEntity().getTrackedEntityIdentifierReference() );
+        if ( value == null )
+        {
+            return null;
+        }
+        return value.toString();
     }
 }

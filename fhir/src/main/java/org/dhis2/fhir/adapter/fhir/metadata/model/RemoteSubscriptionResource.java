@@ -44,6 +44,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -58,9 +59,13 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_remote_subscription_resource" )
+@NamedQuery( name = RemoteSubscriptionResource.FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY, query = "SELECT NEW org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource(r.fhirResourceType,r.virtual) " +
+    "FROM RemoteSubscriptionResource r WHERE r.remoteSubscription=:subscription" )
 public class RemoteSubscriptionResource extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;
+
+    public static final String FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY = "findAllRemoteSubscriptionResourcesBySubscription";
 
     public static final int MAX_CRITERIA_PARAMETERS_LENGTH = 200;
 

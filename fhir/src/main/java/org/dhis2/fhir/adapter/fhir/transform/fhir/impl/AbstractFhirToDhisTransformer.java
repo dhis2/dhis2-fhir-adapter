@@ -55,6 +55,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
@@ -122,7 +123,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Override
     public Set<FhirVersion> getFhirVersions()
     {
-        return FhirVersion.DSTU3_ONLY;
+        return FhirVersion.ALL;
     }
 
     @Nonnull
@@ -245,11 +246,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
         identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, baseResource, identifier );
 
-        final TrackedEntityAttributes trackedEntityAttributes = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
+        final TrackedEntityAttributes trackedEntityAttributes = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntity().getTrackedEntityIdentifierReference() )
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntity().getTrackedEntityIdentifierReference() ) );
 
-        final TrackedEntityType trackedEntityType = getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
+        final TrackedEntityType trackedEntityType = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final Collection<TrackedEntityInstance> result;
         if ( sync )
         {
@@ -303,7 +304,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
 
-        final String identifier = getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierFhirToDhisTransformerUtils.class )
+        final String identifier = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierFhirToDhisTransformerUtils.class )
             .getResourceIdentifier( (IDomainResource) baseResource, resourceType, resourceSystem.getSystem() );
         if ( identifier == null )
         {
@@ -318,16 +319,5 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
     {
         return getScriptExecutor().execute( locationLookupScript, context.getFhirRequest().getVersion(), scriptVariable, Location.class );
-    }
-
-    @Nonnull
-    protected <T> T getScriptVariable( @Nonnull Map<String, Object> scriptVariables, @Nonnull ScriptVariable scriptVariable, @Nonnull Class<T> type ) throws FatalTransformerException
-    {
-        final T value = type.cast( scriptVariables.get( scriptVariable.getVariableName() ) );
-        if ( value == null )
-        {
-            throw new FatalTransformerException( "Script variable is not included: " + scriptVariable );
-        }
-        return value;
     }
 }

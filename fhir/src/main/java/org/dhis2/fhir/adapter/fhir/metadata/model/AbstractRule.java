@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -122,8 +123,9 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private ExecutableScript applicableOutScript;
 
-    @NotNull
     private ExecutableScript transformInScript;
+
+    private ExecutableScript transformOutScript;
 
     private boolean containedAllowed;
 
@@ -302,7 +304,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @ManyToOne
-    @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id", nullable = false )
+    @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id" )
     public ExecutableScript getTransformInScript()
     {
         return transformInScript;
@@ -311,6 +313,18 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setTransformInScript( ExecutableScript transformInScript )
     {
         this.transformInScript = transformInScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "transform_out_script_id", referencedColumnName = "id" )
+    public ExecutableScript getTransformOutScript()
+    {
+        return transformOutScript;
+    }
+
+    public void setTransformOutScript( ExecutableScript transformOutScript )
+    {
+        this.transformOutScript = transformOutScript;
     }
 
     @Column( name = "contained_allowed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
@@ -323,6 +337,19 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     {
         this.containedAllowed = containedAllowed;
     }
+
+    @Transient
+    @JsonIgnore
+    @Nonnull
+    public abstract String getRuleTypeAbbreviation();
+
+    @Transient
+    @JsonIgnore
+    public abstract boolean isEffectiveFhirCreateEnable();
+
+    @Transient
+    @JsonIgnore
+    public abstract boolean isEffectiveFhirUpdateEnable();
 
     @Override
     public int compareTo( @Nonnull AbstractRule o )

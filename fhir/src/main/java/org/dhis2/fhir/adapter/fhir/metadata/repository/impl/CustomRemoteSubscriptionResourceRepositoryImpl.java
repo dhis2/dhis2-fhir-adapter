@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRemoteSubscriptionResourceRepository;
 import org.hibernate.Hibernate;
@@ -37,6 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,5 +76,17 @@ public class CustomRemoteSubscriptionResourceRepositoryImpl implements CustomRem
 
         Hibernate.initialize( rsr.getRemoteSubscription().getFhirEndpoint().getHeaders() );
         return Optional.of( rsr );
+    }
+
+    @Nonnull
+    @Override
+    @Cacheable( key = "{#root.methodName, #a0.id}", cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
+    public Collection<AvailableRemoteSubscriptionResource> findAllAvailable( @Nonnull RemoteSubscription remoteSubscription )
+    {
+        final Map<FhirResourceType, AvailableRemoteSubscriptionResource> result = new HashMap<>();
+        entityManager.createNamedQuery( RemoteSubscriptionResource.FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY, AvailableRemoteSubscriptionResource.class )
+            .setParameter( "subscription", remoteSubscription ).getResultList()
+            .forEach( a -> result.compute( a.getResourceType(), ( fhirResourceType, availableRemoteSubscriptionResource ) -> a.merge( availableRemoteSubscriptionResource ) ) );
+        return new ArrayList<>( result.values() );
     }
 }

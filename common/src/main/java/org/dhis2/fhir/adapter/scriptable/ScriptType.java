@@ -64,6 +64,11 @@ public @interface ScriptType
     String description() default "";
 
     /**
+     * @return the direction of the transformation that is performed by the script.
+     */
+    ScriptTransformType transformType() default ScriptTransformType.NONE;
+
+    /**
      * @return the name of the transformation data type that is associated with this type
      * or an empty string if no transformation data type is associated with this type.
      */

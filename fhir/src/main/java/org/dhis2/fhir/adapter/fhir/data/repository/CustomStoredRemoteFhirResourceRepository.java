@@ -31,11 +31,11 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
 import org.dhis2.fhir.adapter.data.repository.StoredItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 
 /**
  * Custom repository for stored remote FHIR resources {@link StoredRemoteFhirResource}.
  */
-public interface CustomStoredRemoteFhirResourceRepository extends StoredItemRepository<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource>
+public interface CustomStoredRemoteFhirResourceRepository extends StoredItemRepository<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscription>
 {
 }

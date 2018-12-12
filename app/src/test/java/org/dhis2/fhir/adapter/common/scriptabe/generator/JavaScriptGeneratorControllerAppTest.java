@@ -49,9 +49,19 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
     private ScriptCompiler scriptCompiler;
 
     @Test
-    public void scriptAvailable() throws Exception
+    public void inScriptAvailable() throws Exception
     {
         final String script = mockMvc.perform( get( "/scripts/to-dhis2-all-mapping.js" ) )
+            .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
+            .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
+            .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
+        scriptCompiler.compile( script );
+    }
+
+    @Test
+    public void outScriptAvailable() throws Exception
+    {
+        final String script = mockMvc.perform( get( "/scripts/from-dhis2-all-mapping.js" ) )
             .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
             .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();

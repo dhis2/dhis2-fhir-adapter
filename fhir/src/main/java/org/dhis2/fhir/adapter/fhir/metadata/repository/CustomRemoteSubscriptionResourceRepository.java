@@ -28,11 +28,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,4 +51,8 @@ public interface CustomRemoteSubscriptionResourceRepository
     @Nonnull
     @PreAuthorize( "permitAll()" )
     Optional<RemoteSubscriptionResource> findByIdCached( @Nonnull UUID id );
+
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<AvailableRemoteSubscriptionResource> findAllAvailable( @Param( "subscription" ) @Nonnull RemoteSubscription remoteSubscription );
 }

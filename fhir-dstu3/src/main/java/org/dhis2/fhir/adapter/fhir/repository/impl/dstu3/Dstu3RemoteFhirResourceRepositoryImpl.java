@@ -29,16 +29,12 @@ package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
-import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
+import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractRemoteFhirResourceRepositoryImpl;
 import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.dstu3.model.Subscription;
-import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -57,23 +53,9 @@ import java.util.List;
 @Component
 public class Dstu3RemoteFhirResourceRepositoryImpl extends AbstractRemoteFhirResourceRepositoryImpl
 {
-    public Dstu3RemoteFhirResourceRepositoryImpl( @Nonnull RemoteSubscriptionRepository repository, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
+    public Dstu3RemoteFhirResourceRepositoryImpl( @Nonnull StoredRemoteFhirResourceService storedItemService, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
     {
-        super( repository, fhirContexts );
-    }
-
-    @Nonnull
-    @Override
-    public IBaseResource createTransient( @Nonnull FhirResourceType fhirResourceType )
-    {
-        try
-        {
-            return ResourceFactory.createResource( fhirResourceType.getResourceTypeName() );
-        }
-        catch ( FHIRException e )
-        {
-            throw new FhirRepositoryException( "Unknown FHIR resource type: " + fhirResourceType, e );
-        }
+        super( storedItemService, fhirContexts );
     }
 
     @Nonnull

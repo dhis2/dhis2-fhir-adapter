@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.model;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -42,7 +43,7 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DhisRequest", description = "The current DHIS 2 request (created or updated resource) that caused the execution of the transformation." )
+@ScriptType( value = "DhisRequest", transformType = ScriptTransformType.OUT, description = "The current DHIS 2 request (created or updated resource) that caused the execution of the transformation." )
 public interface DhisRequest
 {
     @ScriptMethod( description = "Returns the processed DHIS 2 resource type as Java enumeration (e.g. TRACKED_ENTITY as enum constant)." )

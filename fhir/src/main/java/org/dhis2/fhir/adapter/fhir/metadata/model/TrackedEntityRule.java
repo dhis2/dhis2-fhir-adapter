@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
+import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -113,17 +114,28 @@ public class TrackedEntityRule extends AbstractRule
         this.teiLookupScript = teiLookupScript;
     }
 
+    @JsonIgnore
+    @Transient
+    @Nonnull
+    @Override
+    public String getRuleTypeAbbreviation()
+    {
+        return "te";
+    }
+
+    @Override
     @Transient
     @JsonIgnore
     public boolean isEffectiveFhirCreateEnable()
     {
-        return isOutEnabled() && isFhirCreateEnabled() && getTrackedEntity().isFhirCreateEnabled();
+        return isOutEnabled() && isFhirCreateEnabled() && getTrackedEntity().isOutEnabled() && getTrackedEntity().isFhirCreateEnabled();
     }
 
+    @Override
     @Transient
     @JsonIgnore
     public boolean isEffectiveFhirUpdateEnable()
     {
-        return isOutEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isFhirUpdateEnabled();
+        return isOutEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isOutEnabled() && getTrackedEntity().isFhirUpdateEnabled();
     }
 }

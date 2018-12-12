@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -48,7 +49,7 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirContext", var = "context", description = "The context of the current transformation." )
+@ScriptType( value = "FhirContext", transformType = ScriptTransformType.IN, var = "context", description = "The context of the current transformation." )
 public interface FhirToDhisTransformerContext
 {
     @Nonnull

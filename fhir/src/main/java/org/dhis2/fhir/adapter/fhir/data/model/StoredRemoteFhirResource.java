@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.StoredItem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EmbeddedId;
@@ -46,7 +46,7 @@ import java.time.Instant;
  */
 @Entity
 @Table( name = "fhir_stored_remote_resource" )
-public class StoredRemoteFhirResource extends StoredItem<StoredRemoteFhirResourceId, RemoteSubscriptionResource> implements Serializable
+public class StoredRemoteFhirResource extends StoredItem<StoredRemoteFhirResourceId, RemoteSubscription> implements Serializable
 {
     private static final long serialVersionUID = -6484140859863504862L;
 

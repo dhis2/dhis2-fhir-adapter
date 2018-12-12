@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.processor.impl.AbstractStoredItemService;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.StoredRemoteFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +44,7 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Service
-public class StoredRemoteFhirResourceServiceImpl extends AbstractStoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource> implements StoredRemoteFhirResourceService
+public class StoredRemoteFhirResourceServiceImpl extends AbstractStoredItemService<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscription> implements StoredRemoteFhirResourceService
 {
     public StoredRemoteFhirResourceServiceImpl( @Nonnull StoredRemoteFhirResourceRepository repository )
     {

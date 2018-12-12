@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteSubscriptionRequestRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceUpdateRepository;
@@ -81,7 +82,8 @@ import java.util.concurrent.ForkJoinPool;
  */
 @Service
 public class RemoteRestHookProcessorImpl extends
-    AbstractQueuedDataProcessorImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, StoredRemoteFhirResource, StoredRemoteFhirResourceId, QueuedRemoteSubscriptionRequestId, QueuedRemoteFhirResourceId, RemoteSubscriptionResource, UuidDataGroupId>
+    AbstractQueuedDataProcessorImpl<ProcessedRemoteFhirResource, ProcessedRemoteFhirResourceId, StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscription, QueuedRemoteSubscriptionRequestId, QueuedRemoteFhirResourceId,
+        RemoteSubscriptionResource, UuidDataGroupId>
     implements RemoteRestHookProcessor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -146,6 +148,13 @@ public class RemoteRestHookProcessorImpl extends
     protected RemoteSubscriptionResource findGroupByGroupId( @Nonnull UuidDataGroupId groupId )
     {
         return remoteSubscriptionResourceRepository.findByIdCached( groupId.getId() ).orElse( null );
+    }
+
+    @Nonnull
+    @Override
+    protected RemoteSubscription getStoredItemGroup( @Nonnull RemoteSubscriptionResource group )
+    {
+        return group.getRemoteSubscription();
     }
 
     @Override

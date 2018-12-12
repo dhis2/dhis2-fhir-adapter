@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.repository.impl.AbstractStoredItemRepositoryI
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredRemoteFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomStoredRemoteFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +46,7 @@ import java.time.Instant;
  *
  * @author volsch
  */
-public class CustomStoredRemoteFhirResourceRepositoryImpl extends AbstractStoredItemRepositoryImpl<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscriptionResource> implements CustomStoredRemoteFhirResourceRepository
+public class CustomStoredRemoteFhirResourceRepositoryImpl extends AbstractStoredItemRepositoryImpl<StoredRemoteFhirResource, StoredRemoteFhirResourceId, RemoteSubscription> implements CustomStoredRemoteFhirResourceRepository
 {
     public CustomStoredRemoteFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager, @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
@@ -63,7 +63,7 @@ public class CustomStoredRemoteFhirResourceRepositoryImpl extends AbstractStored
 
     @Nonnull
     @Override
-    protected StoredRemoteFhirResource createStoredItem( @Nonnull RemoteSubscriptionResource prefix, @Nonnull String storedId )
+    protected StoredRemoteFhirResource createStoredItem( @Nonnull RemoteSubscription prefix, @Nonnull String storedId )
     {
         return new StoredRemoteFhirResource( new StoredRemoteFhirResourceId( prefix, storedId ), Instant.now() );
     }

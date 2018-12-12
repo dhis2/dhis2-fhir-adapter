@@ -35,13 +35,14 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ReferenceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
@@ -75,11 +76,18 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
     @Mock
     private Map<String, Object> variables;
 
-    @InjectMocks
+    private final FhirIdentifierUtils fhirIdentifierUtils = new FhirIdentifierUtils();
+
     private Dstu3IdentifierFhirToDhisTransformerUtils utils;
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
+
+    @Before
+    public void before()
+    {
+        utils = new Dstu3IdentifierFhirToDhisTransformerUtils( scriptExecutionContext, fhirIdentifierUtils, referenceFhirToDhisTransformerUtils );
+    }
 
     @Test
     public void getReferenceIdentifierWithSystemNull()

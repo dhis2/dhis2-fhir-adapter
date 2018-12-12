@@ -29,7 +29,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.data.model.DataGroup;
+import org.dhis2.fhir.adapter.data.model.DataGroupId;
+import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
@@ -65,7 +69,7 @@ import java.util.Set;
 @Table( name = "fhir_remote_subscription" )
 @JsonFilter( ToManyPropertyFilter.FILTER_NAME )
 @NamedQuery( name = RemoteSubscription.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM RemoteSubscription rs" )
-public class RemoteSubscription extends VersionedBaseMetadata implements Serializable
+public class RemoteSubscription extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
 
@@ -88,6 +92,8 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     private boolean locked;
 
     private boolean outEnabled;
+
+    private boolean useAdapterIdentifier = true;
 
     private String description;
 
@@ -175,6 +181,18 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     public void setOutEnabled( boolean outEnabled )
     {
         this.outEnabled = outEnabled;
+    }
+
+    @Basic
+    @Column( name = "use_adapter_identifier", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isUseAdapterIdentifier()
+    {
+        return useAdapterIdentifier;
+    }
+
+    public void setUseAdapterIdentifier( boolean useAdapterIdentifier )
+    {
+        this.useAdapterIdentifier = useAdapterIdentifier;
     }
 
     @Basic
@@ -281,5 +299,13 @@ public class RemoteSubscription extends VersionedBaseMetadata implements Seriali
     public void setAutoCreatedSubscriptionResources( Set<FhirResourceType> autoCreatedSubscriptionResources )
     {
         this.autoCreatedSubscriptionResources = autoCreatedSubscriptionResources;
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public DataGroupId getGroupId()
+    {
+        return new UuidDataGroupId( getId() );
     }
 }

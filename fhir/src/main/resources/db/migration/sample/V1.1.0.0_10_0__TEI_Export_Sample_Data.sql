@@ -26,9 +26,10 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-UPDATE fhir_rule
-SET out_enabled = true;
-UPDATE fhir_tracked_entity
-SET out_enabled = true;
-UPDATE fhir_remote_subscription
-SET out_enabled = true;
+-- @formatter:off
+
+UPDATE fhir_rule SET out_enabled = true;
+UPDATE fhir_rule SET fhir_update_enabled = true;
+UPDATE fhir_tracked_entity SET out_enabled = true;
+UPDATE fhir_tracked_entity SET fhir_update_enabled = true;
+UPDATE fhir_remote_subscription SET out_enabled = true;

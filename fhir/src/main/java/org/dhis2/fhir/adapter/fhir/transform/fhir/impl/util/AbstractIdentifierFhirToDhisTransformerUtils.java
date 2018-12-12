@@ -37,13 +37,14 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IDomainResource;
-import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,7 +59,7 @@ import java.util.Objects;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "IdentifierUtils", var = AbstractIdentifierFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "IdentifierUtils", transformType = ScriptTransformType.IN, var = AbstractIdentifierFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR identifiers." )
 public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
@@ -66,11 +67,15 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
 
     private volatile Map<Class<? extends IDomainResource>, Method> identifierMethods = new HashMap<>();
 
+    private final FhirIdentifierUtils fhirIdentifierUtils;
+
     private final ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils;
 
-    protected AbstractIdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils )
+    protected AbstractIdentifierFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirIdentifierUtils fhirIdentifierUtils,
+        @Nonnull ReferenceFhirToDhisTransformerUtils referenceFhirToDhisTransformerUtils )
     {
         super( scriptExecutionContext );
+        this.fhirIdentifierUtils = fhirIdentifierUtils;
         this.referenceFhirToDhisTransformerUtils = referenceFhirToDhisTransformerUtils;
     }
 
@@ -176,7 +181,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
             return null;
         }
 
-        final Method method = getIdentifierMethod( resource );
+        final Method method = fhirIdentifierUtils.getIdentifierMethod( resource );
         if ( method != null )
         {
             return getIdentifierValue( resource, method, system );
@@ -187,22 +192,4 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
 
     @Nullable
     protected abstract String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system );
-
-    @Nullable
-    private Method getIdentifierMethod( @Nonnull IDomainResource domainResource )
-    {
-        final Class<? extends IDomainResource> domainResourceClass = domainResource.getClass();
-        final Map<Class<? extends IDomainResource>, Method> identifierMethods = this.identifierMethods;
-        if ( identifierMethods.containsKey( domainResourceClass ) )
-        {
-            return identifierMethods.get( domainResourceClass );
-        }
-
-        final Method method = ReflectionUtils.findMethod( domainResource.getClass(), "getIdentifier" );
-        final Map<Class<? extends IDomainResource>, Method> copiedIdentifierMethods = new HashMap<>( identifierMethods );
-        copiedIdentifierMethods.put( domainResourceClass, method );
-        this.identifierMethods = copiedIdentifierMethods;
-
-        return method;
-    }
 }

@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -71,7 +72,7 @@ import java.util.Map;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "CodeUtils", var = AbstractCodeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "CodeUtils", transformType = ScriptTransformType.IN, var = AbstractCodeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations for codes (either code mappings or extracting of codes from FHIR codeable concepts)." )
 public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
