@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
 import org.dhis2.fhir.adapter.model.ValueType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,6 +45,7 @@ import java.util.regex.Pattern;
  *
  * @author volsch
  */
+@Component
 @ConvertedValueTypes( types = ValueType.COORDINATE )
 public class StringToLocationConverter extends TypedConverter<String, Location>
 {

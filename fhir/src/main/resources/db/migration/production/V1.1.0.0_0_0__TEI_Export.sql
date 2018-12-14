@@ -180,6 +180,11 @@ ALTER TABLE fhir_remote_subscription
 COMMENT ON COLUMN fhir_remote_subscription.exp_enabled IS 'Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled.';
 COMMENT ON COLUMN fhir_remote_subscription.use_adapter_identifier IS 'Specifies if the adapter should add an adapter specific identifier to created and updated resources. Using such identifiers makes it easier to map resources between FHIR and DHIS 2.';
 
+ALTER TABLE fhir_tracked_entity_rule
+  ADD COLUMN exp_geo_transform_script_id UUID,
+  ADD CONSTRAINT fhir_tracked_entity_rule_fk7 FOREIGN KEY(exp_geo_transform_script_id) REFERENCES fhir_executable_script(id);
+COMMENT ON COLUMN fhir_tracked_entity_rule.exp_geo_transform_script_id IS 'Specifies the transformation script that performs the transformation of the GEO coordinates that are included in the tracked entity instance.';
+
 ALTER TABLE fhir_script
   ADD base_script_id UUID,
   ADD CONSTRAINT fhir_script_fk5 FOREIGN KEY (base_script_id) REFERENCES fhir_script(id);
@@ -202,7 +207,7 @@ VALUES ('TRANSFORM_TO_FHIR');
 
 -- Script that transforms DHIS2 Person to FHIR Patient
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
-VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 0, 'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms FHIR Patient to DHIS Person.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
+VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 0, 'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms DHIS Person to FHIR Patient.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
 INSERT INTO fhir_script_variable (script_id, variable)
 VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable)
@@ -216,6 +221,9 @@ WHERE id='2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6';
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
 VALUES ('d7e622c5-1914-4e5b-a590-039fc0c2a105', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
 'resetFhirValue', 'BOOLEAN', TRUE, 'false', 'Specifies if existing values in FHIR can be reset by null values (except first and last name).');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('6f8864e7-cd49-47f8-9756-556e92955c39', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+'resetAddressText', 'BOOLEAN', TRUE, 'false', 'Specifies if existing address values (other than text representation) may be reset.');
 INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
 VALUES ('f0a48e63-cc1d-4d02-85fa-80c7e79a5d9e', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
 'function canOverrideAddress(address)
@@ -258,7 +266,7 @@ if (args[''genderAttribute''] != null)
 if ((args[''addressTextAttribute''] != null) && (output.getAddress().size() < 2))
 {
   var addressText = input.getValue(args[''addressTextAttribute'']);
-  if (((addressText != null) || args[''resetFhirValue'']) && (!output.hasAddress() || canOverrideAddress(output.getAddressFirstRep())))
+  if (((addressText != null) || args[''resetFhirValue'']) && (args[''resetAddressText''] || !output.hasAddress() || canOverrideAddress(output.getAddressFirstRep())))
   {
     output.getAddress().clear();
     output.addAddress().setText(addressText);
@@ -277,4 +285,31 @@ WHERE id='6a014e53-6a7e-4bb6-8cfc-817e4756ed4d';
 
 UPDATE fhir_rule
 SET transform_exp_script_id = '6a014e53-6a7e-4bb6-8cfc-817e4756ed4d'
+WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('4318ff25-f09f-414b-aa78-1958e47eca09', 0, 'Transforms DHIS Person GEO data to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT_GEO', 'Transforms the coordinates that are includes in DHIS Person to FHIR Patient.', 'TRANSFORM_TO_FHIR',
+        'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25-f09f-414b-aa78-1958e47eca09', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25-f09f-414b-aa78-1958e47eca09', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25-f09f-414b-aa78-1958e47eca09', 'OUTPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('650e2d25-82d7-450a-bac0-3a20f31817b2', 0, '4318ff25-f09f-414b-aa78-1958e47eca09',
+'if (output.getAddress().size() < 2)
+{
+  geoUtils.updateAddress(output.getAddressFirstRep(), input.getCoordinates());
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('650e2d25-82d7-450a-bac0-3a20f31817b2', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('b9d24e63-d1ee-43a1-968a-77fbc3f805fb', 0, '4318ff25-f09f-414b-aa78-1958e47eca09',
+        'Transforms DHIS Person GEO data to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT_GEO',
+        'Transforms the coordinates that are includes in DHIS Person to FHIR Patient.');
+
+UPDATE fhir_tracked_entity_rule
+SET exp_geo_transform_script_id = 'b9d24e63-d1ee-43a1-968a-77fbc3f805fb'
 WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';

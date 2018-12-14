@@ -100,6 +100,12 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     }
 
     @Nonnull
+    protected ScriptExecutor getScriptExecutor()
+    {
+        return scriptExecutor;
+    }
+
+    @Nonnull
     @Override
     public Set<FhirVersion> getFhirVersions()
     {

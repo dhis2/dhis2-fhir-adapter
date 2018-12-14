@@ -122,6 +122,12 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
             return null;
         }
 
+        // transformation of GEO information must follow normal transformation since normal transformation may reset this information
+        if ( (rule.getExpGeoTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute( rule.getExpGeoTransformScript(), context.getVersion(), variables, Boolean.class ) ) )
+        {
+            return null;
+        }
+
         if ( equalsDeep( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
@@ -192,7 +198,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        // TODO retrieving active resource by scripts must be implemented
+        // not yet supported
         return Optional.empty();
     }
 

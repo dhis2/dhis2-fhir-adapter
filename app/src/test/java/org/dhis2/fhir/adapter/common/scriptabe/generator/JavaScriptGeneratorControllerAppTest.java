@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,6 +55,7 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
         final String script = mockMvc.perform( get( "/scripts/to-dhis2-all-mapping.js" ) )
             .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
+            .andExpect( content().string( not( containsString( "var genderUtils = new GenderUtils();" ) ) ) )
             .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
         scriptCompiler.compile( script );
     }
@@ -64,6 +66,7 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
         final String script = mockMvc.perform( get( "/scripts/from-dhis2-all-mapping.js" ) )
             .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
+            .andExpect( content().string( containsString( "var genderUtils = new GenderUtils();" ) ) )
             .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
         scriptCompiler.compile( script );
     }
