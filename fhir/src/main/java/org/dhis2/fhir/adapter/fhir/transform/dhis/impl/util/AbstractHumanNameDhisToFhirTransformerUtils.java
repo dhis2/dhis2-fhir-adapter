@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -38,7 +38,6 @@ import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * FHIR to DHIS2 transformer utility methods for human names.
@@ -46,15 +45,15 @@ import java.util.List;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "HumanNameUtils", transformType = ScriptTransformType.IMP, var = AbstractHumanNameFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to handle FHIR to DHIS2 transformations of human names." )
-public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+@ScriptType( value = "HumanNameUtils", transformType = ScriptTransformType.EXP, var = AbstractHumanNameDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle DHIS2 to FHIR transformations of human names." )
+public abstract class AbstractHumanNameDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "humanNameUtils";
 
     protected static final String DEFAULT_GIVEN_DELIMITER = " ";
 
-    protected AbstractHumanNameFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected AbstractHumanNameDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
@@ -66,15 +65,10 @@ public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends Abstra
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable
-    @ScriptMethod( description = "Return a single given name from the specified FHIR human name. If the human name contains multiple given names these are separated by space characters.",
-        args = @ScriptMethodArg( value = "humanName", description = "The human name from which the single given name should be extracted." ),
-        returnDescription = "The extracted single given name." )
-    public abstract String getSingleGiven( @Nullable ICompositeType humanName );
-
-    @Nullable
-    @ScriptMethod( description = "Extracts the name of the list of names that seems to be the most appropriate name.",
-        args = @ScriptMethodArg( value = "names", description = "The list of names from which one name should be extracted." ),
-        returnDescription = "The extracted primary name." )
-    public abstract ICompositeType getPrimaryName( @Nonnull List<? extends ICompositeType> names );
+    @ScriptMethod( description = "Updates the given name of the human name with the components if the specified first name (separated by space).",
+        args = {
+            @ScriptMethodArg( value = "humanName", description = "The FHIR human name on which the given name should be updated." ),
+            @ScriptMethodArg( value = "firstName", description = "All first names separated by space characters." )
+        } )
+    public abstract void updateGiven( @Nonnull ICompositeType humanName, @Nullable String firstName );
 }

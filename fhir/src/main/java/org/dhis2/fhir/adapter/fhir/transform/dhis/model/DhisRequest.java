@@ -43,7 +43,7 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DhisRequest", transformType = ScriptTransformType.OUT, description = "The current DHIS 2 request (created or updated resource) that caused the execution of the transformation." )
+@ScriptType( value = "DhisRequest", transformType = ScriptTransformType.EXP, description = "The current DHIS 2 request (created or updated resource) that caused the execution of the transformation." )
 public interface DhisRequest
 {
     @ScriptMethod( description = "Returns the processed DHIS 2 resource type as Java enumeration (e.g. TRACKED_ENTITY as enum constant)." )

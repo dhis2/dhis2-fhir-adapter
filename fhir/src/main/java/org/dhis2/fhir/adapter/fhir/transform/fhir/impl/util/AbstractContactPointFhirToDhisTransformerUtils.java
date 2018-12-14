@@ -46,7 +46,7 @@ import java.util.List;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "ContactPointUtils", transformType = ScriptTransformType.IN, var = AbstractContactPointFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "ContactPointUtils", transformType = ScriptTransformType.IMP, var = AbstractContactPointFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations for FHIR contact points." )
 public abstract class AbstractContactPointFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

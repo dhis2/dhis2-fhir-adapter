@@ -32,13 +32,13 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
-import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -68,7 +68,7 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.IN, var = AbstractFhirClientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.IMP, var = AbstractFhirClientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for retrieving data from a remote FHIR service." )
 public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

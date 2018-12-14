@@ -29,7 +29,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -44,6 +46,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -83,7 +87,29 @@ public class CustomExecutableScriptRepositoryImpl implements CustomExecutableScr
         Hibernate.initialize( es.getScript().getArguments() );
         Hibernate.initialize( es.getScript().getVariables() );
 
-        final ScriptSource scriptSource = entityManager.createQuery( "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions", ScriptSource.class )
+        final List<ScriptArg> baseScriptArgs;
+        if ( es.getScript().getBaseScript() == null )
+        {
+            baseScriptArgs = Collections.emptyList();
+        }
+        else
+        {
+            Hibernate.initialize( es.getScript().getBaseScript().getArguments() );
+            baseScriptArgs = es.getScript().getBaseScript().getArguments();
+        }
+
+        final List<ExecutableScriptArg> baseExecutableScriptArgs;
+        if ( es.getBaseExecutableScript() == null )
+        {
+            baseExecutableScriptArgs = Collections.emptyList();
+        }
+        else
+        {
+            Hibernate.initialize( es.getBaseExecutableScript().getOverrideArguments() );
+            baseExecutableScriptArgs = es.getBaseExecutableScript().getOverrideArguments();
+        }
+
+        final ScriptSource scriptSource = entityManager.createNamedQuery( ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, ScriptSource.class )
             .setParameter( "script", es.getScript() ).setParameter( "fhirVersion", fhirVersion ).getResultList().stream().findFirst().orElse( null );
         if ( scriptSource == null )
         {
@@ -91,6 +117,6 @@ public class CustomExecutableScriptRepositoryImpl implements CustomExecutableScr
         }
         Hibernate.initialize( scriptSource.getFhirVersions() );
 
-        return Optional.of( new ExecutableScriptInfo( es, es.getOverrideArguments(), es.getScript(), es.getScript().getArguments(), scriptSource ) );
+        return Optional.of( new ExecutableScriptInfo( es, es.getOverrideArguments(), baseExecutableScriptArgs, es.getScript(), es.getScript().getArguments(), baseScriptArgs, scriptSource ) );
     }
 }

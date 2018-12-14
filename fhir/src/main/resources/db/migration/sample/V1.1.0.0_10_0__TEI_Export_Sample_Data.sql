@@ -28,8 +28,8 @@
 
 -- @formatter:off
 
-UPDATE fhir_rule SET out_enabled = true;
+UPDATE fhir_rule SET exp_enabled = true;
 UPDATE fhir_rule SET fhir_update_enabled = true;
-UPDATE fhir_tracked_entity SET out_enabled = true;
+UPDATE fhir_tracked_entity SET exp_enabled = true;
 UPDATE fhir_tracked_entity SET fhir_update_enabled = true;
-UPDATE fhir_remote_subscription SET out_enabled = true;
+UPDATE fhir_remote_subscription SET exp_enabled = true;

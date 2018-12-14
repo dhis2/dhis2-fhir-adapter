@@ -79,7 +79,7 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
         final ConstrainedFields fields = new ConstrainedFields( TrackedEntityRule.class, constraintDescriptionResolver );
         final String request = IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createTrackedEntityRule.json", StandardCharsets.UTF_8 )
             .replace( "$trackedEntityId", API_BASE_URI + "/trackedEntities/" + mappedTrackedEntity.getId().toString() )
-            .replace( "$transformInScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON" ).getId().toString() )
+            .replace( "$transformImpScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON" ).getId().toString() )
             .replace( "$orgUnitLookupScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE" ).getId().toString() )
             .replace( "$locationLookupScriptId", API_BASE_URI + "/executableScripts/" + loadScript( "EXTRACT_FHIR_PATIENT_GEO_LOCATION" ).getId().toString() );
         final String location = docMockMvc.perform( post( "/api/rules" ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE )
@@ -100,9 +100,9 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 fields.withPath( "stop" ).description( "'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "applicableInScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming from a FHIR to a DHIS2 resource. " +
+                fields.withPath( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming from a FHIR to a DHIS2 resource. " +
                     "The script must be an evaluation script that returns a boolean value." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "transformInScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "transformImpScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "applicableOutScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming from a DHIS2 to a FHIR resource. " +
                     "The script must be an evaluation script that returns a boolean value." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "transformOutScript" ).description( "Link to the executable script reference that is used to transform the DHIS2 resource input to the FHIR resource." ).type( JsonFieldType.STRING ).optional(),
@@ -122,8 +122,8 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "name", is( "FHIR Patient to Person (disabled)" ) ) )
             .andExpect( jsonPath( "enabled", is( false ) ) )
-            .andExpect( jsonPath( "inEnabled", is( true ) ) )
-            .andExpect( jsonPath( "outEnabled", is( false ) ) )
+            .andExpect( jsonPath( "impEnabled", is( true ) ) )
+            .andExpect( jsonPath( "expEnabled", is( false ) ) )
             .andExpect( jsonPath( "fhirCreateEnabled", is( true ) ) )
             .andExpect( jsonPath( "fhirUpdateEnabled", is( false ) ) )
             .andExpect( jsonPath( "stop", is( false ) ) )
@@ -144,11 +144,11 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "trackedEntityRule" ).description( "Link to this resource itself." ),
                 linkWithRel( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).optional(),
-                linkWithRel( "applicableInScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." ).optional(),
-                linkWithRel( "transformInScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).optional(),
-                linkWithRel( "applicableOutScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming a DHIS2 to FHIR resource. " +
+                linkWithRel( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." ).optional(),
+                linkWithRel( "transformImpScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).optional(),
+                linkWithRel( "applicableExpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming a DHIS2 to FHIR resource. " +
                     "The script must be an evaluation script that returns a boolean value." ).optional(),
-                linkWithRel( "transformOutScript" ).description( "Link to the executable script reference that is used to transform the DHIS2 resource input to the FHIR resource." ).optional(),
+                linkWithRel( "transformExpScript" ).description( "Link to the executable script reference that is used to transform the DHIS2 resource input to the FHIR resource." ).optional(),
                 linkWithRel( "trackedEntity" ).description( "Link to the tracked entity resource that describes the tracked entity of the transformation." ),
                 linkWithRel( "orgUnitLookupScript" ).description( "Link to the executable script reference that is used to extract the organization unit reference. The script must be an evaluation script that return a reference." ).optional(),
                 linkWithRel( "locationLookupScript" ).description( "Link to the executable script reference that is used to extract the location reference. The script must be an evaluation script that return a location (geo coordinates)." ).optional(),
@@ -163,8 +163,8 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                     fields.withPath( "dhisResourceType" ).description( "The type of the rule and the type of the data that is stored in DHIS2." ).type( JsonFieldType.STRING ),
                     fields.withPath( "fhirResourceType" ).description( "The FHIR resource type of the incoming resource." ).type( JsonFieldType.STRING ),
                     fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
-                    fields.withPath( "inEnabled" ).description( "Specifies if transformation of a FHIR to a DHIS2 resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
-                    fields.withPath( "outEnabled" ).description( "Specifies if transformation of a DHIS2 to a FHIR resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
+                    fields.withPath( "impEnabled" ).description( "Specifies if transformation of a FHIR to a DHIS2 resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
+                    fields.withPath( "expEnabled" ).description( "Specifies if transformation of a DHIS2 to a FHIR resource has been enabled." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "fhirCreateEnabled" ).description( "Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "fhirUpdateEnabled" ).description( "Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "stop" ).description( "'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well." ).type( JsonFieldType.BOOLEAN ),

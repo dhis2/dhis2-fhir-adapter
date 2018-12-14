@@ -43,6 +43,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
@@ -58,9 +59,12 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script_source" )
+@NamedQuery( name = ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, query = "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions" )
 public class ScriptSource extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6002604151209645784L;
+
+    public static final String SCRIPT_SOURCE_BY_SCRIPT_VERSION = "scriptSourceByScriptVersion";
 
     @NotBlank
     private String sourceText;
@@ -113,6 +117,7 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
         this.script = script;
     }
 
+    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_source_version", joinColumns = @JoinColumn( name = "script_source_id" ) )
     @Column( name = "fhir_version" )

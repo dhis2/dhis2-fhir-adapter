@@ -46,7 +46,7 @@ import java.util.List;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "AddressUtils", transformType = ScriptTransformType.IN, var = AbstractAddressFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "AddressUtils", transformType = ScriptTransformType.IMP, var = AbstractAddressFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of addresses." )
 public abstract class AbstractAddressFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

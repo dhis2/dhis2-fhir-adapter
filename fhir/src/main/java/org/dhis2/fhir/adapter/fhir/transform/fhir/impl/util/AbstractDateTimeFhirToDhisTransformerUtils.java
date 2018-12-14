@@ -54,7 +54,7 @@ import java.util.Date;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DateTimeUtils", transformType = ScriptTransformType.IN, var = AbstractDateTimeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "DateTimeUtils", transformType = ScriptTransformType.IMP, var = AbstractDateTimeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for date and time handling." )
 public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

@@ -91,7 +91,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements DataGro
 
     private boolean locked;
 
-    private boolean outEnabled;
+    private boolean expEnabled;
 
     private boolean useAdapterIdentifier = true;
 
@@ -172,15 +172,15 @@ public class RemoteSubscription extends VersionedBaseMetadata implements DataGro
     }
 
     @Basic
-    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
-    public boolean isOutEnabled()
+    @Column( name = "exp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpEnabled()
     {
-        return outEnabled;
+        return expEnabled;
     }
 
-    public void setOutEnabled( boolean outEnabled )
+    public void setExpEnabled( boolean outEnabled )
     {
-        this.outEnabled = outEnabled;
+        this.expEnabled = outEnabled;
     }
 
     @Basic

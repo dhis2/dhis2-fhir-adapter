@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Base;
 import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.exceptions.FHIRException;
@@ -47,6 +48,7 @@ import java.util.Set;
  *
  * @author volsch
  */
+@Scriptable
 @Component
 public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirResourceDhisToFhirTransformerUtils
 {

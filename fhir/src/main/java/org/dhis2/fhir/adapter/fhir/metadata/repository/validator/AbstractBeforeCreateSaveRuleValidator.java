@@ -61,9 +61,9 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         {
             errors.rejectValue( "name", "AbstractRule.name.length", new Object[]{ AbstractRule.MAX_NAME_LENGTH }, "Name must not be longer than {0} characters." );
         }
-        if ( rule.getTransformInScript() == null )
+        if ( rule.getTransformImpScript() == null )
         {
-            errors.rejectValue( "transformInScript", "AbstractRule.transformInScript.null", "Transformation input script is mandatory." );
+            errors.rejectValue( "transformImpScript", "AbstractRule.transformImpScript.null", "Transformation input script is mandatory." );
         }
         if ( rule.getFhirResourceType() == null )
         {
@@ -72,8 +72,8 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         else
         {
 
-            checkValidApplicableInScript( errors, "applicableInScript", rule.getFhirResourceType(), rule.getApplicableInScript() );
-            checkValidTransformInScript( errors, "transformInScript", rule.getFhirResourceType(), transformDataType, rule.getTransformInScript() );
+            checkValidApplicableInScript( errors, "applicableImpScript", rule.getFhirResourceType(), rule.getApplicableImpScript() );
+            checkValidTransformInScript( errors, "transformImpScript", rule.getFhirResourceType(), transformDataType, rule.getTransformImpScript() );
         }
     }
 

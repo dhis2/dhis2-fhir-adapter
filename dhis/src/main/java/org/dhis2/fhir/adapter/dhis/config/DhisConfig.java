@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.auth.AuthorizedRestTemplate;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
@@ -135,6 +136,7 @@ public class DhisConfig
         mapper.setFilterProvider( new SimpleFilterProvider()
             .addFilter( ToManyPropertyFilter.FILTER_NAME, new ToManyPropertyFilter() )
             .addFilter( ToOnePropertyFilter.FILTER_NAME, new ToOnePropertyFilter() )
+            .addFilter( ToAnyPropertyFilter.FILTER_NAME, new ToAnyPropertyFilter() )
             .addFilter( SecuredPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
             {
             } ) );

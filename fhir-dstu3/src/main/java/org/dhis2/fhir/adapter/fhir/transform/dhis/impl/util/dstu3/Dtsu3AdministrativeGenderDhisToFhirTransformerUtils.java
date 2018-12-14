@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.scriptable.generator;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,42 @@ package org.dhis2.fhir.adapter.scriptable.generator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.WebRequest;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractAdministrativeGenderDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.Enumerations;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * DTSU3 specific implementation of {@link AbstractAdministrativeGenderDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-@Controller
-public class FromDhisJavaScriptGeneratorController extends AbstractJavaScriptGeneratorController
+@Scriptable
+@Component
+public class Dtsu3AdministrativeGenderDhisToFhirTransformerUtils extends AbstractAdministrativeGenderDhisToFhirTransformerUtils
 {
-    public FromDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    public Dtsu3AdministrativeGenderDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
-        super( config, resourceLoader, ScriptTransformType.EXP );
+        super( scriptExecutionContext, valueConverter );
     }
 
-    @RequestMapping( path = "/scripts/from-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
-    public ResponseEntity<String> getScript( @Nonnull WebRequest request )
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return super.getScript( request );
+        return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<Enumerations.AdministrativeGender> getAdministrativeGenderClass()
+    {
+        return Enumerations.AdministrativeGender.class;
     }
 }

@@ -28,12 +28,14 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,22 +51,41 @@ public class ExecutableScriptInfo implements Serializable
 
     private final List<ExecutableScriptArg> executableScriptArgs;
 
+    private final List<ExecutableScriptArg> baseExecutableScriptArgs;
+
     private final Script script;
 
     private final List<ScriptArg> scriptArgs;
 
+    private final List<ScriptArg> baseScriptArgs;
+
     private final ScriptSource scriptSource;
 
-    public ExecutableScriptInfo( @JsonProperty( "executableScript" ) @NonNull ExecutableScript executableScript, @JsonProperty( "executableScriptArgs" ) @Nonnull List<ExecutableScriptArg> executableScriptArgs,
-        @JsonProperty( "script" ) @Nonnull Script script, @JsonProperty( "scriptArgs" ) @Nonnull List<ScriptArg> scriptArgs,
+    @JsonIgnore
+    private volatile transient List<ExecutableScriptArg> resultingExecutableScriptArgs;
+
+    @JsonIgnore
+    private volatile transient List<ScriptArg> resultingScriptArgs;
+
+    @JsonIgnore
+    private volatile transient Collection<ScriptArgValue> resultingScriptArgValues;
+
+    public ExecutableScriptInfo( @JsonProperty( "executableScript" ) @NonNull ExecutableScript executableScript,
+        @JsonProperty( "executableScriptArgs" ) @Nonnull List<ExecutableScriptArg> executableScriptArgs,
+        @JsonProperty( "baseExecutableScriptArgs" ) @Nonnull List<ExecutableScriptArg> baseExecutableScriptArgs,
+        @JsonProperty( "script" ) @Nonnull Script script,
+        @JsonProperty( "scriptArgs" ) @Nonnull List<ScriptArg> scriptArgs,
+        @JsonProperty( "baseScriptArgs" ) @Nonnull List<ScriptArg> baseScriptArgs,
         @JsonProperty( "scriptSource" ) @Nonnull ScriptSource scriptSource )
     {
         this.executableScript = executableScript;
         // do not use persistence specific list implementations when serializing to JSON
         this.executableScriptArgs = new ArrayList<>( executableScriptArgs );
+        this.baseExecutableScriptArgs = new ArrayList<>( baseExecutableScriptArgs );
         this.script = script;
         // do not use persistence specific list implementations when serializing to JSON
         this.scriptArgs = new ArrayList<>( scriptArgs );
+        this.baseScriptArgs = new ArrayList<>( baseScriptArgs );
         this.scriptSource = scriptSource;
     }
 
@@ -96,5 +117,47 @@ public class ExecutableScriptInfo implements Serializable
     public ScriptSource getScriptSource()
     {
         return scriptSource;
+    }
+
+    @Nonnull
+    public List<ExecutableScriptArg> getBaseExecutableScriptArgs()
+    {
+        return baseExecutableScriptArgs;
+    }
+
+    @Nonnull
+    public List<ScriptArg> getBaseScriptArgs()
+    {
+        return baseScriptArgs;
+    }
+
+    @Nonnull
+    public List<ExecutableScriptArg> getResultingExecutableScriptArgs()
+    {
+        if ( resultingExecutableScriptArgs == null )
+        {
+            resultingExecutableScriptArgs = ScriptArgUtils.getResultingExecutableArgs( executableScriptArgs, baseExecutableScriptArgs );
+        }
+        return resultingExecutableScriptArgs;
+    }
+
+    @Nonnull
+    public List<ScriptArg> getResultingScriptArgs()
+    {
+        if ( resultingScriptArgs == null )
+        {
+            resultingScriptArgs = ScriptArgUtils.getResultingArgs( scriptArgs, baseScriptArgs );
+        }
+        return resultingScriptArgs;
+    }
+
+    @Nonnull
+    public Collection<ScriptArgValue> getResultingScriptArgValues()
+    {
+        if ( resultingScriptArgValues == null )
+        {
+            resultingScriptArgValues = ScriptArgUtils.getScriptArgValues( getResultingScriptArgs(), getResultingExecutableScriptArgs() );
+        }
+        return resultingScriptArgValues;
     }
 }

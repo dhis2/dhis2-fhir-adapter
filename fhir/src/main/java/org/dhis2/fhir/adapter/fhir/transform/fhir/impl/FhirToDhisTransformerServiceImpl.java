@@ -198,10 +198,10 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     private boolean isApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( rule.getApplicableInScript() == null )
+        if ( rule.getApplicableImpScript() == null )
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableInScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableImpScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
     }
 }

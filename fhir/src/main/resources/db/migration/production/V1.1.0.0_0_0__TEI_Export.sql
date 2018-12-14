@@ -28,6 +28,9 @@
 
 -- @formatter:off
 
+ALTER TABLE fhir_rule RENAME COLUMN applicable_in_script_id TO applicable_imp_script_id;
+ALTER TABLE fhir_rule RENAME COLUMN transform_in_script_id TO transform_imp_script_id;
+
 ALTER TABLE fhir_queued_remote_subscription_request
   DROP COLUMN IF EXISTS request_id;
 ALTER TABLE fhir_queued_remote_resource
@@ -133,49 +136,61 @@ COMMENT ON COLUMN fhir_queued_dhis_resource.dhis_resource_id IS 'The ID (with re
 COMMENT ON COLUMN fhir_queued_dhis_resource.queued_at IS 'The timestamp when the data has been queued last time.';
 
 ALTER TABLE fhir_rule
-  ADD COLUMN in_enabled BOOLEAN DEFAULT TRUE NOT NULL,
-  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN imp_enabled BOOLEAN DEFAULT TRUE NOT NULL,
+  ADD COLUMN exp_enabled BOOLEAN DEFAULT FALSE NOT NULL,
   ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
   ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
-COMMENT ON COLUMN fhir_rule.in_enabled IS 'Specifies if transformation from FHIR to DHIS resource is enabled.';
-COMMENT ON COLUMN fhir_rule.out_enabled IS 'Specifies if transformation from DHIS to FHIR resource is enabled.';
+COMMENT ON COLUMN fhir_rule.imp_enabled IS 'Specifies if transformation from FHIR to DHIS resource is enabled.';
+COMMENT ON COLUMN fhir_rule.exp_enabled IS 'Specifies if transformation from DHIS to FHIR resource is enabled.';
 COMMENT ON COLUMN fhir_rule.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 COMMENT ON COLUMN fhir_rule.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 
 ALTER TABLE fhir_rule
-  ADD COLUMN applicable_out_script_id UUID,
-  ADD CONSTRAINT fhir_rule_fk6 FOREIGN KEY (applicable_out_script_id) REFERENCES fhir_executable_script (id);
+  ADD COLUMN applicable_exp_script_id UUID,
+  ADD CONSTRAINT fhir_rule_fk6 FOREIGN KEY (applicable_exp_script_id) REFERENCES fhir_executable_script (id);
 CREATE INDEX fhir_rule_i4
-  ON fhir_rule (applicable_out_script_id);
-COMMENT ON COLUMN fhir_rule.applicable_out_script_id IS 'References the evaluation script that is used to evaluate if the DHIS 2 resource is applicable to be processed by this rule. If no script has been specified, the rule is applicable for further processing.';
+  ON fhir_rule (applicable_exp_script_id);
+COMMENT ON COLUMN fhir_rule.applicable_exp_script_id IS 'References the evaluation script that is used to evaluate if the DHIS 2 resource is applicable to be processed by this rule. If no script has been specified, the rule is applicable for further processing.';
 
 ALTER TABLE fhir_rule
   ADD COLUMN stop BOOLEAN DEFAULT FALSE NOT NULL;
 COMMENT ON COLUMN fhir_rule.stop IS 'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well.';
 
 ALTER TABLE fhir_rule
-  ADD COLUMN transform_out_script_id UUID,
-  ADD CONSTRAINT fhir_rule_fk7 FOREIGN KEY (transform_out_script_id) REFERENCES fhir_executable_script (id);
+  ADD COLUMN transform_exp_script_id UUID,
+  ADD CONSTRAINT fhir_rule_fk7 FOREIGN KEY (transform_exp_script_id) REFERENCES fhir_executable_script (id);
 CREATE INDEX fhir_rule_i5
-  ON fhir_rule (transform_out_script_id);
-COMMENT ON COLUMN fhir_rule.transform_out_script_id IS 'References the transformation script that is used to transform the DHIS 2 resource to the FHIR resource.';
+  ON fhir_rule (transform_exp_script_id);
+COMMENT ON COLUMN fhir_rule.transform_exp_script_id IS 'References the transformation script that is used to transform the DHIS 2 resource to the FHIR resource.';
 
 ALTER TABLE fhir_rule
-  ALTER COLUMN transform_in_script_id DROP NOT NULL;
+  ALTER COLUMN transform_imp_script_id DROP NOT NULL;
 
 ALTER TABLE fhir_tracked_entity
-  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN exp_enabled BOOLEAN DEFAULT FALSE NOT NULL,
   ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
   ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
-COMMENT ON COLUMN fhir_tracked_entity.out_enabled IS 'Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled.';
+COMMENT ON COLUMN fhir_tracked_entity.exp_enabled IS 'Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled.';
 COMMENT ON COLUMN fhir_tracked_entity.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type.';
 COMMENT ON COLUMN fhir_tracked_entity.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type.';
 
 ALTER TABLE fhir_remote_subscription
-  ADD COLUMN out_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN exp_enabled BOOLEAN DEFAULT FALSE NOT NULL,
   ADD COLUMN use_adapter_identifier BOOLEAN DEFAULT TRUE NOT NULL;
-COMMENT ON COLUMN fhir_remote_subscription.out_enabled IS 'Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled.';
+COMMENT ON COLUMN fhir_remote_subscription.exp_enabled IS 'Specifies if output transformation from DHIS to FHIR for this remote subscription is enabled.';
 COMMENT ON COLUMN fhir_remote_subscription.use_adapter_identifier IS 'Specifies if the adapter should add an adapter specific identifier to created and updated resources. Using such identifiers makes it easier to map resources between FHIR and DHIS 2.';
+
+ALTER TABLE fhir_script
+  ADD base_script_id UUID,
+  ADD CONSTRAINT fhir_script_fk5 FOREIGN KEY (base_script_id) REFERENCES fhir_script(id);
+CREATE INDEX fhir_script_i1 ON fhir_script(base_script_id);
+COMMENT ON COLUMN fhir_script.base_script_id IS 'References another script from which arguments are inherited.';
+
+ALTER TABLE fhir_executable_script
+  ADD base_executable_script_id UUID,
+  ADD CONSTRAINT fhir_executable_script_fk5 FOREIGN KEY (base_executable_script_id) REFERENCES fhir_executable_script(id);
+CREATE INDEX fhir_executable_script_i2 ON fhir_executable_script(base_executable_script_id);
+COMMENT ON COLUMN fhir_executable_script.base_executable_script_id IS 'References another executable script from which arguments are inherited.';
 
 -- Systems (the value is the systemAuthentication URI)
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
@@ -194,26 +209,72 @@ INSERT INTO fhir_script_variable (script_id, variable)
 VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'INPUT');
 INSERT INTO fhir_script_variable (script_id, variable)
 VALUES ('2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6', 'OUTPUT');
+-- Link to base script for transformation of FHIR Patient to DHIS2 Person
+-- (may have been deleted in the meanwhile)
+UPDATE fhir_script SET base_script_id = (SELECT id FROM fhir_script WHERE id = 'ea887943-5e94-4e31-9441-c7661fe1063e')
+WHERE id='2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6';
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('0f2b7998-7d7e-44a9-95f2-2d2243f1320a', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
-        'lastNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'NAME:Last name',
-        'The reference of the tracked entity attribute that contains the last name of the Person.');
-INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
-VALUES ('2917c220-cc70-43be-8164-6b129390368d', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
-        'firstNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, 'CODE:MMD_PER_NAM',
-        'The reference of the tracked entity attribute that contains the first name of the Person.');
-INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('d7e622c5-1914-4e5b-a590-039fc0c2a105', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
+'resetFhirValue', 'BOOLEAN', TRUE, 'false', 'Specifies if existing values in FHIR can be reset by null values (except first and last name).');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
 VALUES ('f0a48e63-cc1d-4d02-85fa-80c7e79a5d9e', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
-'output.getName().clear();
-output.getNameFirstRep().setFamily(input.getValue(args[''lastNameAttribute'']));
-output.getNameFirstRep().addGiven(input.getValue(args[''firstNameAttribute'']));
+'function canOverrideAddress(address)
+{
+  return !address.hasLine() && !address.hasCity() && !address.hasDistrict() && !address.hasState() && !address.hasPostalCode() && !address.hasCountry();
+}
+if (output.getName().size() < 2)
+{
+  var lastName = input.getValue(args[''lastNameAttribute'']);
+  var firstName = input.getValue(args[''firstNameAttribute'']);
+  if ((lastName != null) || (firstName != null) || args[''resetFhirValue''])
+  {
+    output.getName().clear();
+    if ((lastName != null) || args[''resetFhirValue''])
+    {
+      output.getNameFirstRep().setFamily(lastName);
+    }
+    if ((firstName != null) || args[''resetFhirValue''])
+    {
+      humanNameUtils.updateGiven(output.getNameFirstRep(), firstName);
+    }
+  }
+}
+if (args[''birthDateAttribute''] != null)
+{
+  var birthDate = input.getValue(args[''birthDateAttribute'']);
+  if ((birthDate != null) || args[''resetFhirValue''])
+  {
+    output.setBirthDateElement(dateTimeUtils.getPreciseDateElement(birthDate));
+  }
+}
+if (args[''genderAttribute''] != null)
+{
+  var gender = input.getValue(args[''genderAttribute'']);
+  if ((gender != null) || args[''resetFhirValue''])
+  {
+    output.setGender(genderUtils.getAdministrativeGender(gender));
+  }
+}
+if ((args[''addressTextAttribute''] != null) && (output.getAddress().size() < 2))
+{
+  var addressText = input.getValue(args[''addressTextAttribute'']);
+  if (((addressText != null) || args[''resetFhirValue'']) && (!output.hasAddress() || canOverrideAddress(output.getAddressFirstRep())))
+  {
+    output.getAddress().clear();
+    output.addAddress().setText(addressText);
+  }
+}
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('f0a48e63-cc1d-4d02-85fa-80c7e79a5d9e', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('6a014e53-6a7e-4bb6-8cfc-817e4756ed4d', 0, '2f3b01d6-41ce-41ea-a66c-cc7b1d98aea6',
         'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms DHIS Person to FHIR Patient.');
+-- Link to base script for transformation of FHIR Patient to DHIS2 Person
+-- (may have been deleted in the meanwhile)
+UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '72451c8f-7492-4707-90b8-a3e0796de19e')
+WHERE id='6a014e53-6a7e-4bb6-8cfc-817e4756ed4d';
 
 UPDATE fhir_rule
-SET transform_out_script_id = '6a014e53-6a7e-4bb6-8cfc-817e4756ed4d'
+SET transform_exp_script_id = '6a014e53-6a7e-4bb6-8cfc-817e4756ed4d'
 WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';

@@ -51,7 +51,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DhisContext", var = "context", transformType = ScriptTransformType.OUT, description = "The context of the current transformation." )
+@ScriptType( value = "DhisContext", var = "context", transformType = ScriptTransformType.EXP, description = "The context of the current transformation." )
 public interface DhisToFhirTransformerContext
 {
     @Nonnull

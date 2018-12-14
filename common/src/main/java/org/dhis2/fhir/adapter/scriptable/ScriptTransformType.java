@@ -44,10 +44,10 @@ public enum ScriptTransformType
     /**
      * Script performs a transformation into the system.
      */
-    IN,
+    IMP,
 
     /**
      * Script performs a transformation out of the system.
      */
-    OUT
+    EXP
 }

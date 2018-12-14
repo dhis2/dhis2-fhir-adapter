@@ -67,7 +67,7 @@ import java.util.UUID;
  */
 @Component
 @Scriptable
-@ScriptType( value = "ReferenceUtils", transformType = ScriptTransformType.IN, var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "ReferenceUtils", transformType = ScriptTransformType.IMP, var = ReferenceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to resolveRule FHIR Reference to FHIR Resources when handling FHIR to DHIS2 transformations." )
 public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

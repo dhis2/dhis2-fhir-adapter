@@ -68,10 +68,10 @@ import java.io.Serializable;
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
 @NamedQueries( {
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
-        "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true AND r.inEnabled=true" ),
+        "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true AND r.impEnabled=true" ),
     @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, query =
         "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true " +
-            "AND r.inEnabled=true AND (r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
+            "AND r.impEnabled=true AND (r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
             "(SELECT 1 FROM CodeSetValue csv JOIN csv.code c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) " +
             "JOIN sc.system s ON s.enabled=true WHERE csv.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ) } )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
@@ -107,9 +107,9 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @EnumValue( FhirResourceType.class )
     private FhirResourceType fhirResourceType;
 
-    private boolean inEnabled = true;
+    private boolean impEnabled = true;
 
-    private boolean outEnabled;
+    private boolean expEnabled;
 
     private boolean fhirCreateEnabled = true;
 
@@ -117,15 +117,15 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private boolean stop;
 
-    private ExecutableScript applicableInScript;
+    private ExecutableScript applicableImpScript;
 
     private CodeSet applicableCodeSet;
 
-    private ExecutableScript applicableOutScript;
+    private ExecutableScript applicableExpScript;
 
-    private ExecutableScript transformInScript;
+    private ExecutableScript transformImpScript;
 
-    private ExecutableScript transformOutScript;
+    private ExecutableScript transformExpScript;
 
     private boolean containedAllowed;
 
@@ -208,15 +208,15 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @ManyToOne
-    @JoinColumn( name = "applicable_in_script_id", referencedColumnName = "id" )
-    public ExecutableScript getApplicableInScript()
+    @JoinColumn( name = "applicable_imp_script_id", referencedColumnName = "id" )
+    public ExecutableScript getApplicableImpScript()
     {
-        return applicableInScript;
+        return applicableImpScript;
     }
 
-    public void setApplicableInScript( ExecutableScript applicableInScript )
+    public void setApplicableImpScript( ExecutableScript applicableImpScript )
     {
-        this.applicableInScript = applicableInScript;
+        this.applicableImpScript = applicableImpScript;
     }
 
     @ManyToOne
@@ -232,39 +232,39 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @ManyToOne
-    @JoinColumn( name = "applicable_out_script_id", referencedColumnName = "id" )
-    public ExecutableScript getApplicableOutScript()
+    @JoinColumn( name = "applicable_exp_script_id", referencedColumnName = "id" )
+    public ExecutableScript getApplicableExpScript()
     {
-        return applicableOutScript;
+        return applicableExpScript;
     }
 
-    public void setApplicableOutScript( ExecutableScript applicableOutScript )
+    public void setApplicableExpScript( ExecutableScript applicableOutScript )
     {
-        this.applicableOutScript = applicableOutScript;
-    }
-
-    @Basic
-    @Column( name = "in_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
-    public boolean isInEnabled()
-    {
-        return inEnabled;
-    }
-
-    public void setInEnabled( boolean inEnabled )
-    {
-        this.inEnabled = inEnabled;
+        this.applicableExpScript = applicableOutScript;
     }
 
     @Basic
-    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
-    public boolean isOutEnabled()
+    @Column( name = "imp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isImpEnabled()
     {
-        return outEnabled;
+        return impEnabled;
     }
 
-    public void setOutEnabled( boolean outEnabled )
+    public void setImpEnabled( boolean inEnabled )
     {
-        this.outEnabled = outEnabled;
+        this.impEnabled = inEnabled;
+    }
+
+    @Basic
+    @Column( name = "exp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpEnabled()
+    {
+        return expEnabled;
+    }
+
+    public void setExpEnabled( boolean outEnabled )
+    {
+        this.expEnabled = outEnabled;
     }
 
     @Basic
@@ -304,27 +304,27 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @ManyToOne
-    @JoinColumn( name = "transform_in_script_id", referencedColumnName = "id" )
-    public ExecutableScript getTransformInScript()
+    @JoinColumn( name = "transform_imp_script_id", referencedColumnName = "id" )
+    public ExecutableScript getTransformImpScript()
     {
-        return transformInScript;
+        return transformImpScript;
     }
 
-    public void setTransformInScript( ExecutableScript transformInScript )
+    public void setTransformImpScript( ExecutableScript transformImpScript )
     {
-        this.transformInScript = transformInScript;
+        this.transformImpScript = transformImpScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "transform_out_script_id", referencedColumnName = "id" )
-    public ExecutableScript getTransformOutScript()
+    @JoinColumn( name = "transform_exp_script_id", referencedColumnName = "id" )
+    public ExecutableScript getTransformExpScript()
     {
-        return transformOutScript;
+        return transformExpScript;
     }
 
-    public void setTransformOutScript( ExecutableScript transformOutScript )
+    public void setTransformExpScript( ExecutableScript transformOutScript )
     {
-        this.transformOutScript = transformOutScript;
+        this.transformExpScript = transformOutScript;
     }
 
     @Column( name = "contained_allowed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )

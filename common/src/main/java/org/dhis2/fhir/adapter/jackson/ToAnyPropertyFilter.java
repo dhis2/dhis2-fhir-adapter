@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.scriptable.generator;
+package org.dhis2.fhir.adapter.jackson;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,39 @@ package org.dhis2.fhir.adapter.scriptable.generator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.WebRequest;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.PropertyWriter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * Filters JPA to one and to many properties when serializing.
  *
  * @author volsch
  */
-@Controller
-public class FromDhisJavaScriptGeneratorController extends AbstractJavaScriptGeneratorController
+public class ToAnyPropertyFilter extends SimpleBeanPropertyFilter
 {
-    public FromDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
-    {
-        super( config, resourceLoader, ScriptTransformType.EXP );
-    }
+    public static final String FILTER_NAME = "toAnyPropertyFilter";
 
-    @RequestMapping( path = "/scripts/from-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
-    public ResponseEntity<String> getScript( @Nonnull WebRequest request )
+    @Override
+    public void serializeAsField( Object pojo, JsonGenerator generator, SerializerProvider provider, PropertyWriter writer ) throws Exception
     {
-        return super.getScript( request );
+        if ( include( writer ) )
+        {
+            if ( (writer.getAnnotation( ManyToMany.class ) == null) && (writer.getAnnotation( OneToOne.class ) == null) &&
+                (writer.getAnnotation( OneToMany.class ) == null) && (writer.getAnnotation( ManyToOne.class ) == null) )
+            {
+                writer.serializeAsField( pojo, generator, provider );
+            }
+        }
+        else if ( !generator.canOmitFields() )
+        {
+            writer.serializeAsOmittedField( pojo, generator, provider );
+        }
     }
 }

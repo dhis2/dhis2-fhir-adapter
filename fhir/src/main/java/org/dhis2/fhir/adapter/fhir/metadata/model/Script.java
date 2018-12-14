@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
-import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -45,6 +45,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -64,7 +65,7 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script" )
-@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
+@JsonFilter( ToAnyPropertyFilter.FILTER_NAME )
 public class Script extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
@@ -102,6 +103,8 @@ public class Script extends VersionedBaseMetadata implements Serializable
     private SortedSet<ScriptVariable> variables;
 
     private List<ScriptSource> sources;
+
+    private Script baseScript;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -204,6 +207,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.arguments = scriptVariables;
     }
 
+    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_variable", joinColumns = @JoinColumn( name = "script_id" ) )
     @Column( name = "variable" )
@@ -231,5 +235,17 @@ public class Script extends VersionedBaseMetadata implements Serializable
     public void setSources( List<ScriptSource> sources )
     {
         this.sources = sources;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "base_script_id" )
+    public Script getBaseScript()
+    {
+        return baseScript;
+    }
+
+    public void setBaseScript( Script baseScript )
+    {
+        this.baseScript = baseScript;
     }
 }

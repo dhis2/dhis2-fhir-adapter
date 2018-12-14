@@ -64,7 +64,7 @@ public class MappedTrackedEntity extends VersionedBaseMetadata implements Serial
 
     private boolean enabled = true;
 
-    private boolean outEnabled;
+    private boolean expEnabled;
 
     private boolean fhirCreateEnabled = true;
 
@@ -115,15 +115,15 @@ public class MappedTrackedEntity extends VersionedBaseMetadata implements Serial
     }
 
     @Basic
-    @Column( name = "out_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
-    public boolean isOutEnabled()
+    @Column( name = "exp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpEnabled()
     {
-        return outEnabled;
+        return expEnabled;
     }
 
-    public void setOutEnabled( boolean outEnabled )
+    public void setExpEnabled( boolean outEnabled )
     {
-        this.outEnabled = outEnabled;
+        this.expEnabled = outEnabled;
     }
 
     @Basic

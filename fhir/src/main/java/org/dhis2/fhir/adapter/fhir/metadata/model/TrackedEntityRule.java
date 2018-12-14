@@ -128,7 +128,7 @@ public class TrackedEntityRule extends AbstractRule
     @JsonIgnore
     public boolean isEffectiveFhirCreateEnable()
     {
-        return isOutEnabled() && isFhirCreateEnabled() && getTrackedEntity().isOutEnabled() && getTrackedEntity().isFhirCreateEnabled();
+        return isExpEnabled() && isFhirCreateEnabled() && getTrackedEntity().isExpEnabled() && getTrackedEntity().isFhirCreateEnabled();
     }
 
     @Override
@@ -136,6 +136,6 @@ public class TrackedEntityRule extends AbstractRule
     @JsonIgnore
     public boolean isEffectiveFhirUpdateEnable()
     {
-        return isOutEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isOutEnabled() && getTrackedEntity().isFhirUpdateEnabled();
+        return isExpEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isExpEnabled() && getTrackedEntity().isFhirUpdateEnabled();
     }
 }

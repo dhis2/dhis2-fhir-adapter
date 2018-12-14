@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.script;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,13 +28,63 @@ package org.dhis2.fhir.adapter.fhir.script;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Utilities to merge script arguments.
+ *
+ * @author volsch
+ */
 public abstract class ScriptArgUtils
 {
+    @Nonnull
+    public static List<ScriptArg> getResultingArgs( @Nonnull List<ScriptArg> args, @Nullable List<ScriptArg> baseArgs )
+    {
+        if ( baseArgs == null )
+        {
+            return args;
+        }
+
+        final Set<String> argNames = args.stream().map( ScriptArg::getName ).collect( Collectors.toSet() );
+        final List<ScriptArg> result = baseArgs.stream().filter( a -> !argNames.contains( a.getName() ) ).collect( Collectors.toList() );
+        result.addAll( args );
+        return result;
+    }
+
+    @Nonnull
+    public static List<ExecutableScriptArg> getResultingExecutableArgs( @Nonnull List<ExecutableScriptArg> args, @Nullable List<ExecutableScriptArg> baseArgs )
+    {
+        if ( baseArgs == null )
+        {
+            return args;
+        }
+
+        final Set<String> argNames = args.stream().map( a -> a.getArgument().getName() ).collect( Collectors.toSet() );
+        final List<ExecutableScriptArg> result = baseArgs.stream().filter( a -> !argNames.contains( a.getArgument().getName() ) ).collect( Collectors.toList() );
+        result.addAll( args );
+        return result;
+    }
+
+    @Nonnull
+    public static Collection<ScriptArgValue> getScriptArgValues( @Nonnull List<ScriptArg> args, @Nonnull List<ExecutableScriptArg> executableArgs )
+    {
+        final Map<String, ExecutableScriptArg> namedExecutableArgs = executableArgs.stream()
+            .collect( Collectors.toMap( a -> a.getArgument().getName(), a -> a ) );
+        return args.stream().map( a -> {
+            final ExecutableScriptArg ea = namedExecutableArgs.get( a.getName() );
+            return new ScriptArgValue( a, (ea == null) ? a.getDefaultValue() : ea.getOverrideValue() );
+        } ).collect( Collectors.toList() );
+    }
+
+    @Nullable
     public static List<String> extractStringArray( @Nullable Object object )
     {
         if ( object == null )

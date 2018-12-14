@@ -81,7 +81,8 @@ public class ScriptRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 fields.withPath( "returnType" ).description( "The data type of the value that is returned by the script." ).type( JsonFieldType.STRING ),
                 fields.withPath( "inputType" ).description( "The required data type of the transformation input." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "outputType" ).description( "The required data type of the transformation output." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "variables" ).description( "The variables that are required for the script execution." ).type( JsonFieldType.ARRAY ).optional()
+                fields.withPath( "variables" ).description( "The variables that are required for the script execution." ).type( JsonFieldType.ARRAY ).optional(),
+                fields.withPath( "baseScript" ).description( "Link to another script from which arguments are inherited." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -110,7 +111,8 @@ public class ScriptRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "script" ).description( "Link to this resource itself." ),
                 linkWithRel( "arguments" ).description( "Link to the arguments that are provided as variable args (contains a map with all argument values)." ),
-                linkWithRel( "sources" ).description( "Link to the source codes of the scripts (multiple scripts for different FHIR versions)." ) ), responseFields(
+                linkWithRel( "sources" ).description( "Link to the source codes of the scripts (multiple scripts for different FHIR versions)." ),
+                linkWithRel( "baseScript" ).description( "Link to another script from which arguments are inherited." ).optional() ), responseFields(
                 attributes( key( "title" ).value( "Fields for script reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),

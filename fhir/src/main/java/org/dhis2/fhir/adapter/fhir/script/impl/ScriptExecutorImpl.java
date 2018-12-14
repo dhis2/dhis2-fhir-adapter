@@ -30,9 +30,9 @@ package org.dhis2.fhir.adapter.fhir.script.impl;
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgValue;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -47,7 +47,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -119,7 +118,6 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     "Script \"" + executableScriptInfo.getScript().getName() + "\" requires variable " + v.getVariableName() + " that has not been provided." );
             }
         } );
-
         final Map<String, Object> args = createArgs( executableScriptInfo, arguments );
 
         final Map<String, Object> scriptVariables = new HashMap<>( variables );
@@ -159,42 +157,33 @@ public class ScriptExecutorImpl implements ScriptExecutor
         return value;
     }
 
+    @Nonnull
     private Map<String, Object> createArgs( @Nonnull ExecutableScriptInfo executableScriptInfo, @Nonnull Map<String, Object> arguments )
     {
-        final Collection<ScriptArg> scriptArgs = executableScriptInfo.getScriptArgs();
-        final Collection<ExecutableScriptArg> executableScriptArgs = executableScriptInfo.getExecutableScriptArgs();
-
         final Map<String, Object> args = new HashMap<>();
-        // use default values of the script first
-        scriptArgs.forEach( sa -> {
-            try
+        executableScriptInfo.getResultingScriptArgValues().forEach( v -> {
+            final Object value;
+            if ( arguments.containsKey( v.getName() ) )
             {
-                args.put( sa.getName(), convertScriptArg( sa, sa.getDefaultValue() ) );
+                value = arguments.get( v.getName() );
             }
-            catch ( ConversionException e )
+            else
             {
-                throw new ScriptPreparationException( "Could not convert default value of argument \"" + sa.getName() + "\": " + e.getMessage() );
+                try
+                {
+                    value = convertScriptArg( v.getScriptArg(), v.getStringValue() );
+                }
+                catch ( ConversionException e )
+                {
+                    throw new ScriptPreparationException( "Could not convert value of argument \"" + v.getName() + "\": " + e.getMessage() );
+                }
             }
-        } );
-        // override default values of the script with execution specific arguments
-        executableScriptArgs.forEach( sa -> {
-            try
+            final ScriptArgValue resultingScriptArgValue = new ScriptArgValue( v.getScriptArg(), value );
+            if ( resultingScriptArgValue.isMissing() )
             {
-                args.put( sa.getArgument().getName(), convertScriptArg( sa.getArgument(), sa.getOverrideValue() ) );
+                throw new ScriptPreparationException( "Script variables \"" + resultingScriptArgValue.getName() + "\" is mandatory and has not been specified." );
             }
-            catch ( ConversionException e )
-            {
-                throw new ScriptPreparationException( "Could not convert override value of argument \"" + sa.getArgument().getName() + "\": " + e.getMessage() );
-            }
-        } );
-        // specified arguments may override everything
-        args.putAll( arguments );
-        // validate final arguments
-        scriptArgs.stream().filter( ScriptArg::isMandatory ).forEach( sa -> {
-            if ( args.get( sa.getName() ) == null )
-            {
-                throw new ScriptPreparationException( "Script variables \"" + sa.getName() + "\" is mandatory and has not been specified." );
-            }
+            args.put( resultingScriptArgValue.getName(), resultingScriptArgValue.getValue() );
         } );
         return args;
     }

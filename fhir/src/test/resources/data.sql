@@ -230,7 +230,7 @@ VALUES ('9b832b2c0a574441841147b5dc65ec91', '72451c8f7492470790b8a3e0796de19e', 
 INSERT INTO fhir_tracked_entity(id, version, created_at, last_updated_at, last_updated_by, name, enabled, description, tracked_entity_ref, tracked_entity_identifier_ref)
 VALUES ('4203754d21774a4486aa2de31ee4c8ee', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'Person', TRUE, 'Tracked entity for a patient.', 'NAME:Person', 'CODE:National identifier');
 
-INSERT INTO fhir_rule (id, version, created_at, last_updated_at, last_updated_by, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_in_script_id, transform_in_script_id, contained_allowed)
+INSERT INTO fhir_rule (id, version, created_at, last_updated_at, last_updated_by, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_imp_script_id, transform_imp_script_id, contained_allowed)
 VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'FHIR Patient to Person', NULL, TRUE, 1, 'PATIENT', 'TRACKED_ENTITY', NULL, '72451c8f7492470790b8a3e0796de19e', FALSE);
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, org_lookup_script_id, loc_lookup_script_id)
 VALUES ('5f9ebdc9852e4c8387ca795946aabc35', '4203754d21774a4486aa2de31ee4c8ee', '25a97bb47b394ed48677db4bcaa28ccf', 'ef90531f443848bd83b36370dd65875a');

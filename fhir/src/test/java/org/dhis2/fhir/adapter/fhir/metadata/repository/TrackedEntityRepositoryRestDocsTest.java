@@ -97,7 +97,7 @@ public class TrackedEntityRepositoryRestDocsTest extends AbstractJpaRepositoryRe
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "name", is( "Person Tracked Entity (disabled)" ) ) )
             .andExpect( jsonPath( "enabled", is( false ) ) )
-            .andExpect( jsonPath( "outEnabled", is( false ) ) )
+            .andExpect( jsonPath( "expEnabled", is( false ) ) )
             .andExpect( jsonPath( "fhirCreateEnabled", is( true ) ) )
             .andExpect( jsonPath( "fhirUpdateEnabled", is( false ) ) )
             .andExpect( jsonPath( "trackedEntityReference.value", is( "Obsolete Person" ) ) )
@@ -125,7 +125,7 @@ public class TrackedEntityRepositoryRestDocsTest extends AbstractJpaRepositoryRe
                     fields.withPath( "name" ).description( "The unique name of the rule." ).type( JsonFieldType.STRING ),
                     fields.withPath( "description" ).description( "The detailed description that describes for which purpose the rule is used." ).type( JsonFieldType.STRING ).optional(),
                     fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
-                    fields.withPath( "outEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "expEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled." ).type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "fhirCreateEnabled" ).description( "Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type (by default true)." )
                         .type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "fhirUpdateEnabled" ).description( "Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type. (by default false)." )

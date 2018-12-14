@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -34,11 +34,11 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * FHIR to DHIS2 transformer utility methods for human names.
@@ -46,15 +46,15 @@ import java.util.List;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "HumanNameUtils", transformType = ScriptTransformType.IMP, var = AbstractHumanNameFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to handle FHIR to DHIS2 transformations of human names." )
-public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+@ScriptType( value = "DateTimeUtils", transformType = ScriptTransformType.EXP, var = AbstractDateTimeDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle DHIS2 to FHIR transformations of date time value." )
+public abstract class AbstractDateTimeDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
-    public static final String SCRIPT_ATTR_NAME = "humanNameUtils";
+    public static final String SCRIPT_ATTR_NAME = "dateTimeUtils";
 
     protected static final String DEFAULT_GIVEN_DELIMITER = " ";
 
-    protected AbstractHumanNameFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected AbstractDateTimeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
@@ -67,14 +67,8 @@ public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends Abstra
     }
 
     @Nullable
-    @ScriptMethod( description = "Return a single given name from the specified FHIR human name. If the human name contains multiple given names these are separated by space characters.",
-        args = @ScriptMethodArg( value = "humanName", description = "The human name from which the single given name should be extracted." ),
-        returnDescription = "The extracted single given name." )
-    public abstract String getSingleGiven( @Nullable ICompositeType humanName );
-
-    @Nullable
-    @ScriptMethod( description = "Extracts the name of the list of names that seems to be the most appropriate name.",
-        args = @ScriptMethodArg( value = "names", description = "The list of names from which one name should be extracted." ),
-        returnDescription = "The extracted primary name." )
-    public abstract ICompositeType getPrimaryName( @Nonnull List<? extends ICompositeType> names );
+    @ScriptMethod( description = "Returns a date/time element for the specified date/time value when it has at least day precision. A date/time element value may have only year or month precision.",
+        args = @ScriptMethodArg( value = "dateTime", description = "The date/time value for which the evaluation should be performed." ),
+        returnDescription = "Returns if the specified date/time value as date/time element or null when it has not at least day precision." )
+    public abstract IPrimitiveType<Date> getPreciseDateElement( @Nullable Object dateTime );
 }

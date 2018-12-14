@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.scriptable.generator;
+package org.dhis2.fhir.adapter.fhir.converter.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,46 @@ package org.dhis2.fhir.adapter.scriptable.generator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.WebRequest;
+import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
+import org.dhis2.fhir.adapter.fhir.converter.AbstractStringToAdministrativeGenderConverter;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ConstantResolver;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * FHIR version DSTU3 implementation of {@link AbstractStringToAdministrativeGenderConverter}.
  *
  * @author volsch
  */
-@Controller
-public class FromDhisJavaScriptGeneratorController extends AbstractJavaScriptGeneratorController
+@Component
+@ConvertedValueTypes( types = ValueType.TEXT )
+public class Dstu3StringToAdministrativeGenderConverter extends AbstractStringToAdministrativeGenderConverter<AdministrativeGender>
 {
-    public FromDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    public Dstu3StringToAdministrativeGenderConverter( @Nonnull ConstantResolver constantResolver )
     {
-        super( config, resourceLoader, ScriptTransformType.EXP );
+        super( AdministrativeGender.class, constantResolver );
     }
 
-    @RequestMapping( path = "/scripts/from-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
-    public ResponseEntity<String> getScript( @Nonnull WebRequest request )
+    @Nullable
+    @Override
+    protected AdministrativeGender getAdministrativeGender( @Nullable Gender gender )
     {
-        return super.getScript( request );
+        if ( gender == null )
+        {
+            return AdministrativeGender.NULL;
+        }
+        switch ( gender )
+        {
+            case FEMALE:
+                return AdministrativeGender.FEMALE;
+            case MALE:
+                return AdministrativeGender.MALE;
+            default:
+                throw new AssertionError( "Unhandled gender: " + gender );
+        }
     }
 }

@@ -234,6 +234,6 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     protected boolean transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformOutScript(), context.getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformExpScript(), context.getVersion(), scriptVariables, Boolean.class ) );
     }
 }

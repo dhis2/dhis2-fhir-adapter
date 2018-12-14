@@ -62,9 +62,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
 
     private ExecutableScript orgLookupScript;
 
-    private ExecutableScript applicableInScript;
+    private ExecutableScript applicableImpScript;
 
-    private ExecutableScript transformInScript;
+    private ExecutableScript transformImpScript;
 
     private ExecutableScript otherTransformInScript;
 
@@ -83,9 +83,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
             .setParameter( "code", "EXTRACT_FHIR_PATIENT_GEO_LOCATION" ).getSingleResult();
         orgLookupScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "EXTRACT_FHIR_PATIENT_DHIS_ORG_UNIT_CODE" ).getSingleResult();
-        applicableInScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
+        applicableImpScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "TRUE" ).getSingleResult();
-        transformInScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
+        transformImpScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "TRANSFORM_FHIR_PATIENT_DHIS_PERSON" ).getSingleResult();
         otherTransformInScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "CP_OPV_DOSE" ).getSingleResult();
@@ -110,8 +110,8 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImoScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "name" ) ) );
     }
@@ -126,8 +126,8 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "name" ) ) );
     }
@@ -142,8 +142,8 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirResourceType" ) ) );
     }
@@ -156,8 +156,8 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "trackedEntity" ) ) );
     }
@@ -171,9 +171,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformInScript" ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformImpScript" ) ) );
     }
 
     @Test
@@ -182,7 +182,7 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ) ) ) )
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ) ) ) )
             .andExpect( status().isCreated() );
     }
 
@@ -192,11 +192,11 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
-                JsonEntityValue.create( "teiLookupScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "teiLookupScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "teiLookupScript" ) ) );
     }
@@ -207,11 +207,11 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
-                JsonEntityValue.create( "teiLookupScript", "executableScripts", applicableInScript.getId().toString() ),
+                JsonEntityValue.create( "teiLookupScript", "executableScripts", applicableImpScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "teiLookupScript" ) ) );
     }
@@ -223,10 +223,10 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
-                JsonEntityValue.create( "locationLookupScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "locationLookupScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "locationLookupScript" ) ) );
     }
@@ -238,10 +238,10 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
-                JsonEntityValue.create( "locationLookupScript", "executableScripts", applicableInScript.getId().toString() ),
+                JsonEntityValue.create( "locationLookupScript", "executableScripts", applicableImpScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "locationLookupScript" ) ) );
     }
@@ -254,9 +254,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
-                JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", transformInScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", transformImpScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "orgUnitLookupScript" ) ) );
     }
@@ -269,9 +269,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "trackedEntity", "trackedEntities", mappedTrackedEntity.getId().toString() ),
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
-                JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "orgUnitLookupScript" ) ) );
     }
@@ -285,10 +285,10 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", transformInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", transformImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "applicableInScript" ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "applicableImpScript" ) ) );
     }
 
     @Test
@@ -300,10 +300,10 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", locationLookupScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", transformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", locationLookupScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", transformImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "applicableInScript" ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "applicableImpScript" ) ) );
     }
 
     @Test
@@ -315,10 +315,10 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", teiLookupScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformInScript" ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformImpScript" ) ) );
     }
 
     @Test
@@ -330,9 +330,9 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "teiLookupScript", "executableScripts", teiLookupScript.getId().toString() ),
                 JsonEntityValue.create( "locationLookupScript", "executableScripts", locationLookupScript.getId().toString() ),
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
-                JsonEntityValue.create( "applicableInScript", "executableScripts", applicableInScript.getId().toString() ),
-                JsonEntityValue.create( "transformInScript", "executableScripts", otherTransformInScript.getId().toString() ),
+                JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
+                JsonEntityValue.create( "transformImpScript", "executableScripts", otherTransformInScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformInScript" ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformImpScript" ) ) );
     }
 }

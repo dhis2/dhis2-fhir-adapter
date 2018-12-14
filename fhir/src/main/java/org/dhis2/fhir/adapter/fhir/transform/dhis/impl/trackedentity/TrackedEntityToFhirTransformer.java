@@ -240,7 +240,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
             {
                 lockFhirIdentifier( identifier );
             }
-            identifierUtils.addOrUpdateIdentifier( resource, identifier );
+            identifierUtils.addOrUpdateIdentifier( resource, identifier, true );
         }
 
         return resource;

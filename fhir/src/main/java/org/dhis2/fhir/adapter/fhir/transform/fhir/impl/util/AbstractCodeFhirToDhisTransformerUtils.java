@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
-import org.dhis2.fhir.adapter.fhir.script.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -72,7 +72,7 @@ import java.util.Map;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "CodeUtils", transformType = ScriptTransformType.IN, var = AbstractCodeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "CodeUtils", transformType = ScriptTransformType.IMP, var = AbstractCodeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations for codes (either code mappings or extracting of codes from FHIR codeable concepts)." )
 public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

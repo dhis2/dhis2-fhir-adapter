@@ -28,35 +28,39 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractIdentifierDhisToFhirTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractDateTimeDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.dstu3.model.Identifier;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.util.CastUtils;
+import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.hl7.fhir.dstu3.model.DateType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.Temporal;
+import java.util.Date;
 import java.util.Set;
 
 /**
- * DSTU3 specific implementation of {@link AbstractIdentifierDhisToFhirTransformerUtils}.
+ * FHIR version DSTU3 implementation of {@link AbstractDateTimeDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-@Scriptable
 @Component
-public class Dstu3IdentifierDhisToFhirTransformerUtils extends AbstractIdentifierDhisToFhirTransformerUtils
+@Scriptable
+public class Dstu3DateTimeDhisToFhirTransformerUtils extends AbstractDateTimeDhisToFhirTransformerUtils
 {
-    public Dstu3IdentifierDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirIdentifierUtils fhirIdentifierUtils )
+    protected final ZoneId zoneId = ZoneId.systemDefault();
+
+    public Dstu3DateTimeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        super( scriptExecutionContext, fhirIdentifierUtils );
+        super( scriptExecutionContext );
     }
 
     @Nonnull
@@ -66,27 +70,32 @@ public class Dstu3IdentifierDhisToFhirTransformerUtils extends AbstractIdentifie
         return FhirVersion.DSTU3_ONLY;
     }
 
+    @Nullable
     @Override
-    protected void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nonnull String system, @Nonnull String value, boolean secondary )
+    public IPrimitiveType<Date> getPreciseDateElement( @Nullable Object dateTime )
     {
-        @SuppressWarnings( "unchecked" ) final List<Identifier> identifiers = (List<Identifier>) ReflectionUtils.invokeMethod( identifierMethod, resource );
-        if ( identifiers == null )
+        final LocalDate date = castDate( dateTime );
+        if ( date == null )
         {
-            throw new FatalTransformerException( "FHIR resource " + resource.getClass().getSimpleName() + " returned null for identifiers." );
+            return null;
         }
+        return new DateType( Date.from( date.atStartOfDay( zoneId ).toInstant() ), TemporalPrecisionEnum.DAY );
+    }
 
-        final Optional<Identifier> identifier = identifiers.stream().filter( i -> system.equals( i.getSystem() ) ).findFirst();
-        if ( identifier.isPresent() )
-        {
-            identifier.get().setValue( value );
-        }
-        else if ( secondary )
-        {
-            identifiers.add( new Identifier().setSystem( system ).setValue( value ).setUse( Identifier.IdentifierUse.SECONDARY ) );
-        }
-        else
-        {
-            identifiers.add( new Identifier().setSystem( system ).setValue( value ) );
-        }
+    @Nullable
+    protected LocalDate castDate( @Nullable Object date )
+    {
+        return CastUtils.cast( date,
+            BaseDateTimeType.class, d -> {
+                final Date result = hasDayPrecision( d ) ? d.getValue() : null;
+                return (result == null) ? null : LocalDate.from( result.toInstant().atZone( zoneId ) );
+            },
+            Date.class, d -> LocalDate.from( d.toInstant().atZone( zoneId ) ),
+            Temporal.class, LocalDate::from );
+    }
+
+    protected boolean hasDayPrecision( @Nonnull IPrimitiveType<Date> dateTime )
+    {
+        return (((BaseDateTimeType) dateTime).getPrecision().ordinal() >= TemporalPrecisionEnum.DAY.ordinal());
     }
 }

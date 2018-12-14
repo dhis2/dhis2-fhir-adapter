@@ -5,10 +5,10 @@
   "evaluationOrder": 0,
   "dhisResourceType": "TRACKED_ENTITY",
   "fhirResourceType": "PATIENT",
-  "applicableInScript": null,
+  "applicableImpScript": null,
   "applicableCodeSet": null,
   "trackedEntity": "$trackedEntityId",
-  "transformInScript": "$transformInScriptId",
+  "transformImpScript": "$transformImpScriptId",
   "orgUnitLookupScript": "$orgUnitLookupScriptId",
   "locationLookupScript": "$locationLookupScriptId"
 }

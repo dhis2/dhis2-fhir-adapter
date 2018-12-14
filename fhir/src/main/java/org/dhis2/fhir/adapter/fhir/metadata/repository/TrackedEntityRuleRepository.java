@@ -59,8 +59,8 @@ public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntity
 {
     @RestResource( exported = false )
     @Nonnull
-    @Query( "SELECT ter FROM #{#entityName} ter JOIN ter.trackedEntity te WHERE ter.enabled=true AND ter.outEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) AND " +
-        "te.enabled=true AND te.outEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
+    @Query( "SELECT ter FROM #{#entityName} ter JOIN ter.trackedEntity te WHERE ter.enabled=true AND ter.expEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) AND " +
+        "te.enabled=true AND te.expEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
     @Cacheable( keyGenerator = "trackedEntityRuleFindAllByTypeKeyGenerator" )
     Collection<TrackedEntityRule> findAllByType( @Param( "typeReferences" ) @Nonnull Collection<Reference> typeReferences );
 

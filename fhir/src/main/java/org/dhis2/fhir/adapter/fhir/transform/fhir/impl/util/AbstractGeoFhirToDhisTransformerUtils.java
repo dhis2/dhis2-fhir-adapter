@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "GeoUtils", transformType = ScriptTransformType.IN, var = AbstractGeoFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "GeoUtils", transformType = ScriptTransformType.IMP, var = AbstractGeoFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for GEO information handling." )
 public abstract class AbstractGeoFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

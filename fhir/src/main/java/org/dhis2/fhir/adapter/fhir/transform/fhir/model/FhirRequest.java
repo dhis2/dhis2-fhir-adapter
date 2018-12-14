@@ -48,7 +48,7 @@ import java.util.UUID;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirRequest", transformType = ScriptTransformType.IN, description = "The current FHIR request that caused the execution of the transformation." )
+@ScriptType( value = "FhirRequest", transformType = ScriptTransformType.IMP, description = "The current FHIR request that caused the execution of the transformation." )
 public interface FhirRequest
 {
     @Nullable

@@ -49,7 +49,7 @@ public class ToDhisJavaScriptGeneratorController extends AbstractJavaScriptGener
 {
     public ToDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
     {
-        super( config, resourceLoader, ScriptTransformType.IN );
+        super( config, resourceLoader, ScriptTransformType.IMP );
     }
 
     @RequestMapping( path = "/scripts/to-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )

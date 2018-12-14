@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "PatientUtils", transformType = ScriptTransformType.IN, var = AbstractPatientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "PatientUtils", transformType = ScriptTransformType.IMP, var = AbstractPatientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR patients." )
 public abstract class AbstractPatientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

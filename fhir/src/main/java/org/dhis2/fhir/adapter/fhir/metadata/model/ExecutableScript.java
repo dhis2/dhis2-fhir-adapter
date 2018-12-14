@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -48,14 +48,15 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Contains the definition of an executable {@linkplain Script script} where values of all mandatory arguments must
- * have been specified. Also default values of arguments can be overriden.
+ * Contains the definition of an executable {@linkplain Script script} where values of
+ * all mandatory arguments must have been specified. Also default values of arguments
+ * can be overridden.
  *
  * @author volsch
  */
 @Entity
 @Table( name = "fhir_executable_script" )
-@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
+@JsonFilter( ToAnyPropertyFilter.FILTER_NAME )
 public class ExecutableScript extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2006842064596779970L;
@@ -78,6 +79,8 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     private String description;
 
     private List<ExecutableScriptArg> overrideArguments;
+
+    private ExecutableScript baseExecutableScript;
 
     @ManyToOne
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
@@ -137,5 +140,17 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     public void setOverrideArguments( List<ExecutableScriptArg> overrideArguments )
     {
         this.overrideArguments = overrideArguments;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "base_executable_script_id" )
+    public ExecutableScript getBaseExecutableScript()
+    {
+        return baseExecutableScript;
+    }
+
+    public void setBaseExecutableScript( ExecutableScript baseExecutableScript )
+    {
+        this.baseExecutableScript = baseExecutableScript;
     }
 }

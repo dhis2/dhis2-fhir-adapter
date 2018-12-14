@@ -46,7 +46,7 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.OUT, var = AbstractFhirResourceDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.EXP, var = AbstractFhirResourceDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle DHIS2 to FHIR transformations of FHIR identifiers." )
 public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {

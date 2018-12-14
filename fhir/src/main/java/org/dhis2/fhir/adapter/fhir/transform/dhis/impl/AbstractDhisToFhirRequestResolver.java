@@ -61,7 +61,7 @@ public abstract class AbstractDhisToFhirRequestResolver implements DhisToFhirReq
         // TODO add support for script based remote subscription resolving
 
         Optional<RemoteSubscription> remoteSubscription = remoteSubscriptionRepository.findOnly();
-        if ( remoteSubscription.isPresent() && remoteSubscription.get().isEnabled() && remoteSubscription.get().isOutEnabled() )
+        if ( remoteSubscription.isPresent() && remoteSubscription.get().isEnabled() && remoteSubscription.get().isExpEnabled() )
         {
             return remoteSubscription;
         }

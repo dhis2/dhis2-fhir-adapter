@@ -49,7 +49,7 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "FhirContext", transformType = ScriptTransformType.IN, var = "context", description = "The context of the current transformation." )
+@ScriptType( value = "FhirContext", transformType = ScriptTransformType.IMP, var = "context", description = "The context of the current transformation." )
 public interface FhirToDhisTransformerContext
 {
     @Nonnull

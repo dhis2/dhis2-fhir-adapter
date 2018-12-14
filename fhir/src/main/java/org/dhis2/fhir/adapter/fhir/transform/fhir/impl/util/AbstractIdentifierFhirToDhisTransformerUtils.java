@@ -59,7 +59,7 @@ import java.util.Objects;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "IdentifierUtils", transformType = ScriptTransformType.IN, var = AbstractIdentifierFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "IdentifierUtils", transformType = ScriptTransformType.IMP, var = AbstractIdentifierFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR identifiers." )
 public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

@@ -96,6 +96,7 @@ public class ExecutableScriptRepositoryRestDocsTest extends AbstractJpaRepositor
                 fields.withPath( "description" ).description( "The detailed description of the purpose of the executable script." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "overrideArguments" ).description( "The overridden arguments of the script resource. If the script resource defined mandatory arguments with null values, these must be specified for the executable script. " +
                     "Otherwise the script cannot be executed. If no argument value should be overridden, this field need not to be specified." ).type( JsonFieldType.ARRAY ).optional(),
+                fields.withPath( "baseExecutableScript" ).description( "Link to another executable script from which arguments are inherited." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "overrideArguments[].argument" ).description( "Reference to the script argument resource for which the value should be overridden." ).type( JsonFieldType.STRING ),
                 fields.withPath( "overrideArguments[].overrideValue" ).description( "The value that should be used for the argument when executing the script. The value must match the data type of the argument." ).type( JsonFieldType.STRING ),
                 fields.withPath( "overrideArguments[].enabled" ).description( "Specifies if the override argument is enabled. If the override argument is not enabled, the value of the script argument itself is used." ).type( JsonFieldType.BOOLEAN )
@@ -121,7 +122,8 @@ public class ExecutableScriptRepositoryRestDocsTest extends AbstractJpaRepositor
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "executableScript" ).description( "Link to this resource itself." ),
-                linkWithRel( "script" ).description( "Link to the script to which the resource belongs to." ) ), responseFields(
+                linkWithRel( "script" ).description( "Link to the script to which the resource belongs to." ),
+                linkWithRel( "baseExecutableScript" ).description( "Link to another executable script from which arguments are inherited." ).optional() ), responseFields(
                 attributes( key( "title" ).value( "Fields for executable script reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),

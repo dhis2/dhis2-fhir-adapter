@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.scriptable.generator;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,53 @@ package org.dhis2.fhir.adapter.scriptable.generator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.WebRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractHumanNameDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.StringType;
+import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * DSTU3 specific implementation of {@link AbstractHumanNameDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-@Controller
-public class FromDhisJavaScriptGeneratorController extends AbstractJavaScriptGeneratorController
+@Scriptable
+@Component
+public class Dstu3HumanNameDhisToFhirTransformerUtils extends AbstractHumanNameDhisToFhirTransformerUtils
 {
-    public FromDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    public Dstu3HumanNameDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        super( config, resourceLoader, ScriptTransformType.EXP );
+        super( scriptExecutionContext );
     }
 
-    @RequestMapping( path = "/scripts/from-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
-    public ResponseEntity<String> getScript( @Nonnull WebRequest request )
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return super.getScript( request );
+        return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Override
+    public void updateGiven( @Nonnull ICompositeType humanName, @Nullable String firstName )
+    {
+        if ( StringUtils.isBlank( firstName ) )
+        {
+            ((HumanName) humanName).setGiven( null );
+        }
+        else
+        {
+            ((HumanName) humanName).setGiven( Arrays.stream( firstName.split( " " ) ).map( StringType::new ).collect( Collectors.toList() ) );
+        }
     }
 }

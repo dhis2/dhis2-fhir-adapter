@@ -238,10 +238,10 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private boolean isApplicable( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input,
         @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( rule.getApplicableOutScript() == null )
+        if ( rule.getApplicableExpScript() == null )
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableOutScript(), context.getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableExpScript(), context.getVersion(), scriptVariables, Boolean.class ) );
     }
 }

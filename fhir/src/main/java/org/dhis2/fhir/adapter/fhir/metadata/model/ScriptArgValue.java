@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.scriptable.generator;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,33 +28,63 @@ package org.dhis2.fhir.adapter.scriptable.generator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.context.request.WebRequest;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * Combination of script argument and its resulting value.
  *
  * @author volsch
  */
-@Controller
-public class FromDhisJavaScriptGeneratorController extends AbstractJavaScriptGeneratorController
+public class ScriptArgValue implements Serializable
 {
-    public FromDhisJavaScriptGeneratorController( @Nullable JavaScriptGeneratorConfig config, @Nonnull ResourceLoader resourceLoader )
+    private static final long serialVersionUID = 2789285169096458751L;
+
+    private final ScriptArg scriptArg;
+
+    private final Object value;
+
+    public ScriptArgValue( @Nonnull ScriptArg scriptArg, @Nullable Object value )
     {
-        super( config, resourceLoader, ScriptTransformType.EXP );
+        this.scriptArg = scriptArg;
+        this.value = value;
     }
 
-    @RequestMapping( path = "/scripts/from-dhis2-all-mapping.js", method = RequestMethod.GET, produces = "application/javascript;charset=UTF-8" )
-    public ResponseEntity<String> getScript( @Nonnull WebRequest request )
+    @Nonnull
+    public ScriptArg getScriptArg()
     {
-        return super.getScript( request );
+        return scriptArg;
+    }
+
+    @Nonnull
+    public String getName()
+    {
+        return scriptArg.getName();
+    }
+
+    @Nullable
+    public Object getValue()
+    {
+        return value;
+    }
+
+    @Nullable
+    public String getStringValue()
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+        if ( value instanceof String )
+        {
+            return (String) value;
+        }
+        return value.toString();
+    }
+
+    public boolean isMissing()
+    {
+        return scriptArg.isMandatory() && (value == null);
     }
 }

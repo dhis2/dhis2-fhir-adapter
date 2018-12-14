@@ -73,7 +73,7 @@ import java.util.UUID;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "OrganizationUtils", transformType = ScriptTransformType.IN, var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "OrganizationUtils", transformType = ScriptTransformType.IMP, var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR organizations." )
 public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {

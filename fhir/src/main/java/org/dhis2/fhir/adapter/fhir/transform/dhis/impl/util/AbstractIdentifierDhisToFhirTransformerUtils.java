@@ -50,7 +50,7 @@ import java.lang.reflect.Method;
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "IdentifierUtils", transformType = ScriptTransformType.OUT, var = AbstractIdentifierDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "IdentifierUtils", transformType = ScriptTransformType.EXP, var = AbstractIdentifierDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle DHIS2 to FHIR transformations of FHIR identifiers." )
 public abstract class AbstractIdentifierDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
@@ -79,6 +79,11 @@ public abstract class AbstractIdentifierDhisToFhirTransformerUtils extends Abstr
         } )
     public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull String system, @Nonnull String value ) throws TransformerException
     {
+        addOrUpdateIdentifier( resource, system, value, false );
+    }
+
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull String system, @Nonnull String value, boolean secondary ) throws TransformerException
+    {
         if ( !(resource instanceof IDomainResource) )
         {
             throw new TransformerMappingException( "Identifiers can be added only to domain resources, not on " + resource.getClass().getSimpleName() + "." );
@@ -89,13 +94,18 @@ public abstract class AbstractIdentifierDhisToFhirTransformerUtils extends Abstr
         {
             throw new TransformerMappingException( "Domain resource " + resource.getClass().getSimpleName() + " does not support identifiers." );
         }
-        addOrUpdateIdentifier( resource, method, system, value );
+        addOrUpdateIdentifier( resource, method, system, value, secondary );
     }
 
     public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier )
     {
-        addOrUpdateIdentifier( resource, identifier.getSystem(), identifier.getCode() );
+        addOrUpdateIdentifier( resource, identifier, false );
     }
 
-    protected abstract void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nonnull String system, @Nonnull String value );
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier, boolean secondary )
+    {
+        addOrUpdateIdentifier( resource, identifier.getSystem(), identifier.getCode(), secondary );
+    }
+
+    protected abstract void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nonnull String system, @Nonnull String value, boolean secondary );
 }

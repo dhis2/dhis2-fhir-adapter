@@ -452,13 +452,13 @@ INSERT INTO fhir_tracked_entity(id, version, name, description, tracked_entity_r
 VALUES ('4203754d21774a4486aa2de31ee4c8ee', 0, 'Person', 'Tracked entity for a patient.', 'NAME:Person', 'ID:Ewi7FUfcHAD');
 
 -- Rule FHIR Patient to tracked entity type Person
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_in_script_id)
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id)
 VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '72451c8f7492470790b8a3e0796de19e');
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, org_lookup_script_id, loc_lookup_script_id)
 VALUES ('5f9ebdc9852e4c8387ca795946aabc35', '4203754d21774a4486aa2de31ee4c8ee', '25a97bb47b394ed48677db4bcaa28ccf', 'ef90531f443848bd83b36370dd65875a');
 
 -- Rule FHIR Related Person to tracked entity type Person
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_in_script_id, contained_allowed)
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, contained_allowed)
 VALUES ('52227dd9c79c478b92af9aa1f33c76fd', 0, 'FHIR Related Person to Person', NULL, TRUE, 0, 'RELATED_PERSON', 'TRACKED_ENTITY', 'c6b2d08d3a73434ea5afee0ff13549a1', TRUE);
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, tei_lookup_script_id)
 VALUES ('52227dd9c79c478b92af9aa1f33c76fd', '4203754d21774a4486aa2de31ee4c8ee', '26e8880864ee446980837962b74ac48a');
