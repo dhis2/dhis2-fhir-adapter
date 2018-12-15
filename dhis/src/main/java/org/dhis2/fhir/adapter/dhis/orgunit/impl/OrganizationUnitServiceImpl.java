@@ -30,8 +30,8 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,26 +47,26 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Implementation of {@link OrganisationUnitService}.
+ * Implementation of {@link OrganizationUnitService}.
  *
  * @author volsch
  */
 @Service
-@CacheConfig( cacheNames = "organisationUnit", cacheManager = "dhisCacheManager" )
-public class OrganisationUnitServiceImpl implements OrganisationUnitService
+@CacheConfig( cacheNames = "organizationUnit", cacheManager = "dhisCacheManager" )
+public class OrganizationUnitServiceImpl implements OrganizationUnitService
 {
-    protected static final String FIELDS = "id,code";
+    protected static final String FIELDS = "lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent[id]";
 
-    protected static final String ORGANISATION_UNIT_BY_CODE_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
+    protected static final String ORGANIZATION_UNIT_BY_CODE_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
 
-    protected static final String ORGANISATION_UNIT_BY_NAME_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
+    protected static final String ORGANIZATION_UNIT_BY_NAME_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
 
-    protected static final String ORGANISATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json&fields=" + FIELDS;
+    protected static final String ORGANIZATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json&fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
 
     @Autowired
-    public OrganisationUnitServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    public OrganizationUnitServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
     {
         this.restTemplate = restTemplate;
     }
@@ -75,21 +75,21 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
     @HystrixCommand
     @Override
     @Nonnull
-    public Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference )
+    public Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference )
     {
-        final ResponseEntity<DhisOrganisationUnits> result;
+        final ResponseEntity<DhisOrganizationUnits> result;
         switch ( reference.getType() )
         {
             case CODE:
-                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_CODE_URI, DhisOrganisationUnits.class, reference.getValue() );
+                result = restTemplate.getForEntity( ORGANIZATION_UNIT_BY_CODE_URI, DhisOrganizationUnits.class, reference.getValue() );
                 break;
             case NAME:
-                result = restTemplate.getForEntity( ORGANISATION_UNIT_BY_NAME_URI, DhisOrganisationUnits.class, reference.getValue() );
+                result = restTemplate.getForEntity( ORGANIZATION_UNIT_BY_NAME_URI, DhisOrganizationUnits.class, reference.getValue() );
                 break;
             case ID:
                 try
                 {
-                    return Optional.of( Objects.requireNonNull( restTemplate.getForEntity( ORGANISATION_UNIT_BY_ID_URI, OrganisationUnit.class, reference.getValue() ).getBody() ) );
+                    return Optional.of( Objects.requireNonNull( restTemplate.getForEntity( ORGANIZATION_UNIT_BY_ID_URI, OrganizationUnit.class, reference.getValue() ).getBody() ) );
                 }
                 catch ( HttpClientErrorException e )
                 {
@@ -102,6 +102,6 @@ public class OrganisationUnitServiceImpl implements OrganisationUnitService
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
-        return Objects.requireNonNull( result.getBody() ).getOrganisationUnits().stream().findFirst();
+        return Objects.requireNonNull( result.getBody() ).getOrganizationUnits().stream().findFirst();
     }
 }

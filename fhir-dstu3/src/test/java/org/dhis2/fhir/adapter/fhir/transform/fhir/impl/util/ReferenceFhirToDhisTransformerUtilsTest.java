@@ -152,7 +152,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Mockito.doReturn( remoteSubscriptionResourceId ).when( request ).getRemoteSubscriptionResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
+        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findOneByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( remoteFhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();
@@ -195,7 +195,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Mockito.doReturn( remoteSubscriptionResourceId ).when( request ).getRemoteSubscriptionResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
+        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findOneByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( remoteFhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();
@@ -238,7 +238,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Mockito.doReturn( remoteSubscriptionResourceId ).when( request ).getRemoteSubscriptionResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
+        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findOneByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( remoteFhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();

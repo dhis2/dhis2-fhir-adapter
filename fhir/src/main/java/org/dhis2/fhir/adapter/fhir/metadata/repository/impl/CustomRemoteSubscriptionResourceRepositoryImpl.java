@@ -66,7 +66,7 @@ public class CustomRemoteSubscriptionResourceRepositoryImpl implements CustomRem
     @Override
     @Cacheable( key = "#a0", cacheManager = "metadataCacheManager", cacheNames = "remoteSubscriptionResource" )
     @Transactional( readOnly = true )
-    public Optional<RemoteSubscriptionResource> findByIdCached( @Nonnull UUID id )
+    public Optional<RemoteSubscriptionResource> findOneByIdCached( @Nonnull UUID id )
     {
         final RemoteSubscriptionResource rsr = entityManager.find( RemoteSubscriptionResource.class, id );
         if ( rsr == null )

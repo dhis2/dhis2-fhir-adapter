@@ -182,8 +182,13 @@ COMMENT ON COLUMN fhir_remote_subscription.use_adapter_identifier IS 'Specifies 
 
 ALTER TABLE fhir_tracked_entity_rule
   ADD COLUMN exp_geo_transform_script_id UUID,
-  ADD CONSTRAINT fhir_tracked_entity_rule_fk7 FOREIGN KEY(exp_geo_transform_script_id) REFERENCES fhir_executable_script(id);
+  ADD COLUMN exp_ou_transform_script_id UUID,
+  ADD CONSTRAINT fhir_tracked_entity_rule_fk7 FOREIGN KEY(exp_geo_transform_script_id) REFERENCES fhir_executable_script(id),
+  ADD CONSTRAINT fhir_tracked_entity_rule_fk8 FOREIGN KEY(exp_ou_transform_script_id) REFERENCES fhir_executable_script(id);
 COMMENT ON COLUMN fhir_tracked_entity_rule.exp_geo_transform_script_id IS 'Specifies the transformation script that performs the transformation of the GEO coordinates that are included in the tracked entity instance.';
+COMMENT ON COLUMN fhir_tracked_entity_rule.exp_ou_transform_script_id IS 'Specifies the transformation script that performs the transformation of the DHIS organization unit to a FHIR resource (e.g. FHIR organization or location).';
+CREATE INDEX fhir_tracked_entity_rule_i5 ON fhir_tracked_entity_rule(exp_geo_transform_script_id );
+CREATE INDEX fhir_tracked_entity_rule_i6 ON fhir_tracked_entity_rule(exp_ou_transform_script_id );
 
 ALTER TABLE fhir_script
   ADD base_script_id UUID,
@@ -197,6 +202,14 @@ ALTER TABLE fhir_executable_script
 CREATE INDEX fhir_executable_script_i2 ON fhir_executable_script(base_executable_script_id);
 COMMENT ON COLUMN fhir_executable_script.base_executable_script_id IS 'References another executable script from which arguments are inherited.';
 
+CREATE TABLE fhir_organization_unit_rule (
+  id UUID NOT NULL,
+  CONSTRAINT fhir_organization_unit_rule_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_organization_unit_rule_fk1 FOREIGN KEY (id) REFERENCES fhir_rule (id) ON DELETE CASCADE
+);
+COMMENT ON TABLE fhir_organization_unit_rule IS 'Contains rules for DHIS2 Organization Unit Resource Types.';
+COMMENT ON COLUMN fhir_organization_unit_rule.id IS 'References the rule to which this organization unit rule belongs to.';
+
 -- Systems (the value is the systemAuthentication URI)
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('fa133f34-280f-40d0-ac9a-523d8ea8f23b', 0, 'DHIS2 FHIR Adapter Identifier', 'SYSTEM_DHIS2_FHIR_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/identifier',
@@ -204,6 +217,8 @@ VALUES ('fa133f34-280f-40d0-ac9a-523d8ea8f23b', 0, 'DHIS2 FHIR Adapter Identifie
 
 INSERT INTO fhir_script_type_enum
 VALUES ('TRANSFORM_TO_FHIR');
+INSERT INTO fhir_script_variable_enum
+VALUES ('ORGANIZATION_UNIT');
 
 -- Script that transforms DHIS2 Person to FHIR Patient
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -312,4 +327,70 @@ VALUES ('b9d24e63-d1ee-43a1-968a-77fbc3f805fb', 0, '4318ff25-f09f-414b-aa78-1958
 
 UPDATE fhir_tracked_entity_rule
 SET exp_geo_transform_script_id = 'b9d24e63-d1ee-43a1-968a-77fbc3f805fb'
+WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('ae61e5bb-51c5-4740-bc35-b2d054eff202', 0, 'Transforms DHIS Org Unit to FHIR Resource', 'TRANSFORM_DHIS_OU_TO_FHIR', 'Transforms the DHIS Organization Unit to the FHIR resource.', 'TRANSFORM_TO_FHIR',
+        'BOOLEAN', NULL, NULL);
+UPDATE fhir_script SET base_script_id = (SELECT id FROM fhir_script WHERE id = 'a250e109-a135-42b2-8bdb-1c050c1d384c')
+WHERE id='ae61e5bb-51c5-4740-bc35-b2d054eff202';
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb-51c5-4740-bc35-b2d054eff202', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb-51c5-4740-bc35-b2d054eff202', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb-51c5-4740-bc35-b2d054eff202', 'OUTPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb-51c5-4740-bc35-b2d054eff202', 'ORGANIZATION_UNIT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('b7a87ddd-e968-465d-874c-ceeff61b7cd8', 0, 'ae61e5bb-51c5-4740-bc35-b2d054eff202',
+'overrideExisting', 'BOOLEAN', TRUE, 'true', 'Specifies if an existing value should be overridden.');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('78c2b73c-469c-4ab4-8244-07e817b72d4a', 0, 'ae61e5bb-51c5-4740-bc35-b2d054eff202',
+'var ok = false;
+var code = null;
+if (output.managingOrganization && (output.getManagingOrganization().isEmpty() || args[''overrideExisting'']))
+{
+  if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    output.setManagingOrganization(null);
+  }
+  else
+  {
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
+    if ((code == null) && args[''useIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
+    }
+  }
+}
+else
+{
+  ok = true;
+}
+if (code != null)
+{
+  var organization = fhirClientUtils.findBySystemIdentifier(''ORGANIZATION'', code);
+  if (organization == null)
+  {
+    context.missingDhisResource(organizationUnit.getResourceId());
+  }
+  output.setManagingOrganization(null);
+  output.getManagingOrganization().setReferenceElement(organization.getIdElement().toUnqualifiedVersionless());
+  ok = true;
+}
+ok', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('78c2b73c-469c-4ab4-8244-07e817b72d4a', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('416decee-4604-473a-b650-1a997d731ff0', 0, 'ae61e5bb-51c5-4740-bc35-b2d054eff202',
+        'Transforms DHIS Org Unit to FHIR Resource', 'TRANSFORM_DHIS_OU_TO_FHIR',
+        'Transforms the DHIS Organization Unit to the FHIR resource.');
+-- Link to base script for transformation of Org Unit Code from FHIR Resource
+-- (may have been deleted in the meanwhile)
+UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf')
+WHERE id='416decee-4604-473a-b650-1a997d731ff0';
+
+UPDATE fhir_tracked_entity_rule
+SET exp_ou_transform_script_id = '416decee-4604-473a-b650-1a997d731ff0'
 WHERE id = '5f9ebdc9-852e-4c83-87ca-795946aabc35';

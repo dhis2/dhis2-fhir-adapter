@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -70,6 +71,13 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     public String getId()
     {
         return delegate.getId();
+    }
+
+    @Override
+    @Nonnull
+    public DhisResourceType getResourceType()
+    {
+        return delegate.getResourceType();
     }
 
     @Nullable

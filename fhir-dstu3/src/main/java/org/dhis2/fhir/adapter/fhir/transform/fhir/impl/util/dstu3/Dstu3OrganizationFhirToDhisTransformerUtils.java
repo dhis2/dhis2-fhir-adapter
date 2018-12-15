@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
@@ -60,12 +60,12 @@ import java.util.stream.Collectors;
 public class Dstu3OrganizationFhirToDhisTransformerUtils extends AbstractOrganizationFhirToDhisTransformerUtils
 {
     public Dstu3OrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull OrganisationUnitService organisationUnitService,
+        @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
         @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
         @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
     {
-        super( scriptExecutionContext, organisationUnitService, subscriptionResourceRepository, remoteFhirResourceRepository, remoteHierarchicallyFhirResourceRepository );
+        super( scriptExecutionContext, organizationUnitService, subscriptionResourceRepository, remoteFhirResourceRepository, remoteHierarchicallyFhirResourceRepository );
     }
 
     @Nonnull

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
@@ -51,6 +52,13 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
     public ImmutableScriptedTrackedEntityInstance( @Nonnull ScriptedTrackedEntityInstance delegate )
     {
         this.delegate = delegate;
+    }
+
+    @Override
+    @Nonnull
+    public DhisResourceType getResourceType()
+    {
+        return delegate.getResourceType();
     }
 
     @Override

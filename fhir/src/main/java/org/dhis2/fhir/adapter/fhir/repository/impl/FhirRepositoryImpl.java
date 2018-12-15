@@ -188,7 +188,7 @@ public class FhirRepositoryImpl implements FhirRepository
         logger.info( "Processing FHIR resource {} for remote subscription resource {}.",
             remoteFhirResource.getId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
         final RemoteSubscriptionResource remoteSubscriptionResource =
-            remoteSubscriptionResourceRepository.findByIdCached( remoteFhirResource.getRemoteSubscriptionResourceId() ).orElse( null );
+            remoteSubscriptionResourceRepository.findOneByIdCached( remoteFhirResource.getRemoteSubscriptionResourceId() ).orElse( null );
         if ( remoteSubscriptionResource == null )
         {
             logger.warn( "Remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
@@ -240,6 +240,7 @@ public class FhirRepositoryImpl implements FhirRepository
                     logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
                         resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
                 }
+                storedItemService.stored( remoteSubscription, processedItemInfo.toIdString( Instant.now() ) );
             }
         }
         else
@@ -393,6 +394,7 @@ public class FhirRepositoryImpl implements FhirRepository
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
+        final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );
         boolean saved = false;
         FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, resource, contained );
         do

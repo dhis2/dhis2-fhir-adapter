@@ -30,110 +30,149 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 /**
- * Immutable scripted enrollment.
+ * Mutable organization unit resource that can be used by scripts safely.
+ *
+ * @author volsch
+ */
+
+/**
+ * Writable scripted tracked entity instance that is used in evaluation and transformation
+ * scripts and prevents accesses to the tracked entity instance domain object.
  *
  * @author volsch
  */
 @Scriptable
-public class ImmutableScriptedEnrollment implements ScriptedEnrollment, ImmutableDhisObject, Serializable
+@ScriptType( value = "OrganizationUnit", transformDataType = "DHIS_ORGANIZATION_UNIT", description = "Organization unit." )
+public class WritableScriptedOrganizationUnit implements ScriptedOrganizationUnit, Serializable
 {
-    private static final long serialVersionUID = 3106142635120155470L;
+    private static final long serialVersionUID = -9043373621936561310L;
 
-    private final ScriptedEnrollment delegate;
+    private final OrganizationUnit organizationUnit;
 
-    public ImmutableScriptedEnrollment( @Nonnull ScriptedEnrollment delegate )
+    public WritableScriptedOrganizationUnit( OrganizationUnit organizationUnit )
     {
-        this.delegate = delegate;
+        this.organizationUnit = organizationUnit;
     }
 
     @Override
     public boolean isNewResource()
     {
-        return delegate.isNewResource();
+        return false;
     }
 
-    @Override
     @Nullable
+    @Override
     public String getId()
     {
-        return delegate.getId();
+        return organizationUnit.getId();
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return organizationUnit.getResourceType();
     }
 
     @Nullable
     @Override
     public DhisResourceId getResourceId()
     {
-        return delegate.getResourceId();
-    }
-
-    @Override
-    @Nonnull
-    public DhisResourceType getResourceType()
-    {
-        return delegate.getResourceType();
+        return organizationUnit.getResourceId();
     }
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the date and time when the resource has been updated the last time or null if this is a new resource." )
     public ZonedDateTime getLastUpdated()
     {
-        return delegate.getLastUpdated();
+        return organizationUnit.getLastUpdated();
     }
 
-    @Override
     @Nullable
+    @Override
     public String getOrganizationUnitId()
     {
-        return delegate.getOrganizationUnitId();
+        return organizationUnit.getId();
     }
 
     @Nullable
     @Override
     public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
-        if ( delegate.getTrackedEntityInstance() instanceof ImmutableDhisObject )
-        {
-            return delegate.getTrackedEntityInstance();
-        }
-        return new ImmutableScriptedTrackedEntityInstance( Objects.requireNonNull( delegate.getTrackedEntityInstance() ) );
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getCode()
+    {
+        return organizationUnit.getCode();
+    }
+
+    @Nullable
+    @Override
+    public String getName()
+    {
+        return organizationUnit.getName();
+    }
+
+    @Nullable
+    @Override
+    public String getShortName()
+    {
+        return organizationUnit.getShortName();
+    }
+
+    @Nullable
+    @Override
+    public String getDisplayName()
+    {
+        return organizationUnit.getDisplayName();
     }
 
     @Override
-    @Nullable
-    public ZonedDateTime getEnrollmentDate()
+    public boolean isLeaf()
     {
-        return delegate.getEnrollmentDate();
+        return organizationUnit.isLeaf();
     }
 
-    @Override
     @Nullable
-    public ZonedDateTime getIncidentDate()
+    @Override
+    public ZonedDateTime getOpeningDate()
     {
-        return delegate.getIncidentDate();
+        return organizationUnit.getOpeningDate();
     }
 
-    @Override
     @Nullable
-    public Location getCoordinate()
+    @Override
+    public ZonedDateTime getClosedDate()
     {
-        return delegate.getCoordinate();
+        return organizationUnit.getClosedDate();
+    }
+
+    @Nullable
+    @Override
+    public String getParentId()
+    {
+        return organizationUnit.getParentId();
     }
 
     @Override
     public void validate() throws TransformerException
     {
-        delegate.validate();
+        // nothing to be done since instance will not be modified currently
     }
 }

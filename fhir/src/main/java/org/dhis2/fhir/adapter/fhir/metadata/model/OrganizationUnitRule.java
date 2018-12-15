@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,70 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+
+import javax.annotation.Nonnull;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
- * Contains the required information of a DHIS2 organization unit.
+ * Rule for organization units.
  *
  * @author volsch
  */
-public class OrganisationUnit implements Serializable
+@Entity
+@Table( name = "fhir_organization_unit_rule" )
+@DiscriminatorValue( "ORGANIZATION_UNIT" )
+public class OrganizationUnitRule extends AbstractRule
 {
-    private static final long serialVersionUID = 3976508569865955265L;
+    private static final long serialVersionUID = -3997570895838354307L;
 
-    private String id;
+    private ExecutableScript identifierLookupScript;
 
-    private String code;
-
-    public String getId()
+    public OrganizationUnitRule()
     {
-        return id;
+        super( DhisResourceType.ORGANISATION_UNIT );
     }
 
-    public void setId( String id )
+    @ManyToOne( optional = false )
+    @JoinColumn( name = "identifier_lookup_script_id", nullable = false )
+    public ExecutableScript getIdentifierLookupScript()
     {
-        this.id = id;
+        return identifierLookupScript;
     }
 
-    public String getCode()
+    public void setIdentifierLookupScript( ExecutableScript identifierLookupScript )
     {
-        return code;
+        this.identifierLookupScript = identifierLookupScript;
     }
 
-    public void setCode( String code )
+    @Transient
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public String getRuleTypeAbbreviation()
     {
-        this.code = code;
+        return "ou";
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public boolean isEffectiveFhirCreateEnable()
+    {
+        return isFhirCreateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public boolean isEffectiveFhirUpdateEnable()
+    {
+        return isFhirUpdateEnabled();
     }
 }

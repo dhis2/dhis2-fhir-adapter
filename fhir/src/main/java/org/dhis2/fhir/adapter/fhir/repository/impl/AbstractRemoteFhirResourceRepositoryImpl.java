@@ -143,16 +143,7 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
     @Override
     public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
-        final FhirContext fhirContext = fhirContexts.get( fhirVersion );
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
-
-        logger.debug( "Reading {}?identifier={} from FHIR endpoints {}.", resourceType, identifier, fhirEndpoint.getBaseUrl() );
-        final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( getBundleClass() )
-            .where( new TokenClientParam( "identifier" ).exactly().systemAndIdentifier( identifier.getSystem(), identifier.getCode() ) )
-            .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
-        final IBaseResource resource = getFirstResource( bundle );
-        logger.debug( "Read {}?identifier={} from FHIR endpoints {} (found={}).", resourceType, identifier, fhirEndpoint.getBaseUrl(), (resource != null) );
-        return Optional.ofNullable( resource );
+        return findByToken( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, "identifier", identifier );
     }
 
     @HystrixCommand
@@ -162,6 +153,24 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
     public Optional<IBaseResource> findByIdentifier( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
         return findRefreshedByIdentifier( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, identifier );
+    }
+
+    @HystrixCommand
+    @CachePut( key = "{'findByCode', #remoteSubscriptionId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
+    @Nonnull
+    @Override
+    public Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    {
+        return findByToken( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, "code", code );
+    }
+
+    @HystrixCommand
+    @Cacheable( key = "{'findByCode', #remoteSubscriptionId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
+    @Nonnull
+    @Override
+    public Optional<IBaseResource> findByCode( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    {
+        return findRefreshedByCode( remoteSubscriptionId, fhirVersion, fhirEndpoint, resourceType, code );
     }
 
     @HystrixCommand
@@ -257,4 +266,19 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
 
     @Nonnull
     protected abstract Class<? extends IBaseBundle> getBundleClass();
+
+    @Nonnull
+    protected Optional<IBaseResource> findByToken( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
+    {
+        final FhirContext fhirContext = fhirContexts.get( fhirVersion );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
+
+        logger.debug( "Reading {}?{}={} from FHIR endpoints {}.", resourceType, identifier, field, fhirEndpoint.getBaseUrl() );
+        final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( getBundleClass() )
+            .where( new TokenClientParam( field ).exactly().systemAndIdentifier( identifier.getSystem(), identifier.getCode() ) )
+            .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
+        final IBaseResource resource = getFirstResource( bundle );
+        logger.debug( "Read {}?{}={} from FHIR endpoints {} (found={}).", resourceType, identifier, field, fhirEndpoint.getBaseUrl(), (resource != null) );
+        return Optional.ofNullable( resource );
+    }
 }

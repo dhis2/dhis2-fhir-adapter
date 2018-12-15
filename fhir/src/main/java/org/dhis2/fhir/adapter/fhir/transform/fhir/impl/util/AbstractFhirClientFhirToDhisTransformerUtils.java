@@ -90,6 +90,13 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
     }
 
     @Nonnull
+    @Override
+    public final String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
+
+    @Nonnull
     protected abstract Class<? extends IBaseBundle> getBundleClass();
 
     protected abstract boolean hasNextLink( @Nonnull IBaseBundle bundle );
@@ -99,13 +106,6 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
 
     @Nonnull
     protected abstract List<? extends IBaseResource> getEntries( @Nonnull IBaseBundle bundle );
-
-    @Nonnull
-    @Override
-    public final String getScriptAttrName()
-    {
-        return SCRIPT_ATTR_NAME;
-    }
 
     @Nullable
     public final IBaseResource queryLatest( @Nonnull String resourceName,
@@ -216,7 +216,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findByIdCached( resourceId )
+        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
         return FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription().getFhirEndpoint() );
     }

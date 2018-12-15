@@ -30,6 +30,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -41,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemR
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
@@ -50,7 +55,10 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.util.DhisBeanTransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
@@ -85,6 +93,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
 
+    private final OrganizationUnitService organizationUnitService;
+
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
     private final Map<FhirVersionedValue<DhisResourceType>, DhisToFhirTransformer<?, ?>> transformers = new HashMap<>();
@@ -96,6 +106,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
+        @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<DhisToFhirTransformerUtils>> transformUtilsProvider,
@@ -104,6 +115,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         this.lockManager = lockManager;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
         this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
+        this.organizationUnitService = organizationUnitService;
         this.scriptExecutor = scriptExecutor;
 
         requestResolvers.ifAvailable( resolvers ->
@@ -214,6 +226,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             final Map<String, Object> scriptVariables = new HashMap<>( transformerRequestImpl.getTransformerUtils() );
             scriptVariables.put( ScriptVariable.CONTEXT.getVariableName(), transformerRequestImpl.getContext() );
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
+            scriptVariables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), transformerRequestImpl.getInput().getOrganizationUnitId() );
+            scriptVariables.put( ScriptVariable.ORGANIZATION_UNIT.getVariableName(), getScriptedOrganizationUnit( transformerRequestImpl.getInput() ) );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables ) )
             {
                 final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getRemoteSubscription(),
@@ -233,6 +247,18 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             logger.info( "No matching rule for {}.", transformerRequestImpl.getInput().getResourceId() );
         }
         return null;
+    }
+
+    @Nullable
+    private ScriptedOrganizationUnit getScriptedOrganizationUnit( @Nonnull ScriptedDhisResource dhisResource )
+    {
+        if ( (dhisResource.getOrganizationUnitId() == null) || (DhisResourceType.ORGANISATION_UNIT == dhisResource.getResourceType()) )
+        {
+            return null;
+        }
+        final OrganizationUnit organizationUnit = organizationUnitService.findOneByReference( new Reference( dhisResource.getOrganizationUnitId(), ReferenceType.ID ) )
+            .orElseThrow( () -> new TransformerDataException( "DHIS resource " + dhisResource.getResourceId() + " reference organization unit " + dhisResource.getOrganizationUnitId() + " that cannot be found." ) );
+        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
     }
 
     private boolean isApplicable( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input,

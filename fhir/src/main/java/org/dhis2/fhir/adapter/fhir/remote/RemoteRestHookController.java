@@ -81,7 +81,7 @@ public class RemoteRestHookController
     public void receive( @PathVariable UUID subscriptionId, @PathVariable UUID subscriptionResourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
     {
-        final RemoteSubscriptionResource subscriptionResource = resourceRepository.findByIdCached( subscriptionResourceId )
+        final RemoteSubscriptionResource subscriptionResource = resourceRepository.findOneByIdCached( subscriptionResourceId )
             .orElseThrow( () -> new RestResourceNotFoundException( "Remote subscription data for resource cannot be found: " + subscriptionResourceId ) );
         if ( !subscriptionResource.getRemoteSubscription().getId().equals( subscriptionId ) )
         {

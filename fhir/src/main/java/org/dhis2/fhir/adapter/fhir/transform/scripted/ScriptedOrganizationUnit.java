@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,39 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.time.ZonedDateTime;
 
 /**
- * Contains the different types of DHIS2 Resources that are can be created.
+ * Mutable or immutable organization unit resource that can be used by scripts safely.
  *
  * @author volsch
  */
-public enum DhisResourceType
+@Scriptable
+public interface ScriptedOrganizationUnit extends ScriptedDhisResource
 {
-    /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
-
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments" ),
-
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANISATION_UNIT( "organisationUnits" );
-
-    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
+    @Nullable
+    String getCode();
 
     @Nullable
-    public static DhisResourceType getByTypeName( @Nullable String typeName )
-    {
-        return byTypeName.get( typeName );
-    }
+    String getName();
 
-    private final String typeName;
+    @Nullable
+    String getShortName();
 
-    DhisResourceType( @Nonnull String typeName )
-    {
-        this.typeName = typeName;
-    }
+    @Nullable
+    String getDisplayName();
 
-    @Nonnull
-    public String getTypeName()
-    {
-        return typeName;
-    }
+    boolean isLeaf();
+
+    @Nullable
+    ZonedDateTime getOpeningDate();
+
+    @Nullable
+    ZonedDateTime getClosedDate();
+
+    @Nullable
+    String getParentId();
 }
-

@@ -147,7 +147,7 @@ public class RemoteRestHookProcessorImpl extends
     @Override
     protected RemoteSubscriptionResource findGroupByGroupId( @Nonnull UuidDataGroupId groupId )
     {
-        return remoteSubscriptionResourceRepository.findByIdCached( groupId.getId() ).orElse( null );
+        return remoteSubscriptionResourceRepository.findOneByIdCached( groupId.getId() ).orElse( null );
     }
 
     @Nonnull

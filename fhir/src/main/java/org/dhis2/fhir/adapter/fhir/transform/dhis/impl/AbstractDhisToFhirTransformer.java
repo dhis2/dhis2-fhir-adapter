@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -43,6 +44,8 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractIdentifierDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirBeanTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
@@ -181,23 +184,110 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     }
 
     @Nonnull
-    protected abstract Optional<? extends IBaseResource> getResourceByAdapterIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+    protected Optional<? extends IBaseResource> getResourceByAdapterIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        if ( !context.isUseAdapterIdentifier() )
+        {
+            return Optional.empty();
+        }
+
+        final R scriptedDhisResource = getDhisResourceClass().cast( TransformerUtils.getScriptVariable(
+            scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
+        final SystemCodeValue identifier = new SystemCodeValue( getAdapterIdentifierSystem().getSystemUri(), createAdapterIdentifierValue( rule, scriptedDhisResource ) );
+        return getRemoteFhirResourceRepository().findRefreshedByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(), rule.getFhirResourceType().getResourceTypeName(), identifier )
+            .map( r -> clone( context, r ) );
+    }
 
     @Nonnull
-    protected abstract Optional<? extends IBaseResource> getResourceBySystemIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+    protected Optional<? extends IBaseResource> getResourceBySystemIdentifier( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final ResourceSystem resourceSystem = context.getResourceSystem( rule.getFhirResourceType() );
+        if ( resourceSystem == null )
+        {
+            return Optional.empty();
+        }
+
+        final R scriptedDhisResource = getDhisResourceClass().cast(
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
+        final String identifierValue = getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
+        if ( identifierValue == null )
+        {
+            logger.info( "FHIR resource type {} defines resource system, but resource does not include an identifier.", rule.getFhirResourceType() );
+            return Optional.empty();
+        }
+        if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+        {
+            logger.info( "Resource identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
+                identifierValue, resourceSystem.getCodePrefix(), rule.getFhirResourceType() );
+            return Optional.empty();
+        }
+
+        final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+        return getRemoteFhirResourceRepository().findRefreshedByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(), rule.getFhirResourceType().getResourceTypeName(), identifier )
+            .map( r -> clone( context, r ) );
+    }
 
     @Nonnull
     protected abstract Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nullable
-    protected abstract IBaseResource createResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
-        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
+    protected IBaseResource createResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    {
+        final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceUtils =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.FHIR_RESOURCE_UTILS, AbstractFhirResourceDhisToFhirTransformerUtils.class );
+        final IBaseResource resource = fhirResourceUtils.createResource( rule.getFhirResourceType() );
+
+        final R scriptedDhisResource =
+            getDhisResourceClass().cast( TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
+        final AbstractIdentifierDhisToFhirTransformerUtils identifierUtils =
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierDhisToFhirTransformerUtils.class );
+
+        final ResourceSystem resourceSystem = context.getResourceSystem( rule.getFhirResourceType() );
+        if ( resourceSystem != null )
+        {
+            final String identifierValue = getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
+            if ( identifierValue == null )
+            {
+                logger.info( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", rule.getFhirResourceType() );
+                return null;
+            }
+            if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+            {
+                logger.info( "Tracked entity identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
+                    identifierValue, resourceSystem.getCodePrefix(), rule.getFhirResourceType() );
+                return null;
+            }
+            final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+            if ( sync )
+            {
+                lockFhirIdentifier( identifier );
+            }
+            identifierUtils.addOrUpdateIdentifier( resource, identifier );
+        }
+
+        if ( context.isUseAdapterIdentifier() )
+        {
+            final SystemCodeValue identifier = new SystemCodeValue( getAdapterIdentifierSystem().getSystemUri(), createAdapterIdentifierValue( rule, scriptedDhisResource ) );
+            if ( sync )
+            {
+                lockFhirIdentifier( identifier );
+            }
+            identifierUtils.addOrUpdateIdentifier( resource, identifier, true );
+        }
+
+        return resource;
+    }
 
     protected abstract void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+
+    @Nullable
+    protected abstract String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
+        @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
 
     protected void lockFhirIdentifier( @Nonnull SystemCodeValue systemCodeValue )
     {

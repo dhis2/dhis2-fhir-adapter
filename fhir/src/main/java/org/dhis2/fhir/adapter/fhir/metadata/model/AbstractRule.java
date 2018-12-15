@@ -77,7 +77,8 @@ import java.io.Serializable;
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
-    @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" )
+    @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
+    @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
 } )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
 {

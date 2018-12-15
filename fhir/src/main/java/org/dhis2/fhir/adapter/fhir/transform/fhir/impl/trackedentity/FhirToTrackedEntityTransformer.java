@@ -32,8 +32,8 @@ import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -75,9 +75,9 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     public FhirToTrackedEntityTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull OrganisationUnitService organisationUnitService, @Nonnull ValueConverter valueConverter )
+        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organisationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
         this.lockManager = lockManager;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.valueConverter = valueConverter;
@@ -132,7 +132,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             trackedEntityAttributes, trackedEntityType, trackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedTrackedEntityInstance );
 
-        final Optional<OrganisationUnit> organisationUnit;
+        final Optional<OrganizationUnit> organizationUnit;
         if ( rule.getOrgUnitLookupScript() == null )
         {
             if ( scriptedTrackedEntityInstance.getOrganizationUnitId() == null )
@@ -140,15 +140,15 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
                 logger.info( "Rule does not define an organization unit lookup script and tracked entity instance does not yet include one." );
                 return null;
             }
-            organisationUnit = getOrgUnit( context,
+            organizationUnit = getOrgUnit( context,
                 new Reference( scriptedTrackedEntityInstance.getOrganizationUnitId(), ReferenceType.ID ), variables );
         }
         else
         {
-            organisationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );
-            organisationUnit.ifPresent( ou -> scriptedTrackedEntityInstance.setOrganizationUnitId( ou.getId() ) );
+            organizationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );
+            organizationUnit.ifPresent( ou -> scriptedTrackedEntityInstance.setOrganizationUnitId( ou.getId() ) );
         }
-        if ( !organisationUnit.isPresent() )
+        if ( !organizationUnit.isPresent() )
         {
             return null;
         }
@@ -162,7 +162,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             return null;
         }
         getTrackedEntityService().updateGeneratedValues( trackedEntityInstance, trackedEntityType,
-            Collections.singletonMap( RequiredValueType.ORG_UNIT_CODE, organisationUnit.get().getCode() ) );
+            Collections.singletonMap( RequiredValueType.ORG_UNIT_CODE, organizationUnit.get().getCode() ) );
         scriptedTrackedEntityInstance.validate();
 
         return new FhirToDhisTransformOutcome<>( trackedEntityInstance );

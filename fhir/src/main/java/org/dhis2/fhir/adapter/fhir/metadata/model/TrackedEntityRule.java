@@ -63,6 +63,8 @@ public class TrackedEntityRule extends AbstractRule
 
     private ExecutableScript expGeoTransformScript;
 
+    private ExecutableScript expOuTransformScript;
+
     public TrackedEntityRule()
     {
         super( DhisResourceType.TRACKED_ENTITY );
@@ -126,6 +128,18 @@ public class TrackedEntityRule extends AbstractRule
     public void setExpGeoTransformScript( ExecutableScript expGeoTransformScript )
     {
         this.expGeoTransformScript = expGeoTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_ou_transform_script_id" )
+    public ExecutableScript getExpOuTransformScript()
+    {
+        return expOuTransformScript;
+    }
+
+    public void setExpOuTransformScript( ExecutableScript expOuTransformScript )
+    {
+        this.expOuTransformScript = expOuTransformScript;
     }
 
     @JsonIgnore

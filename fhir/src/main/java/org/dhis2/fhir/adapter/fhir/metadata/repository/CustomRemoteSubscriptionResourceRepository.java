@@ -50,7 +50,7 @@ public interface CustomRemoteSubscriptionResourceRepository
     @RestResource( exported = false )
     @Nonnull
     @PreAuthorize( "permitAll()" )
-    Optional<RemoteSubscriptionResource> findByIdCached( @Nonnull UUID id );
+    Optional<RemoteSubscriptionResource> findOneByIdCached( @Nonnull UUID id );
 
     @RestResource( exported = false )
     @Nonnull
