@@ -32,30 +32,104 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 /**
- * Immutable scripted enrollment.
+ * Immutable scripted organization unit.
  *
  * @author volsch
  */
 @Scriptable
-public class ImmutableScriptedEnrollment implements ScriptedEnrollment, ImmutableDhisObject, Serializable
+public class ImmutableScriptedOrganizationUnit implements ScriptedOrganizationUnit, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = 3106142635120155470L;
 
-    private final ScriptedEnrollment delegate;
+    private final ScriptedOrganizationUnit delegate;
 
-    public ImmutableScriptedEnrollment( @Nonnull ScriptedEnrollment delegate )
+    public ImmutableScriptedOrganizationUnit( ScriptedOrganizationUnit delegate )
     {
         this.delegate = delegate;
+    }
+
+    @Override
+    @Nonnull
+    public DhisResourceType getResourceType()
+    {
+        return delegate.getResourceType();
+    }
+
+    @Override
+    @Nullable
+    public String getCode()
+    {
+        return delegate.getCode();
+    }
+
+    @Override
+    @Nullable
+    public String getName()
+    {
+        return delegate.getName();
+    }
+
+    @Nullable
+    @Override
+    public String getShortName()
+    {
+        return delegate.getShortName();
+    }
+
+    @Override
+    @Nullable
+    public String getDisplayName()
+    {
+        return delegate.getDisplayName();
+    }
+
+    @Override
+    public boolean isLeaf()
+    {
+        return delegate.isLeaf();
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime getOpeningDate()
+    {
+        return delegate.getOpeningDate();
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime getClosedDate()
+    {
+        return delegate.getClosedDate();
+    }
+
+    @Override
+    @Nullable
+    public String getParentId()
+    {
+        return delegate.getParentId();
+    }
+
+    @Override
+    @Nullable
+    public String getId()
+    {
+        return delegate.getId();
+    }
+
+    @Override
+    @Nullable
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
     }
 
     @Override
@@ -66,27 +140,6 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Immutabl
 
     @Override
     @Nullable
-    public String getId()
-    {
-        return delegate.getId();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return delegate.getResourceId();
-    }
-
-    @Override
-    @Nonnull
-    public DhisResourceType getResourceType()
-    {
-        return delegate.getResourceType();
-    }
-
-    @Nullable
-    @Override
     public ZonedDateTime getLastUpdated()
     {
         return delegate.getLastUpdated();
@@ -99,36 +152,11 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Immutabl
         return delegate.getOrganizationUnitId();
     }
 
-    @Nullable
     @Override
+    @Nullable
     public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
-        if ( delegate.getTrackedEntityInstance() instanceof ImmutableDhisObject )
-        {
-            return delegate.getTrackedEntityInstance();
-        }
-        return new ImmutableScriptedTrackedEntityInstance( Objects.requireNonNull( delegate.getTrackedEntityInstance() ) );
-    }
-
-    @Override
-    @Nullable
-    public ZonedDateTime getEnrollmentDate()
-    {
-        return delegate.getEnrollmentDate();
-    }
-
-    @Override
-    @Nullable
-    public ZonedDateTime getIncidentDate()
-    {
-        return delegate.getIncidentDate();
-    }
-
-    @Override
-    @Nullable
-    public Location getCoordinate()
-    {
-        return delegate.getCoordinate();
+        return delegate.getTrackedEntityInstance();
     }
 
     @Override

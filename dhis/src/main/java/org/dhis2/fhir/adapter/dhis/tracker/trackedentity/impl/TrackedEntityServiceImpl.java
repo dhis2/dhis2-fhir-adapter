@@ -66,7 +66,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
-import java.time.temporal.ChronoField;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -302,28 +301,6 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
                 return Optional.empty();
             }
             throw e;
-        }
-
-        final long date;
-        try
-        {
-            date = responseEntity.getHeaders().getDate();
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new DhisResourceException( "DHIS2 returned invalid date header." );
-        }
-        if ( date == -1 )
-        {
-            throw new DhisResourceException( "DHIS2 did not return a date header in its response." );
-        }
-        // HTTP header date has only second precision
-        final Instant instantDate = Instant.ofEpochMilli( date ).with( ChronoField.NANO_OF_SECOND, 999_999_999 );
-
-        // has been updated in the meantime again
-        if ( lastUpdated.getLastUpdated().toInstant().isAfter( instantDate ) )
-        {
-            return Optional.empty();
         }
         return Optional.of( new ProcessedItemInfo( DhisResourceId.toString( DhisResourceType.TRACKED_ENTITY, id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant() ) );
     }

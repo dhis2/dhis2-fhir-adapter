@@ -28,69 +28,49 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
+import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Repository for {@link SystemCode} entities.
+ * Repository for {@link OrganizationUnitRule} entities.
  *
  * @author volsch
  */
-@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "systemCode" )
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
-@PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, QuerydslPredicateExecutor<SystemCode>
+@PreAuthorize( "hasRole('DATA_MAPPING')" )
+public interface OrganizationUnitRuleRepository extends JpaRepository<OrganizationUnitRule, UUID>, QuerydslPredicateExecutor<OrganizationUnitRule>
 {
-    @RestResource( exported = false )
-    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND s.enabled=true" )
-    @Cacheable( keyGenerator = "systemCodeFindAllByCodesKeyGenerator" )
-    @Nonnull
-    Collection<SystemCode> findAllByCodes( @Param( "codes" ) @Nonnull Collection<String> codes );
-
-    @RestResource( exported = false )
-    @Query( "SELECT sc.systemCode FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +
-        "s.enabled=true AND s.systemUri=:systemUri AND " +
-        "((c.code=:code AND c.mappedCode IS NULL) OR c.mappedCode=:code)" )
-    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
-    @Nonnull
-    Optional<SystemCode> findOneByMappedCode( @Param( "systemUri" ) @Nonnull String system, @Param( "code" ) @Nonnull String code );
-
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )
-    <S extends SystemCode> List<S> saveAll( @Nonnull Iterable<S> entities );
+    <S extends OrganizationUnitRule> List<S> saveAll( @Nonnull Iterable<S> entities );
 
     @Override
     @Nonnull
     @CachePut( key = "#a0.id" )
     @CacheEvict( allEntries = true )
-    <S extends SystemCode> S saveAndFlush( @Nonnull S entity );
+    <S extends OrganizationUnitRule> S saveAndFlush( @Nonnull S entity );
 
     @Override
     @Nonnull
     @CachePut( key = "#a0.id" )
     @CacheEvict( allEntries = true )
-    <S extends SystemCode> S save( @Nonnull S entity );
+    <S extends OrganizationUnitRule> S save( @Nonnull S entity );
 
     @Override
     @CacheEvict( allEntries = true )
-    void deleteInBatch( @Nonnull Iterable<SystemCode> entities );
+    void deleteInBatch( @Nonnull Iterable<OrganizationUnitRule> entities );
 
     @Override
     @CacheEvict( allEntries = true )
@@ -102,11 +82,11 @@ public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, Q
 
     @Override
     @CacheEvict( key = "#a0.id" )
-    void delete( @Nonnull SystemCode entity );
+    void delete( @Nonnull OrganizationUnitRule entity );
 
     @Override
     @CacheEvict( allEntries = true )
-    void deleteAll( @Nonnull Iterable<? extends SystemCode> entities );
+    void deleteAll( @Nonnull Iterable<? extends OrganizationUnitRule> entities );
 
     @Override
     @CacheEvict( allEntries = true )

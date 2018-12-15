@@ -159,7 +159,7 @@ public class DhisRepositoryImpl implements DhisRepository
 
     protected void receiveAuthenticated( @Nonnull DhisResourceQueueItem queueItem )
     {
-        logger.info( "Processing DHIS resource {} for sync group {}.", queueItem.getId(), queueItem.getDataGroupId() );
+        logger.info( "Processing DHIS resource {} of sync group {}.", queueItem.getId(), queueItem.getDataGroupId() );
         final DhisSyncGroup syncGroup =
             dhisSyncGroupRepository.findByIdCached( queueItem.getDataGroupId().getId() ).orElse( null );
         if ( syncGroup == null )
@@ -220,6 +220,7 @@ public class DhisRepositoryImpl implements DhisRepository
                     }
                     logger.info( "Processed DHIS resource {} for sync group {}.", resource.get().getResourceId(), syncGroup.getId() );
                 }
+                storedItemService.stored( syncGroup, processedItemInfo.toIdString( Instant.now() ) );
             }
         }
         else

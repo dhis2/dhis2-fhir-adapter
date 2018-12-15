@@ -176,6 +176,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
     private P getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page )
     {
         final StringBuilder queryParams = new StringBuilder();
+        final List<Object> queryVariables = new ArrayList<>();
         if ( queryUri.indexOf( '?' ) < 0 )
         {
             queryParams.append( '?' );
@@ -184,16 +185,19 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         {
             queryParams.append( '&' );
         }
-        queryParams.append( "lastUpdatedStartDate=" ).append( formatLastUpdated( fromLastUpdated ) );
+        queryParams.append( "lastUpdatedStartDate={lastUpdatedStartDate}" );
+        queryVariables.add( formatLastUpdated( fromLastUpdated ) );
         if ( currentToLastUpdated != null )
         {
-            queryParams.append( "&lastUpdatedEndDate=" )
-                .append( formatLastUpdated( currentToLastUpdated.plus( 1, ChronoUnit.MILLIS ) ) );
+            queryParams.append( "&lastUpdatedEndDate={lastUpdatedEndDate}" );
+            queryVariables.add( formatLastUpdated( currentToLastUpdated.plus( 1, ChronoUnit.MILLIS ) ) );
         }
-        queryParams.append( "&pageSize=" ).append( maxSearchCount );
-        queryParams.append( "&page=" ).append( page );
+        queryParams.append( "&pageSize={maxSearchCount}" );
+        queryVariables.add( maxSearchCount );
+        queryParams.append( "&page={page}" );
+        queryVariables.add( page );
 
-        final ResponseEntity<P> entity = restTemplate.getForEntity( queryUri + queryParams, polledItemsClass );
+        final ResponseEntity<P> entity = restTemplate.getForEntity( queryUri + queryParams, polledItemsClass, queryVariables.toArray() );
         return Objects.requireNonNull( entity.getBody() );
     }
 

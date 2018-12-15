@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,39 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /**
- * Contains the required information of a DHIS2 organization unit.
+ * Mutable or immutable organization unit resource that can be used by scripts safely.
  *
  * @author volsch
  */
-public class OrganisationUnit implements Serializable
+@Scriptable
+public interface ScriptedOrganizationUnit extends ScriptedDhisResource
 {
-    private static final long serialVersionUID = 3976508569865955265L;
+    @Nullable
+    String getCode();
 
-    private String id;
+    @Nullable
+    String getName();
 
-    private String code;
+    @Nullable
+    String getShortName();
 
-    public String getId()
-    {
-        return id;
-    }
+    @Nullable
+    String getDisplayName();
 
-    public void setId( String id )
-    {
-        this.id = id;
-    }
+    boolean isLeaf();
 
-    public String getCode()
-    {
-        return code;
-    }
+    @Nullable
+    ZonedDateTime getOpeningDate();
 
-    public void setCode( String code )
-    {
-        this.code = code;
-    }
+    @Nullable
+    ZonedDateTime getClosedDate();
+
+    @Nullable
+    String getParentId();
 }

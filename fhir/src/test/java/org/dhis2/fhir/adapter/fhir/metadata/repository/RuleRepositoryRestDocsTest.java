@@ -113,6 +113,10 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                     "The script must be an evaluation script that return a location (geo coordinates)." ).type( JsonFieldType.STRING ),
                 fields.withPath( "teiLookupScript" ).description(
                     "Link to the executable script reference that is used to extract the tracked entity related FHIR resource from the input. The script must be an evaluation script that returns a FHIR resource." )
+                    .type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expGeoTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the GEO coordinates that are included in the tracked entity instance." )
+                    .type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expOuTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the DHIS organization unit to a FHIR resource (e.g. FHIR organization or location)." )
                     .type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
@@ -152,7 +156,9 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 linkWithRel( "trackedEntity" ).description( "Link to the tracked entity resource that describes the tracked entity of the transformation." ),
                 linkWithRel( "orgUnitLookupScript" ).description( "Link to the executable script reference that is used to extract the organization unit reference. The script must be an evaluation script that return a reference." ).optional(),
                 linkWithRel( "locationLookupScript" ).description( "Link to the executable script reference that is used to extract the location reference. The script must be an evaluation script that return a location (geo coordinates)." ).optional(),
-                linkWithRel( "teiLookupScript" ).description( "Link to the executable script reference that is used to extract the tracked entity related FHIR resource from the input. The script must be an evaluation script that returns a FHIR resource." ).optional() ),
+                linkWithRel( "teiLookupScript" ).description( "Link to the executable script reference that is used to extract the tracked entity related FHIR resource from the input. The script must be an evaluation script that returns a FHIR resource." ).optional(),
+                linkWithRel( "expGeoTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the GEO coordinates that are included in the tracked entity instance." ).optional(),
+                linkWithRel( "expOuTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the DHIS organization unit to a FHIR resource (e.g. FHIR organization or location)." ).optional() ),
                 responseFields(
                     attributes( key( "title" ).value( "Fields for rule reading" ) ),
                     fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),

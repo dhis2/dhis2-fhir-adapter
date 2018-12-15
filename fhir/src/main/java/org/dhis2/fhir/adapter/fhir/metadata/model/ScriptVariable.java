@@ -50,7 +50,8 @@ public enum ScriptVariable
     CODE_UTILS( "codeUtils" ),
     FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
     PROGRAM_STAGE_EVENTS( "programStageEvents" ),
-    ORGANIZATION_UNIT_ID( "organizationUnitId" );
+    ORGANIZATION_UNIT_ID( "organizationUnitId" ),
+    ORGANIZATION_UNIT( "organizationUnit" );
 
     private final String variableName;
 

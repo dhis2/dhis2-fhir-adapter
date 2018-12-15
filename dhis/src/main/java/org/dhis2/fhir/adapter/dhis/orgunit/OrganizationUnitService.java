@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit.impl;
+package org.dhis2.fhir.adapter.dhis.orgunit;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,18 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 /**
- * Container object used for DHIS2 organization units.
+ * Service that provides access to DHIS2 organization unit metadata.
  *
  * @author volsch
  */
-public class DhisOrganisationUnits implements Serializable
+public interface OrganizationUnitService
 {
-    private static final long serialVersionUID = -671810199580040339L;
-
-    private List<OrganisationUnit> organisationUnits;
-
     @Nonnull
-    public List<OrganisationUnit> getOrganisationUnits()
-    {
-        if ( organisationUnits == null )
-        {
-            organisationUnits = new ArrayList<>();
-        }
-        return organisationUnits;
-    }
-
-    public void setOrganisationUnits( List<OrganisationUnit> organisationUnits )
-    {
-        this.organisationUnits = organisationUnits;
-    }
+    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
 }

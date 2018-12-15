@@ -32,8 +32,8 @@ import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
@@ -115,12 +115,12 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
-    public FhirToProgramStageTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganisationUnitService organisationUnitService, @Nonnull LockManager lockManager,
+    public FhirToProgramStageTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService,
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organisationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
         this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
@@ -318,8 +318,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             final Map<String, Object> variables = createResourceVariables( context, scriptVariables, eventInfo, enrollment );
 
             final FhirResourceMapping resourceMapping = getResourceMapping( rule );
-            final Optional<OrganisationUnit> orgUnit = getEventOrgUnit( context, resourceMapping, enrollment, variables );
-            variables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganisationUnit::getId ).orElse( null ) );
+            final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, resourceMapping, enrollment, variables );
+            variables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
 
             final EventDecisionType eventDecisionType = getScriptExecutor().execute( rule.getProgramStage().getBeforeScript(), context.getFhirRequest().getVersion(),
                 variables, EventDecisionType.class );
@@ -370,7 +370,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
 
         // without an organization unit no event can be created
-        final Optional<OrganisationUnit> orgUnit = getEventOrgUnit( context, resourceMapping, enrollment, scriptVariables );
+        final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, resourceMapping, enrollment, scriptVariables );
         if ( !orgUnit.isPresent() )
         {
             return null;
@@ -429,7 +429,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
         if ( enrollment.isModified() )
         {
-            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.ENROLLMENT, ScriptedEnrollment.class ).validate();
+            TransformerUtils.getScriptVariable( variables, ScriptVariable.ENROLLMENT, ScriptedEnrollment.class ).validate();
         }
         scriptedEvent.validate();
         return event;
@@ -535,7 +535,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return null;
         }
 
-        final Optional<OrganisationUnit> organisationUnit = getOrgUnit( context, resourceMapping.getEnrollmentOrgLookupScript(), variables );
+        final Optional<OrganizationUnit> organisationUnit = getOrgUnit( context, resourceMapping.getEnrollmentOrgLookupScript(), variables );
         if ( !organisationUnit.isPresent() )
         {
             return null;
@@ -706,7 +706,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected Optional<OrganisationUnit> getEventOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping,
+    protected Optional<OrganizationUnit> getEventOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );

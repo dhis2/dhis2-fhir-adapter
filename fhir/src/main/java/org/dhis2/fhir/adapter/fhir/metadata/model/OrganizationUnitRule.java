@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,54 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
- * Contains the different types of DHIS2 Resources that are can be created.
+ * Rule for organization units.
  *
  * @author volsch
  */
-public enum DhisResourceType
+@Entity
+@Table( name = "fhir_organization_unit_rule" )
+@DiscriminatorValue( "ORGANIZATION_UNIT" )
+public class OrganizationUnitRule extends AbstractRule
 {
-    /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
+    private static final long serialVersionUID = -3997570895838354307L;
 
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments" ),
-
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANISATION_UNIT( "organisationUnits" );
-
-    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
-
-    @Nullable
-    public static DhisResourceType getByTypeName( @Nullable String typeName )
+    public OrganizationUnitRule()
     {
-        return byTypeName.get( typeName );
+        super( DhisResourceType.ORGANISATION_UNIT );
     }
 
-    private final String typeName;
-
-    DhisResourceType( @Nonnull String typeName )
-    {
-        this.typeName = typeName;
-    }
-
+    @Transient
+    @JsonIgnore
     @Nonnull
-    public String getTypeName()
+    @Override
+    public String getRuleTypeAbbreviation()
     {
-        return typeName;
+        return "ou";
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public boolean isEffectiveFhirCreateEnable()
+    {
+        return isFhirCreateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public boolean isEffectiveFhirUpdateEnable()
+    {
+        return isFhirUpdateEnabled();
     }
 }
-

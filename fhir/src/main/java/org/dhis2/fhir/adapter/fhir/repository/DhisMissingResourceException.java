@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,30 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Contains the different types of DHIS2 Resources that are can be created.
+ * Thrown if the included DHIS 2 resource is missing on FHIR server and it should
+ * be tried to create the missing FHIR resource before retrying to process the
+ * current resource again.
  *
  * @author volsch
  */
-public enum DhisResourceType
+public class DhisMissingResourceException extends RuntimeException
 {
-    /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
+    private static final long serialVersionUID = 199342946327708047L;
 
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments" ),
+    private final DhisResourceId dhisResourceId;
 
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANISATION_UNIT( "organisationUnits" );
-
-    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
-
-    @Nullable
-    public static DhisResourceType getByTypeName( @Nullable String typeName )
+    public DhisMissingResourceException( @Nonnull DhisResourceId dhisResourceId )
     {
-        return byTypeName.get( typeName );
+        this.dhisResourceId = dhisResourceId;
     }
 
-    private final String typeName;
-
-    DhisResourceType( @Nonnull String typeName )
+    public DhisResourceId getDhisResourceId()
     {
-        this.typeName = typeName;
-    }
-
-    @Nonnull
-    public String getTypeName()
-    {
-        return typeName;
+        return dhisResourceId;
     }
 }
-

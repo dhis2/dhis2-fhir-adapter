@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.DhisMissingResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
@@ -44,6 +46,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * The context of the current transformation between a DHIS 2 resource to a FHIR resource.
@@ -61,6 +64,9 @@ public interface DhisToFhirTransformerContext
     @Nonnull
     @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
     FhirVersion getVersion();
+
+    @Nonnull
+    UUID getRemoteSubscriptionId();
 
     @Nonnull
     @ScriptMethod( description = "Returns the code of the remote subscription that is associated with the execution of the current transformation." )
@@ -84,6 +90,10 @@ public interface DhisToFhirTransformerContext
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )
     ZonedDateTime now();
+
+    @ScriptMethod( description = "Causes that the current transformation will fail due to the specified missing resource. It will be tried to create the missing resource.",
+        args = @ScriptMethodArg( value = "dhisResourceId", description = "The DHIS resource ID that is missing." ) )
+    void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws DhisMissingResourceException;
 
     /**
      * Ends the execution of the script with the specified message. This method can be used if the

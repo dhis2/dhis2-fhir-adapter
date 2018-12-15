@@ -65,6 +65,8 @@ Exit the console and return to your previous user with \q followed by exit.
 The database tables will be created on first startup of the Adapter automatically.    
 
 ### Downloading
+The stable versioned release builds can be downloaded at [Releases](https://github.com/dhis2/dhis2-fhir-adapter/releases).
+
 You can download the latest build of the Adapter at [Download WAR](https://s3-eu-west-1.amazonaws.com/releases.dhis2.org/fhir/dhis2-fhir-adapter.war). Alternatively you can also build the application from its source code as described below. Otherwise you 
 can continue with the configuration section of this document.
 

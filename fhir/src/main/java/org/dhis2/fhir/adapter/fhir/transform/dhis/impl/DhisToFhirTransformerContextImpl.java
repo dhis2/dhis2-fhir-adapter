@@ -28,10 +28,12 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.DhisMissingResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
@@ -44,6 +46,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -84,6 +87,13 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public FhirVersion getVersion()
     {
         return remoteSubscription.getFhirVersion();
+    }
+
+    @Nonnull
+    @Override
+    public UUID getRemoteSubscriptionId()
+    {
+        return remoteSubscription.getId();
     }
 
     @Nonnull
@@ -132,6 +142,12 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public boolean isUseAdapterIdentifier()
     {
         return remoteSubscription.isUseAdapterIdentifier();
+    }
+
+    @Override
+    public void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws DhisMissingResourceException
+    {
+        throw new DhisMissingResourceException( dhisResourceId );
     }
 
     @Override

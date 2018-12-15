@@ -32,6 +32,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -96,6 +97,13 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public String getId()
     {
         return event.getId();
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return event.getResourceType();
     }
 
     @Nullable

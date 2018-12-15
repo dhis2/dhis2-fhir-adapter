@@ -99,8 +99,8 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
     @Nullable
     @Override
-    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input, @Nonnull TrackedEntityRule rule,
-        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input,
+        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         if ( !addScriptVariables( variables, rule, input ) )
@@ -119,6 +119,13 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
         if ( !transform( context, rule, variables ) )
         {
+            return null;
+        }
+
+        // transform organization unit into output FHIR resource
+        if ( (rule.getExpOuTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute( rule.getExpOuTransformScript(), context.getVersion(), variables, Boolean.class ) ) )
+        {
+            logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
             return null;
         }
 

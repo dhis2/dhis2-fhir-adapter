@@ -29,9 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgUtils;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
@@ -40,9 +38,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
@@ -214,7 +210,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
     }
 
     @ScriptExecutionRequired
-    @ScriptMethod( description = "Returns the mapped code (field code or if available field mappedCode of apdater resource code) for the specified FHIR resource type dependent code. " +
+    @ScriptMethod( description = "Returns the mapped code (field code or if available field mappedCode of adapter resource code) for the specified FHIR resource type dependent code. " +
         "As system URI the value associated with the FHIR resource type of the remote subscription system (adapter resource remoteSubscriptionSystems) of the current transformation context is used.",
         args = {
             @ScriptMethodArg( value = "code", description = "The code in context of the system URI for the specified FHIR resource type." ),
@@ -228,27 +224,14 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
         {
             return null;
         }
-        final FhirResourceType resourceType;
-        try
-        {
-            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
-        }
 
-        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final ResourceSystem resourceSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType )
-            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
-
+        final ResourceSystem resourceSystem = getMandatoryResourceSystem( convertFhirResourceType( fhirResourceType ) );
         final Code c = codeRepository.findAllBySystemCodes( Collections.singleton( new SystemCodeValue( resourceSystem.getSystem(), code ).toString() ) )
             .stream().findFirst().orElse( null );
         if ( c == null )
         {
             return null;
         }
-
         return (c.getMappedCode() == null) ? c.getCode() : c.getMappedCode();
     }
 

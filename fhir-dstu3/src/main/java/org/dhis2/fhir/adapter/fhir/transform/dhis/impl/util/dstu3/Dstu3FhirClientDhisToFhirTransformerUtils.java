@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,38 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirClientDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
- * Contains the different types of DHIS2 Resources that are can be created.
+ * FHIR version DSTU3 implementation of {@link AbstractFhirClientDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-public enum DhisResourceType
+@Component
+@Scriptable
+public class Dstu3FhirClientDhisToFhirTransformerUtils extends AbstractFhirClientDhisToFhirTransformerUtils
 {
-    /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
-
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments" ),
-
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANISATION_UNIT( "organisationUnits" );
-
-    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
-
-    @Nullable
-    public static DhisResourceType getByTypeName( @Nullable String typeName )
+    public Dstu3FhirClientDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
+        @Nonnull RemoteSubscriptionRepository subscriptionRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
     {
-        return byTypeName.get( typeName );
-    }
-
-    private final String typeName;
-
-    DhisResourceType( @Nonnull String typeName )
-    {
-        this.typeName = typeName;
+        super( scriptExecutionContext, fhirContext, subscriptionRepository, remoteFhirResourceRepository );
     }
 
     @Nonnull
-    public String getTypeName()
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return typeName;
+        return FhirVersion.DSTU3_ONLY;
     }
 }
-

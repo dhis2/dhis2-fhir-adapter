@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,18 +28,48 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Unsupported rule for transformations of DHIS2 resource organization unit.
  *
  * @author volsch
  */
-public interface OrganisationUnitService
+@Component
+public class OrganizationUnitFhirToDhisTransformer extends AbstractUnsupportedFhirToDhisTransformer<OrganizationUnit, OrganizationUnitRule>
 {
+    public OrganizationUnitFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
+    {
+        super( scriptExecutor, organizationUnitService, trackedEntityService );
+    }
+
     @Nonnull
-    Optional<OrganisationUnit> findOneByReference( @Nonnull Reference reference );
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.ORGANISATION_UNIT;
+    }
+
+    @Nonnull
+    @Override
+    public Class<OrganizationUnit> getDhisResourceClass()
+    {
+        return OrganizationUnit.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<OrganizationUnitRule> getRuleClass()
+    {
+        return OrganizationUnitRule.class;
+    }
 }

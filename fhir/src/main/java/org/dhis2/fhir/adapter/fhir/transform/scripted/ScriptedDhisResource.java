@@ -29,9 +29,11 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
@@ -45,6 +47,9 @@ public interface ScriptedDhisResource
 {
     @Nullable
     String getId();
+
+    @Nonnull
+    DhisResourceType getResourceType();
 
     @Nullable
     DhisResourceId getResourceId();

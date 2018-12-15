@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -84,14 +84,14 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     private final ScriptExecutor scriptExecutor;
 
-    private final OrganisationUnitService organisationUnitService;
+    private final OrganizationUnitService organizationUnitService;
 
     private final TrackedEntityService trackedEntityService;
 
-    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganisationUnitService organisationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
+    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
     {
         this.scriptExecutor = scriptExecutor;
-        this.organisationUnitService = organisationUnitService;
+        this.organizationUnitService = organizationUnitService;
         this.trackedEntityService = trackedEntityService.getIfAvailable();
     }
 
@@ -190,7 +190,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nonnull
-    protected Optional<OrganisationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
+    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
     {
         final Reference orgUnitReference = getScriptExecutor().execute( lookupScript, context.getFhirRequest().getVersion(), scriptVariables, Reference.class );
         if ( orgUnitReference == null )
@@ -202,9 +202,9 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nonnull
-    protected Optional<OrganisationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull Reference orgUnitReference, @Nonnull Map<String, Object> scriptVariables )
+    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull Reference orgUnitReference, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Optional<OrganisationUnit> organisationUnit = organisationUnitService.findOneByReference( orgUnitReference );
+        final Optional<OrganizationUnit> organisationUnit = organizationUnitService.findOneByReference( orgUnitReference );
         if ( !organisationUnit.isPresent() )
         {
             logger.info( "Organization unit of reference does not exist: " + orgUnitReference );

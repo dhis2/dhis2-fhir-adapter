@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,31 +53,31 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
- * Unit test for {@link OrganisationUnitService}.
+ * Unit test for {@link OrganizationUnitService}.
  */
-public class OrganisationUnitServiceImplTest
+public class OrganizationUnitServiceImplTest
 {
     private RestTemplate restTemplate;
 
     private MockRestServiceServer mockServer;
 
-    private OrganisationUnitService service;
+    private OrganizationUnitService service;
 
     @Before
     public void setUp()
     {
         restTemplate = new RestTemplateBuilder().rootUri( "http://localhost:8080/api" ).build();
         mockServer = MockRestServiceServer.createServer( restTemplate );
-        service = new OrganisationUnitServiceImpl( restTemplate );
+        service = new OrganizationUnitServiceImpl( restTemplate );
     }
 
     @Test
     public void findOneByReferenceId() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=id,code" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnit.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertTrue( ou.isPresent() );
         Assert.assertEquals( "93783", ou.get().getId() );
         Assert.assertEquals( "XU_478347", ou.get().getCode() );
@@ -86,17 +86,17 @@ public class OrganisationUnitServiceImplTest
     @Test
     public void findOneByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=id,code" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
     @Test( expected = HttpServerErrorException.class )
     public void findOneByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=id,code" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
         service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
     }
@@ -104,10 +104,10 @@ public class OrganisationUnitServiceImplTest
     @Test
     public void findOneByReferenceCode() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertTrue( ou.isPresent() );
         Assert.assertEquals( "93783", ou.get().getId() );
         Assert.assertEquals( "OU_3783", ou.get().getCode() );
@@ -116,20 +116,20 @@ public class OrganisationUnitServiceImplTest
     @Test
     public void findOneByReferenceCodeNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=id,code&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/emptyOrganisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
     @Test
     public void findOneByReferenceName() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=id,code&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertTrue( ou.isPresent() );
         Assert.assertEquals( "93783", ou.get().getId() );
         Assert.assertEquals( "OU_3783", ou.get().getCode() );
@@ -138,10 +138,10 @@ public class OrganisationUnitServiceImplTest
     @Test
     public void findOneByReferenceNameNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=id,code&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/emptyOrganisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<OrganisationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertFalse( ou.isPresent() );
     }
 }

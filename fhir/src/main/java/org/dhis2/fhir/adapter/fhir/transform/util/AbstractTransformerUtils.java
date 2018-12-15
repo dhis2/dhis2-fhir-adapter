@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,45 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Contains the different types of DHIS2 Resources that are can be created.
+ * Abstract base class for transformer utilities.
  *
  * @author volsch
  */
-public enum DhisResourceType
+public abstract class AbstractTransformerUtils
 {
-    /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
+    private final ScriptExecutionContext scriptExecutionContext;
 
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments" ),
-
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANISATION_UNIT( "organisationUnits" );
-
-    private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
-
-    @Nullable
-    public static DhisResourceType getByTypeName( @Nullable String typeName )
+    protected AbstractTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        return byTypeName.get( typeName );
-    }
-
-    private final String typeName;
-
-    DhisResourceType( @Nonnull String typeName )
-    {
-        this.typeName = typeName;
+        this.scriptExecutionContext = scriptExecutionContext;
     }
 
     @Nonnull
-    public String getTypeName()
+    protected <T> T getScriptVariable( @Nonnull String name, @Nonnull Class<T> c )
     {
-        return typeName;
+        return TransformerUtils.getScriptVariable( scriptExecutionContext, name, c );
+    }
+
+    @Nonnull
+    protected FhirResourceType convertFhirResourceType( @Nonnull Object fhirResourceType )
+    {
+        final FhirResourceType resourceType;
+        try
+
+        {
+            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+        }
+        return resourceType;
     }
 }
-

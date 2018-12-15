@@ -32,7 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import org.apache.commons.lang.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
@@ -81,7 +81,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final OrganisationUnitService organisationUnitService;
+    private final OrganizationUnitService organizationUnitService;
 
     private final RemoteSubscriptionResourceRepository subscriptionResourceRepository;
 
@@ -90,13 +90,13 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
     private final RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository;
 
     public AbstractOrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull OrganisationUnitService organisationUnitService,
+        @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
         @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
         @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
     {
         super( scriptExecutionContext );
-        this.organisationUnitService = organisationUnitService;
+        this.organizationUnitService = organizationUnitService;
         this.subscriptionResourceRepository = subscriptionResourceRepository;
         this.remoteFhirResourceRepository = remoteFhirResourceRepository;
         this.remoteHierarchicallyFhirResourceRepository = remoteHierarchicallyFhirResourceRepository;
@@ -118,7 +118,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
         {
             return false;
         }
-        return organisationUnitService.findOneByReference( new Reference( code, ReferenceType.CODE ) ).isPresent();
+        return organizationUnitService.findOneByReference( new Reference( code, ReferenceType.CODE ) ).isPresent();
     }
 
     @Nullable
@@ -138,7 +138,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + FhirResourceType.ORGANIZATION + "." ) );
 
         final String resultingCode = StringUtils.defaultString( resourceSystem.getCodePrefix() ) + code;
-        if ( organisationUnitService.findOneByReference( new Reference( resultingCode, ReferenceType.CODE ) ).isPresent() )
+        if ( organizationUnitService.findOneByReference( new Reference( resultingCode, ReferenceType.CODE ) ).isPresent() )
         {
             return resultingCode;
         }
@@ -204,7 +204,7 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findByIdCached( resourceId )
+        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
 
         final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )

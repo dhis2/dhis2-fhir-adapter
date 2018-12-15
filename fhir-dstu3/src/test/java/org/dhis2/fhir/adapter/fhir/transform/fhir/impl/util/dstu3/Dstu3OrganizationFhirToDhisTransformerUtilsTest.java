@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganisationUnitService;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
@@ -77,7 +77,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     private ScriptExecutionContext scriptExecutionContext;
 
     @Mock
-    private OrganisationUnitService organisationUnitService;
+    private OrganizationUnitService organizationUnitService;
 
     @Mock
     private RemoteSubscriptionResourceRepository subscriptionResourceRepository;
@@ -109,17 +109,17 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     @Test
     public void exists()
     {
-        Mockito.doReturn( Optional.of( new OrganisationUnit() ) ).when( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
+        Mockito.doReturn( Optional.of( new OrganizationUnit() ) ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
         Assert.assertTrue( utils.exists( "ABC_123" ) );
-        Mockito.verify( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
+        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
     }
 
     @Test
     public void existsNot()
     {
-        Mockito.doReturn( Optional.empty() ).when( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
+        Mockito.doReturn( Optional.empty() ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
         Assert.assertFalse( utils.exists( "ABC_123" ) );
-        Mockito.verify( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
+        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
     }
 
     @Test
@@ -133,9 +133,9 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
 
 
-        Mockito.doReturn( Optional.of( new OrganisationUnit() ) ).when( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
+        Mockito.doReturn( Optional.of( new OrganizationUnit() ) ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
         Assert.assertEquals( "OT_ABC_123", utils.existsWithPrefix( "ABC_123" ) );
-        Mockito.verify( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
+        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
     }
 
     @Test
@@ -148,9 +148,9 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
         Mockito.doReturn( request ).when( context ).getFhirRequest();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
 
-        Mockito.doReturn( Optional.empty() ).when( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
+        Mockito.doReturn( Optional.empty() ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
         Assert.assertNull( utils.existsWithPrefix( "ABC_123" ) );
-        Mockito.verify( organisationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
+        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
     }
 
     @Test
@@ -171,7 +171,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
         Mockito.doReturn( remoteSubscriptionResourceId ).when( request ).getRemoteSubscriptionResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
+        Mockito.doReturn( Optional.of( remoteSubscriptionResource ) ).when( subscriptionResourceRepository ).findOneByIdCached( Mockito.eq( remoteSubscriptionResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( remoteFhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Organization org1 = (Organization) new Organization().setId( new IdType( "Organization", "1" ) );

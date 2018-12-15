@@ -28,8 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.util.AbstractTransformerUtils;
 
 import javax.annotation.Nonnull;
 
@@ -38,18 +43,18 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
-public abstract class AbstractDhisToFhirTransformerUtils implements DhisToFhirTransformerUtils
+public abstract class AbstractDhisToFhirTransformerUtils extends AbstractTransformerUtils implements DhisToFhirTransformerUtils
 {
-    private final ScriptExecutionContext scriptExecutionContext;
-
     public AbstractDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        this.scriptExecutionContext = scriptExecutionContext;
+        super( scriptExecutionContext );
     }
 
     @Nonnull
-    protected <T> T getScriptVariable( @Nonnull String name, @Nonnull Class<T> c )
+    protected ResourceSystem getMandatoryResourceSystem( @Nonnull FhirResourceType resourceType )
     {
-        return TransformerUtils.getScriptVariable( scriptExecutionContext, name, c );
+        final DhisToFhirTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), DhisToFhirTransformerContext.class );
+        return context.getOptionalResourceSystem( resourceType )
+            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
     }
 }

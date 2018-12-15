@@ -206,7 +206,7 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findByIdCached( resourceId )
+        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
 
         final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )
