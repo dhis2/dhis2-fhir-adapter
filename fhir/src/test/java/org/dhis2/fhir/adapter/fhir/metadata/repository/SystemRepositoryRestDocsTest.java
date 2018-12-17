@@ -77,7 +77,8 @@ public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the system is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
                 fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
-                fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional()
+                fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR servers." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -90,6 +91,7 @@ public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
             .andExpect( jsonPath( "systemUri", is( "http://example.sl/patients" ) ) )
             .andExpect( jsonPath( "enabled", is( true ) ) )
             .andExpect( jsonPath( "descriptionProtected", is( false ) ) )
+            .andExpect( jsonPath( "fhirDisplayName", is( "National Patients" ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 
@@ -112,6 +114,7 @@ public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the system is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
                 fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
+                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR servers." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );

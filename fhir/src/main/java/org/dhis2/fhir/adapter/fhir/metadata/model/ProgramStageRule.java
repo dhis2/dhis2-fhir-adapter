@@ -42,6 +42,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -53,22 +55,57 @@ import javax.persistence.Transient;
 @Entity
 @Table( name = "fhir_program_stage_rule" )
 @DiscriminatorValue( "PROGRAM_STAGE_EVENT" )
+@NamedQueries( {
+    @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_NAMED_QUERY,
+        query = "SELECT psr FROM ProgramStageRule psr JOIN psr.programStage ps JOIN ps.program p WHERE " +
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND " +
+            "ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND " +
+            "p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND " +
+            "p.programReference IN (:programReferences) AND ps.programStageReference IN (:programStageReferences)" ),
+    @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY,
+        query = "SELECT psr FROM ProgramStageRule psr JOIN psr.programStage ps JOIN ps.program p WHERE " +
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND " +
+            "ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND " +
+            "p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND " +
+            "p.programReference IN (:programReferences) AND ps.programStageReference IN (:programStageReferences) AND " +
+            "EXISTS (SELECT 1 FROM RuleDhisDataReference edr WHERE edr.rule=psr AND edr.dataReference IN (:dataReferences))" )
+} )
 @Relation( value = "rule", collectionRelation = "rules" )
 public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;
 
+    public static final String FIND_ALL_EXP_NAMED_QUERY = "ProgramStageRule.findAllExportedWithoutDataRef";
+
+    public static final String FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY = "ProgramStageRule.findAllExportedByDataRef";
+
     private MappedTrackerProgramStage programStage;
+
     private boolean enrollmentCreationEnabled;
+
     private boolean eventCreationEnabled;
+
     private boolean updateEventDate;
+
     private EventPeriodDayType beforePeriodDayType;
+
     private Integer beforePeriodDays;
+
     private EventPeriodDayType afterPeriodDayType;
+
     private Integer afterPeriodDays;
+
     private ApplicableEnrollmentStatus applicableEnrollmentStatus;
+
     private ApplicableEventStatus applicableEventStatus;
+
     private EventStatusUpdate eventStatusUpdate;
+
+    private boolean expEnabled;
+
+    private boolean fhirCreateEnabled = true;
+
+    private boolean fhirUpdateEnabled;
 
     public ProgramStageRule()
     {
@@ -242,19 +279,19 @@ public class ProgramStageRule extends AbstractRule
         return "ps";
     }
 
-    @JsonIgnore
-    @Transient
     @Override
+    @Transient
+    @JsonIgnore
     public boolean isEffectiveFhirCreateEnable()
     {
-        return isFhirCreateEnabled();
+        return isExpEnabled() && isFhirCreateEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirCreateEnabled();
     }
 
-    @JsonIgnore
-    @Transient
     @Override
+    @Transient
+    @JsonIgnore
     public boolean isEffectiveFhirUpdateEnable()
     {
-        return isFhirUpdateEnabled();
+        return isExpEnabled() && isFhirUpdateEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirUpdateEnabled();
     }
 }

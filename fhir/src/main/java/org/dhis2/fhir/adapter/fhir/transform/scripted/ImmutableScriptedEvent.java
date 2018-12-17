@@ -33,6 +33,8 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -99,6 +101,27 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     public String getOrganizationUnitId()
     {
         return delegate.getOrganizationUnitId();
+    }
+
+    @Nullable
+    @Override
+    public String getEnrollmentId()
+    {
+        return delegate.getEnrollmentId();
+    }
+
+    @Override
+    @Nonnull
+    public Program getProgram()
+    {
+        return delegate.getProgram();
+    }
+
+    @Nonnull
+    @Override
+    public ProgramStage getProgramStage()
+    {
+        return delegate.getProgramStage();
     }
 
     @Nullable

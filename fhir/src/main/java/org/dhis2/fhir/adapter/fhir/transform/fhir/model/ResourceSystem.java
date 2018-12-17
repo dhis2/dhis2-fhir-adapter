@@ -48,11 +48,14 @@ public class ResourceSystem implements Serializable
 
     private final String codePrefix;
 
-    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix )
+    private final String fhirDisplayName;
+
+    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix, @Nullable String fhirDisplayName )
     {
         this.fhirResourceType = fhirResourceType;
         this.system = system;
         this.codePrefix = codePrefix;
+        this.fhirDisplayName = fhirDisplayName;
     }
 
     @Nonnull
@@ -71,6 +74,12 @@ public class ResourceSystem implements Serializable
     public String getCodePrefix()
     {
         return codePrefix;
+    }
+
+    @Nullable
+    public String getFhirDisplayName()
+    {
+        return fhirDisplayName;
     }
 
     @Override

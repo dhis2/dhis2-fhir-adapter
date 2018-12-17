@@ -32,9 +32,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,6 +69,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Override
     @RestResource( exported = false )
     @Cacheable( keyGenerator = "ruleFindAllByInputDataKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
     @Nonnull
     public List<? extends AbstractRule> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
@@ -86,7 +89,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
                 .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }
         Collections.sort( rules );
-
+        rules.forEach( r -> Hibernate.initialize( r.getDhisDataReferences() ) );
         return rules;
     }
 }

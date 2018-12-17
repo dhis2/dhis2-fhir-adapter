@@ -37,11 +37,12 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program.FhirToDhisOptionSetUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ScriptedDateTimeUtils;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -67,7 +68,9 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 {
     private static final long serialVersionUID = 3407593545422372222L;
 
-    private final FhirToDhisTransformerContext transformerContext;
+    private final TransformerContext transformerContext;
+
+    private final Program program;
 
     private final ProgramStage programStage;
 
@@ -77,9 +80,16 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEvent( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEvent( @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
+    {
+        this( null, program, programStage, event, trackedEntityInstance, valueConverter );
+    }
+
+    public WritableScriptedEvent( @Nullable TransformerContext transformerContext, @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance,
+        @Nonnull ValueConverter valueConverter )
     {
         this.transformerContext = transformerContext;
+        this.program = program;
         this.programStage = programStage;
         this.event = event;
         this.trackedEntityInstance = trackedEntityInstance;
@@ -126,6 +136,27 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public String getOrganizationUnitId()
     {
         return event.getOrgUnitId();
+    }
+
+    @Nullable
+    @Override
+    public String getEnrollmentId()
+    {
+        return event.getEnrollmentId();
+    }
+
+    @Nonnull
+    @Override
+    public Program getProgram()
+    {
+        return program;
+    }
+
+    @Nonnull
+    @Override
+    public ProgramStage getProgramStage()
+    {
+        return programStage;
     }
 
     @Nullable
@@ -304,8 +335,8 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
             return false;
         }
         // if last update has been done on behalf of the adapter last update timestamp cannot be used since timestamps may be far behind of the timestamp of data processing
-        if ( (lastUpdated != null) && (dataValue.getLastUpdated() != null) && dataValue.getLastUpdated().isAfter( lastUpdated ) &&
-            !Objects.equals( dataValue.getStoredBy(), transformerContext.getFhirRequest().getDhisUsername() ) )
+        if ( (transformerContext != null) && (lastUpdated != null) && (dataValue.getLastUpdated() != null) && dataValue.getLastUpdated().isAfter( lastUpdated ) &&
+            !Objects.equals( dataValue.getStoredBy(), transformerContext.getDhisUsername() ) )
         {
             return false;
         }

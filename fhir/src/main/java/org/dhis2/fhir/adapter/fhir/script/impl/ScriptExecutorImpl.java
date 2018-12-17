@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgValue;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -124,7 +125,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
         scriptVariables.put( ARGUMENTS_VARIABLE_NAME, args );
 
         final Object result;
-        scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables ) );
+        final ScriptExecution previousScriptExecution =
+            scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables ) );
         try
         {
             result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource(
@@ -137,7 +139,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         finally
         {
-            scriptExecutionContext.resetScriptExecutionContext();
+            scriptExecutionContext.resetScriptExecutionContext( previousScriptExecution );
         }
         if ( (result != null) && !executableScriptInfo.getScript().getReturnType().getJavaType().isInstance( result ) )
         {

@@ -32,10 +32,13 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Provides an implementation of the script execution context that is hold by a
  * thread local.
+ *
+ * @author volsch
  */
 public class ThreadLocalScriptExecutionContext implements ScriptExecutionContext
 {
@@ -54,15 +57,18 @@ public class ThreadLocalScriptExecutionContext implements ScriptExecutionContext
         return scriptExecution;
     }
 
+    @Nullable
     @Override
-    public void setScriptExecution( @Nonnull ScriptExecution scriptExecution )
+    public ScriptExecution setScriptExecution( @Nonnull ScriptExecution scriptExecution )
     {
+        final ScriptExecution currentScriptExecution = THREAD_LOCAL.get();
         THREAD_LOCAL.set( scriptExecution );
+        return currentScriptExecution;
     }
 
     @Override
-    public void resetScriptExecutionContext()
+    public void resetScriptExecutionContext( @Nullable ScriptExecution scriptExecution )
     {
-        THREAD_LOCAL.set( null );
+        THREAD_LOCAL.set( scriptExecution );
     }
 }

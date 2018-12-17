@@ -53,14 +53,22 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     private static final long serialVersionUID = 7669881610498151697L;
 
     private FhirResourceType fhirResourceType;
-    private ExecutableScript teiLookupScript;
-    private ExecutableScript enrollmentOrgLookupScript;
-    private ExecutableScript eventOrgLookupScript;
-    private ExecutableScript enrollmentDateLookupScript;
-    private ExecutableScript eventDateLookupScript;
-    private ExecutableScript enrollmentLocationLookupScript;
-    private ExecutableScript eventLocationLookupScript;
-    private ExecutableScript effectiveDateLookupScript;
+
+    private ExecutableScript impTeiLookupScript;
+
+    private ExecutableScript impEnrollmentOrgLookupScript;
+
+    private ExecutableScript impEventOrgLookupScript;
+
+    private ExecutableScript impEnrollmentDateLookupScript;
+
+    private ExecutableScript impEventDateLookupScript;
+
+    private ExecutableScript impEnrollmentLocationLookupScript;
+
+    private ExecutableScript impEventLocationLookupScript;
+
+    private ExecutableScript impEffectiveDateLookupScript;
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -76,98 +84,98 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     }
 
     @ManyToOne
-    @JoinColumn( name = "tei_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getTeiLookupScript()
+    @JoinColumn( name = "imp_tei_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpTeiLookupScript()
     {
-        return teiLookupScript;
+        return impTeiLookupScript;
     }
 
-    public void setTeiLookupScript( ExecutableScript teiLookupScript )
+    public void setImpTeiLookupScript( ExecutableScript teiLookupScript )
     {
-        this.teiLookupScript = teiLookupScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "enrollment_org_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEnrollmentOrgLookupScript()
-    {
-        return enrollmentOrgLookupScript;
-    }
-
-    public void setEnrollmentOrgLookupScript( ExecutableScript enrollmentOrgLookupScript )
-    {
-        this.enrollmentOrgLookupScript = enrollmentOrgLookupScript;
+        this.impTeiLookupScript = teiLookupScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "enrollment_date_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEnrollmentDateLookupScript()
+    @JoinColumn( name = "imp_enrollment_org_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEnrollmentOrgLookupScript()
     {
-        return enrollmentDateLookupScript;
+        return impEnrollmentOrgLookupScript;
     }
 
-    public void setEnrollmentDateLookupScript( ExecutableScript enrollmentDateLookupScript )
+    public void setImpEnrollmentOrgLookupScript( ExecutableScript enrollmentOrgLookupScript )
     {
-        this.enrollmentDateLookupScript = enrollmentDateLookupScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "event_org_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEventOrgLookupScript()
-    {
-        return eventOrgLookupScript;
-    }
-
-    public void setEventOrgLookupScript( ExecutableScript eventOrgLookupScript )
-    {
-        this.eventOrgLookupScript = eventOrgLookupScript;
+        this.impEnrollmentOrgLookupScript = enrollmentOrgLookupScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "event_date_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEventDateLookupScript()
+    @JoinColumn( name = "imp_enrollment_date_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEnrollmentDateLookupScript()
     {
-        return eventDateLookupScript;
+        return impEnrollmentDateLookupScript;
     }
 
-    public void setEventDateLookupScript( ExecutableScript eventDateLookupScript )
+    public void setImpEnrollmentDateLookupScript( ExecutableScript enrollmentDateLookupScript )
     {
-        this.eventDateLookupScript = eventDateLookupScript;
-    }
-
-    @ManyToOne
-    @JoinColumn( name = "enrollment_loc_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEnrollmentLocationLookupScript()
-    {
-        return enrollmentLocationLookupScript;
-    }
-
-    public void setEnrollmentLocationLookupScript( ExecutableScript enrollmentLocationLookupScript )
-    {
-        this.enrollmentLocationLookupScript = enrollmentLocationLookupScript;
+        this.impEnrollmentDateLookupScript = enrollmentDateLookupScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "event_loc_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEventLocationLookupScript()
+    @JoinColumn( name = "imp_event_org_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEventOrgLookupScript()
     {
-        return eventLocationLookupScript;
+        return impEventOrgLookupScript;
     }
 
-    public void setEventLocationLookupScript( ExecutableScript eventLocationLookupScript )
+    public void setImpEventOrgLookupScript( ExecutableScript eventOrgLookupScript )
     {
-        this.eventLocationLookupScript = eventLocationLookupScript;
+        this.impEventOrgLookupScript = eventOrgLookupScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "effective_date_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getEffectiveDateLookupScript()
+    @JoinColumn( name = "imp_event_date_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEventDateLookupScript()
     {
-        return effectiveDateLookupScript;
+        return impEventDateLookupScript;
     }
 
-    public void setEffectiveDateLookupScript( ExecutableScript effectiveDateLookupScript )
+    public void setImpEventDateLookupScript( ExecutableScript eventDateLookupScript )
     {
-        this.effectiveDateLookupScript = effectiveDateLookupScript;
+        this.impEventDateLookupScript = eventDateLookupScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "imp_enrollment_loc_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEnrollmentLocationLookupScript()
+    {
+        return impEnrollmentLocationLookupScript;
+    }
+
+    public void setImpEnrollmentLocationLookupScript( ExecutableScript enrollmentLocationLookupScript )
+    {
+        this.impEnrollmentLocationLookupScript = enrollmentLocationLookupScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "imp_event_loc_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEventLocationLookupScript()
+    {
+        return impEventLocationLookupScript;
+    }
+
+    public void setImpEventLocationLookupScript( ExecutableScript eventLocationLookupScript )
+    {
+        this.impEventLocationLookupScript = eventLocationLookupScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "imp_effective_date_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEffectiveDateLookupScript()
+    {
+        return impEffectiveDateLookupScript;
+    }
+
+    public void setImpEffectiveDateLookupScript( ExecutableScript effectiveDateLookupScript )
+    {
+        this.impEffectiveDateLookupScript = effectiveDateLookupScript;
     }
 }

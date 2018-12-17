@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.model;
 import org.dhis2.fhir.adapter.model.Identifiable;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
@@ -38,7 +39,7 @@ import java.time.ZonedDateTime;
  *
  * @author volsch
  */
-public interface DhisResource extends Identifiable<String>
+public interface DhisResource extends Identifiable<String>, Serializable
 {
     /**
      * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,

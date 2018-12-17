@@ -28,14 +28,19 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCache;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -48,21 +53,40 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_tracker_program" )
+@JsonFilter( JsonIgnoreCachePropertyFilter.FILTER_NAME )
 public class MappedTrackerProgram extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2784006479143123933L;
 
     private String name;
+
     private String description;
+
     private Reference programReference;
+
     private boolean enabled = true;
+
     private TrackedEntityRule trackedEntityRule;
+
     private boolean creationEnabled;
+
     private ExecutableScript creationApplicableScript;
+
     private ExecutableScript creationScript;
+
     private ExecutableScript beforeScript;
+
     private ExecutableScript afterScript;
+
     private boolean enrollmentDateIsIncident;
+
+    private boolean expEnabled;
+
+    private boolean fhirCreateEnabled = true;
+
+    private boolean fhirUpdateEnabled;
+
+    private FhirResourceType trackedEntityFhirResourceType;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -113,6 +137,7 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
         this.enabled = enabled;
     }
 
+    @JsonIgnoreCache
     @ManyToOne( optional = false )
     @JoinColumn( name = "tracked_entity_rule_id", referencedColumnName = "id", nullable = false )
     public TrackedEntityRule getTrackedEntityRule()
@@ -195,5 +220,53 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
     public void setAfterScript( ExecutableScript afterScript )
     {
         this.afterScript = afterScript;
+    }
+
+    @Column( name = "exp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpEnabled()
+    {
+        return expEnabled;
+    }
+
+    public void setExpEnabled( boolean outEnabled )
+    {
+        this.expEnabled = outEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_create_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isFhirCreateEnabled()
+    {
+        return fhirCreateEnabled;
+    }
+
+    public void setFhirCreateEnabled( boolean fhirCreateEnabled )
+    {
+        this.fhirCreateEnabled = fhirCreateEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_update_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirUpdateEnabled()
+    {
+        return fhirUpdateEnabled;
+    }
+
+    public void setFhirUpdateEnabled( boolean fhirUpdateEnabled )
+    {
+        this.fhirUpdateEnabled = fhirUpdateEnabled;
+    }
+
+    @Basic
+    @Column( name = "tracked_entity_fhir_resource_type", nullable = false )
+    @Enumerated( EnumType.STRING )
+    public FhirResourceType getTrackedEntityFhirResourceType()
+    {
+        return trackedEntityFhirResourceType;
+    }
+
+    public void setTrackedEntityFhirResourceType( FhirResourceType trackedEntityFhirResourceType )
+    {
+        this.trackedEntityFhirResourceType = trackedEntityFhirResourceType;
     }
 }

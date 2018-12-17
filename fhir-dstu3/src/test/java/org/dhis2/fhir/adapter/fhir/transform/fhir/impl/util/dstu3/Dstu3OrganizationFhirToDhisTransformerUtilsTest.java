@@ -125,7 +125,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     @Test
     public void existsWithPrefix()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -141,7 +141,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     @Test
     public void existsNotWithPrefix()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -163,7 +163,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
         final UUID remoteSubscriptionResourceId = UUID.randomUUID();
         final RemoteSubscriptionResource remoteSubscriptionResource = new RemoteSubscriptionResource();
         remoteSubscriptionResource.setRemoteSubscription( remoteSubscription );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );

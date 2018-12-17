@@ -155,4 +155,11 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     {
         throw new TransformerDataException( message );
     }
+
+    @Nonnull
+    @Override
+    public String getDhisUsername()
+    {
+        return remoteSubscription.getDhisEndpoint().getUsername();
+    }
 }

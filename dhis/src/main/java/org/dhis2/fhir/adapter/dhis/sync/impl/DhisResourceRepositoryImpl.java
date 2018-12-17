@@ -93,10 +93,11 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case ORGANISATION_UNIT:
                 return organizationUnitService.findOneRefreshedByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case TRACKED_ENTITY:
-                return trackedEntityService.findById( dhisResourceId.getId() );
-            case ENROLLMENT:
+                return trackedEntityService.findOneById( dhisResourceId.getId() );
             case PROGRAM_STAGE_EVENT:
-                throw new UnsupportedOperationException( "Finding DHIS enrollment and event resources is nut supported currently." );
+                return eventService.findOneById( dhisResourceId.getId() );
+            case ENROLLMENT:
+                throw new UnsupportedOperationException( "Finding DHIS event resources is not supported currently." );
             default:
                 throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
         }

@@ -28,8 +28,16 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+
 import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Service to create, update and read DHIS2 Program Stage Instances (aka events)
@@ -44,5 +52,12 @@ public interface EventService
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
 
     @Nonnull
+    Optional<Event> findOneById( @Nonnull String eventId );
+
+    @Nonnull
     Event createOrMinimalUpdate( @Nonnull Event event );
+
+    @Nonnull
+    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
+        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

@@ -79,5 +79,9 @@ public class BeforeCreateSaveSystemValidator implements Validator
         {
             errors.rejectValue( "systemUri", "System.systemUri.length", new Object[]{ System.MAX_SYSTEM_URI_LENGTH }, "System URI must not be longer than {0} characters." );
         }
+        if ( StringUtils.length( system.getFhirDisplayName() ) > System.MAX_FHIR_DISPLAY_NAME_LENGTH )
+        {
+            errors.rejectValue( "fhirDisplayName", "System.fhirDisplayName.length", new Object[]{ System.MAX_FHIR_DISPLAY_NAME_LENGTH }, "FHIR display name must not be longer than {0} characters." );
+        }
     }
 }

@@ -65,7 +65,7 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
 {
     private static final long serialVersionUID = -6797001318266984453L;
 
-    public static final String FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY = "findAllRemoteSubscriptionResourcesBySubscription";
+    public static final String FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY = "RemoteSubscriptionResource.findAllBySubscription";
 
     public static final int MAX_CRITERIA_PARAMETERS_LENGTH = 200;
 

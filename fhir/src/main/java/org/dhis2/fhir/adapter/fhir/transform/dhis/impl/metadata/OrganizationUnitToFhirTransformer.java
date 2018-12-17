@@ -77,8 +77,6 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public static final String ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME = "organizationUnitResolver";
-
     private final OrganizationUnitService organizationUnitService;
 
     public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
@@ -115,9 +113,9 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        variables.put( ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME, new OrganizationUnitResolver( remoteSubscription, context, rule, variables ) );
+        variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver( remoteSubscription, context, rule, variables ) );
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, scriptVariables ).orElse( null );
+        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
         if ( resource == null )
         {
             return null;

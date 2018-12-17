@@ -106,4 +106,11 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     {
         throw new TransformerDataException( message );
     }
+
+    @Nullable
+    @Override
+    public String getDhisUsername()
+    {
+        return getFhirRequest().getDhisUsername();
+    }
 }

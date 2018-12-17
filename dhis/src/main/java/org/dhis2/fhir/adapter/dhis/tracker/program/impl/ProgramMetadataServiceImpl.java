@@ -70,7 +70,7 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
 
     protected static final String PROGRAM_BY_NAME_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
 
-    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json&fields=" + FIELDS;
+    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json?fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
 

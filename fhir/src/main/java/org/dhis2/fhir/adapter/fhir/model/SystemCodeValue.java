@@ -28,10 +28,13 @@ package org.dhis2.fhir.adapter.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -48,22 +51,51 @@ public class SystemCodeValue implements Serializable
 
     public static final String SEPARATOR = "|";
 
+    public static final int MAX_LENGTH = 230;
+
     private final String system;
 
     private final String code;
 
-    public SystemCodeValue( String system, String code )
+    @Nullable
+    public static SystemCodeValue parse( @Nullable String value ) throws IllegalArgumentException
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        final int index = value.indexOf( SEPARATOR );
+        if ( index < 0 )
+        {
+            return new SystemCodeValue( null, value );
+        }
+        if ( index == 0 )
+        {
+            return new SystemCodeValue( null, value.substring( 1 ) );
+        }
+        if ( index + 1 == value.length() )
+        {
+            throw new IllegalArgumentException( "Value does not include a code: " + value );
+        }
+        return new SystemCodeValue( value.substring( 0, index ), value.substring( index + 1 ) );
+    }
+
+    @JsonCreator
+    public SystemCodeValue( @Nullable String system, @Nonnull String code )
     {
         this.system = system;
         this.code = code;
     }
 
+    @Nullable
     @ScriptMethod( description = "Returns the system URI." )
     public String getSystem()
     {
         return system;
     }
 
+    @Nonnull
     @ScriptMethod( description = "Returns the code." )
     public String getCode()
     {

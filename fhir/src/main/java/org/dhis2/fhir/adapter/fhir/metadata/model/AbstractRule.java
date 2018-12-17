@@ -29,10 +29,13 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -50,12 +53,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * A rule defines a business rules and transformations from a FHIR resource to a DHIS2 resource and vice versa.
@@ -84,9 +89,9 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
-    public static final String FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY = "findRulesByFhirType";
+    public static final String FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY = "AbstractRule.findByFhirType";
 
-    public static final String FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY = "findRulesByFhirTypeAndCodes";
+    public static final String FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY = "AbstractRule.findByFhirTypeAndCodes";
 
     public static final int MAX_NAME_LENGTH = 230;
 
@@ -129,6 +134,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     private ExecutableScript transformExpScript;
 
     private boolean containedAllowed;
+
+    private List<RuleDhisDataReference> dhisDataReferences;
 
     protected AbstractRule()
     {
@@ -220,6 +227,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.applicableImpScript = applicableImpScript;
     }
 
+    @JsonInclude( JsonInclude.Include.NON_EMPTY )
     @ManyToOne
     @JoinColumn( name = "applicable_code_set_id", referencedColumnName = "id" )
     public CodeSet getApplicableCodeSet()
@@ -337,6 +345,19 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setContainedAllowed( boolean containedAllowed )
     {
         this.containedAllowed = containedAllowed;
+    }
+
+    @JsonInclude( JsonInclude.Include.NON_EMPTY )
+    @OneToMany( mappedBy = "rule" )
+    @JsonSerialize( converter = PersistentBagConverter.class )
+    public List<RuleDhisDataReference> getDhisDataReferences()
+    {
+        return dhisDataReferences;
+    }
+
+    public void setDhisDataReferences( List<RuleDhisDataReference> dhisDataReferences )
+    {
+        this.dhisDataReferences = dhisDataReferences;
     }
 
     @Transient

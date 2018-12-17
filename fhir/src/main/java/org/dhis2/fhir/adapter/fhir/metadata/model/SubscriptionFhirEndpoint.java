@@ -81,7 +81,6 @@ public class SubscriptionFhirEndpoint implements Serializable
         this.baseUrl = baseUrl;
     }
 
-    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_remote_subscription_header", joinColumns = @JoinColumn( name = "remote_subscription_id" ) )
     @OrderBy( "name,value" )

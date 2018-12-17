@@ -52,7 +52,8 @@ public enum ScriptVariable
     FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
     PROGRAM_STAGE_EVENTS( "programStageEvents" ),
     ORGANIZATION_UNIT_ID( "organizationUnitId" ),
-    ORGANIZATION_UNIT( "organizationUnit" );
+    ORGANIZATION_UNIT( "organizationUnit" ),
+    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" );
 
     private final String variableName;
 

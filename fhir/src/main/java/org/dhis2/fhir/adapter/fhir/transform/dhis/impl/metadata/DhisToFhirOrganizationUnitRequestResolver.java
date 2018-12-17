@@ -72,7 +72,7 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
     @Override
     public List<? extends AbstractRule> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
-        return ruleRepository.findAllRequested().stream().sorted().collect( Collectors.toList() );
+        return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
     }
 
     @Nonnull

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  */
 
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
@@ -36,6 +37,7 @@ import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -62,6 +65,8 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
 
     private final TrackedEntityService trackedEntityService;
 
+    private final EventService eventService;
+
     private final DhisSyncProcessorConfig processorConfig;
 
     public DhisDataProcessorItemRetrieverImpl(
@@ -69,6 +74,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         @Nonnull @Qualifier( "systemDhis2Authorization" ) Authorization systemDhis2Authorization,
         @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
         @Nonnull TrackedEntityService trackedEntityService,
+        @Nonnull EventService eventService,
         @Nonnull DhisSyncProcessorConfig processorConfig,
         @Nonnull DhisConfig config )
     {
@@ -76,6 +82,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.excludedDhisUsernameRetriever = excludedDhisUsernameRetriever;
         this.trackedEntityService = trackedEntityService;
+        this.eventService = eventService;
         this.processorConfig = processorConfig;
     }
 
@@ -86,8 +93,16 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
-            return trackedEntityService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
-                excludedDhisUsernameRetriever.findAllDhisUsernames(), consumer );
+            final Set<String> excludedDhisUsernames = excludedDhisUsernameRetriever.findAllDhisUsernames();
+            Instant result;
+
+            result = trackedEntityService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
+                excludedDhisUsernames, consumer );
+            Instant currentResult = eventService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
+                excludedDhisUsernames, consumer );
+            result = ObjectUtils.min( result, currentResult );
+
+            return result;
         }
         finally
         {

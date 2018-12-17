@@ -81,6 +81,15 @@ public class BeforeCreateSaveSystemValidatorTest extends AbstractJpaRepositoryTe
     }
 
     @Test
+    public void testDisplayNameNameLength() throws Exception
+    {
+        entity.setFhirDisplayName( StringUtils.repeat( 'a', System.MAX_FHIR_DISPLAY_NAME_LENGTH + 1 ) );
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( objectMapper.writeValueAsString( entity ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirDisplayName" ) ) );
+    }
+
+    @Test
     public void testCodeBlank() throws Exception
     {
         entity.setCode( "    " );

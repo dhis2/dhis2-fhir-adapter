@@ -192,7 +192,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Override
     protected Optional<TrackedEntityInstance> getResourceById( @Nullable String id ) throws TransformerException
     {
-        return (id == null) ? Optional.empty() : getTrackedEntityService().findById( id );
+        return (id == null) ? Optional.empty() : getTrackedEntityService().findOneById( id );
     }
 
     @Nonnull

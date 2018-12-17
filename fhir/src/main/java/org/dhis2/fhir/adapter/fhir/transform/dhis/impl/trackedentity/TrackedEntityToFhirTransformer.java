@@ -166,10 +166,10 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
             .lock( "out-te:" + scriptedTrackedEntityInstance.getId() );
     }
 
+    @Override
     @Nullable
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Object value = scriptedTrackedEntityInstance.getValue( rule.getTrackedEntity().getTrackedEntityIdentifierReference() );
-        return (value == null) ? null : value.toString();
+        return getTrackedEntityIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
     }
 }

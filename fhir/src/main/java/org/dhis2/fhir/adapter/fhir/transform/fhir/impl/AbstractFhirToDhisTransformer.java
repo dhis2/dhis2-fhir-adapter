@@ -232,7 +232,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return getScriptExecutor().execute( resourceMapping.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+        return getScriptExecutor().execute( resourceMapping.getImpTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
     }
 
     @Nonnull

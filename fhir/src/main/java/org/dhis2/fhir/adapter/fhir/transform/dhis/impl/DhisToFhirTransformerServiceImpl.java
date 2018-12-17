@@ -174,7 +174,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( remoteSubscription );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
         final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( remoteSubscription.getFhirVersion() );
@@ -236,7 +236,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                 {
                     logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
                         rule, transformerRequestImpl.getInput().getResourceId(), rule.isStop() );
-                    return new DhisToFhirTransformOutcome<>( outcome, (rule.isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
+                    return new DhisToFhirTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );

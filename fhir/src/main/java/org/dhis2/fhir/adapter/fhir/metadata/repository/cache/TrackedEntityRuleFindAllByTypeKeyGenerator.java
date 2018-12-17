@@ -53,7 +53,7 @@ public class TrackedEntityRuleFindAllByTypeKeyGenerator implements KeyGenerator
     public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
     {
         @SuppressWarnings( "unchecked" ) final Collection<Reference> references = (Collection<Reference>) params[0];
-        final SortedSet<String> referenceStrings = references.stream().map( Reference::toString )
+        final SortedSet<String> referenceStrings = references.stream().map( Reference::toCacheString )
             .collect( Collectors.toCollection( TreeSet::new ) );
 
         final StringBuilder sb = new StringBuilder( "findAllByType" );

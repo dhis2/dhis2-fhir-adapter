@@ -74,6 +74,9 @@ public class JacksonConfig
                 } )
                 .addFilter( ToAnyPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
                 {
+                } )
+                .addFilter( JsonIgnoreCachePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                {
                 } ) );
             jacksonObjectMapperBuilder.featuresToDisable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );
         };
