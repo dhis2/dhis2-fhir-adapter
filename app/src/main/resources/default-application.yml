@@ -269,6 +269,7 @@ dhis2.fhir-adapter:
   # can be stored on connected remote FHIR services.
   sync:
     # Retrieves new and updated DHIS2 resources periodically.
+    # IMPORTANT NOTE: This feature is still under development and beta.
     processor:
       # Specifies how often the DHIS2 resources should be synchronized. Event if the
       # processor has been disabled, this value is used to periodically clean-up

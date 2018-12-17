@@ -149,6 +149,12 @@ public class WritableScriptedOrganizationUnit implements ScriptedOrganizationUni
         return organizationUnit.isLeaf();
     }
 
+    @Override
+    public int getLevel()
+    {
+        return organizationUnit.getLevel();
+    }
+
     @Nullable
     @Override
     public ZonedDateTime getOpeningDate()

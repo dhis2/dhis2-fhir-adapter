@@ -98,6 +98,12 @@ public class ImmutableScriptedOrganizationUnit implements ScriptedOrganizationUn
     }
 
     @Override
+    public int getLevel()
+    {
+        return delegate.getLevel();
+    }
+
+    @Override
     @Nullable
     public ZonedDateTime getOpeningDate()
     {

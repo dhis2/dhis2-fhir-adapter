@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -62,11 +61,12 @@ public class OrganizationUnit implements DhisResource, Serializable
 
     private boolean leaf;
 
+    private int level;
+
     private ZonedDateTime openingDate;
 
     private ZonedDateTime closedDate;
 
-    @JsonProperty
     private Id parent;
 
     @JsonIgnore
@@ -164,6 +164,16 @@ public class OrganizationUnit implements DhisResource, Serializable
         this.leaf = leaf;
     }
 
+    public int getLevel()
+    {
+        return level;
+    }
+
+    public void setLevel( int level )
+    {
+        this.level = level;
+    }
+
     public ZonedDateTime getOpeningDate()
     {
         return openingDate;
@@ -182,6 +192,16 @@ public class OrganizationUnit implements DhisResource, Serializable
     public void setClosedDate( ZonedDateTime closedDate )
     {
         this.closedDate = closedDate;
+    }
+
+    public Id getParent()
+    {
+        return parent;
+    }
+
+    public void setParent( Id parent )
+    {
+        this.parent = parent;
     }
 
     @JsonIgnore

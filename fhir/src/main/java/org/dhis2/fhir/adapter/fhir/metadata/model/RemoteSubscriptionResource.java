@@ -85,6 +85,8 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
 
     private boolean virtual;
 
+    private boolean expOnly;
+
     private String fhirSubscriptionId;
 
     @Basic
@@ -159,6 +161,18 @@ public class RemoteSubscriptionResource extends VersionedBaseMetadata implements
     public void setVirtual( boolean virtual )
     {
         this.virtual = virtual;
+    }
+
+    @Basic
+    @Column( name = "exp_only", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpOnly()
+    {
+        return expOnly;
+    }
+
+    public void setExpOnly( boolean expOnly )
+    {
+        this.expOnly = expOnly;
     }
 
     @Basic

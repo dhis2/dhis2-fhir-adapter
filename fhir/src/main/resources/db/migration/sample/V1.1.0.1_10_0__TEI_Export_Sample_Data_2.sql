@@ -35,7 +35,7 @@ UPDATE fhir_tracked_entity SET fhir_update_enabled = true;
 UPDATE fhir_remote_subscription SET exp_enabled = true;
 
 -- virtual subscription for FHIR organizations
-INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, virtual, fhir_criteria_parameters, description)
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
 VALUES ('a9de5bdc-f6f8-49b0-ab0e-f7a04a90ae75', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ORGANIZATION', TRUE, NULL, 'Virtual subscription for all Organizations.');
 INSERT INTO fhir_remote_subscription_resource_update(id)
 VALUES ('a9de5bdc-f6f8-49b0-ab0e-f7a04a90ae75');

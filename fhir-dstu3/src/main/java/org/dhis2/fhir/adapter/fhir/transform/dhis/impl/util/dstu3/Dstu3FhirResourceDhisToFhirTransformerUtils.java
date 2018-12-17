@@ -34,13 +34,19 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Base;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.ResourceFactory;
+import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -76,6 +82,23 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
         {
             throw new FhirRepositoryException( "Unknown FHIR resource type: " + resourceType, e );
         }
+    }
+
+    @Nonnull
+    @Override
+    public ICompositeType createCodeableConcept()
+    {
+        return new CodeableConcept();
+    }
+
+    @Override
+    public boolean containsString( @Nonnull List<? extends IPrimitiveType<String>> stringList, @Nullable String value )
+    {
+        if ( value == null )
+        {
+            return false;
+        }
+        return stringList.contains( new StringType( value ) );
     }
 
     @Override

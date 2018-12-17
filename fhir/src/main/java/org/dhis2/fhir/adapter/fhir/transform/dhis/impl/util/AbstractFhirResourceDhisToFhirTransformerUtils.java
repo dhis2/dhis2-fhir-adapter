@@ -37,8 +37,12 @@ import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * DHIS2 to FHIR transformer utility methods for FHIR identifiers.
@@ -68,6 +72,17 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
     @ScriptMethod( description = "Creates the FHIR resource (HAPI FHIR) with the specified resource type name.", returnDescription = "The created FHIR resource.",
         args = @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type name of the resource to be created (e.g. Patient)." ) )
     public abstract IBaseResource createResource( @Nonnull String resourceType );
+
+    @Nonnull
+    @ScriptMethod( description = "Creates a FHIR codeable concept.", returnDescription = "The created FHIR codeable concept." )
+    public abstract ICompositeType createCodeableConcept();
+
+    @ScriptMethod( description = "Returns if the specified string value is included in the specified string type list.",
+        args = {
+            @ScriptMethodArg( value = "stringList", description = "The list of string type values." ),
+            @ScriptMethodArg( value = "value", description = "The value that should be checked in the string type list." )
+        } )
+    public abstract boolean containsString( @Nonnull List<? extends IPrimitiveType<String>> stringList, @Nullable String value );
 
     @Nonnull
     public IBaseResource createResource( @Nonnull FhirResourceType fhirResourceType )

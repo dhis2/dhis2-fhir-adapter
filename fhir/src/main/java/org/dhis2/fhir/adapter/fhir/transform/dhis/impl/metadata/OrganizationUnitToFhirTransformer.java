@@ -37,16 +37,18 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirClientDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
@@ -113,7 +115,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        variables.put( ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME, new OrganizationUnitResolver( context, rule, variables ) );
+        variables.put( ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME, new OrganizationUnitResolver( remoteSubscription, context, rule, variables ) );
 
         final IBaseResource resource = getResource( remoteSubscription, context, rule, scriptVariables ).orElse( null );
         if ( resource == null )
@@ -168,14 +170,18 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Scriptable
     public class OrganizationUnitResolver
     {
+        private final RemoteSubscription remoteSubscription;
+
         private final DhisToFhirTransformerContext context;
 
         private final OrganizationUnitRule rule;
 
         private final Map<String, Object> scriptVariables;
 
-        public OrganizationUnitResolver( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables )
+        public OrganizationUnitResolver( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+            @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables )
         {
+            this.remoteSubscription = remoteSubscription;
             this.context = context;
             this.rule = rule;
             this.scriptVariables = scriptVariables;
@@ -202,9 +208,10 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
                 return null;
             }
 
-            final AbstractFhirClientDhisToFhirTransformerUtils fhirClientUtils =
-                TransformerUtils.getScriptVariable( variables, ScriptVariable.FHIR_CLIENT_UTILS, AbstractFhirClientDhisToFhirTransformerUtils.class );
-            return fhirClientUtils.findBySystemIdentifier( rule.getFhirResourceType(), identifier );
+            final ResourceSystem resourceSystem = context.getOptionalResourceSystem( rule.getFhirResourceType() )
+                .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + rule.getFhirResourceType() + "." ) );
+            return getRemoteFhirResourceRepository().findByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
+                rule.getFhirResourceType().getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
         }
     }
 }

@@ -55,7 +55,7 @@ import java.util.Optional;
 @CacheConfig( cacheNames = "organizationUnit", cacheManager = "dhisCacheManager" )
 public class OrganizationUnitServiceImpl implements OrganizationUnitService
 {
-    protected static final String FIELDS = "lastUpdated,id,code,name,shortName,displayName,openingDate,closedDate,leaf,parent[id]";
+    protected static final String FIELDS = "lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent[id]";
 
     protected static final String ORGANIZATION_UNIT_BY_CODE_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
 

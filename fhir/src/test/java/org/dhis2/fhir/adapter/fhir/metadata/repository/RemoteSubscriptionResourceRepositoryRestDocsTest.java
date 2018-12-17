@@ -87,7 +87,9 @@ public class RemoteSubscriptionResourceRepositoryRestDocsTest extends AbstractJp
                 fields.withPath( "remoteSubscription" ).description( "The reference to the remote subscription to which this resource belongs to." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirResourceType" ).description( "The type of the subscribed FHIR resource." ).type( JsonFieldType.STRING ),
                 fields.withPath( "description" ).description( "The detailed description of the purpose of the subscribed FHIR resource." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "fhirCriteriaParameters" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional()
+                fields.withPath( "fhirCriteriaParameters" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expOnly" ).description( "Specifies that this is only used for exporting FHIR resources. Subscription requests are not accepted." )
+                    .type( JsonFieldType.BOOLEAN ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -98,6 +100,7 @@ public class RemoteSubscriptionResourceRepositoryRestDocsTest extends AbstractJp
             .andExpect( jsonPath( "description", is( "Subscription for all immunizations." ) ) )
             .andExpect( jsonPath( "fhirCriteriaParameters" ).doesNotExist() )
             .andExpect( jsonPath( "fhirSubscriptionId" ).doesNotExist() )
+            .andExpect( jsonPath( "expOnly", is( false ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 
@@ -119,6 +122,8 @@ public class RemoteSubscriptionResourceRepositoryRestDocsTest extends AbstractJp
                 fields.withPath( "fhirResourceType" ).description( "The type of the subscribed FHIR resource." ).type( JsonFieldType.STRING ),
                 fields.withPath( "description" ).description( "The detailed description of the purpose of the subscribed FHIR resource." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "fhirCriteriaParameters" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expOnly" ).description( "Specifies that this is only used for exporting FHIR resources. Subscription requests are not accepted." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "virtual" ).description( "Specifies that there is no subscription for this FHIR resource since the FHIR service may not accept subscription for this resource type (just available as contained resources)." )
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "hirSubscriptionId" ).description( "The ID of the automatically created FHIR subscription on the FHIR service." ).type( JsonFieldType.STRING ).optional(),

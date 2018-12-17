@@ -55,6 +55,8 @@ public interface ScriptedOrganizationUnit extends ScriptedDhisResource
 
     boolean isLeaf();
 
+    int getLevel();
+
     @Nullable
     ZonedDateTime getOpeningDate();
 

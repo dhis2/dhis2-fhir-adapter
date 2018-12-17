@@ -88,6 +88,10 @@ public class RemoteRestHookController
             // do not give detail if the resource or the subscription cannot be found
             throw new RestResourceNotFoundException( "Remote subscription data for resource cannot be found: " + subscriptionResourceId );
         }
+        if ( subscriptionResource.isExpOnly() )
+        {
+            throw new RestResourceNotFoundException( "Subscription resource is intended for export only: " + subscriptionResourceId );
+        }
 
         if ( StringUtils.isNotBlank( subscriptionResource.getRemoteSubscription().getAdapterEndpoint().getAuthorizationHeader() ) &&
             !subscriptionResource.getRemoteSubscription().getAdapterEndpoint().getAuthorizationHeader().equals( authorization ) )

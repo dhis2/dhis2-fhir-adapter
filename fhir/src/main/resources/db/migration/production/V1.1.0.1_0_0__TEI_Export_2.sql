@@ -32,6 +32,10 @@ INSERT INTO fhir_dhis_resource_type_enum VALUES('ORGANIZATION_UNIT');
 INSERT INTO fhir_transform_data_type_enum VALUES('DHIS_ORGANIZATION_UNIT');
 INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_ORGANIZATION');
 
+ALTER TABLE fhir_remote_subscription_resource
+  ADD COLUMN exp_only BOOLEAN DEFAULT FALSE NOT NULL;
+COMMENT ON COLUMN fhir_remote_subscription_resource.exp_only IS 'Specified if the resource is just exported to the FHIR server.';
+
 ALTER TABLE fhir_organization_unit_rule
   ADD COLUMN identifier_lookup_script_id UUID NOT NULL,
   ADD CONSTRAINT fhir_organization_unit_rule_fk2
@@ -53,10 +57,10 @@ VALUES ('eca2e74d-ac80-49bd-bebf-6b9129557567', 0, '7c350b43-3779-42d6-a9c9-74e5
 'var code = null;
 if ((input.getCode() != null) && !input.getCode().isEmpty())
 {
-  code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
+  code = codeUtils.getByMappedCode(input.getCode(), ''ORGANIZATION'');
   if ((code == null) && args[''useIdentifierCode''])
   {
-    code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
+    code = codeUtils.getCodeWithoutPrefix(input.getCode(), ''ORGANIZATION'');
   }
 }
 code', 'JAVASCRIPT');
@@ -114,16 +118,16 @@ if ((input.getLevel() > args[''facilityLevel'']) && (input.getParentId() != null
 }
 else
 {
-  output.getType().addCoding().setSystem("http://hl7.org/fhir/organization-type").setCode("prov");
+  output.addType().addCoding().setSystem(''http://hl7.org/fhir/organization-type'').setCode(''prov'');
 }
 output.setActive(input.getClosedDate() == null);
 output.setName(input.getName());
 output.getAlias().clear();
-if (input.getShortName() != null)
+if ((input.getShortName() != null) && !input.getShortName().equals(input.getName()))
 {
   output.addAlias(input.getShortName());
 }
-if (input.getDisplayName() != null)
+if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.getName()) && !fhirResourceUtils.containsString(output.getAlias(), input.getDisplayName()))
 {
   output.addAlias(input.getDisplayName());
 }
