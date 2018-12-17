@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionRes
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.repository.DhisMissingResourceException;
+import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
@@ -145,9 +145,9 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     }
 
     @Override
-    public void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws DhisMissingResourceException
+    public void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws MissingDhisResourceException
     {
-        throw new DhisMissingResourceException( dhisResourceId );
+        throw new MissingDhisResourceException( dhisResourceId );
     }
 
     @Override

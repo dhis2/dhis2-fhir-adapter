@@ -39,13 +39,13 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
-public class DhisMissingResourceException extends RuntimeException
+public class MissingDhisResourceException extends RuntimeException
 {
     private static final long serialVersionUID = 199342946327708047L;
 
     private final DhisResourceId dhisResourceId;
 
-    public DhisMissingResourceException( @Nonnull DhisResourceId dhisResourceId )
+    public MissingDhisResourceException( @Nonnull DhisResourceId dhisResourceId )
     {
         this.dhisResourceId = dhisResourceId;
     }

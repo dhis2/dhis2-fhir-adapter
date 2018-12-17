@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.repository.DhisMissingResourceException;
+import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
@@ -93,7 +93,7 @@ public interface DhisToFhirTransformerContext
 
     @ScriptMethod( description = "Causes that the current transformation will fail due to the specified missing resource. It will be tried to create the missing resource.",
         args = @ScriptMethodArg( value = "dhisResourceId", description = "The DHIS resource ID that is missing." ) )
-    void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws DhisMissingResourceException;
+    void missingDhisResource( @Nonnull DhisResourceId dhisResourceId ) throws MissingDhisResourceException;
 
     /**
      * Ends the execution of the script with the specified message. This method can be used if the

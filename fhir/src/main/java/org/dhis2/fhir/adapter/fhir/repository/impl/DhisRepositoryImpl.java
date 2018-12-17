@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
+import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.repository.OptimisticFhirResourceLockException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
@@ -69,8 +70,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Implementation of {@link DhisRepository}.
@@ -132,7 +135,7 @@ public class DhisRepositoryImpl implements DhisRepository
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
-            saveInternally( syncGroup, resource );
+            saveInternallyWithMissingDhisResources( syncGroup, resource, new HashSet<>(), true );
         }
         finally
         {
@@ -207,6 +210,11 @@ public class DhisRepositoryImpl implements DhisRepository
                     {
                         save( syncGroup, resource.get() );
                     }
+                    catch ( MissingDhisResourceException e )
+                    {
+                        logger.warn( "Processing of data of DHIS resource caused a transformation error because of a missing DHIS resource that could not be created: {}", e.getDhisResourceId() );
+                        throw new RetryQueueDeliveryException( e );
+                    }
                     catch ( TransformerDataException | TransformerMappingException e )
                     {
                         logger.warn( "Processing of data of DHIS resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
@@ -235,6 +243,53 @@ public class DhisRepositoryImpl implements DhisRepository
     {
         return new ProcessedItemInfo( resource.getResourceId().toString(),
             Objects.requireNonNull( resource.getLastUpdated() ).toInstant() );
+    }
+
+    protected boolean saveInternallyWithMissingDhisResources( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource, @Nonnull Set<DhisResourceId> missingDhisResourceIds, boolean initial )
+    {
+        boolean result = false;
+        boolean saved = false;
+        do
+        {
+            try
+            {
+                result = saveInternally( syncGroup, resource );
+                saved = true;
+            }
+            catch ( MissingDhisResourceException e )
+            {
+                logger.info( "Saving DHIS resource {} failed because of missing DHIS resource {}.",
+                    resource.getResourceId(), e.getDhisResourceId() );
+                // endless loop must be avoided
+                if ( !missingDhisResourceIds.add( e.getDhisResourceId() ) )
+                {
+                    throw e;
+                }
+
+                final DhisResource missingResource = dhisResourceRepository.findRefreshed( e.getDhisResourceId() )
+                    .orElseThrow( () ->
+                    {
+                        logger.warn( "Missing DHIS resource {} could not be found.", e.getDhisResourceId() );
+                        return new MissingDhisResourceException( e.getDhisResourceId() );
+                    } );
+
+                logger.info( "Saving missing DHIS resource {}.", e.getDhisResourceId() );
+                if ( !saveInternallyWithMissingDhisResources( syncGroup, missingResource, missingDhisResourceIds, false ) )
+                {
+                    logger.info( "Missing DHIS resource {} could not be saved.", e.getDhisResourceId() );
+                    throw e;
+                }
+                logger.info( "Saved missing DHIS resource {}.", e.getDhisResourceId() );
+            }
+        }
+        while ( !saved );
+
+        if ( !initial )
+        {
+            final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource );
+            storedItemService.stored( syncGroup, processedItemInfo.toIdString( Instant.now() ) );
+        }
+        return result;
     }
 
     protected boolean saveInternally( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )

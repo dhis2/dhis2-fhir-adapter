@@ -30,6 +30,9 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -57,6 +60,8 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final OrganizationUnitService organizationUnitService;
+
     private final TrackedEntityService trackedEntityService;
 
     private final TrackedEntityMetadataService trackedEntityMetadataService;
@@ -67,9 +72,11 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private final ProgramMetadataService programMetadataService;
 
-    public DhisResourceRepositoryImpl( @Nonnull TrackedEntityService trackedEntityService, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
+    public DhisResourceRepositoryImpl( @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull TrackedEntityService trackedEntityService, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService, @Nonnull ProgramMetadataService programMetadataService )
     {
+        this.organizationUnitService = organizationUnitService;
         this.trackedEntityService = trackedEntityService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.enrollmentService = enrollmentService;
@@ -83,6 +90,8 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
     {
         switch ( dhisResourceId.getType() )
         {
+            case ORGANISATION_UNIT:
+                return organizationUnitService.findOneRefreshedByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case TRACKED_ENTITY:
                 return trackedEntityService.findById( dhisResourceId.getId() );
             case ENROLLMENT:

@@ -42,4 +42,7 @@ public interface OrganizationUnitService
 {
     @Nonnull
     Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
+
+    @Nonnull
+    Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
 }

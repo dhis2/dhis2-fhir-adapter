@@ -77,6 +77,14 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
     @Nonnull
     public Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference )
     {
+        return findOneRefreshedByReference( reference );
+    }
+
+    @HystrixCommand
+    @Override
+    @Nonnull
+    public Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference )
+    {
         final ResponseEntity<DhisOrganizationUnits> result;
         switch ( reference.getType() )
         {
