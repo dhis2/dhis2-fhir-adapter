@@ -54,6 +54,11 @@ public abstract class AbstractTransformerUtils
         return TransformerUtils.getScriptVariable( scriptExecutionContext, name, c );
     }
 
+    protected <T> T getScriptContextVariable( @Nonnull String name, @Nonnull Class<T> c )
+    {
+        return TransformerUtils.getScriptContextVariable( scriptExecutionContext, name, c );
+    }
+
     @Nonnull
     protected FhirResourceType convertFhirResourceType( @Nonnull Object fhirResourceType )
     {

@@ -141,10 +141,10 @@ public class SetupService
     {
         final System organizationSystem = findOrCreateSystem(
             setup.getRemoteSubscriptionSetup().getSystemUriSetup().getOrganizationSystemUri(),
-            "Default DHIS2 Organization Units", "DEFAULT_DHIS2_ORG_UNIT", "Default DHIS2 organization unit system URI." );
+            "Default DHIS2 Organization Units", "DEFAULT_DHIS2_ORG_UNIT", "National Organization ID", "Default DHIS2 organization unit system URI." );
         final System patientSystem = findOrCreateSystem(
             setup.getRemoteSubscriptionSetup().getSystemUriSetup().getPatientSystemUri(),
-            "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "Default DHIS2 patient system URI." );
+            "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "National Patient ID", "Default DHIS2 patient system URI." );
 
         final SetupResult setupResult = createRemoteSubscription( setup.getRemoteSubscriptionSetup(), organizationSystem, patientSystem );
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
@@ -244,6 +244,7 @@ public class SetupService
                 systemCode.setSystem( organizationSystem );
                 systemCode.setSystemCode( cm.getFhirCode() );
                 systemCode.setCode( persistedCodes.get( cm.getDhisCode() ) );
+                systemCode.setDisplayName( systemCode.getCode().getName() );
                 return systemCode;
             } ).collect( Collectors.toList() );
             systemCodeRepository.saveAll( systemCodes );
@@ -296,7 +297,7 @@ public class SetupService
     }
 
     @Nonnull
-    protected System findOrCreateSystem( @Nonnull String systemUri, @Nonnull String name, @Nonnull String code, @Nonnull String description )
+    protected System findOrCreateSystem( @Nonnull String systemUri, @Nonnull String name, @Nonnull String code, @Nonnull String fhirDisplayName, @Nonnull String description )
     {
         System system = new System();
         system.setSystemUri( systemUri );
@@ -308,6 +309,7 @@ public class SetupService
             system.setCode( code );
             system.setDescription( description );
             system.setSystemUri( systemUri );
+            system.setFhirDisplayName( fhirDisplayName );
             system.setEnabled( true );
             system = systemRepository.save( system );
         }

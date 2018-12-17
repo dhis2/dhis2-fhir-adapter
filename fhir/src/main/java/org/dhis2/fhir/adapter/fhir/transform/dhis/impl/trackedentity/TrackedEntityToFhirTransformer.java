@@ -118,14 +118,17 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         }
 
         // transform organization unit into output FHIR resource
-        if ( (rule.getExpOuTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute( rule.getExpOuTransformScript(), context.getVersion(), variables, Boolean.class ) ) )
+        if ( (rule.getExpOuTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute(
+            rule.getExpOuTransformScript(), context.getVersion(), variables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) ) )
         {
             logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
             return null;
         }
 
         // transformation of GEO information must follow normal transformation since normal transformation may reset this information
-        if ( (rule.getExpGeoTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute( rule.getExpGeoTransformScript(), context.getVersion(), variables, Boolean.class ) ) )
+        if ( (rule.getExpGeoTransformScript() != null) &&
+            !Boolean.TRUE.equals( getScriptExecutor().execute(
+                rule.getExpGeoTransformScript(), context.getVersion(), variables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) ) )
         {
             return null;
         }
@@ -152,7 +155,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        // not yet supported
+        // not required at the moment
         return Optional.empty();
     }
 
@@ -166,10 +169,10 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
             .lock( "out-te:" + scriptedTrackedEntityInstance.getId() );
     }
 
+    @Override
     @Nullable
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Object value = scriptedTrackedEntityInstance.getValue( rule.getTrackedEntity().getTrackedEntityIdentifierReference() );
-        return (value == null) ? null : value.toString();
+        return getTrackedEntityIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
     }
 }

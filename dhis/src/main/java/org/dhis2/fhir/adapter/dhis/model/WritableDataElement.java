@@ -48,6 +48,8 @@ public class WritableDataElement implements DataElement, Serializable
 
     private String code;
 
+    private String formName;
+
     private ValueType valueType;
 
     private boolean optionSetValue;
@@ -85,6 +87,17 @@ public class WritableDataElement implements DataElement, Serializable
     public void setCode( String code )
     {
         this.code = code;
+    }
+
+    @Override
+    public String getFormName()
+    {
+        return formName;
+    }
+
+    public void setFormName( String formName )
+    {
+        this.formName = formName;
     }
 
     @Override

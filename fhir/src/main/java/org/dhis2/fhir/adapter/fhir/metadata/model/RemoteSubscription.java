@@ -73,7 +73,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements DataGro
 {
     private static final long serialVersionUID = -2488855592701580509L;
 
-    public static final String ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "allRemoteSubscriptions";
+    public static final String ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "RemoteSubscription.all";
 
     public static final int MAX_NAME_LENGTH = 50;
 

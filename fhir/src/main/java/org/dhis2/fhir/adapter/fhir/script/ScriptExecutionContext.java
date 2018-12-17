@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.script;
  */
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Context that is available by utility classes during script execution. It provides
@@ -51,12 +52,22 @@ public interface ScriptExecutionContext
      * execution scope.
      *
      * @param scriptExecution the script execution that should be used.
+     * @return the script execution context that has been replaced by the specified
+     *         script execution context or <code>null</code> if there was no
+     *         script execution context in the current scope.
      */
-    void setScriptExecution( @Nonnull ScriptExecution scriptExecution );
+    @Nullable
+    ScriptExecution setScriptExecution( @Nonnull ScriptExecution scriptExecution );
 
     /**
      * Resets the current script execution context so that it is no longer available
-     * in the current execution scope.
+     * in the current execution scope. If the specified script execution context is
+     * not <code>null</code> is will replace the current script execution context.
+     *
+     * @param scriptExecution the script execution context that should replace the
+     *                        current script execution context or <code>null</code>
+     *                        if the script execution context should be removed
+     *                        completely.
      */
-    void resetScriptExecutionContext();
+    void resetScriptExecutionContext( @Nullable ScriptExecution scriptExecution );
 }

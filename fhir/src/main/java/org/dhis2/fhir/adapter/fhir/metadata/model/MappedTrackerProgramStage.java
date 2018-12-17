@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
@@ -42,6 +43,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 @Entity
@@ -51,21 +53,42 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     private static final long serialVersionUID = 7561285892767275117L;
 
     private String name;
+
     private String description;
+
     private Reference programStageReference;
+
     private boolean enabled = true;
+
     private MappedTrackerProgram program;
+
     private boolean creationEnabled;
+
     private ExecutableScript creationApplicableScript;
+
     private ExecutableScript creationScript;
+
     private ExecutableScript beforeScript;
+
     private ExecutableScript afterScript;
+
     private EventStatus creationStatus;
+
     private boolean eventDateIsIncident;
+
     private EventPeriodDayType beforePeriodDayType;
+
     private int beforePeriodDays;
+
     private EventPeriodDayType afterPeriodDayType;
+
     private int afterPeriodDays;
+
+    private boolean expEnabled;
+
+    private boolean fhirCreateEnabled = true;
+
+    private boolean fhirUpdateEnabled;
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
@@ -258,5 +281,61 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     public void setAfterPeriodDays( int afterPeriodDays )
     {
         this.afterPeriodDays = afterPeriodDays;
+    }
+
+    @Column( name = "exp_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isExpEnabled()
+    {
+        return expEnabled;
+    }
+
+    public void setExpEnabled( boolean outEnabled )
+    {
+        this.expEnabled = outEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_create_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isFhirCreateEnabled()
+    {
+        return fhirCreateEnabled;
+    }
+
+    public void setFhirCreateEnabled( boolean fhirCreateEnabled )
+    {
+        this.fhirCreateEnabled = fhirCreateEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_update_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirUpdateEnabled()
+    {
+        return fhirUpdateEnabled;
+    }
+
+    public void setFhirUpdateEnabled( boolean fhirUpdateEnabled )
+    {
+        this.fhirUpdateEnabled = fhirUpdateEnabled;
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveExpEnables()
+    {
+        return isExpEnabled() && (isEffectiveFhirCreateEnabled() || isEffectiveFhirUpdateEnabled());
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirCreateEnabled()
+    {
+        return isExpEnabled() && isFhirCreateEnabled() && getProgram().isExpEnabled() && getProgram().isFhirCreateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirUpdateEnabled()
+    {
+        return isExpEnabled() && isFhirUpdateEnabled() && getProgram().isExpEnabled() && getProgram().isFhirUpdateEnabled();
     }
 }

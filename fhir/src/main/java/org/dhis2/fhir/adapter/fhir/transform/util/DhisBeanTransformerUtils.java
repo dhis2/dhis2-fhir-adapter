@@ -28,12 +28,12 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Transformer utilities that clone a bean (cached instances must not be modified
@@ -44,7 +44,6 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class DhisBeanTransformerUtils
 {
     @Nullable
-    @SuppressWarnings( { "unchecked" } )
     public static <T extends DhisResource> T clone( @Nullable T object )
     {
         if ( object == null )
@@ -53,9 +52,9 @@ public abstract class DhisBeanTransformerUtils
         }
         try
         {
-            return (T) BeanUtils.cloneBean( object );
+            return SerializationUtils.clone( object );
         }
-        catch ( IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e )
+        catch ( SerializationException e )
         {
             throw new FatalTransformerException( "Could not clone DHIS resource.", e );
         }

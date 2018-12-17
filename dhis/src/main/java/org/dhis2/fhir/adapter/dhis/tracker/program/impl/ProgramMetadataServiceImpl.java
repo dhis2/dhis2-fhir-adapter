@@ -64,13 +64,13 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
             "trackedEntityAttribute[id,name,code,valueType,generated]]," +
             "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
             "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
-            "dataElement[id,name,code,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
+            "dataElement[id,name,code,formName,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
 
     protected static final String PROGRAM_BY_CODE_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
 
     protected static final String PROGRAM_BY_NAME_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
 
-    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json&fields=" + FIELDS;
+    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json?fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
 

@@ -55,17 +55,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "systemCode" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, QuerydslPredicateExecutor<SystemCode>
+public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, QuerydslPredicateExecutor<SystemCode>, CustomSystemCodeRepository
 {
     @RestResource( exported = false )
-    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND s.enabled=true" )
+    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND sc.enabled=true AND c.enabled=true AND s.enabled=true" )
     @Cacheable( keyGenerator = "systemCodeFindAllByCodesKeyGenerator" )
     @Nonnull
     Collection<SystemCode> findAllByCodes( @Param( "codes" ) @Nonnull Collection<String> codes );
 
     @RestResource( exported = false )
     @Query( "SELECT sc.systemCode FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +
-        "s.enabled=true AND s.systemUri=:systemUri AND " +
+        "sc.enabled=true AND s.enabled=true AND s.systemUri=:systemUri AND c.enabled=true AND " +
         "((c.code=:code AND c.mappedCode IS NULL) OR c.mappedCode=:code)" )
     @Cacheable( key = "{#root.methodName, #a0, #a1}" )
     @Nonnull

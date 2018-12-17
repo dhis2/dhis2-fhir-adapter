@@ -49,6 +49,7 @@ public interface ScriptExecutor
      * @param executableScript the script that should be executed.
      * @param fhirVersion      the FHIR version for which the script should be executed.
      * @param variables        the variables that the script requires.
+     * @param contextVariables the additional variables that are accessible from the {@linkplain ScriptExecutionContext script execution context}.
      * @param resultClass      the type of the result the script returns.
      * @param <T>              the concrete class of the return type.
      * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
@@ -56,7 +57,7 @@ public interface ScriptExecutor
      */
     @Nullable
     <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
-        @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
+        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> contextVariables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
 
     /**
      * Executes an executable script with the specified variables and arguments. If the mandatory data for executing
@@ -66,6 +67,7 @@ public interface ScriptExecutor
      * @param fhirVersion      the FHIR version for which the script should be executed.
      * @param variables        the variables that the script requires.
      * @param arguments        the override arguments the override already given arguments.
+     * @param contextVariables the additional variables that are accessible from the {@linkplain ScriptExecutionContext script execution context}.
      * @param resultClass      the type of the result the script returns.
      * @param <T>              the concrete class of the return type.
      * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
@@ -73,5 +75,5 @@ public interface ScriptExecutor
      */
     @Nullable
     <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
-        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
+        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Map<String, Object> contextVariables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException;
 }

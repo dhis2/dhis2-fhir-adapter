@@ -42,6 +42,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.auth.AuthorizedRestTemplate;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
@@ -137,6 +138,7 @@ public class DhisConfig
             .addFilter( ToManyPropertyFilter.FILTER_NAME, new ToManyPropertyFilter() )
             .addFilter( ToOnePropertyFilter.FILTER_NAME, new ToOnePropertyFilter() )
             .addFilter( ToAnyPropertyFilter.FILTER_NAME, new ToAnyPropertyFilter() )
+            .addFilter( JsonIgnoreCachePropertyFilter.FILTER_NAME, new JsonIgnoreCachePropertyFilter() )
             .addFilter( SecuredPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
             {
             } ) );

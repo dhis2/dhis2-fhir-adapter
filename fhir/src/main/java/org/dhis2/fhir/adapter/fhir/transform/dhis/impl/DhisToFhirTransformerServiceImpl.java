@@ -60,6 +60,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.util.DhisBeanTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -174,7 +175,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
         final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( remoteSubscription );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
         final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( remoteSubscription.getFhirVersion() );
@@ -236,7 +237,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                 {
                     logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
                         rule, transformerRequestImpl.getInput().getResourceId(), rule.isStop() );
-                    return new DhisToFhirTransformOutcome<>( outcome, (rule.isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
+                    return new DhisToFhirTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
@@ -268,6 +269,6 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableExpScript(), context.getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableExpScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
     }
 }

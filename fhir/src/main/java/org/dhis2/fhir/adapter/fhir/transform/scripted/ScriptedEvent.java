@@ -28,10 +28,14 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
@@ -43,6 +47,12 @@ import java.time.ZonedDateTime;
 @Scriptable
 public interface ScriptedEvent extends ScriptedDhisResource
 {
+    @Nonnull
+    Program getProgram();
+
+    @Nonnull
+    ProgramStage getProgramStage();
+
     @Nullable
     EventStatus getStatus();
 
@@ -54,4 +64,15 @@ public interface ScriptedEvent extends ScriptedDhisResource
 
     @Nullable
     Location getCoordinate();
+
+    @Nullable
+    String getEnrollmentId();
+
+    @Nullable
+    Object getValue( @Nonnull Reference attributeReference );
+
+    @Nullable
+    Boolean getBooleanValue( @Nonnull Reference attributeReference );
+
+    boolean isProvidedElsewhere( @Nonnull Reference attributeReference );
 }

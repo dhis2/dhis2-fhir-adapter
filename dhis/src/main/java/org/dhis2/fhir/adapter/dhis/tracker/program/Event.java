@@ -75,10 +75,10 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     private String enrollmentId;
 
     @JsonIgnore
-    private Enrollment enrollment;
+    private transient Enrollment enrollment;
 
     @JsonIgnore
-    private TrackedEntityInstance trackedEntityInstance;
+    private transient TrackedEntityInstance trackedEntityInstance;
 
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -182,7 +182,10 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setEnrollment( Enrollment enrollment )
     {
         this.enrollment = enrollment;
-        setEnrollmentId( (enrollment == null) ? null : enrollment.getId() );
+        if ( enrollment != null )
+        {
+            setEnrollmentId( enrollment.getId() );
+        }
     }
 
     public TrackedEntityInstance getTrackedEntityInstance()
@@ -193,7 +196,10 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public void setTrackedEntityInstance( TrackedEntityInstance trackedEntityInstance )
     {
         this.trackedEntityInstance = trackedEntityInstance;
-        this.trackedEntityInstanceId = (trackedEntityInstance == null) ? null : trackedEntityInstance.getId();
+        if ( trackedEntityInstance != null )
+        {
+            this.trackedEntityInstanceId = trackedEntityInstance.getId();
+        }
     }
 
     public String getTrackedEntityInstanceId()

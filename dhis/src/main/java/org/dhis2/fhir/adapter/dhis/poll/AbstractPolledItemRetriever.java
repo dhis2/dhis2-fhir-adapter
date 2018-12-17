@@ -77,11 +77,11 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
 
     private final Class<P> polledItemsClass;
 
-    private final ZoneId zoneId = ZoneId.systemDefault();
+    private final ZoneId zoneId;
 
     private int maxConsumedSize = 1000;
 
-    protected AbstractPolledItemRetriever( @Nonnull DhisResourceType resourceType, @Nonnull RestTemplate restTemplate, @Nonnull String queryUri, int toleranceMillis, int maxSearchCount, @Nonnull Class<P> polledItemsClass )
+    protected AbstractPolledItemRetriever( @Nonnull DhisResourceType resourceType, @Nonnull RestTemplate restTemplate, @Nonnull String queryUri, int toleranceMillis, int maxSearchCount, @Nonnull Class<P> polledItemsClass, @Nonnull ZoneId zoneId )
     {
         this.resourceType = resourceType;
         this.restTemplate = restTemplate;
@@ -89,6 +89,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         this.toleranceMillis = toleranceMillis;
         this.maxSearchCount = maxSearchCount;
         this.polledItemsClass = polledItemsClass;
+        this.zoneId = zoneId;
     }
 
     public int getMaxConsumedSize()
@@ -102,7 +103,13 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
     }
 
     @Nonnull
-    public Instant poll( @Nonnull final Instant lastUpdated, @Nonnull final Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    public ZoneId getZoneId()
+    {
+        return zoneId;
+    }
+
+    @Nonnull
+    public Instant poll( @Nonnull final Instant lastUpdated, @Nonnull final Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer, @Nullable List<Object> variables )
     {
         final Instant fromLastUpdated = lastUpdated.minus( toleranceMillis, ChronoUnit.MILLIS );
         final Set<ProcessedItemInfo> allResources = new HashSet<>();
@@ -121,7 +128,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
                 processedLastUpdated = Instant.now();
             }
 
-            final P polledItems = getPolledItems( fromLastUpdated, currentToLastUpdated );
+            final P polledItems = getPolledItems( fromLastUpdated, currentToLastUpdated, variables );
             final List<ProcessedItemInfo> resources =
                 polledItems.getItems().stream().filter( pi -> !excludedStoredBy.contains( pi.getStoredBy() ) )
                     .map( pi -> new ProcessedItemInfo( DhisResourceId.toString( resourceType, pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant() ) )
@@ -138,7 +145,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
             if ( !polledItems.getItems().isEmpty() )
             {
                 final Instant nextToLastUpdated = Objects.requireNonNull( polledItems.getFromLastUpdated() ).atZone( zoneId ).toInstant();
-                if ( (currentToLastUpdated != null) && !nextToLastUpdated.isBefore( currentToLastUpdated ) && hasMorePolledItems( fromLastUpdated, currentToLastUpdated ) )
+                if ( (currentToLastUpdated != null) && !nextToLastUpdated.isBefore( currentToLastUpdated ) && hasMorePolledItems( fromLastUpdated, currentToLastUpdated, variables ) )
                 {
                     throw new PolledItemRetrieverException( "DHIS2 resource " + resourceType + " returned minimum last updated timestamp that is not before current last updated timestamp (" +
                         currentToLastUpdated + "). Result window of " + maxSearchCount + " seems not to be big enough." );
@@ -161,22 +168,26 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         return processedLastUpdated;
     }
 
-    private boolean hasMorePolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated )
+    private boolean hasMorePolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, @Nullable List<Object> variables )
     {
-        return !getPolledItems( fromLastUpdated, currentToLastUpdated, 2 ).getItems().isEmpty();
+        return !getPolledItems( fromLastUpdated, currentToLastUpdated, 2, variables ).getItems().isEmpty();
     }
 
     @Nonnull
-    private P getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated )
+    protected P getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, @Nullable List<Object> variables )
     {
-        return getPolledItems( fromLastUpdated, currentToLastUpdated, 1 );
+        return getPolledItems( fromLastUpdated, currentToLastUpdated, 1, variables );
     }
 
     @Nonnull
-    private P getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page )
+    protected P getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page, @Nullable List<Object> variables )
     {
         final StringBuilder queryParams = new StringBuilder();
         final List<Object> queryVariables = new ArrayList<>();
+        if ( variables != null )
+        {
+            queryVariables.addAll( variables );
+        }
         if ( queryUri.indexOf( '?' ) < 0 )
         {
             queryParams.append( '?' );

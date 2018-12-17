@@ -51,7 +51,7 @@ import java.util.Objects;
  * @author volsch
  */
 @ScriptType( value = "Reference", description = "Reference to an entry that is stored on DHIS2 (by ID, unique name or unique code)." )
-public class Reference implements Serializable
+public class Reference implements Serializable, Comparable<Reference>
 {
     private static final long serialVersionUID = 6049184293580457755L;
 
@@ -125,9 +125,32 @@ public class Reference implements Serializable
     }
 
     @Override
+    public int compareTo( @Nonnull Reference o )
+    {
+        int v = type.ordinal() - o.type.ordinal();
+        if ( v != 0 )
+        {
+            return v;
+        }
+        return value.compareTo( o.value );
+    }
+
+    @Override
     @ScriptMethod( description = "Returns the string representation of the reference (type and value separated by colon character)." )
     public String toString()
     {
         return type + ":" + value;
+    }
+
+    /**
+     * Returns a string representation of the reference that can be used for
+     * caching. This will not use a colon as a separator since colon characters
+     * are used by Redis to separate key parts.
+     *
+     * @return the string representation that can be used for caching.
+     */
+    public String toCacheString()
+    {
+        return type + "#" + value;
     }
 }

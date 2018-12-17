@@ -176,6 +176,7 @@ public class RuleRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                     fields.withPath( "stop" ).description( "'Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                     fields.withPath( "containedAllowed" ).description( "Specified if this rule can process contained resources." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "dhisDataReferences" ).description( "Contains the references to DHIS2 data elements in which the data that is processed by the assigned rule is stored." ).type( JsonFieldType.ARRAY ).optional(),
                     subsectionWithPath( "_links" ).description( "Links to other resources" )
                 ) ) );
     }

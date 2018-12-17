@@ -61,6 +61,8 @@ public class System extends VersionedBaseMetadata implements Serializable
 
     public static final int MAX_SYSTEM_URI_LENGTH = 120;
 
+    public static final int MAX_FHIR_DISPLAY_NAME_LENGTH = 100;
+
     @NotBlank
     @Size( max = MAX_NAME_LENGTH )
     private String name;
@@ -78,6 +80,9 @@ public class System extends VersionedBaseMetadata implements Serializable
     private String description;
 
     private boolean descriptionProtected;
+
+    @Size( max = MAX_FHIR_DISPLAY_NAME_LENGTH )
+    private String fhirDisplayName;
 
     private Collection<SystemCode> systemCodes;
 
@@ -151,6 +156,18 @@ public class System extends VersionedBaseMetadata implements Serializable
     public void setDescriptionProtected( boolean descriptionProtected )
     {
         this.descriptionProtected = descriptionProtected;
+    }
+
+    @Basic
+    @Column( name = "fhir_display_name", length = MAX_FHIR_DISPLAY_NAME_LENGTH )
+    public String getFhirDisplayName()
+    {
+        return fhirDisplayName;
+    }
+
+    public void setFhirDisplayName( String fhirDisplayName )
+    {
+        this.fhirDisplayName = fhirDisplayName;
     }
 
     @RestResource( exported = false )

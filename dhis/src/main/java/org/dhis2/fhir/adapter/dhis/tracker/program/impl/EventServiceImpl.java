@@ -29,13 +29,17 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.commons.lang3.ObjectUtils;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -47,8 +51,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -74,10 +85,15 @@ public class EventServiceImpl implements EventService
 
     private final RestTemplate restTemplate;
 
+    private final PolledProgramRetriever polledProgramRetriever;
+
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
     @Autowired
-    public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate )
+    public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull PolledProgramRetriever polledProgramRetriever )
     {
         this.restTemplate = restTemplate;
+        this.polledProgramRetriever = polledProgramRetriever;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
@@ -97,6 +113,41 @@ public class EventServiceImpl implements EventService
         final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_URI, DhisEvents.class, programId, trackedEntityInstanceId );
         return Objects.requireNonNull( result.getBody() ).getEvents().stream().filter( e -> enrollmentId.equals( e.getEnrollmentId() ) &&
             programStageId.equals( e.getProgramStageId() ) ).collect( Collectors.toList() );
+    }
+
+    @HystrixCommand
+    @Nonnull
+    @Override
+    public Optional<Event> findOneById( @Nonnull String eventId )
+    {
+        Event instance;
+        try
+        {
+            instance = Objects.requireNonNull( restTemplate.getForObject( ID_URI, Event.class, eventId ) );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                return Optional.empty();
+            }
+            throw e;
+        }
+        return Optional.of( instance );
+    }
+
+    @Nonnull
+    @Override
+    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis, int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    {
+        final EventPolledItemRetriever eventPolledItemRetriever = new EventPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount, zoneId );
+        Instant result = Instant.now();
+        for ( final String programId : polledProgramRetriever.findAllPolledProgramIds() )
+        {
+            final Instant currentResult = eventPolledItemRetriever.poll( lastUpdated, excludedStoredBy, consumer, Collections.singletonList( programId ) );
+            result = ObjectUtils.min( result, currentResult );
+        }
+        return result;
     }
 
     @Nonnull

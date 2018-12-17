@@ -82,6 +82,7 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             .andDo( documentationHandler.document( requestFields(
                 attributes( key( "title" ).value( "Fields for code creation" ) ),
                 fields.withPath( "name" ).description( "The unique name of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "enabled" ).description( "Specifies if the code can be used (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "code" ).description( "The unique code of the code." ).type( JsonFieldType.STRING ),
                 fields.withPath( "mappedCode" ).description( "The optional mapped code (e.g. organization unit code as it exists on DHIS2). If this is not specified the code itself is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code is used." ).type( JsonFieldType.STRING ).optional(),
@@ -93,6 +94,7 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "name", is( "Test Code" ) ) )
+            .andExpect( jsonPath( "enabled", is( true ) ) )
             .andExpect( jsonPath( "code", is( "TEST_CODE" ) ) )
             .andExpect( jsonPath( "mappedCode", is( "MAPPED_TEST_CODE" ) ) )
             .andExpect( jsonPath( "description", is( "This is a test code." ) ) )
@@ -116,6 +118,7 @@ public class CodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsTes
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
                 fields.withPath( "name" ).description( "The unique name of the code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "enabled" ).description( "Specifies if the code can be used." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "code" ).description( "The unique code of the code." ).type( JsonFieldType.STRING ),
                 fields.withPath( "mappedCode" ).description( "The optional mapped code (e.g. organization unit code as it exists on DHIS2). If this is not specified the code itself is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code is used." ).type( JsonFieldType.STRING ).optional(),

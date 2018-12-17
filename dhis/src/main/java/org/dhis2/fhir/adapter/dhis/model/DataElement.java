@@ -47,6 +47,8 @@ public interface DataElement
 
     String getCode();
 
+    String getFormName();
+
     ValueType getValueType();
 
     boolean isOptionSetValue();

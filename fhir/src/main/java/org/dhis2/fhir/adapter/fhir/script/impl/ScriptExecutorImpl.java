@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgValue;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -76,15 +77,15 @@ public class ScriptExecutorImpl implements ScriptExecutor
     @Nullable
     @Override
     public <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
-        @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
+        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> contextVariables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
     {
-        return execute( executableScript, fhirVersion, variables, Collections.emptyMap(), resultClass );
+        return execute( executableScript, fhirVersion, variables, Collections.emptyMap(), contextVariables, resultClass );
     }
 
     @Nullable
     @Override
     public <T> T execute( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion,
-        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
+        @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> arguments, @Nonnull Map<String, Object> contextVariables, @Nonnull Class<T> resultClass ) throws ScriptExecutionException
     {
         if ( executableScript == null )
         {
@@ -124,7 +125,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
         scriptVariables.put( ARGUMENTS_VARIABLE_NAME, args );
 
         final Object result;
-        scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables ) );
+        final ScriptExecution previousScriptExecution =
+            scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables, contextVariables ) );
         try
         {
             result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource(
@@ -137,7 +139,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
         finally
         {
-            scriptExecutionContext.resetScriptExecutionContext();
+            scriptExecutionContext.resetScriptExecutionContext( previousScriptExecution );
         }
         if ( (result != null) && !executableScriptInfo.getScript().getReturnType().getJavaType().isInstance( result ) )
         {

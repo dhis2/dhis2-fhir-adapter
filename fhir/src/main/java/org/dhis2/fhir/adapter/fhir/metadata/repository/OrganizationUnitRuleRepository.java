@@ -32,16 +32,12 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,14 +49,8 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface OrganizationUnitRuleRepository extends JpaRepository<OrganizationUnitRule, UUID>, QuerydslPredicateExecutor<OrganizationUnitRule>
+public interface OrganizationUnitRuleRepository extends JpaRepository<OrganizationUnitRule, UUID>, QuerydslPredicateExecutor<OrganizationUnitRule>, CustomOrganizationUnitRuleRepository
 {
-    @RestResource( exported = false )
-    @Nonnull
-    @Query( "SELECT our FROM #{#entityName} our WHERE our.enabled=true AND our.expEnabled=true AND (our.fhirCreateEnabled=true OR our.fhirUpdateEnabled=true)" )
-    @Cacheable( key = "{#root.methodName}" )
-    Collection<OrganizationUnitRule> findAllRequested();
-
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

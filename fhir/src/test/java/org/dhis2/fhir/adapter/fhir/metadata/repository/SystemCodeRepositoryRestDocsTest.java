@@ -86,9 +86,11 @@ public class SystemCodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
             .andExpect( header().exists( "Location" ) )
             .andDo( documentationHandler.document( requestFields(
                 attributes( key( "title" ).value( "Fields for system code creation" ) ),
+                fields.withPath( "enabled" ).description( "Specifies if the code can be used." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "system" ).description( "The reference to the system to which the code belongs to." ).type( JsonFieldType.STRING ),
                 fields.withPath( "systemCode" ).description( "The code of the system." ).type( JsonFieldType.STRING ),
-                fields.withPath( "code" ).description( "The reference to the internal code that is used for the system specific code." ).type( JsonFieldType.STRING )
+                fields.withPath( "code" ).description( "The reference to the internal code that is used for the system specific code." ).type( JsonFieldType.STRING ),
+                fields.withPath( "displayName" ).description( "The official display name of the system specific code." ).type( JsonFieldType.STRING )
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -96,6 +98,8 @@ public class SystemCodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
             .andExpect( jsonPath( "systemCode", is( "982783729" ) ) )
+            .andExpect( jsonPath( "enabled", is( true ) ) )
+            .andExpect( jsonPath( "displayName", is( "Organization Test" ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }
 
@@ -115,7 +119,9 @@ public class SystemCodeRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
+                fields.withPath( "enabled" ).description( "Specifies if the code can be used." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "systemCode" ).description( "The code of the system." ).type( JsonFieldType.STRING ),
+                fields.withPath( "displayName" ).description( "The official display name of the system specific code." ).type( JsonFieldType.STRING ),
                 fields.withPath( "systemCodeValue" ).description( "The combination of system URI and code separated by a pipe character (generated, cannot be updated)." ).type( JsonFieldType.STRING ),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );

@@ -42,6 +42,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 
 /**
@@ -77,12 +78,12 @@ public abstract class AbstractIdentifierDhisToFhirTransformerUtils extends Abstr
             @ScriptMethodArg( value = "system", description = "The system URI of the identifier that should be set or updated." ),
             @ScriptMethodArg( value = "value", description = "The identifier value itself that should be set or updated (in context of the system URI)." )
         } )
-    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull String system, @Nonnull String value ) throws TransformerException
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nullable String system, @Nonnull String value ) throws TransformerException
     {
-        addOrUpdateIdentifier( resource, system, value, false );
+        addOrUpdateIdentifier( resource, system, value, null, false );
     }
 
-    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull String system, @Nonnull String value, boolean secondary ) throws TransformerException
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nullable String system, @Nonnull String value, @Nullable String text, boolean secondary ) throws TransformerException
     {
         if ( !(resource instanceof IDomainResource) )
         {
@@ -94,18 +95,18 @@ public abstract class AbstractIdentifierDhisToFhirTransformerUtils extends Abstr
         {
             throw new TransformerMappingException( "Domain resource " + resource.getClass().getSimpleName() + " does not support identifiers." );
         }
-        addOrUpdateIdentifier( resource, method, system, value, secondary );
+        addOrUpdateIdentifier( resource, method, system, value, text, secondary );
     }
 
-    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier )
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier, @Nullable String text )
     {
-        addOrUpdateIdentifier( resource, identifier, false );
+        addOrUpdateIdentifier( resource, identifier, text, false );
     }
 
-    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier, boolean secondary )
+    public void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull SystemCodeValue identifier, @Nullable String assigner, boolean secondary )
     {
-        addOrUpdateIdentifier( resource, identifier.getSystem(), identifier.getCode(), secondary );
+        addOrUpdateIdentifier( resource, identifier.getSystem(), identifier.getCode(), assigner, secondary );
     }
 
-    protected abstract void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nonnull String system, @Nonnull String value, boolean secondary );
+    protected abstract void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nullable String system, @Nonnull String value, @Nullable String text, boolean secondary );
 }

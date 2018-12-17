@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -41,6 +42,16 @@ import java.util.List;
 public class TrackedEntityPolledItems extends PolledItems<TrackedEntityPolledItem>
 {
     private static final long serialVersionUID = -3139366174834526658L;
+
+    public TrackedEntityPolledItems()
+    {
+        super();
+    }
+
+    public TrackedEntityPolledItems( @Nonnull List<TrackedEntityPolledItem> items )
+    {
+        setItems( items );
+    }
 
     @JsonProperty( "trackedEntityInstances" )
     @Override

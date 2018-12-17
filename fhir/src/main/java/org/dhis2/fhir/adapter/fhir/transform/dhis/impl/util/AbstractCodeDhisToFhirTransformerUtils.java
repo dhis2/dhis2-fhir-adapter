@@ -29,19 +29,24 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 
 /**
  * DHIS2 to FHIR transformer utility methods for code mappings and FHIR codeable concepts.
@@ -74,6 +79,25 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
     public final String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
+    }
+
+    @ScriptExecutionRequired
+    @ScriptMethod( description = "Returns the FHIR codeable concept that is associated with this rule. Only codes that are preferred for export are included.",
+        returnDescription = "The codeable concept that is associated with the rule for which the script is executed. If no code set is attached to the rule, null is returned." )
+    @Nullable
+    public ICompositeType getRuleCodeableConcept()
+    {
+        final AbstractRule rule = getScriptContextVariable( TransformerUtils.RULE_VAR_NAME, AbstractRule.class );
+        if ( rule.getApplicableCodeSet() == null )
+        {
+            return null;
+        }
+        SystemCodeValues systemCodeValues = systemCodeRepository.findPreferredByCodeSetId( rule.getApplicableCodeSet().getId() );
+        if ( systemCodeValues == null )
+        {
+            systemCodeValues = new SystemCodeValues( rule.getApplicableCodeSet().getName(), Collections.emptyList() );
+        }
+        return createCodeableConcept( systemCodeValues );
     }
 
     @ScriptExecutionRequired
@@ -119,4 +143,7 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
         final ResourceSystem resourceSystem = getMandatoryResourceSystem( convertFhirResourceType( fhirResourceType ) );
         return (StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && code.startsWith( resourceSystem.getCodePrefix() )) ? code.substring( resourceSystem.getCodePrefix().length() ) : code;
     }
+
+    @Nonnull
+    protected abstract ICompositeType createCodeableConcept( @Nonnull SystemCodeValues systemCodeValues );
 }

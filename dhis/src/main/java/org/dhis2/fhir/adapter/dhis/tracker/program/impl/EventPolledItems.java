@@ -28,7 +28,41 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EventServiceImplTest
-{
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+
+/**
+ * Polled items for events.
+ *
+ * @author volsch
+ */
+public class EventPolledItems extends PolledItems<EventPolledItem>
+{
+    private static final long serialVersionUID = -3139366174834526658L;
+
+    public EventPolledItems()
+    {
+        super();
+    }
+
+    public EventPolledItems( @Nonnull List<EventPolledItem> items )
+    {
+        setItems( items );
+    }
+
+    @JsonProperty( "events" )
+    @Override
+    public List<EventPolledItem> getItems()
+    {
+        return super.getItems();
+    }
+
+    @Override
+    public void setItems( List<EventPolledItem> items )
+    {
+        super.setItems( items );
+    }
 }

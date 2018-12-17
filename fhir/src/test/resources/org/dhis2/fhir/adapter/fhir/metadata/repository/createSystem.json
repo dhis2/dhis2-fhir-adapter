@@ -4,5 +4,6 @@
   "description": "All Sierra Leone patients.",
   "descriptionProtected": false,
   "systemUri": "http://example.sl/patients",
-  "enabled": true
+  "enabled": true,
+  "fhirDisplayName": "National Patients"
 }

@@ -59,7 +59,7 @@ public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredi
     @RestResource( exported = false )
     @Nonnull
     @Cacheable( keyGenerator = "codeFindAllBySystemCodesKeyGenerator" )
-    @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true" )
+    @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.enabled=true AND sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true WHERE c.enabled=true" )
     List<Code> findAllBySystemCodes( @Param( "systemCodeValues" ) @Nonnull Collection<String> systemCodeValues );
 
     @Override

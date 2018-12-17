@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 import java.util.Date;
 
 /**
- * FHIR to DHIS2 transformer utility methods for human names.
+ * DHIS2 to FHIR transformer utility methods for human names.
  *
  * @author volsch
  */

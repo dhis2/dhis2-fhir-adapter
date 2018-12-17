@@ -33,6 +33,12 @@ import org.dhis2.fhir.adapter.dhis.poll.AbstractPolledItemRetriever;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Retriever for polled tracked entity items.
@@ -43,8 +49,22 @@ public class TrackedEntityPolledItemRetriever extends AbstractPolledItemRetrieve
 {
     protected static final String POLL_URI = "/trackedEntityInstances.json?ouMode=ACCESSIBLE&fields=trackedEntityInstance,lastUpdated";
 
-    public TrackedEntityPolledItemRetriever( @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount )
+    public TrackedEntityPolledItemRetriever( @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount, @Nonnull ZoneId zoneId )
     {
-        super( DhisResourceType.TRACKED_ENTITY, restTemplate, POLL_URI, toleranceMillis, maxSearchCount, TrackedEntityPolledItems.class );
+        super( DhisResourceType.TRACKED_ENTITY, restTemplate, POLL_URI, toleranceMillis, maxSearchCount, TrackedEntityPolledItems.class, zoneId );
+    }
+
+    @Nonnull
+    @Override
+    protected TrackedEntityPolledItems getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page, @Nullable List<Object> variables )
+    {
+        final TrackedEntityPolledItems polledItems = super.getPolledItems( fromLastUpdated, currentToLastUpdated, page, variables );
+        if ( polledItems.getItems().isEmpty() )
+        {
+            return polledItems;
+        }
+        final LocalDateTime localFromLastUpdated = fromLastUpdated.atZone( getZoneId() ).toLocalDateTime();
+        return new TrackedEntityPolledItems( polledItems.getItems().stream()
+            .filter( i -> !localFromLastUpdated.isAfter( i.getLastUpdated() ) ).collect( Collectors.toList() ) );
     }
 }

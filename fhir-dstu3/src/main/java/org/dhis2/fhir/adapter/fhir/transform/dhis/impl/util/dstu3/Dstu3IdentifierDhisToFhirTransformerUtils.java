@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
@@ -40,8 +41,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -67,7 +70,7 @@ public class Dstu3IdentifierDhisToFhirTransformerUtils extends AbstractIdentifie
     }
 
     @Override
-    protected void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nonnull String system, @Nonnull String value, boolean secondary )
+    protected void addOrUpdateIdentifier( @Nonnull IBaseResource resource, @Nonnull Method identifierMethod, @Nullable String system, @Nonnull String value, @Nullable String text, boolean secondary )
     {
         @SuppressWarnings( "unchecked" ) final List<Identifier> identifiers = (List<Identifier>) ReflectionUtils.invokeMethod( identifierMethod, resource );
         if ( identifiers == null )
@@ -75,18 +78,23 @@ public class Dstu3IdentifierDhisToFhirTransformerUtils extends AbstractIdentifie
             throw new FatalTransformerException( "FHIR resource " + resource.getClass().getSimpleName() + " returned null for identifiers." );
         }
 
-        final Optional<Identifier> identifier = identifiers.stream().filter( i -> system.equals( i.getSystem() ) ).findFirst();
+        final Optional<Identifier> identifier = identifiers.stream().filter( i -> Objects.equals( system, i.getSystem() ) ).findFirst();
         if ( identifier.isPresent() )
         {
             identifier.get().setValue( value );
         }
-        else if ( secondary )
-        {
-            identifiers.add( new Identifier().setSystem( system ).setValue( value ).setUse( Identifier.IdentifierUse.SECONDARY ) );
-        }
         else
         {
-            identifiers.add( new Identifier().setSystem( system ).setValue( value ) );
+            final Identifier i = new Identifier().setSystem( system ).setValue( value );
+            if ( StringUtils.isNotBlank( text ) )
+            {
+                i.getType().setText( text );
+            }
+            if ( secondary )
+            {
+                i.setUse( Identifier.IdentifierUse.SECONDARY );
+            }
+            identifiers.add( i );
         }
     }
 }

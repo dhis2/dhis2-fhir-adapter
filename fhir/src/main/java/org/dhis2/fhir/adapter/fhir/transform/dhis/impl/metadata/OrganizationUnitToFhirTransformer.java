@@ -29,32 +29,22 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
-import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +66,6 @@ import java.util.Optional;
 public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedOrganizationUnit, OrganizationUnitRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    public static final String ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME = "organizationUnitResolver";
 
     private final OrganizationUnitService organizationUnitService;
 
@@ -115,9 +103,11 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        variables.put( ORGANIZATION_UNIT_RESOLVER_SCRIPT_ATTR_NAME, new OrganizationUnitResolver( remoteSubscription, context, rule, variables ) );
+        variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
+            organizationUnitService, getRemoteFhirResourceRepository(), remoteSubscription, context, rule, variables,
+            new DefaultIdentifierValueProvider() ) );
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, scriptVariables ).orElse( null );
+        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -161,57 +151,6 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Nullable
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit, @Nonnull Map<String, Object> scriptVariables )
     {
-        return getScriptExecutor().execute( rule.getIdentifierLookupScript(), context.getVersion(), scriptVariables, String.class );
-    }
-
-    /**
-     * Provided to the transformation script to perform lookups.
-     */
-    @Scriptable
-    public class OrganizationUnitResolver
-    {
-        private final RemoteSubscription remoteSubscription;
-
-        private final DhisToFhirTransformerContext context;
-
-        private final OrganizationUnitRule rule;
-
-        private final Map<String, Object> scriptVariables;
-
-        public OrganizationUnitResolver( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-            @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables )
-        {
-            this.remoteSubscription = remoteSubscription;
-            this.context = context;
-            this.rule = rule;
-            this.scriptVariables = scriptVariables;
-        }
-
-        @Nonnull
-        public ScriptedOrganizationUnit getMandatoryById( @Nonnull String id )
-        {
-            final OrganizationUnit organizationUnit = organizationUnitService.findOneByReference( new Reference( id, ReferenceType.ID ) )
-                .orElseThrow( () -> new TransformerDataException( "Could not find mandatory DHIS organization unit " + id + "." ) );
-            return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
-        }
-
-        @Nullable
-        public IBaseResource getFhirResource( @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit )
-        {
-            final Map<String, Object> variables = new HashMap<>( scriptVariables );
-            variables.put( ScriptVariable.INPUT.getVariableName(), scriptedOrganizationUnit );
-            variables.remove( ScriptVariable.OUTPUT.getVariableName() );
-
-            final String identifier = getIdentifierValue( context, rule, scriptedOrganizationUnit, variables );
-            if ( identifier == null )
-            {
-                return null;
-            }
-
-            final ResourceSystem resourceSystem = context.getOptionalResourceSystem( rule.getFhirResourceType() )
-                .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + rule.getFhirResourceType() + "." ) );
-            return getRemoteFhirResourceRepository().findByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-                rule.getFhirResourceType().getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
-        }
+        return getScriptExecutor().execute( rule.getIdentifierLookupScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), String.class );
     }
 }

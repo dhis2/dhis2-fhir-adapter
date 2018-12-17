@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
@@ -50,7 +51,7 @@ import java.time.ZonedDateTime;
  */
 @Scriptable
 @ScriptType( value = "FhirContext", transformType = ScriptTransformType.IMP, var = "context", description = "The context of the current transformation." )
-public interface FhirToDhisTransformerContext
+public interface FhirToDhisTransformerContext extends TransformerContext
 {
     @Nonnull
     @ScriptMethod( description = "Returns the FHIR request (type FhirRequest) that causes the current transformation execution." )

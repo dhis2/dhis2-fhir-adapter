@@ -74,7 +74,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceId() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnit.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
@@ -86,7 +86,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
@@ -96,7 +96,7 @@ public class OrganizationUnitServiceImplTest
     @Test( expected = HttpServerErrorException.class )
     public void findOneByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
         service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
     }

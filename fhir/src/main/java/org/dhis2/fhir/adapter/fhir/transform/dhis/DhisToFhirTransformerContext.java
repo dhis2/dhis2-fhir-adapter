@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionRes
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
@@ -55,7 +56,7 @@ import java.util.UUID;
  */
 @Scriptable
 @ScriptType( value = "DhisContext", var = "context", transformType = ScriptTransformType.EXP, description = "The context of the current transformation." )
-public interface DhisToFhirTransformerContext
+public interface DhisToFhirTransformerContext extends TransformerContext
 {
     @Nonnull
     @ScriptMethod( description = "Returns the DHIS request (type DhisRequest) that causes the current transformation execution." )

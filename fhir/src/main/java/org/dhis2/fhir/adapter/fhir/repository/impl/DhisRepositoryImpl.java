@@ -212,8 +212,8 @@ public class DhisRepositoryImpl implements DhisRepository
                     }
                     catch ( MissingDhisResourceException e )
                     {
-                        logger.warn( "Processing of data of DHIS resource caused a transformation error because of a missing DHIS resource that could not be created: {}", e.getDhisResourceId() );
-                        throw new RetryQueueDeliveryException( e );
+                        // retrying this issue will result in the same issue most likely
+                        logger.warn( "Processing of data of DHIS resource caused a transformation error because of a missing DHIS resource {} that could not be created. Transformation will not be retried.", e.getDhisResourceId() );
                     }
                     catch ( TransformerDataException | TransformerMappingException e )
                     {

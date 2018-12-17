@@ -66,6 +66,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -113,6 +114,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     private final Instant epochStartInstant = Instant.ofEpochMilli( 0 );
 
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
     @Autowired
     public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull StoredDhisResourceService storedItemService )
     {
@@ -155,7 +158,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @HystrixCommand
     @Nonnull
     @Override
-    public Optional<TrackedEntityInstance> findById( @Nonnull String id )
+    public Optional<TrackedEntityInstance> findOneById( @Nonnull String id )
     {
         TrackedEntityInstance instance;
         try
@@ -206,7 +209,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Override
     public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis, int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        return new TrackedEntityPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount ).poll( lastUpdated, excludedStoredBy, consumer );
+        return new TrackedEntityPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount, zoneId ).poll( lastUpdated, excludedStoredBy, consumer, null );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )

@@ -38,6 +38,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -59,9 +60,15 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_system_code" )
+@NamedQuery( name = SystemCode.FIND_SYSTEM_CODES_BY_CODE_ID_NAMED_QUERY, query =
+    "SELECT NEW org.dhis2.fhir.adapter.fhir.model.SystemCodeValue(s.systemUri, sc.systemCode, sc.displayName) FROM SystemCode sc JOIN sc.system s WHERE sc.code.id=:codeId AND sc.enabled=true AND s.enabled=true" )
 public class SystemCode extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7048763667494469394L;
+
+    public static final String FIND_SYSTEM_CODES_BY_CODE_ID_NAMED_QUERY = "SystemCode.findSystemCodesByCodeId";
+
+    public static final int MAX_DISPLAY_NAME_LENGTH = 230;
 
     public static final int MAX_SYSTEM_CODE_LENGTH = 120;
 
@@ -74,6 +81,10 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
 
     @NotNull
     private Code code;
+
+    private boolean enabled = true;
+
+    private String displayName;
 
     private String systemCodeValue;
 
@@ -120,6 +131,30 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
         return systemCodeValue;
     }
 
+    @Basic
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    @Basic
+    @Column( name = "display_name", nullable = false, length = MAX_DISPLAY_NAME_LENGTH )
+    public String getDisplayName()
+    {
+        return displayName;
+    }
+
+    public void setDisplayName( String displayName )
+    {
+        this.displayName = displayName;
+    }
+
     public void setSystemCodeValue( String systemCodeValue )
     {
         this.systemCodeValue = systemCodeValue;
@@ -130,7 +165,7 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
     @Nonnull
     public SystemCodeValue getCalculatedSystemCodeValue()
     {
-        return new SystemCodeValue( getSystem().getSystemUri(), getSystemCode() );
+        return new SystemCodeValue( getSystem().getSystemUri(), getSystemCode(), getDisplayName() );
     }
 
     @PrePersist

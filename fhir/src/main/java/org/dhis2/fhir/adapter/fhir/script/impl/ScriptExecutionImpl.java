@@ -34,18 +34,26 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Default implementation of {@link ScriptExecution}.
+ *
+ * @author volsch
+ */
 public class ScriptExecutionImpl implements ScriptExecution
 {
     private final Map<String, Object> variables;
 
+    private final Map<String, Object> contextVariables;
+
     public ScriptExecutionImpl()
     {
-        this( new HashMap<>() );
+        this( new HashMap<>(), new HashMap<>() );
     }
 
-    public ScriptExecutionImpl( @Nonnull Map<String, Object> variables )
+    public ScriptExecutionImpl( @Nonnull Map<String, Object> variables, @Nonnull Map<String, Object> contextVariables )
     {
         this.variables = variables;
+        this.contextVariables = contextVariables;
     }
 
     @Nonnull
@@ -53,5 +61,12 @@ public class ScriptExecutionImpl implements ScriptExecution
     public Map<String, Object> getVariables()
     {
         return variables;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Object> getContextVariables()
+    {
+        return contextVariables;
     }
 }

@@ -94,7 +94,8 @@ public class CodeSetRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocs
                 fields.withPath( "codeCategory" ).description( "The code category reference to which the code set belongs to." ).type( JsonFieldType.STRING ),
                 fields.withPath( "codeSetValues" ).description( "The codes that belong to this code set." ).type( JsonFieldType.ARRAY ).optional(),
                 fields.withPath( "codeSetValues[].code" ).description( "The included code reference (must be unique in the code set)." ).type( JsonFieldType.STRING ),
-                fields.withPath( "codeSetValues[].enabled" ).description( "Specifies if the code is enabled in the code set." ).type( JsonFieldType.BOOLEAN ).optional()
+                fields.withPath( "codeSetValues[].enabled" ).description( "Specifies if the code is enabled in the code set." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "codeSetValues[].preferredExport" ).description( "Specifies if the code is used as preferred code when exporting (by default false)." ).type( JsonFieldType.BOOLEAN ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -127,6 +128,7 @@ public class CodeSetRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocs
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the code set is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "codeSetValues" ).description( "The codes that belong to this code set." ).type( JsonFieldType.ARRAY ).optional(),
                 fields.withPath( "codeSetValues[].enabled" ).description( "Specifies if the code is enabled in the code set." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "codeSetValues[].preferredExport" ).description( "Specifies if the code is used as preferred code when exporting (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" ),
                 subsectionWithPath( "codeSetValues[]._links" ).description( "Links to other resources (e.g. the referenced code)" )
             ) ) );

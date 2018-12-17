@@ -35,6 +35,8 @@ import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -56,10 +58,13 @@ import java.util.ListIterator;
 @Component
 public class ValueConverter
 {
+    private final ConversionService conversionService;
+
     private final ListMultimap<ValueType, TypedConverter<?, ?>> converters = ArrayListMultimap.create();
 
-    public ValueConverter( @Nonnull ObjectProvider<List<TypedConverter<?, ?>>> converters )
+    public ValueConverter( @Nonnull ObjectProvider<List<TypedConverter<?, ?>>> converters, @Qualifier( "defaultConversionService" ) @Nonnull ConversionService conversionService )
     {
+        this.conversionService = conversionService;
         converters.ifAvailable( typedConverters -> typedConverters.stream().filter( tc -> tc.getClass().isAnnotationPresent( ConvertedValueTypes.class ) )
             .forEach( converter -> Arrays.stream( converter.getClass().getAnnotation( ConvertedValueTypes.class ).types() ).forEach( vt -> addConverter( vt, converter ) ) ) );
     }
@@ -81,6 +86,26 @@ public class ValueConverter
         if ( !typedConverters.contains( converter ) )
         {
             converters.put( valueType, converter );
+        }
+    }
+
+    /**
+     * Converts the specified value to the specified target type.
+     *
+     * @param value      the value that should be converted to the specified target type.
+     * @param targetType the type of the returned value.
+     * @param <R>        the type of the returned value.
+     * @return the converted value.
+     */
+    public <R> R convert( @Nullable Object value, @Nonnull Class<R> targetType )
+    {
+        try
+        {
+            return conversionService.convert( value, targetType );
+        }
+        catch ( org.springframework.core.convert.ConversionException e )
+        {
+            throw new ConversionException( e.getMessage() );
         }
     }
 

@@ -30,9 +30,13 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractCodeDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -57,5 +61,19 @@ public class Dstu3CodeDhisToFhirTransformerUtils extends AbstractCodeDhisToFhirT
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    protected ICompositeType createCodeableConcept( @Nonnull SystemCodeValues systemCodeValues )
+    {
+        final CodeableConcept codeableConcept = new CodeableConcept();
+        codeableConcept.setText( systemCodeValues.getText() );
+        for ( final SystemCodeValue scv : systemCodeValues.getSystemCodeValues() )
+        {
+            codeableConcept.addCoding().setSystem( scv.getSystem() ).setCode( scv.getCode() )
+                .setDisplay( scv.getDisplayName() );
+        }
+        return codeableConcept;
     }
 }

@@ -32,12 +32,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.model.Metadata;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -52,9 +54,14 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_code_set_value" )
+@NamedQuery( name = CodeSetValue.FIND_FIRST_PREFERRED_NAMED_QUERY,
+    query = "SELECT c.id,cs.name FROM CodeSetValue csv JOIN csv.codeSet cs JOIN csv.code c WHERE csv.enabled=true AND csv.preferredExport=true AND csv.codeSet.id=:codeSetId AND " +
+        "EXISTS (SELECT 1 FROM SystemCode sc JOIN sc.system s WHERE sc.code=c AND sc.enabled=true AND s.enabled=true) ORDER BY c.code,c.id" )
 public class CodeSetValue implements Serializable, Metadata<UUID>
 {
     private static final long serialVersionUID = 8365594386802303061L;
+
+    public static final String FIND_FIRST_PREFERRED_NAMED_QUERY = "CodeSetValue.findFirstPreferred";
 
     private UUID id;
 
@@ -64,6 +71,8 @@ public class CodeSetValue implements Serializable, Metadata<UUID>
     private Code code;
 
     private boolean enabled = true;
+
+    private boolean preferredExport;
 
     @Override
     @GeneratedValue( generator = "uuid2" )
@@ -105,6 +114,7 @@ public class CodeSetValue implements Serializable, Metadata<UUID>
         this.code = code;
     }
 
+    @Basic
     @Column( name = "enabled", nullable = false )
     public boolean isEnabled()
     {
@@ -114,6 +124,18 @@ public class CodeSetValue implements Serializable, Metadata<UUID>
     public void setEnabled( boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Basic
+    @Column( name = "preferred_export", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isPreferredExport()
+    {
+        return preferredExport;
+    }
+
+    public void setPreferredExport( boolean preferredExport )
+    {
+        this.preferredExport = preferredExport;
     }
 
     @Override

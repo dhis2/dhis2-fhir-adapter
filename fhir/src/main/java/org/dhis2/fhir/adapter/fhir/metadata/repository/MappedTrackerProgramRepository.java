@@ -28,10 +28,18 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
+import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -39,6 +47,13 @@ import java.util.UUID;
  *
  * @author volsch
  */
+@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "mappedProgram" )
+@PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>
 {
+    @RestResource( exported = false )
+    @Query( value = "SELECT p.programReference FROM #{#entityName} p WHERE p.enabled=true AND p.expEnabled=true" )
+    @Cacheable( key = "{#root.methodName}" )
+    @Nonnull
+    Collection<Reference> findAllPolledProgramReferences();
 }

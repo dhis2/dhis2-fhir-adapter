@@ -32,7 +32,10 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -103,6 +106,27 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
 
     @Nullable
     @Override
+    public String getEnrollmentId()
+    {
+        return delegate.getEnrollmentId();
+    }
+
+    @Override
+    @Nonnull
+    public Program getProgram()
+    {
+        return delegate.getProgram();
+    }
+
+    @Nonnull
+    @Override
+    public ProgramStage getProgramStage()
+    {
+        return delegate.getProgramStage();
+    }
+
+    @Nullable
+    @Override
     public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
         if ( delegate.getTrackedEntityInstance() instanceof ImmutableDhisObject )
@@ -138,6 +162,26 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     public Location getCoordinate()
     {
         return delegate.getCoordinate();
+    }
+
+    @Nullable
+    @Override
+    public Object getValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public Boolean getBooleanValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getBooleanValue( dataElementReference );
+    }
+
+    @Override
+    public boolean isProvidedElsewhere( @Nonnull Reference dataElementReference )
+    {
+        return delegate.isProvidedElsewhere( dataElementReference );
     }
 
     @Override

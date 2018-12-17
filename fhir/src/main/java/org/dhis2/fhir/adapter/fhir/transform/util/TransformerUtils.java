@@ -28,13 +28,16 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -44,6 +47,10 @@ import java.util.Map;
  */
 public abstract class TransformerUtils
 {
+    public static final String TRANSFORMER_CONTEXT_VAR_NAME = "transformerContext";
+
+    public static final String RULE_VAR_NAME = "rule";
+
     @Nonnull
     public static <T> T getScriptVariable( @Nonnull Map<String, Object> scriptVariables, @Nonnull ScriptVariable scriptVariable, @Nonnull Class<T> type ) throws FatalTransformerException
     {
@@ -65,6 +72,27 @@ public abstract class TransformerUtils
             throw new TransformerScriptException( "Script tried to access variable \"" + name + "\" that has not been defined." );
         }
         return value;
+    }
+
+    @Nonnull
+    public static <T> T getScriptContextVariable( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull String name, @Nonnull Class<T> c )
+    {
+        final ScriptExecution scriptExecution = scriptExecutionContext.getScriptExecution();
+        final T value = c.cast( scriptExecution.getContextVariables().get( name ) );
+        if ( value == null )
+        {
+            throw new TransformerScriptException( "Script tried to access context variable \"" + name + "\" that has not been defined." );
+        }
+        return value;
+    }
+
+    @Nonnull
+    public static Map<String, Object> createScriptContextVariables( @Nonnull TransformerContext transformerContext, @Nonnull AbstractRule rule )
+    {
+        final Map<String, Object> variables = new HashMap<>();
+        variables.put( TRANSFORMER_CONTEXT_VAR_NAME, transformerContext );
+        variables.put( RULE_VAR_NAME, rule );
+        return variables;
     }
 
     private TransformerUtils()

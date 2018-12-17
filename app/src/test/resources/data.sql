@@ -26,6 +26,8 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 
+-- @formatter:off
+
 -- Gender Constants (Adapter Gender Code to DHIS2 code as value)
 INSERT INTO fhir_constant (id, version, category, name, code, data_type, value)
 VALUES ('fa4a3a0eca4640e4b8323aec96bed55e', 0, 'GENDER', 'Gender Female', 'GENDER_FEMALE', 'STRING', 'Female');
@@ -156,13 +158,20 @@ INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VA
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('ad121009f80644a8921ccba728a81940', 0, '91065580f4fa4135969a498e9518c0c8', 'RC self', 'RC_ONESELF', 'The relationship that a person has with his or her self.');
 INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('935baf1211f442ba89b570d6acea6546', 0, '91065580f4fa4135969a498e9518c0c8', 'RC Roommate', 'RC_ROOM', 'One who shares living quarters with the subject.');
 
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('4b1d6fa36c6e46439f6dde14e1c36fff', 0, '3ffa1fe58ded4f18afa6d847d2b94217', 'CP', 'aa36eeb633f14637936ac934abdaf83f', 'http://hl7.org/fhir/v2/0131|CP');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('cdc6b6697c42460bad34aa65f8655145', 0, '3ffa1fe58ded4f18afa6d847d2b94217', 'C', '774ee335a7034753b524da49e4f10454', 'http://hl7.org/fhir/v2/0131|C');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('14116083429a437c9023c0f4095679a6', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'PRN', '758fc29886b14ec0a46391034a0e35c9', 'http://hl7.org/fhir/v3/RoleCode|PRN');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('41b1d0ae68b0433fa2a1f57bbce57802', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'ADOPTF', 'a7925456430d4c2db3b27afbc3bbde0f', 'http://hl7.org/fhir/v3/RoleCode|ADOPTF');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('4491d5e330d540d3b63a4c4d6ada0045', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'ADOPTM', 'ddd1f6d3e36244cd98875f7d3daaa7dd', 'http://hl7.org/fhir/v3/RoleCode|ADOPTM');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('7e5d84308ccb4a6d8e16a11a0c0d2f75', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'FTH', '5a395a3de1be4b88a91d99b1965cfb3b', 'http://hl7.org/fhir/v3/RoleCode|FTH');
-INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value) VALUES ('0b2ca2b94edb4da69e34b783575eea0b', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'MTH', '08f80790dda34ec1939c5884ac1a82d3', 'http://hl7.org/fhir/v3/RoleCode|MTH');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('4b1d6fa36c6e46439f6dde14e1c36fff', 0, '3ffa1fe58ded4f18afa6d847d2b94217', 'CP', 'aa36eeb633f14637936ac934abdaf83f', 'http://hl7.org/fhir/v2/0131|CP', 'CP');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('cdc6b6697c42460bad34aa65f8655145', 0, '3ffa1fe58ded4f18afa6d847d2b94217', 'C', '774ee335a7034753b524da49e4f10454', 'http://hl7.org/fhir/v2/0131|C', 'C');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('14116083429a437c9023c0f4095679a6', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'PRN', '758fc29886b14ec0a46391034a0e35c9', 'http://hl7.org/fhir/v3/RoleCode|PRN', 'PRN');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('41b1d0ae68b0433fa2a1f57bbce57802', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'ADOPTF', 'a7925456430d4c2db3b27afbc3bbde0f', 'http://hl7.org/fhir/v3/RoleCode|ADOPTF', 'ADOPTF');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('4491d5e330d540d3b63a4c4d6ada0045', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'ADOPTM', 'ddd1f6d3e36244cd98875f7d3daaa7dd', 'http://hl7.org/fhir/v3/RoleCode|ADOPTM', 'ADOPTM');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('7e5d84308ccb4a6d8e16a11a0c0d2f75', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'FTH', '5a395a3de1be4b88a91d99b1965cfb3b', 'http://hl7.org/fhir/v3/RoleCode|FTH', 'FTH');
+INSERT INTO fhir_system_code(id, version, system_id, system_code, code_id, system_code_value, display_name)
+VALUES ('0b2ca2b94edb4da69e34b783575eea0b', 0, '64d3e785d6a54be59bc95ed9b938e2f6', 'MTH', '08f80790dda34ec1939c5884ac1a82d3', 'http://hl7.org/fhir/v3/RoleCode|MTH', 'MTH');
 
 -- Script that extracts Organisation Unit Reference from Patient
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
@@ -462,10 +471,6 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('52227dd9c79c478b92af9aa1f33c76fd', 0, 'FHIR Related Person to Person', NULL, TRUE, 0, 'RELATED_PERSON', 'TRACKED_ENTITY', 'c6b2d08d3a73434ea5afee0ff13549a1', TRUE);
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, tei_lookup_script_id)
 VALUES ('52227dd9c79c478b92af9aa1f33c76fd', '4203754d21774a4486aa2de31ee4c8ee', '26e8880864ee446980837962b74ac48a');
-
-UPDATE fhir_system_code sc SET system_code_value = (SELECT system_uri FROM fhir_system s WHERE s.id=sc.system_id) || '|' || system_code;
-ALTER TABLE fhir_system_code ALTER COLUMN system_code_value SET NOT NULL;
-CREATE INDEX fhir_system_code_i3 ON fhir_system_code (system_code_value);
 
 INSERT INTO fhir_dhis_sync_group(id, version)
 VALUES ('22204dd405d94cdd96a8ed742087d469', 0);

@@ -81,6 +81,13 @@ public class ImmutableDataElement implements DataElement, ImmutableDhisObject, S
 
     @JsonIgnore
     @Override
+    public String getFormName()
+    {
+        return delegate.getFormName();
+    }
+
+    @JsonIgnore
+    @Override
     public ValueType getValueType()
     {
         return delegate.getValueType();

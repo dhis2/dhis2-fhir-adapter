@@ -45,4 +45,12 @@ public interface ScriptExecution
      */
     @Nonnull
     Map<String, Object> getVariables();
+
+    /**
+     * Returns the context variables of the script execution that are not accessible by the script but from the script execution context.
+     *
+     * @return the context variables of the script execution.
+     */
+    @Nonnull
+    Map<String, Object> getContextVariables();
 }

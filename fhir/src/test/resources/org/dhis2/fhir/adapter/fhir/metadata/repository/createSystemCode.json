@@ -1,5 +1,6 @@
 {
   "system": "$systemId",
   "code": "$codeId",
-  "systemCode": "982783729"
+  "systemCode": "982783729",
+  "displayName": "Organization Test"
 }

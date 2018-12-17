@@ -28,10 +28,14 @@ package org.dhis2.fhir.adapter.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -42,32 +46,76 @@ import java.util.Objects;
  */
 @Scriptable
 @ScriptType( value = "SystemCodeValue", description = "Contains the combination of system URI and code." )
-public class SystemCodeValue implements Serializable
+public class SystemCodeValue implements Serializable, Comparable<SystemCodeValue>
 {
     private static final long serialVersionUID = -4751270623619799949L;
 
     public static final String SEPARATOR = "|";
 
+    public static final int MAX_LENGTH = 230;
+
     private final String system;
 
     private final String code;
 
-    public SystemCodeValue( String system, String code )
+    private final String displayName;
+
+    @Nullable
+    public static SystemCodeValue parse( @Nullable String value ) throws IllegalArgumentException
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        final int index = value.indexOf( SEPARATOR );
+        if ( index < 0 )
+        {
+            return new SystemCodeValue( null, value );
+        }
+        if ( index == 0 )
+        {
+            return new SystemCodeValue( null, value.substring( 1 ) );
+        }
+        if ( index + 1 == value.length() )
+        {
+            throw new IllegalArgumentException( "Value does not include a code: " + value );
+        }
+        return new SystemCodeValue( value.substring( 0, index ), value.substring( index + 1 ), null );
+    }
+
+    @JsonCreator
+    public SystemCodeValue( @Nullable String system, @Nonnull String code, @Nullable String displayName )
     {
         this.system = system;
         this.code = code;
+        this.displayName = displayName;
     }
 
+    public SystemCodeValue( @Nullable String system, @Nonnull String code )
+    {
+        this( system, code, null );
+    }
+
+    @Nullable
     @ScriptMethod( description = "Returns the system URI." )
     public String getSystem()
     {
         return system;
     }
 
+    @Nonnull
     @ScriptMethod( description = "Returns the code." )
     public String getCode()
     {
         return code;
+    }
+
+    @Nullable
+    @ScriptMethod( description = "Returns the display name that is not available in all contexts." )
+    public String getDisplayName()
+    {
+        return displayName;
     }
 
     @Override
@@ -85,6 +133,17 @@ public class SystemCodeValue implements Serializable
     public int hashCode()
     {
         return Objects.hash( system, code );
+    }
+
+    @Override
+    public int compareTo( @Nonnull SystemCodeValue o )
+    {
+        int v = StringUtils.compare( system, o.system );
+        if ( v != 0 )
+        {
+            return v;
+        }
+        return code.compareTo( o.code );
     }
 
     @Override

@@ -49,6 +49,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractCodeFhirToDh
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirBeanTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -202,6 +203,6 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableImpScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableImpScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
     }
 }

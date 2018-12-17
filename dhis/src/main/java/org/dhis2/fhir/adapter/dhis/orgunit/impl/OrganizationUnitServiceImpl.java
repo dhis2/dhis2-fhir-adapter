@@ -61,7 +61,7 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
 
     protected static final String ORGANIZATION_UNIT_BY_NAME_URI = "/organisationUnits.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
 
-    protected static final String ORGANIZATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json&fields=" + FIELDS;
+    protected static final String ORGANIZATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json?fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
 

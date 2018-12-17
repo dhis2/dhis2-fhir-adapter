@@ -144,7 +144,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final RemoteSubscriptionResource remoteSubscriptionResource = new RemoteSubscriptionResource();
         remoteSubscriptionResource.setId( remoteSubscriptionResourceId );
         remoteSubscriptionResource.setRemoteSubscription( remoteSubscription );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -187,7 +187,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final RemoteSubscriptionResource remoteSubscriptionResource = new RemoteSubscriptionResource();
         remoteSubscriptionResource.setId( remoteSubscriptionResourceId );
         remoteSubscriptionResource.setRemoteSubscription( remoteSubscription );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -230,7 +230,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final RemoteSubscriptionResource remoteSubscriptionResource = new RemoteSubscriptionResource();
         remoteSubscriptionResource.setId( remoteSubscriptionResourceId );
         remoteSubscriptionResource.setRemoteSubscription( remoteSubscription );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_" );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );

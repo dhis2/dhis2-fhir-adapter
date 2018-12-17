@@ -59,7 +59,6 @@ public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslP
     @Cacheable( key = "{#root.methodName, #a0}" )
     Optional<System> findAllByCode( @Nonnull String code );
 
-
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

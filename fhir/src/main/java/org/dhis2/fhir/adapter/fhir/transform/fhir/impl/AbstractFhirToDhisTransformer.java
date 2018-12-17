@@ -186,13 +186,13 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformImpScript(), context.getFhirRequest().getVersion(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformImpScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
     }
 
     @Nonnull
-    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
+    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Reference orgUnitReference = getScriptExecutor().execute( lookupScript, context.getFhirRequest().getVersion(), scriptVariables, Reference.class );
+        final Reference orgUnitReference = getScriptExecutor().execute( lookupScript, context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Reference.class );
         if ( orgUnitReference == null )
         {
             logger.info( "Could not extract organization unit reference." );
@@ -216,7 +216,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
-        final IBaseResource baseResource = getTrackedEntityInstanceResource( context, resourceMapping, scriptVariables );
+        final IBaseResource baseResource = getTrackedEntityInstanceResource( context, rule, resourceMapping, scriptVariables );
         if ( baseResource == null )
         {
             logger.info( "Tracked entity instance resource could not be extracted from input." );
@@ -229,10 +229,10 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nullable
-    protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping,
+    protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return getScriptExecutor().execute( resourceMapping.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+        return getScriptExecutor().execute( resourceMapping.getImpTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), IBaseResource.class );
     }
 
     @Nonnull
@@ -316,8 +316,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nullable
-    protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
+    protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
     {
-        return getScriptExecutor().execute( locationLookupScript, context.getFhirRequest().getVersion(), scriptVariable, Location.class );
+        return getScriptExecutor().execute( locationLookupScript, context.getFhirRequest().getVersion(), scriptVariable, TransformerUtils.createScriptContextVariables( context, rule ), Location.class );
     }
 }

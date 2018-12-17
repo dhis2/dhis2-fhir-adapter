@@ -145,7 +145,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
         else
         {
-            organizationUnit = getOrgUnit( context, rule.getOrgUnitLookupScript(), variables );
+            organizationUnit = getOrgUnit( context, rule, rule.getOrgUnitLookupScript(), variables );
             organizationUnit.ifPresent( ou -> scriptedTrackedEntityInstance.setOrganizationUnitId( ou.getId() ) );
         }
         if ( !organizationUnit.isPresent() )
@@ -155,7 +155,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
         if ( rule.getLocationLookupScript() != null )
         {
-            scriptedTrackedEntityInstance.setCoordinates( getCoordinate( context, rule.getLocationLookupScript(), variables ) );
+            scriptedTrackedEntityInstance.setCoordinates( getCoordinate( context, rule, rule.getLocationLookupScript(), variables ) );
         }
         if ( !transform( context, rule, variables ) )
         {
@@ -192,7 +192,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Override
     protected Optional<TrackedEntityInstance> getResourceById( @Nullable String id ) throws TransformerException
     {
-        return (id == null) ? Optional.empty() : getTrackedEntityService().findById( id );
+        return (id == null) ? Optional.empty() : getTrackedEntityService().findOneById( id );
     }
 
     @Nonnull
@@ -230,7 +230,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
         else
         {
-            resource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+            resource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), IBaseResource.class );
             if ( resource == null )
             {
                 return null;
@@ -280,7 +280,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         }
         else
         {
-            baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, IBaseResource.class );
+            baseResource = getScriptExecutor().execute( rule.getTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), IBaseResource.class );
         }
         return baseResource;
     }

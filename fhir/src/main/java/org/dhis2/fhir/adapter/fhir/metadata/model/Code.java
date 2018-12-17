@@ -82,6 +82,8 @@ public class Code extends VersionedBaseMetadata implements Serializable
 
     private String description;
 
+    private boolean enabled = true;
+
     @NotNull
     private CodeCategory codeCategory;
 
@@ -133,6 +135,18 @@ public class Code extends VersionedBaseMetadata implements Serializable
     public void setDescription( String description )
     {
         this.description = description;
+    }
+
+    @Basic
+    @Column( name = "enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
     }
 
     @ManyToOne( optional = false )

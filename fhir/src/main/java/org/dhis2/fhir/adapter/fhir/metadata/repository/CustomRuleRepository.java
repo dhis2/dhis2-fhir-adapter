@@ -32,14 +32,21 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Custom repository for {@link AbstractRule}s.
+ *
+ * @author volsch
+ */
 public interface CustomRuleRepository
 {
+    @RestResource( exported = false )
     @Nonnull
     List<? extends AbstractRule> findAllByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
 }
