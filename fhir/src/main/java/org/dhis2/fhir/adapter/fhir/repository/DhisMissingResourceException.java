@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,36 +28,30 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+
+import javax.annotation.Nonnull;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Thrown if the included DHIS 2 resource is missing on FHIR server and it should
+ * be tried to create the missing FHIR resource before retrying to process the
+ * current resource again.
  *
  * @author volsch
  */
-public enum TransformDataType
+public class DhisMissingResourceException extends RuntimeException
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON );
+    private static final long serialVersionUID = 199342946327708047L;
 
-    private final FhirResourceType fhirResourceType;
+    private final DhisResourceId dhisResourceId;
 
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    public DhisMissingResourceException( @Nonnull DhisResourceId dhisResourceId )
     {
-        this.fhirResourceType = fhirResourceType;
+        this.dhisResourceId = dhisResourceId;
     }
 
-    @Nullable
-    public FhirResourceType getFhirResourceType()
+    public DhisResourceId getDhisResourceId()
     {
-        return fhirResourceType;
+        return dhisResourceId;
     }
 }

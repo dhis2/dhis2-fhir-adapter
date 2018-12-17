@@ -38,7 +38,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequest
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
 import org.springframework.stereotype.Component;
 
@@ -73,7 +72,6 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
     @Override
     public List<? extends AbstractRule> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
-        final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
         return ruleRepository.findAllRequested().stream().sorted().collect( Collectors.toList() );
     }
 
