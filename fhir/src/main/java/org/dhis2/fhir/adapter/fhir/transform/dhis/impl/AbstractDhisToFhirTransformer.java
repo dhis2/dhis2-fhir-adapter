@@ -374,37 +374,11 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     protected boolean transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformExpScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
+        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformExpScript(), context.getVersion(), scriptVariables,
+            TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
     }
 
     public class DefaultIdentifierValueProvider implements IdentifierValueProvider<U, R>
-    {
-        @Nullable
-        @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
-        {
-            return AbstractDhisToFhirTransformer.this.getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
-        }
-    }
-
-    private class TrackedEntityIdentifierValueProvider implements IdentifierValueProvider<TrackedEntityRule, ScriptedTrackedEntityInstance>
-    {
-        @Nullable
-        @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
-        {
-            return AbstractDhisToFhirTransformer.this.getTrackedEntityIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
-        }
-    }
-
-    private interface IdentifierValueProvider<U extends AbstractRule, R extends ScriptedDhisResource>
-    {
-        @Nullable
-        String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
-            @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
-    }
-
-    private class DefaultIdentifierValueProvider implements IdentifierValueProvider<U, R>
     {
         @Nullable
         @Override
