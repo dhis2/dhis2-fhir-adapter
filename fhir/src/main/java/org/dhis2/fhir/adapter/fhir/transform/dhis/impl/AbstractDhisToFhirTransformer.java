@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import ca.uhn.fhir.context.FhirContext;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
@@ -39,8 +40,10 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -102,12 +105,6 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     protected RemoteFhirResourceRepository getRemoteFhirResourceRepository()
     {
         return remoteFhirResourceRepository;
-    }
-
-    @Nonnull
-    protected ScriptExecutor getScriptExecutor()
-    {
-        return scriptExecutor;
     }
 
     @Nonnull
@@ -374,37 +371,29 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     protected boolean transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformExpScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
+        return Boolean.TRUE.equals( executeScript( context, rule, rule.getTransformExpScript(), scriptVariables, Boolean.class ) );
+    }
+
+    /**
+     * Executes an executable script with the specified variables . If the mandatory data for executing
+     * the script has not been provided, the script will not be executed at all.
+     *
+     * @param context          the transformer context of the transformation.
+     * @param rule             the rule of the transformation.
+     * @param executableScript the script that should be executed.
+     * @param variables        the variables that the script requires.
+     * @param resultClass      the type of the result the script returns.
+     * @param <T>              the concrete class of the return type.
+     * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
+     * @throws ScriptExecutionException thrown if the
+     */
+    @Nullable
+    protected <T> T executeScript( @Nonnull TransformerContext context, @Nonnull AbstractRule rule, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
+    {
+        return TransformerUtils.executeScript( scriptExecutor, context, rule, executableScript, variables, resultClass );
     }
 
     public class DefaultIdentifierValueProvider implements IdentifierValueProvider<U, R>
-    {
-        @Nullable
-        @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
-        {
-            return AbstractDhisToFhirTransformer.this.getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
-        }
-    }
-
-    private class TrackedEntityIdentifierValueProvider implements IdentifierValueProvider<TrackedEntityRule, ScriptedTrackedEntityInstance>
-    {
-        @Nullable
-        @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
-        {
-            return AbstractDhisToFhirTransformer.this.getTrackedEntityIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
-        }
-    }
-
-    private interface IdentifierValueProvider<U extends AbstractRule, R extends ScriptedDhisResource>
-    {
-        @Nullable
-        String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
-            @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
-    }
-
-    private class DefaultIdentifierValueProvider implements IdentifierValueProvider<U, R>
     {
         @Nullable
         @Override

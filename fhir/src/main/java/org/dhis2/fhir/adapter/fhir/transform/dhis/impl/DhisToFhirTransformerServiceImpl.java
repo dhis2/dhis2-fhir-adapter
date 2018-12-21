@@ -269,6 +269,6 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableExpScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
+        return Boolean.TRUE.equals( TransformerUtils.executeScript( scriptExecutor, context, rule, rule.getApplicableExpScript(), scriptVariables, Boolean.class ) );
     }
 }

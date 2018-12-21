@@ -110,6 +110,13 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
         return ZonedDateTime.now();
     }
 
+    @Nonnull
+    @Override
+    public FhirVersion getFhirVersion()
+    {
+        return remoteSubscription.getFhirVersion();
+    }
+
     @Nullable
     @Override
     public ResourceSystem getResourceSystem( @Nonnull FhirResourceType resourceType )

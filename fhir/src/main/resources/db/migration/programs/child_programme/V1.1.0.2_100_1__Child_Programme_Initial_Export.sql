@@ -27,8 +27,15 @@
  */
 
 -- Tracker Program Child Programme, Baby Postnatal: Measles given
-INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_executable_script_id)
-VALUES ('87ac1eff-f011-4428-92bb-c4e2da2d3490', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'CP: Measles given to FHIR', 'CP_MEASLES_GIVEN_EXP', '51ae5077-ddd7-45dc-b8ed-29000b9faaab');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('87ac1eff-f011-4428-92bb-c4e2da2d3490', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'CP: Measles given to FHIR', 'CP_MEASLES_GIVEN_EXP');
 UPDATE fhir_rule
 SET transform_exp_script_id = '87ac1eff-f011-4428-92bb-c4e2da2d3490'
 WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '651406fe-4612-48d9-92cb-9c4d162371d0', 0, id, 'CODE:DE_2006125', 'dataElement', true
+FROM fhir_rule
+WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '86759369-63d9-4a2c-84f8-e9897f69166a';

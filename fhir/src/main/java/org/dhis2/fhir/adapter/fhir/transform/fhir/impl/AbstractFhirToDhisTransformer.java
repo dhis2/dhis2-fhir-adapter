@@ -45,8 +45,10 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
@@ -101,12 +103,6 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return transform( context, input, getRuleClass().cast( rule ), scriptVariables );
-    }
-
-    @Nonnull
-    protected ScriptExecutor getScriptExecutor()
-    {
-        return scriptExecutor;
     }
 
     @Nonnull
@@ -186,13 +182,13 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getTransformImpScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
+        return Boolean.TRUE.equals( executeScript( context, rule, rule.getTransformImpScript(), scriptVariables, Boolean.class ) );
     }
 
     @Nonnull
     protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Reference orgUnitReference = getScriptExecutor().execute( lookupScript, context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Reference.class );
+        final Reference orgUnitReference = executeScript( context, rule, lookupScript, scriptVariables, Reference.class );
         if ( orgUnitReference == null )
         {
             logger.info( "Could not extract organization unit reference." );
@@ -232,7 +228,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return getScriptExecutor().execute( resourceMapping.getImpTeiLookupScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), IBaseResource.class );
+        return executeScript( context, rule, resourceMapping.getImpTeiLookupScript(), scriptVariables, IBaseResource.class );
     }
 
     @Nonnull
@@ -318,6 +314,25 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Nullable
     protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
     {
-        return getScriptExecutor().execute( locationLookupScript, context.getFhirRequest().getVersion(), scriptVariable, TransformerUtils.createScriptContextVariables( context, rule ), Location.class );
+        return executeScript( context, rule, locationLookupScript, scriptVariable, Location.class );
+    }
+
+    /**
+     * Executes an executable script with the specified variables . If the mandatory data for executing
+     * the script has not been provided, the script will not be executed at all.
+     *
+     * @param context          the transformer context of the transformation.
+     * @param rule             the rule of the transformation.
+     * @param executableScript the script that should be executed.
+     * @param variables        the variables that the script requires.
+     * @param resultClass      the type of the result the script returns.
+     * @param <T>              the concrete class of the return type.
+     * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
+     * @throws ScriptExecutionException thrown if the
+     */
+    @Nullable
+    protected <T> T executeScript( @Nonnull TransformerContext context, @Nonnull AbstractRule rule, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
+    {
+        return TransformerUtils.executeScript( scriptExecutor, context, rule, executableScript, variables, resultClass );
     }
 }

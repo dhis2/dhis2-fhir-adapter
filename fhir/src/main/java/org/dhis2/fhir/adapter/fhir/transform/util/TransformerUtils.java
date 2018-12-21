@@ -28,15 +28,20 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,6 +98,35 @@ public abstract class TransformerUtils
         variables.put( TRANSFORMER_CONTEXT_VAR_NAME, transformerContext );
         variables.put( RULE_VAR_NAME, rule );
         return variables;
+    }
+
+    /**
+     * Executes an executable script with the specified variables . If the mandatory data for executing
+     * the script has not been provided, the script will not be executed at all.
+     *
+     * @param scriptExecutor   the script executor that executes the script.
+     * @param context          the transformer context of the transformation.
+     * @param rule             the rule of the transformation.
+     * @param executableScript the script that should be executed.
+     * @param variables        the variables that the script requires.
+     * @param resultClass      the type of the result the script returns.
+     * @param <T>              the concrete class of the return type.
+     * @return the result of the script or <code>null</code> if specified executable script is <code>null</code>.
+     * @throws ScriptExecutionException thrown if the
+     */
+    @Nullable
+    public static <T> T executeScript( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TransformerContext context, @Nonnull AbstractRule rule, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
+    {
+        if ( executableScript == null )
+        {
+            return null;
+        }
+
+        final Map<String, Object> arguments = new HashMap<>();
+        rule.getDhisDataReferences().stream().filter( r -> StringUtils.isNotBlank( r.getScriptArgName() ) ).forEach( r -> arguments.put( r.getScriptArgName(), r.getDataReference() ) );
+
+        return scriptExecutor.execute( executableScript, context.getFhirVersion(), variables, arguments,
+            createScriptContextVariables( context, rule ), resultClass );
     }
 
     private TransformerUtils()

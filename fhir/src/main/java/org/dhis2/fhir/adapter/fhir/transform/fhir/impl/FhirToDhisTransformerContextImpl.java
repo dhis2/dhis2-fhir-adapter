@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
@@ -112,5 +113,12 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     public String getDhisUsername()
     {
         return getFhirRequest().getDhisUsername();
+    }
+
+    @Nonnull
+    @Override
+    public FhirVersion getFhirVersion()
+    {
+        return getFhirRequest().getVersion();
     }
 }

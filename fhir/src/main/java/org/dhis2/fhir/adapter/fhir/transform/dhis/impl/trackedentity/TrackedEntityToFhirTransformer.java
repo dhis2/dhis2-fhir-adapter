@@ -118,8 +118,8 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         }
 
         // transform organization unit into output FHIR resource
-        if ( (rule.getExpOuTransformScript() != null) && !Boolean.TRUE.equals( getScriptExecutor().execute(
-            rule.getExpOuTransformScript(), context.getVersion(), variables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) ) )
+        if ( (rule.getExpOuTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, rule, rule.getExpOuTransformScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
             return null;
@@ -127,8 +127,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
         // transformation of GEO information must follow normal transformation since normal transformation may reset this information
         if ( (rule.getExpGeoTransformScript() != null) &&
-            !Boolean.TRUE.equals( getScriptExecutor().execute(
-                rule.getExpGeoTransformScript(), context.getVersion(), variables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) ) )
+            !Boolean.TRUE.equals( executeScript( context, rule, rule.getExpGeoTransformScript(), variables, Boolean.class ) ) )
         {
             return null;
         }

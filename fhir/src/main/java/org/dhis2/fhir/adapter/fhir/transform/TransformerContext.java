@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.transform;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -38,9 +41,14 @@ import javax.annotation.Nullable;
 public interface TransformerContext
 {
     /**
-     * @return the DHIS username that is used for processing
-     * the current request.
+     * @return the DHIS username that is used for processing the current request.
      */
     @Nullable
     String getDhisUsername();
+
+    /**
+     * @return the FHIR version that is used for the current request.
+     */
+    @Nonnull
+    FhirVersion getFhirVersion();
 }

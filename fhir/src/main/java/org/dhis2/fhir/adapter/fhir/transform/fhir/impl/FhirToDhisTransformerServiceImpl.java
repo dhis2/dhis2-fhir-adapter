@@ -203,6 +203,6 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         {
             return true;
         }
-        return Boolean.TRUE.equals( scriptExecutor.execute( rule.getApplicableImpScript(), context.getFhirRequest().getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), Boolean.class ) );
+        return Boolean.TRUE.equals( TransformerUtils.executeScript( scriptExecutor, context, rule, rule.getApplicableImpScript(), scriptVariables, Boolean.class ) );
     }
 }

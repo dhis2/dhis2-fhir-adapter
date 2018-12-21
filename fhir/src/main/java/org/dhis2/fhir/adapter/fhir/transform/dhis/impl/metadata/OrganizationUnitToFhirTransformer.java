@@ -151,6 +151,6 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Nullable
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit, @Nonnull Map<String, Object> scriptVariables )
     {
-        return getScriptExecutor().execute( rule.getIdentifierLookupScript(), context.getVersion(), scriptVariables, TransformerUtils.createScriptContextVariables( context, rule ), String.class );
+        return executeScript( context, rule, rule.getIdentifierLookupScript(), scriptVariables, String.class );
     }
 }
