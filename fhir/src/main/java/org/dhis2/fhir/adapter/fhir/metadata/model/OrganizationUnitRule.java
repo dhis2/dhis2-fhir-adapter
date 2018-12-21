@@ -57,6 +57,8 @@ public class OrganizationUnitRule extends AbstractRule
 
     private ExecutableScript identifierLookupScript;
 
+    private ExecutableScript managingOrgIdentifierLookupScript;
+
     public OrganizationUnitRule()
     {
         super( DhisResourceType.ORGANISATION_UNIT );
@@ -72,6 +74,18 @@ public class OrganizationUnitRule extends AbstractRule
     public void setIdentifierLookupScript( ExecutableScript identifierLookupScript )
     {
         this.identifierLookupScript = identifierLookupScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "mo_identifier_lookup_script_id" )
+    public ExecutableScript getManagingOrgIdentifierLookupScript()
+    {
+        return managingOrgIdentifierLookupScript;
+    }
+
+    public void setManagingOrgIdentifierLookupScript( ExecutableScript managingOrgIdentifierLookupScript )
+    {
+        this.managingOrgIdentifierLookupScript = managingOrgIdentifierLookupScript;
     }
 
     @Transient

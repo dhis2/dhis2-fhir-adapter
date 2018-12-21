@@ -41,6 +41,7 @@ public enum TransformDataType
     DHIS_TRACKED_ENTITY_INSTANCE( null ),
     DHIS_ENROLLMENT( null ),
     DHIS_EVENT( null ),
+    FHIR_LOCATION( FhirResourceType.LOCATION ),
     FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
     FHIR_PATIENT( FhirResourceType.PATIENT ),
     FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),

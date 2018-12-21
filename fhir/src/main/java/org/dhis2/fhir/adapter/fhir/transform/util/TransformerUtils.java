@@ -123,7 +123,10 @@ public abstract class TransformerUtils
         }
 
         final Map<String, Object> arguments = new HashMap<>();
-        rule.getDhisDataReferences().stream().filter( r -> StringUtils.isNotBlank( r.getScriptArgName() ) ).forEach( r -> arguments.put( r.getScriptArgName(), r.getDataReference() ) );
+        if ( rule.getDhisDataReferences() != null )
+        {
+            rule.getDhisDataReferences().stream().filter( r -> StringUtils.isNotBlank( r.getScriptArgName() ) ).forEach( r -> arguments.put( r.getScriptArgName(), r.getDataReference() ) );
+        }
 
         return scriptExecutor.execute( executableScript, context.getFhirVersion(), variables, arguments,
             createScriptContextVariables( context, rule ), resultClass );

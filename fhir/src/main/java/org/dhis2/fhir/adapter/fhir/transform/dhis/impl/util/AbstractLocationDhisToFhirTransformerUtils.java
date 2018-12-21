@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,44 +28,44 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 /**
- * Mutable or immutable organization unit resource that can be used by scripts safely.
+ * DHIS2 to FHIR transformer utility methods for FHIR identifiers.
  *
  * @author volsch
  */
 @Scriptable
-public interface ScriptedOrganizationUnit extends ScriptedDhisResource
+@ScriptType( value = "LocationUtils", transformType = ScriptTransformType.EXP, var = AbstractLocationDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle DHIS2 to FHIR transformations of FHIR locations." )
+public abstract class AbstractLocationDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
-    @Nullable
-    String getCode();
+    public static final String SCRIPT_ATTR_NAME = "locationUtils";
+
+    protected AbstractLocationDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
+
+    @Nonnull
+    @Override
+    public final String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
 
     @Nullable
-    String getName();
-
-    @Nullable
-    String getShortName();
-
-    @Nullable
-    String getDisplayName();
-
-    boolean isLeaf();
-
-    int getLevel();
-
-    @Nullable
-    ZonedDateTime getOpeningDate();
-
-    @Nullable
-    ZonedDateTime getClosedDate();
-
-    @Nullable
-    String getParentId();
-
-    @Nullable
-    String getCoordinates();
+    @ScriptMethod( description = "Returns the location status for the specified code.",
+        args = @ScriptMethodArg( value = "code", description = "The code for which a location status should be returned." ),
+        returnDescription = "The location status for the specified code." )
+    public abstract Enum<?> getLocationStatus( @Nonnull String code ) throws TransformerException;
 }

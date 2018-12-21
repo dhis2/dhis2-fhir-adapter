@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -146,7 +147,8 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
     @Nullable
     @Override
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull ScriptedEvent scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull ProgramStageRule rule, @Nullable ExecutableScript identifierLookupScript,
+        @Nonnull ScriptedEvent scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
     {
         // for events no identifier value can be created
         return null;

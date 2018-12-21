@@ -69,6 +69,8 @@ public class OrganizationUnit implements DhisResource, Serializable
 
     private Id parent;
 
+    private String coordinates;
+
     @JsonIgnore
     @Nonnull
     @Override
@@ -213,5 +215,15 @@ public class OrganizationUnit implements DhisResource, Serializable
     public void setParentId( String parentId )
     {
         this.parent = (parent == null) ? null : new Id( parentId );
+    }
+
+    public String getCoordinates()
+    {
+        return coordinates;
+    }
+
+    public void setCoordinates( String coordinates )
+    {
+        this.coordinates = coordinates;
     }
 }

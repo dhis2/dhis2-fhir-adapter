@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
@@ -170,8 +171,13 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
     @Override
     @Nullable
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nullable ExecutableScript identifierLookupScript,
+        @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
     {
+        if ( identifierLookupScript != null )
+        {
+            throw new FatalTransformerException( "Lookup of tracked entity instance identifier cannot be made with an alternative lookup script." );
+        }
         return getTrackedEntityIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
     }
 }

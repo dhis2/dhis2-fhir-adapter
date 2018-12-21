@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -149,8 +150,9 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Override
     @Nullable
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit, @Nonnull Map<String, Object> scriptVariables )
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
+        @Nonnull Map<String, Object> scriptVariables )
     {
-        return executeScript( context, rule, rule.getIdentifierLookupScript(), scriptVariables, String.class );
+        return executeScript( context, rule, (identifierLookupScript == null) ? rule.getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
     }
 }

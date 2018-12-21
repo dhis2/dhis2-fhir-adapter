@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
@@ -47,5 +48,5 @@ public interface IdentifierValueProvider<U extends AbstractRule, R extends Scrip
 {
     @Nullable
     String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
-        @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
+        @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
 }

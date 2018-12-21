@@ -42,12 +42,6 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * Mutable organization unit resource that can be used by scripts safely.
- *
- * @author volsch
- */
-
-/**
  * Writable scripted tracked entity instance that is used in evaluation and transformation
  * scripts and prevents accesses to the tracked entity instance domain object.
  *
@@ -174,6 +168,13 @@ public class WritableScriptedOrganizationUnit implements ScriptedOrganizationUni
     public String getParentId()
     {
         return organizationUnit.getParentId();
+    }
+
+    @Nullable
+    @Override
+    public String getCoordinates()
+    {
+        return organizationUnit.getCoordinates();
     }
 
     @Override

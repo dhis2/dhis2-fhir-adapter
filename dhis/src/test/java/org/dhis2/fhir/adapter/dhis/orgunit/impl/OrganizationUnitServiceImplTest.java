@@ -74,7 +74,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceId() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnit.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
@@ -86,7 +86,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
@@ -96,7 +96,7 @@ public class OrganizationUnitServiceImplTest
     @Test( expected = HttpServerErrorException.class )
     public void findOneByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits/93783.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
         service.findOneByReference( new Reference( "93783", ReferenceType.ID ) );
     }
@@ -104,7 +104,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceCode() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
@@ -116,7 +116,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceCodeNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/emptyOrganisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
@@ -126,7 +126,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceName() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/organisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );
@@ -138,7 +138,7 @@ public class OrganizationUnitServiceImplTest
     @Test
     public void findOneByReferenceNameNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
+        mockServer.expect( requestTo( "http://localhost:8080/api/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/orgunit/impl/emptyOrganisationUnits.json" ), MediaType.APPLICATION_JSON ) );
 
         Optional<OrganizationUnit> ou = service.findOneByReference( new Reference( "Freetown", ReferenceType.NAME ) );

@@ -199,12 +199,15 @@ ALTER TABLE fhir_resource_mapping
   ADD CONSTRAINT fhir_resource_mapping_fk11 FOREIGN KEY (exp_date_transform_script_id) REFERENCES fhir_executable_script(id);
 
 -- Script that sets for a data element if a FHIR Immunization has been given
-INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type, base_script_id)
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
 VALUES ('c8a937b5-665b-485c-bbc9-7a83e21a4e47', 0, 'TRANSFORM_DHIS_IMMUNIZATION_YN', 'Transforms DHIS Immunization Y/N data element to FHIR', 'Transforms DHIS Immunization Y/N data element to FHIR.',
-'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_IMMUNIZATION', '3487e94d-0525-44c5-a2df-ebb00a398e94');
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_IMMUNIZATION');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'INPUT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('36c2d0a9-d923-4476-8ab5-b94808bd5ade', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element with given vaccine on which Y/N must be set.');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
 VALUES ('6ede1e58-17c1-49bd-a7e4-36ef9c87521f', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47',
 'var result;
@@ -246,3 +249,111 @@ ALTER TABLE fhir_system_code ALTER COLUMN display_name SET NOT NULL;
 --- MMR is marked as preferred measles vaccine
 UPDATE fhir_code_set_value SET preferred_export=TRUE
 WHERE code_set_id='31c6b008-eb0d-48a3-970d-70725b92bd24' AND code_id='71f5536a-2587-45b9-88ac-9aba362a424a';
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('655f55b5-3826-4fe7-b38e-1e29bcad09ec', 0, 'Returns FHIR Location Identifier for DHIS Org Unit', 'DHIS_ORG_UNIT_IDENTIFIER_LOC',
+        'Returns the FHIR Location Identifier for the DHIS Org Unit.', 'EVALUATE', 'STRING', NULL, NULL);
+UPDATE fhir_script SET base_script_id = (SELECT id FROM fhir_script WHERE id = 'a250e109-a135-42b2-8bdb-1c050c1d384c')
+WHERE id='655f55b5-3826-4fe7-b38e-1e29bcad09ec';
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('655f55b5-3826-4fe7-b38e-1e29bcad09ec', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('655f55b5-3826-4fe7-b38e-1e29bcad09ec', 'INPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('1a2bf7fc-2908-4148-8a53-5edde593a4e9', 0, '655f55b5-3826-4fe7-b38e-1e29bcad09ec',
+'var code = null;
+if ((input.getCode() != null) && !input.getCode().isEmpty())
+{
+  code = codeUtils.getByMappedCode(input.getCode(), ''LOCATION'');
+  if ((code == null) && args[''useIdentifierCode''])
+  {
+    code = codeUtils.getCodeWithoutPrefix(input.getCode(), ''LOCATION'');
+  }
+}
+code', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('1a2bf7fc-2908-4148-8a53-5edde593a4e9', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('5090c485-a225-4c2e-a8f6-95fa74ce1618', 0, '655f55b5-3826-4fe7-b38e-1e29bcad09ec',
+        'Returns FHIR Location Identifier for DHIS Org Unit', 'DHIS_ORG_UNIT_IDENTIFIER_LOC',
+        'Returns FHIR Location Identifier for the DHIS Org Unit.');
+-- Link to base script for transformation of Org Unit Code from FHIR Resource
+-- (may have been deleted in the meanwhile)
+UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '25a97bb4-7b39-4ed4-8677-db4bcaa28ccf')
+WHERE id='5090c485-a225-4c2e-a8f6-95fa74ce1618';
+
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_LOCATION');
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type, base_script_id)
+VALUES ('b3568beb-5a5d-4059-9b4e-3afa0157adbc', 0, 'Transforms DHIS Org Unit to FHIR Location', 'TRANSFORM_DHIS_ORG_UNIT_FHIR_LOC',
+        'Transforms DHIS Organization Unit to FHIR Organization.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_ORGANIZATION_UNIT', 'FHIR_LOCATION', 'f8faecad-964f-402c-8cb4-a8271085528d');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('b3568beb-5a5d-4059-9b4e-3afa0157adbc', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('b3568beb-5a5d-4059-9b4e-3afa0157adbc', 'INPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('4bb9745e-43c0-455f-beee-98e95c83df3d', 0, 'b3568beb-5a5d-4059-9b4e-3afa0157adbc',
+'output.setManagingOrganization(null);
+output.setOperationalStatus(null);
+output.setPartOf(null);
+output.setPhysicalType(null);
+if (input.getParentId() != null)
+{
+  var parentOrganizationUnit = organizationUnitResolver.getMandatoryById(input.getParentId());
+  var parentLocation = organizationUnitResolver.getFhirResource(parentOrganizationUnit);
+  if (parentLocation == null)
+  {
+    context.missingDhisResource(parentOrganizationUnit.getResourceId());
+  }
+  output.getPartOf().setReferenceElement(parentLocation.getIdElement().toUnqualifiedVersionless());
+}
+if (input.getLevel() === args[''facilityLevel''])
+{
+  var organization = organizationUnitResolver.getFhirResource(input, ''ORGANIZATION'');
+  if (organization == null)
+  {
+    context.missingDhisResource(input.getResourceId());
+  }
+  output.getManagingOrganization().setReferenceElement(organization.getIdElement().toUnqualifiedVersionless());
+  output.getPhysicalType().addCoding().setSystem(''http://hl7.org/fhir/location-physical-type'').setCode(''si'').setDisplay(''Site'');
+}
+if (input.getLevel() < args[''facilityLevel''])
+{
+  output.getPhysicalType().addCoding().setSystem(''http://hl7.org/fhir/location-physical-type'').setCode(''jdn'').setDisplay(''Jurisdiction'');
+}
+if (input.getClosedDate() == null)
+{
+  output.setStatus(locationUtils.getLocationStatus(''active''));
+}
+else
+{
+  output.setStatus(locationUtils.getLocationStatus(''inactive''));
+}
+output.setPosition(geoUtils.createLocationPosition(input.getCoordinates()));
+output.setName(input.getName());
+output.getAlias().clear();
+if ((input.getShortName() != null) && !input.getShortName().equals(input.getName()))
+{
+  output.addAlias(input.getShortName());
+}
+if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.getName()) && !fhirResourceUtils.containsString(output.getAlias(), input.getDisplayName()))
+{
+  output.addAlias(input.getDisplayName());
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('4bb9745e-43c0-455f-beee-98e95c83df3d', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description, base_executable_script_id)
+VALUES ('b918b4cd-67fc-4d4d-9b74-91f98730acd7', 0, 'b3568beb-5a5d-4059-9b4e-3afa0157adbc',
+        'Transforms DHIS Org Unit to FHIR Location', 'TRANSFORM_DHIS_ORG_UNIT_FHIR_LOC',
+        'Transforms DHIS Organization Unit to FHIR Location.', 'a8485045-4d62-4b3a-9cfd-5c36760b8d45');
+
+ALTER TABLE fhir_organization_unit_rule
+  ADD COLUMN mo_identifier_lookup_script_id UUID,
+  ADD CONSTRAINT fhir_organization_unit_rule_fk3 FOREIGN KEY (mo_identifier_lookup_script_id) REFERENCES fhir_executable_script(id);
+CREATE INDEX fhir_organization_unit_rule_i2 ON fhir_organization_unit_rule(mo_identifier_lookup_script_id);
+
+UPDATE fhir_rule SET evaluation_order=2 WHERE id='d0e1472a-05e6-47c9-b36b-ff1f06fec352';
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id)
+VALUES ('b9546b02-4adc-4868-a4cd-d5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd-67fc-4d4d-9b74-91f98730acd7');
+INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_identifier_lookup_script_id) VALUES ('b9546b02-4adc-4868-a4cd-d5d7789f0df0', '5090c485-a225-4c2e-a8f6-95fa74ce1618', '66d12e44-471c-4318-827a-0b397f694b6a');

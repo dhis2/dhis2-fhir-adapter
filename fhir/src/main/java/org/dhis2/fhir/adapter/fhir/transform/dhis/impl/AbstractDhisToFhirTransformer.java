@@ -228,7 +228,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             return Optional.empty();
         }
 
-        final String identifierValue = identifierValueProvider.getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
+        final String identifierValue = identifierValueProvider.getIdentifierValue( context, rule, null, scriptedDhisResource, scriptVariables );
         if ( identifierValue == null )
         {
             logger.info( "FHIR resource type {} defines resource system, but resource does not include an identifier.", rule.getFhirResourceType() );
@@ -266,7 +266,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         final ResourceSystem resourceSystem = context.getResourceSystem( rule.getFhirResourceType() );
         if ( resourceSystem != null )
         {
-            final String identifierValue = getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
+            final String identifierValue = getIdentifierValue( context, rule, null, scriptedDhisResource, scriptVariables );
             if ( identifierValue == null )
             {
                 logger.info( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", rule.getFhirResourceType() );
@@ -305,7 +305,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     @Nullable
     protected abstract String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule,
-        @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
+        @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
 
     protected void lockFhirIdentifier( @Nonnull SystemCodeValue systemCodeValue )
     {
@@ -397,9 +397,9 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     {
         @Nullable
         @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
+        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull U rule, @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
         {
-            return AbstractDhisToFhirTransformer.this.getIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
+            return AbstractDhisToFhirTransformer.this.getIdentifierValue( context, rule, identifierLookupScript, scriptedDhisResource, scriptVariables );
         }
     }
 
@@ -407,8 +407,13 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     {
         @Nullable
         @Override
-        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
+        public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedTrackedEntityInstance scriptedDhisResource, @Nonnull Map<String,
+            Object> scriptVariables )
         {
+            if ( identifierLookupScript != null )
+            {
+                throw new FatalTransformerException( "Identifier value of a tracked entity instance cannot be looked up with an alternative lookup script." );
+            }
             return AbstractDhisToFhirTransformer.this.getTrackedEntityIdentifierValue( context, rule, scriptedDhisResource, scriptVariables );
         }
     }

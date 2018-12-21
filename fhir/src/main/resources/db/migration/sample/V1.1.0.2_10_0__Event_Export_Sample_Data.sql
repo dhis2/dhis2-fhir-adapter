@@ -36,3 +36,14 @@ UPDATE fhir_tracker_program_stage SET exp_enabled = true;
 UPDATE fhir_tracker_program_stage SET fhir_update_enabled = true;
 UPDATE fhir_tracker_program SET exp_enabled = true;
 UPDATE fhir_tracker_program SET fhir_update_enabled = true;
+
+UPDATE fhir_rule SET exp_enabled = true, fhir_update_enabled = true WHERE id = 'b9546b02-4adc-4868-a4cd-d5d7789f0df0';
+
+-- virtual subscription for FHIR locations
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
+VALUES ('527d1f3d-623e-4c23-af8f-8f817d902b34', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'LOCATION', TRUE, NULL, 'Virtual subscription for all Locations.');
+INSERT INTO fhir_remote_subscription_resource_update(id)
+VALUES ('527d1f3d-623e-4c23-af8f-8f817d902b34');
+
+INSERT INTO fhir_remote_subscription_system (id, version, remote_subscription_id, fhir_resource_type, system_id)
+VALUES ('480f0223-9d7e-4cfc-9215-c528186df149', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'LOCATION', '2dd51309-3319-40d2-9a1f-be2a102df4a7');

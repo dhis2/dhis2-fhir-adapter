@@ -35,11 +35,12 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractGeoDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
-import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Element;
 import org.hl7.fhir.dstu3.model.Extension;
+import org.hl7.fhir.dstu3.model.Location.LocationPositionComponent;
+import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -55,12 +56,9 @@ import java.util.Set;
 @Scriptable
 public class Dstu3GeoDhisToFhirTransformerUtils extends AbstractGeoDhisToFhirTransformerUtils
 {
-    private final ValueConverter valueConverter;
-
     public Dstu3GeoDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutionContext );
-        this.valueConverter = valueConverter;
     }
 
     @Nonnull
@@ -71,21 +69,31 @@ public class Dstu3GeoDhisToFhirTransformerUtils extends AbstractGeoDhisToFhirTra
     }
 
     @Override
-    public void updateAddress( @Nonnull IElement element, @Nullable String coordinates ) throws TransformerException
+    public void updateAddress( @Nonnull IElement element, @Nullable Location location ) throws TransformerException
     {
         final Element e = (Element) element;
         e.getExtension().removeIf( i -> i.hasExtension( GEO_LOCATION_URI ) );
+        if ( location != null )
+        {
+            e.addExtension().setUrl( GEO_LOCATION_URI )
+                .addExtension( new Extension().setUrl( LATITUDE_URL )
+                    .setValue( new DecimalType( location.getLatitude() ) ) )
+                .addExtension( new Extension().setUrl( LONGITUDE_URL )
+                    .setValue( new DecimalType( location.getLongitude() ) ) );
+        }
+    }
 
-        final Location location = valueConverter.convert( coordinates, ValueType.COORDINATE, Location.class );
+    @Nullable
+    @Override
+    protected IBaseBackboneElement createLocationPosition( @Nullable Location location )
+    {
         if ( location == null )
         {
-            return;
+            return null;
         }
-
-        e.addExtension().setUrl( GEO_LOCATION_URI )
-            .addExtension( new Extension().setUrl( LATITUDE_URL )
-                .setValue( new DecimalType( location.getLatitude() ) ) )
-            .addExtension( new Extension().setUrl( LONGITUDE_URL )
-                .setValue( new DecimalType( location.getLongitude() ) ) );
+        final LocationPositionComponent lpc = new LocationPositionComponent();
+        lpc.setLatitude( location.getLatitude() );
+        lpc.setLongitude( location.getLongitude() );
+        return lpc;
     }
 }

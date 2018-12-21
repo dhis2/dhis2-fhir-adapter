@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,44 +28,52 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractLocationDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.Location;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
+import java.util.Set;
 
 /**
- * Mutable or immutable organization unit resource that can be used by scripts safely.
+ * DSTU3 specific implementation of {@link AbstractLocationDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
 @Scriptable
-public interface ScriptedOrganizationUnit extends ScriptedDhisResource
+@Component
+public class Dstu3LocationDhisToFhirTransformerUtils extends AbstractLocationDhisToFhirTransformerUtils
 {
-    @Nullable
-    String getCode();
+    public Dstu3LocationDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
+    }
 
     @Nullable
-    String getName();
-
-    @Nullable
-    String getShortName();
-
-    @Nullable
-    String getDisplayName();
-
-    boolean isLeaf();
-
-    int getLevel();
-
-    @Nullable
-    ZonedDateTime getOpeningDate();
-
-    @Nullable
-    ZonedDateTime getClosedDate();
-
-    @Nullable
-    String getParentId();
-
-    @Nullable
-    String getCoordinates();
+    @Override
+    public Enum<?> getLocationStatus( @Nonnull String code ) throws TransformerException
+    {
+        try
+        {
+            return Location.LocationStatus.fromCode( code );
+        }
+        catch ( FHIRException e )
+        {
+            throw new TransformerScriptException( "Unknown location status code: " + code, e );
+        }
+    }
 }

@@ -31,12 +31,14 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IBaseBackboneElement;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +60,8 @@ public abstract class AbstractGeoDhisToFhirTransformerUtils extends AbstractDhis
     protected static final String LATITUDE_URL = "latitude";
 
     protected static final String LONGITUDE_URL = "longitude";
+
+    private final StringToLocationConverter stringToLocationConverter = new StringToLocationConverter();
 
     protected AbstractGeoDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -84,5 +88,35 @@ public abstract class AbstractGeoDhisToFhirTransformerUtils extends AbstractDhis
             @ScriptMethodArg( value = "element", description = "The FHIR element address from which the location should be returned." ),
             @ScriptMethodArg( value = "coordinates", description = "The coordinates (must be a single point as location) that should be set as GEO location extension in the address." )
         } )
-    public abstract void updateAddress( @Nonnull IElement element, @Nullable String coordinates ) throws TransformerException;
+    public void updateAddress( @Nonnull IElement element, @Nullable String coordinates ) throws TransformerException
+    {
+        if ( StringToLocationConverter.isLocation( coordinates ) )
+        {
+            final Location location = stringToLocationConverter.convert( coordinates );
+            updateAddress( element, location );
+        }
+        else
+        {
+            updateAddress( element, (Location) null );
+        }
+    }
+
+    @Nullable
+    @ScriptMethod( description = "Creates the location position from the specified coordinates (latitude and longitude).",
+        args = @ScriptMethodArg( value = "coordinates", description = "The coordinates (must be a single point as location) that should be set as GEO location extension in the address." ),
+        returnDescription = "Returns the coordinates as location position with latitude and longitude or null if the coordinates do not specify a position." )
+    public IBaseBackboneElement createLocationPosition( @Nullable String coordinates )
+    {
+        if ( !StringToLocationConverter.isLocation( coordinates ) )
+        {
+            return null;
+        }
+        final Location location = stringToLocationConverter.convert( coordinates );
+        return createLocationPosition( location );
+    }
+
+    public abstract void updateAddress( @Nonnull IElement element, @Nullable Location location );
+
+    @Nullable
+    protected abstract IBaseBackboneElement createLocationPosition( @Nullable Location location );
 }

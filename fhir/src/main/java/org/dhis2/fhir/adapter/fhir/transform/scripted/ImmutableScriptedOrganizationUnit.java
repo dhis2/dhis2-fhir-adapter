@@ -165,6 +165,13 @@ public class ImmutableScriptedOrganizationUnit implements ScriptedOrganizationUn
         return delegate.getTrackedEntityInstance();
     }
 
+    @Nullable
+    @Override
+    public String getCoordinates()
+    {
+        return delegate.getCoordinates();
+    }
+
     @Override
     public void validate() throws TransformerException
     {
