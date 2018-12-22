@@ -35,10 +35,13 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResource
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Base;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
@@ -89,6 +92,17 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
     public ICompositeType createCodeableConcept()
     {
         return new CodeableConcept();
+    }
+
+    @Nonnull
+    @Override
+    public IBaseReference createReference( @Nonnull IBaseResource resource )
+    {
+        if ( resource.getIdElement().isEmpty() || resource.getIdElement().isLocal() )
+        {
+            return new Reference( (Resource) resource );
+        }
+        return new Reference( resource.getIdElement() );
     }
 
     @Override

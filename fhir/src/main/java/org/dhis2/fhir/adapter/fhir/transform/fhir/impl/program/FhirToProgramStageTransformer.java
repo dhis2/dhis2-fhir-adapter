@@ -276,11 +276,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     {
         if ( program.isCaptureCoordinates() && (scriptedEnrollment.getCoordinate() == null) )
         {
-            scriptedEnrollment.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEnrollmentLocationLookupScript(), scriptVariables ) );
+            scriptedEnrollment.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEnrollmentGeoLookupScript(), scriptVariables ) );
         }
         if ( programStage.isCaptureCoordinates() && (scriptedEvent.getCoordinate() == null) )
         {
-            scriptedEvent.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEventLocationLookupScript(), scriptVariables ) );
+            scriptedEvent.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEventGeoLookupScript(), scriptVariables ) );
         }
     }
 

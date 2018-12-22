@@ -67,7 +67,6 @@ public interface RemoteFhirResourceRepository
     @Nonnull
     Optional<IBaseResource> findByCode( @Nonnull UUID remoteSubscriptionId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
 
-
     @Nonnull
     IBaseResource save( @Nonnull RemoteSubscription subscription, @Nonnull IBaseResource resource );
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,31 +28,14 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
+import org.dhis2.fhir.adapter.dhis.poll.PolledItem;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * The polled items of an organization units.
  *
  * @author volsch
  */
-public interface OrganizationUnitService
+public class OrganizationUnitPolledItem extends PolledItem
 {
-    @Nonnull
-    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    private static final long serialVersionUID = 1293380714892822351L;
 }

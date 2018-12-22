@@ -85,7 +85,7 @@ public class Dstu3GeoDhisToFhirTransformerUtils extends AbstractGeoDhisToFhirTra
 
     @Nullable
     @Override
-    protected IBaseBackboneElement createLocationPosition( @Nullable Location location )
+    public IBaseBackboneElement createPosition( @Nullable Location location )
     {
         if ( location == null )
         {

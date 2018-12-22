@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
@@ -63,6 +64,8 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
 
     private final Authorization systemDhis2Authorization;
 
+    private final OrganizationUnitService organizationUnitService;
+
     private final TrackedEntityService trackedEntityService;
 
     private final EventService eventService;
@@ -73,6 +76,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         @Nonnull AuthorizationContext authorizationContext,
         @Nonnull @Qualifier( "systemDhis2Authorization" ) Authorization systemDhis2Authorization,
         @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
+        @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull EventService eventService,
         @Nonnull DhisSyncProcessorConfig processorConfig,
@@ -83,6 +87,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         this.excludedDhisUsernameRetriever = excludedDhisUsernameRetriever;
         this.trackedEntityService = trackedEntityService;
         this.eventService = eventService;
+        this.organizationUnitService = organizationUnitService;
         this.processorConfig = processorConfig;
     }
 
@@ -90,15 +95,19 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
     @Override
     public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
+        final int toleranceMillis = processorConfig.getToleranceMillis();
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
             final Set<String> excludedDhisUsernames = excludedDhisUsernameRetriever.findAllDhisUsernames();
             Instant result;
 
-            result = trackedEntityService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
+            result = organizationUnitService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
                 excludedDhisUsernames, consumer );
-            Instant currentResult = eventService.poll( group, lastUpdated, processorConfig.getToleranceMillis(), maxSearchCount,
+            Instant currentResult = trackedEntityService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                excludedDhisUsernames, consumer );
+            result = ObjectUtils.min( result, currentResult );
+            currentResult = eventService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
                 excludedDhisUsernames, consumer );
             result = ObjectUtils.min( result, currentResult );
 

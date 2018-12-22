@@ -112,11 +112,11 @@ public abstract class AbstractGeoDhisToFhirTransformerUtils extends AbstractDhis
             return null;
         }
         final Location location = stringToLocationConverter.convert( coordinates );
-        return createLocationPosition( location );
+        return createPosition( location );
     }
 
-    public abstract void updateAddress( @Nonnull IElement element, @Nullable Location location );
-
     @Nullable
-    protected abstract IBaseBackboneElement createLocationPosition( @Nullable Location location );
+    public abstract IBaseBackboneElement createPosition( @Nullable Location location );
+
+    public abstract void updateAddress( @Nonnull IElement element, @Nullable Location location );
 }

@@ -69,8 +69,8 @@ public class BeforeCreateSaveFhirResourceMappingValidator implements Validator
             checkValidTeiLookupScript( errors, "teiLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpTeiLookupScript() );
             checkValidOrgLookupScript( errors, "FhirResourceMapping.", "enrollmentOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentOrgLookupScript() );
             checkValidOrgLookupScript( errors, "FhirResourceMapping.", "eventOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventOrgLookupScript() );
-            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "enrollmentLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentLocationLookupScript() );
-            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "eventLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventLocationLookupScript() );
+            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "enrollmentLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentGeoLookupScript() );
+            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "eventLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventGeoLookupScript() );
             checkValidDateLookupScript( errors, "enrollmentDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentDateLookupScript() );
             checkValidDateLookupScript( errors, "eventDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventDateLookupScript() );
             checkValidDateLookupScript( errors, "effectiveDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEffectiveDateLookupScript() );

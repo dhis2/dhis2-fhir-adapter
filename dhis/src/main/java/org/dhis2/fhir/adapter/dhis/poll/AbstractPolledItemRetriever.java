@@ -196,11 +196,11 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         {
             queryParams.append( '&' );
         }
-        queryParams.append( "lastUpdatedStartDate={lastUpdatedStartDate}" );
+        queryParams.append( getStartDateInclFilter() );
         queryVariables.add( formatLastUpdated( fromLastUpdated ) );
         if ( currentToLastUpdated != null )
         {
-            queryParams.append( "&lastUpdatedEndDate={lastUpdatedEndDate}" );
+            queryParams.append( '&' ).append( getEndDateExclFilter() );
             queryVariables.add( formatLastUpdated( currentToLastUpdated.plus( 1, ChronoUnit.MILLIS ) ) );
         }
         queryParams.append( "&pageSize={maxSearchCount}" );
@@ -210,6 +210,18 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
 
         final ResponseEntity<P> entity = restTemplate.getForEntity( queryUri + queryParams, polledItemsClass, queryVariables.toArray() );
         return Objects.requireNonNull( entity.getBody() );
+    }
+
+    @Nonnull
+    protected String getStartDateInclFilter()
+    {
+        return "lastUpdatedStartDate={lastUpdatedStartDate}";
+    }
+
+    @Nonnull
+    protected String getEndDateExclFilter()
+    {
+        return "lastUpdatedEndDate={lastUpdatedEndDate}";
     }
 
     @Nonnull

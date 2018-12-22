@@ -109,7 +109,6 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         {
             return null;
         }
-
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 

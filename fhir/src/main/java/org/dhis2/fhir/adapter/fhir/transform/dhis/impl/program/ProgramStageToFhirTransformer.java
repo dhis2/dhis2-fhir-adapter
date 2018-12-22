@@ -30,9 +30,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
@@ -69,9 +71,13 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public ProgramStageToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+    private final FhirResourceMappingRepository resourceMappingRepository;
+
+    public ProgramStageToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+        @Nonnull FhirResourceMappingRepository resourceMappingRepository )
     {
         super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository );
+        this.resourceMappingRepository = resourceMappingRepository;
     }
 
     @Nonnull
@@ -101,21 +107,37 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
         @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        final FhirResourceMapping resourceMapping = getResourceMapping( rule );
+
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( remoteSubscription, context,
             rule.getProgramStage().getProgram().getTrackedEntityRule(), Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
             .orElseThrow( () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, scriptVariables ).orElse( null );
+        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
         }
-
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
         if ( !transform( context, rule, variables ) )
+        {
+            return null;
+        }
+
+        if ( (resourceMapping.getExpOrgUnitTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, rule, resourceMapping.getExpOrgUnitTransformScript(), variables, Boolean.class ) ) )
+        {
+            logger.info( "DHIS Organization Unit {} could not be transformed into FHIR resource {}.",
+                input.getOrganizationUnitId(), resourceMapping.getFhirResourceType() );
+            return null;
+        }
+
+        // may update transformed organization unit
+        if ( (resourceMapping.getExpGeoTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, rule, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
         {
             return null;
         }
@@ -152,5 +174,12 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     {
         // for events no identifier value can be created
         return null;
+    }
+
+    @Nonnull
+    protected FhirResourceMapping getResourceMapping( @Nonnull ProgramStageRule rule )
+    {
+        return resourceMappingRepository.findByFhirResourceType( rule.getFhirResourceType() )
+            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
     }
 }

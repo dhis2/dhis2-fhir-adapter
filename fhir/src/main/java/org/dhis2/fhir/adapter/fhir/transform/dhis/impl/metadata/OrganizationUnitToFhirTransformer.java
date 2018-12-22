@@ -113,7 +113,6 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         {
             return null;
         }
-
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
         if ( !transform( context, rule, variables ) )
