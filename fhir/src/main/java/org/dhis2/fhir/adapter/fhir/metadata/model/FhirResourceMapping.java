@@ -64,11 +64,15 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript impEventDateLookupScript;
 
-    private ExecutableScript impEnrollmentLocationLookupScript;
+    private ExecutableScript impEnrollmentGeoLookupScript;
 
-    private ExecutableScript impEventLocationLookupScript;
+    private ExecutableScript impEventGeoLookupScript;
 
     private ExecutableScript impEffectiveDateLookupScript;
+
+    private ExecutableScript expOrgUnitTransformScript;
+
+    private ExecutableScript expGeoTransformScript;
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -144,27 +148,27 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     }
 
     @ManyToOne
-    @JoinColumn( name = "imp_enrollment_loc_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getImpEnrollmentLocationLookupScript()
+    @JoinColumn( name = "imp_enrollment_geo_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEnrollmentGeoLookupScript()
     {
-        return impEnrollmentLocationLookupScript;
+        return impEnrollmentGeoLookupScript;
     }
 
-    public void setImpEnrollmentLocationLookupScript( ExecutableScript enrollmentLocationLookupScript )
+    public void setImpEnrollmentGeoLookupScript( ExecutableScript enrollmentLocationLookupScript )
     {
-        this.impEnrollmentLocationLookupScript = enrollmentLocationLookupScript;
+        this.impEnrollmentGeoLookupScript = enrollmentLocationLookupScript;
     }
 
     @ManyToOne
-    @JoinColumn( name = "imp_event_loc_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getImpEventLocationLookupScript()
+    @JoinColumn( name = "imp_event_geo_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpEventGeoLookupScript()
     {
-        return impEventLocationLookupScript;
+        return impEventGeoLookupScript;
     }
 
-    public void setImpEventLocationLookupScript( ExecutableScript eventLocationLookupScript )
+    public void setImpEventGeoLookupScript( ExecutableScript eventLocationLookupScript )
     {
-        this.impEventLocationLookupScript = eventLocationLookupScript;
+        this.impEventGeoLookupScript = eventLocationLookupScript;
     }
 
     @ManyToOne
@@ -177,5 +181,29 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setImpEffectiveDateLookupScript( ExecutableScript effectiveDateLookupScript )
     {
         this.impEffectiveDateLookupScript = effectiveDateLookupScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_ou_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpOrgUnitTransformScript()
+    {
+        return expOrgUnitTransformScript;
+    }
+
+    public void setExpOrgUnitTransformScript( ExecutableScript expOrgUnitTransformScript )
+    {
+        this.expOrgUnitTransformScript = expOrgUnitTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_geo_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpGeoTransformScript()
+    {
+        return expGeoTransformScript;
+    }
+
+    public void setExpGeoTransformScript( ExecutableScript expLocationTransformScript )
+    {
+        this.expGeoTransformScript = expLocationTransformScript;
     }
 }

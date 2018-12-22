@@ -182,8 +182,8 @@ ALTER TABLE fhir_resource_mapping RENAME COLUMN enrollment_org_lookup_script_id 
 ALTER TABLE fhir_resource_mapping RENAME COLUMN event_org_lookup_script_id TO imp_event_org_lookup_script_id;
 ALTER TABLE fhir_resource_mapping RENAME COLUMN enrollment_date_lookup_script_id TO imp_enrollment_date_lookup_script_id;
 ALTER TABLE fhir_resource_mapping RENAME COLUMN event_date_lookup_script_id TO imp_event_date_lookup_script_id;
-ALTER TABLE fhir_resource_mapping RENAME COLUMN enrollment_loc_lookup_script_id TO imp_enrollment_loc_lookup_script_id;
-ALTER TABLE fhir_resource_mapping RENAME COLUMN event_loc_lookup_script_id TO imp_event_loc_lookup_script_id;
+ALTER TABLE fhir_resource_mapping RENAME COLUMN enrollment_loc_lookup_script_id TO imp_enrollment_geo_lookup_script_id;
+ALTER TABLE fhir_resource_mapping RENAME COLUMN event_loc_lookup_script_id TO imp_event_geo_lookup_script_id;
 ALTER TABLE fhir_resource_mapping RENAME COLUMN effective_date_lookup_script_id TO imp_effective_date_lookup_script_id;
 
 ALTER TABLE fhir_tracker_program
@@ -193,8 +193,8 @@ ALTER TABLE fhir_tracker_program
 ALTER TABLE fhir_resource_mapping
   ADD COLUMN exp_ou_transform_script_id UUID,
   ADD CONSTRAINT fhir_resource_mapping_fk9 FOREIGN KEY (exp_ou_transform_script_id) REFERENCES fhir_executable_script(id),
-  ADD COLUMN exp_loc_transform_script_id UUID,
-  ADD CONSTRAINT fhir_resource_mapping_fk10 FOREIGN KEY (exp_loc_transform_script_id) REFERENCES fhir_executable_script(id),
+  ADD COLUMN exp_geo_transform_script_id UUID,
+  ADD CONSTRAINT fhir_resource_mapping_fk10 FOREIGN KEY (exp_geo_transform_script_id) REFERENCES fhir_executable_script(id),
   ADD COLUMN exp_date_transform_script_id UUID,
   ADD CONSTRAINT fhir_resource_mapping_fk11 FOREIGN KEY (exp_date_transform_script_id) REFERENCES fhir_executable_script(id);
 
@@ -249,6 +249,12 @@ ALTER TABLE fhir_system_code ALTER COLUMN display_name SET NOT NULL;
 --- MMR is marked as preferred measles vaccine
 UPDATE fhir_code_set_value SET preferred_export=TRUE
 WHERE code_set_id='31c6b008-eb0d-48a3-970d-70725b92bd24' AND code_id='71f5536a-2587-45b9-88ac-9aba362a424a';
+
+-- script may have been deleted in the meanwhile
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+SELECT '253bcef6-42c7-46b2-807d-9da823d59f24', 0, 'a250e109-a135-42b2-8bdb-1c050c1d384c', 'useLocationIdentifierCode', 'BOOLEAN', TRUE, 'true',
+'Specifies if the identifier code itself with the default code prefix for locations should be used as fallback when no code mapping for the location identifier code exists.'
+FROM fhir_script WHERE id = 'a250e109-a135-42b2-8bdb-1c050c1d384c';
 
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('655f55b5-3826-4fe7-b38e-1e29bcad09ec', 0, 'Returns FHIR Location Identifier for DHIS Org Unit', 'DHIS_ORG_UNIT_IDENTIFIER_LOC',
@@ -357,3 +363,73 @@ UPDATE fhir_rule SET evaluation_order=2 WHERE id='d0e1472a-05e6-47c9-b36b-ff1f06
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id)
 VALUES ('b9546b02-4adc-4868-a4cd-d5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd-67fc-4d4d-9b74-91f98730acd7');
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_identifier_lookup_script_id) VALUES ('b9546b02-4adc-4868-a4cd-d5d7789f0df0', '5090c485-a225-4c2e-a8f6-95fa74ce1618', '66d12e44-471c-4318-827a-0b397f694b6a');
+
+UPDATE fhir_script_source SET source_text=
+'var ok = false;
+var resourceType = null;
+var code = null;
+if (output.location)
+{
+  if (!output.getLocation().isEmpty() && !args[''overrideExisting''])
+  {
+    ok = true;
+  }
+  else if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    output.setLocation(null);
+    ok = true;
+  }
+  else
+  {
+    resourceType = ''LOCATION'';
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''LOCATION'');
+    if ((code == null) && args[''useLocationIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''LOCATION'');
+    }
+  }
+}
+else if (output.managingOrganization)
+{
+  if (!output.getManagingOrganization().isEmpty() && !args[''overrideExisting''])
+  {
+    ok = true;
+  }
+  else if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    output.setManagingOrganization(null);
+    ok = true;
+  }
+  else
+  {
+    resourceType = ''ORGANIZATION'';
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
+    if ((code == null) && args[''useIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
+    }
+  }
+}
+if (code != null)
+{
+  var resource = fhirClientUtils.findBySystemIdentifier(resourceType, code);
+  if (resource == null)
+  {
+    context.missingDhisResource(organizationUnit.getResourceId());
+  }
+  if (output.location)
+  {
+    output.setLocation(null);
+    output.getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    ok = true;
+  }
+  else if (output.managingOrganization)
+  {
+    output.setManagingOrganization(null);
+    output.getManagingOrganization().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    ok = true;
+  }
+}
+ok' WHERE id = '78c2b73c-469c-4ab4-8244-07e817b72d4a';
+
+UPDATE fhir_resource_mapping SET exp_ou_transform_script_id = '416decee-4604-473a-b650-1a997d731ff0' WHERE fhir_resource_type='IMMUNIZATION';

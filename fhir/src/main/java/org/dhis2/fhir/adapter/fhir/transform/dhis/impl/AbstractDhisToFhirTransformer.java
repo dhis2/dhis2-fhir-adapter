@@ -189,11 +189,11 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     {
         final R scriptedDhisResource = getDhisResourceClass().cast( TransformerUtils.getScriptVariable(
             scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
-        return getInternalResourceByAdapterIdentifier( remoteSubscription, context, rule, scriptedDhisResource, scriptVariables );
+        return getResourceByAdapterIdentifierInternal( remoteSubscription, context, rule, scriptedDhisResource, scriptVariables );
     }
 
     @Nonnull
-    private <UX extends AbstractRule, RX extends ScriptedDhisResource> Optional<? extends IBaseResource> getInternalResourceByAdapterIdentifier(
+    private <UX extends AbstractRule, RX extends ScriptedDhisResource> Optional<? extends IBaseResource> getResourceByAdapterIdentifierInternal(
         @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull UX rule, @Nonnull RX scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
@@ -213,12 +213,12 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     {
         final R scriptedDhisResource = getDhisResourceClass().cast(
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
-        return getInternalResourceBySystemIdentifier( remoteSubscription, context, rule,
+        return getResourceBySystemIdentifierInternal( remoteSubscription, context, rule,
             scriptedDhisResource, scriptVariables, new DefaultIdentifierValueProvider() );
     }
 
     @Nonnull
-    private <UX extends AbstractRule, RX extends ScriptedDhisResource> Optional<? extends IBaseResource> getInternalResourceBySystemIdentifier(
+    private <UX extends AbstractRule, RX extends ScriptedDhisResource> Optional<? extends IBaseResource> getResourceBySystemIdentifierInternal(
         @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull UX rule,
         @Nonnull RX scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables, @Nonnull IdentifierValueProvider<UX, RX> identifierValueProvider ) throws TransformerException
     {
@@ -317,14 +317,14 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        IBaseResource resource = getInternalResourceBySystemIdentifier( remoteSubscription, context, rule, scriptedTrackedEntityInstance, scriptVariables, new TrackedEntityIdentifierValueProvider() ).orElse( null );
+        IBaseResource resource = getResourceBySystemIdentifierInternal( remoteSubscription, context, rule, scriptedTrackedEntityInstance, scriptVariables, new TrackedEntityIdentifierValueProvider() ).orElse( null );
         if ( resource != null )
         {
             return Optional.of( resource );
         }
         if ( context.isUseAdapterIdentifier() )
         {
-            resource = getInternalResourceByAdapterIdentifier( remoteSubscription, context, rule, scriptedTrackedEntityInstance, scriptVariables ).orElse( null );
+            resource = getResourceByAdapterIdentifierInternal( remoteSubscription, context, rule, scriptedTrackedEntityInstance, scriptVariables ).orElse( null );
         }
         return Optional.ofNullable( resource );
     }

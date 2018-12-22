@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.orgunit;
+package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,31 +28,41 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.util.List;
 
 /**
- * Service that provides access to DHIS2 organization unit metadata.
+ * Polled items for organization units.
  *
  * @author volsch
  */
-public interface OrganizationUnitService
+public class OrganizationUnitPolledItems extends PolledItems<OrganizationUnitPolledItem>
 {
-    @Nonnull
-    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
+    private static final long serialVersionUID = -3139366174834526658L;
 
-    @Nonnull
-    Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
+    public OrganizationUnitPolledItems()
+    {
+        super();
+    }
 
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    public OrganizationUnitPolledItems( @Nonnull List<OrganizationUnitPolledItem> items )
+    {
+        setItems( items );
+    }
+
+    @JsonProperty( "organisationUnits" )
+    @Override
+    public List<OrganizationUnitPolledItem> getItems()
+    {
+        return super.getItems();
+    }
+
+    @Override
+    public void setItems( List<OrganizationUnitPolledItem> items )
+    {
+        super.setItems( items );
+    }
 }

@@ -39,7 +39,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -117,7 +116,7 @@ public class OrganizationUnitResolver
         }
         catch ( IllegalArgumentException e )
         {
-            throw new ScriptExecutionException( "Not a valid FHIR resource type: " + fhirResourceType );
+            throw new TransformerScriptException( "Not a valid FHIR resource type: " + fhirResourceType );
         }
 
         final ExecutableScript identifierLookupScript;

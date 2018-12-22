@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
@@ -43,8 +45,13 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Implementation of {@link OrganizationUnitService}.
@@ -64,6 +71,8 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
     protected static final String ORGANIZATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json?fields=" + FIELDS;
 
     private final RestTemplate restTemplate;
+
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     @Autowired
     public OrganizationUnitServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
@@ -111,5 +120,13 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
         return Objects.requireNonNull( result.getBody() ).getOrganizationUnits().stream().findFirst();
+    }
+
+    @Nonnull
+    @Override
+    public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis, int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    {
+        final OrganizationUnitPolledItemRetriever eventPolledItemRetriever = new OrganizationUnitPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount, zoneId );
+        return eventPolledItemRetriever.poll( lastUpdated, excludedStoredBy, consumer, null );
     }
 }
