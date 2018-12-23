@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
@@ -45,5 +46,5 @@ public interface CustomProgramStageRuleRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    Collection<ProgramStageRule> findAllExp( @Nonnull Collection<Reference> programReferences, @Nonnull Collection<Reference> programStageReferences, @Nullable Collection<Reference> dataReferences );
+    Collection<RuleInfo<ProgramStageRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nonnull Collection<Reference> programStageReferences, @Nullable Collection<Reference> dataReferences );
 }

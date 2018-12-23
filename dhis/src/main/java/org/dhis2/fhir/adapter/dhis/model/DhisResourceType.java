@@ -59,7 +59,7 @@ public enum DhisResourceType
     /**
      * Resource is a organisation unit.
      */
-    ORGANISATION_UNIT( "organisationUnits" );
+    ORGANIZATION_UNIT( "organisationUnits" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
 

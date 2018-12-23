@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
@@ -65,12 +66,12 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.ORGANISATION_UNIT;
+        return DhisResourceType.ORGANIZATION_UNIT;
     }
 
     @Nonnull
     @Override
-    public List<? extends AbstractRule> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
+    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
     }

@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
@@ -61,9 +62,9 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    public FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( rule.isImpEnabled() )
+        if ( ruleInfo.getRule().isImpEnabled() )
         {
             logger.error( "Unsupported rule for DHIS2 Resource Type {}.", getDhisResourceType() );
         }
@@ -71,7 +72,7 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
     }
 
     @Override
-    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return false;
     }
@@ -85,14 +86,14 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nonnull
     @Override
-    protected Optional<R> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    protected Optional<R> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         return Optional.empty();
     }
 
     @Nullable
     @Override
-    protected R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    protected R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         return null;
     }

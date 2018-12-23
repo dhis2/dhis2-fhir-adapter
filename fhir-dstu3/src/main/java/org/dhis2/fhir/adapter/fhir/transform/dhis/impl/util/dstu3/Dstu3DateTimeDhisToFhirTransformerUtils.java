@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractDateTimeDhis
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.CastUtils;
 import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DateType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.Temporal;
 import java.util.Date;
@@ -83,6 +85,30 @@ public class Dstu3DateTimeDhisToFhirTransformerUtils extends AbstractDateTimeDhi
     }
 
     @Nullable
+    @Override
+    public IPrimitiveType<Date> getDateTimeElement( @Nullable Object dateTime )
+    {
+        final LocalDateTime date = castDateTime( dateTime );
+        if ( date == null )
+        {
+            return null;
+        }
+        return new DateTimeType( Date.from( date.atZone( zoneId ).toInstant() ), TemporalPrecisionEnum.MILLI );
+    }
+
+    @Nullable
+    @Override
+    public IPrimitiveType<Date> getDayDateTimeElement( @Nullable Object dateTime )
+    {
+        final LocalDateTime date = castDateTime( dateTime );
+        if ( date == null )
+        {
+            return null;
+        }
+        return new DateTimeType( Date.from( date.atZone( zoneId ).toInstant() ), TemporalPrecisionEnum.DAY );
+    }
+
+    @Nullable
     protected LocalDate castDate( @Nullable Object date )
     {
         return CastUtils.cast( date,
@@ -92,6 +118,15 @@ public class Dstu3DateTimeDhisToFhirTransformerUtils extends AbstractDateTimeDhi
             },
             Date.class, d -> LocalDate.from( d.toInstant().atZone( zoneId ) ),
             Temporal.class, LocalDate::from );
+    }
+
+    @Nullable
+    protected LocalDateTime castDateTime( @Nullable Object date )
+    {
+        return CastUtils.cast( date,
+            BaseDateTimeType.class, d -> LocalDateTime.ofInstant( d.getValue().toInstant(), zoneId ),
+            Date.class, d -> LocalDateTime.from( d.toInstant().atZone( zoneId ) ),
+            Temporal.class, LocalDateTime::from );
     }
 
     protected boolean hasDayPrecision( @Nonnull IPrimitiveType<Date> dateTime )

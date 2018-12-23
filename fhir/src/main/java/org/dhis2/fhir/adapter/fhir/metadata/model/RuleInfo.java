@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,26 +28,55 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Provides an identifier value of a resource.
+ * Rule data that can be used for transformation.
  *
- * @param <U> the concrete type of the rule that is associated with the resource.
- * @param <R> the concrete type of the scripted DHIS resource for which the identifier should be returned.
  * @author volsch
  */
-public interface IdentifierValueProvider<U extends AbstractRule, R extends ScriptedDhisResource>
+public class RuleInfo<R extends AbstractRule> implements Serializable, Comparable<RuleInfo>
 {
-    @Nullable
-    String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
-        @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
+    private static final long serialVersionUID = 4148264285371714039L;
+
+    private final R rule;
+
+    private final List<RuleDhisDataReference> dhisDataReferences;
+
+    @JsonCreator
+    public RuleInfo( @JsonProperty( "rule" ) @Nonnull R rule, @JsonProperty( "dhisDataReferences" ) @Nonnull List<RuleDhisDataReference> dhisDataReferences )
+    {
+        this.rule = rule;
+        this.dhisDataReferences = new ArrayList<>( dhisDataReferences ); // persistent bag must not be serialized
+    }
+
+    @Nonnull
+    public R getRule()
+    {
+        return rule;
+    }
+
+    @Nonnull
+    public List<RuleDhisDataReference> getDhisDataReferences()
+    {
+        return dhisDataReferences;
+    }
+
+    @Override
+    public int compareTo( @Nonnull RuleInfo o )
+    {
+        return rule.compareTo( o.getRule() );
+    }
+
+    @Override
+    public String toString()
+    {
+        return rule.toString();
+    }
 }

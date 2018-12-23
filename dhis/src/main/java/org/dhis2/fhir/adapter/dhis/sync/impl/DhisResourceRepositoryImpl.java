@@ -90,7 +90,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
     {
         switch ( dhisResourceId.getType() )
         {
-            case ORGANISATION_UNIT:
+            case ORGANIZATION_UNIT:
                 return organizationUnitService.findOneRefreshedByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case TRACKED_ENTITY:
                 return trackedEntityService.findOneById( dhisResourceId.getId() );

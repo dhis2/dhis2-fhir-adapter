@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
@@ -41,5 +42,5 @@ public interface CustomOrganizationUnitRuleRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    Collection<OrganizationUnitRule> findAllExp();
+    Collection<RuleInfo<OrganizationUnitRule>> findAllExp();
 }

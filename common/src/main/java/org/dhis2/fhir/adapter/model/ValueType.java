@@ -68,7 +68,7 @@ public enum ValueType
     USERNAME( String.class ),
     FILE_RESOURCE( String.class ),
     COORDINATE( Location.class ),
-    ORGANISATION_UNIT( Id.class ),
+    ORGANIZATION_UNIT( Id.class ),
     AGE( ZonedDateTime.class ),
     URL( String.class ),
     IMAGE( String.class );

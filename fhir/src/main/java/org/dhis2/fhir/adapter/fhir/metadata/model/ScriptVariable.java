@@ -53,7 +53,8 @@ public enum ScriptVariable
     PROGRAM_STAGE_EVENTS( "programStageEvents" ),
     ORGANIZATION_UNIT_ID( "organizationUnitId" ),
     ORGANIZATION_UNIT( "organizationUnit" ),
-    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" );
+    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
+    TEI_FHIR_RESOURCE( "teiFhirResource" );
 
     private final String variableName;
 

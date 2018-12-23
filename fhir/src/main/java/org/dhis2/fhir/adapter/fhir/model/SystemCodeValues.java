@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +50,7 @@ public class SystemCodeValues implements Serializable
     private final List<SystemCodeValue> systemCodeValues;
 
     @JsonCreator
-    public SystemCodeValues( @Nullable String text, @Nonnull List<SystemCodeValue> systemCodeValues )
+    public SystemCodeValues( @JsonProperty( "text" ) @Nullable String text, @JsonProperty( "systemCodeValues" ) @Nonnull List<SystemCodeValue> systemCodeValues )
     {
         this.text = text;
         this.systemCodeValues = systemCodeValues;

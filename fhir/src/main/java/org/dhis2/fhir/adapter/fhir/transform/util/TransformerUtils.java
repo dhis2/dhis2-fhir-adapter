@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -92,11 +93,11 @@ public abstract class TransformerUtils
     }
 
     @Nonnull
-    public static Map<String, Object> createScriptContextVariables( @Nonnull TransformerContext transformerContext, @Nonnull AbstractRule rule )
+    public static Map<String, Object> createScriptContextVariables( @Nonnull TransformerContext transformerContext, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo )
     {
         final Map<String, Object> variables = new HashMap<>();
         variables.put( TRANSFORMER_CONTEXT_VAR_NAME, transformerContext );
-        variables.put( RULE_VAR_NAME, rule );
+        variables.put( RULE_VAR_NAME, ruleInfo );
         return variables;
     }
 
@@ -106,7 +107,7 @@ public abstract class TransformerUtils
      *
      * @param scriptExecutor   the script executor that executes the script.
      * @param context          the transformer context of the transformation.
-     * @param rule             the rule of the transformation.
+     * @param ruleInfo         the rule of the transformation.
      * @param executableScript the script that should be executed.
      * @param variables        the variables that the script requires.
      * @param resultClass      the type of the result the script returns.
@@ -115,7 +116,8 @@ public abstract class TransformerUtils
      * @throws ScriptExecutionException thrown if the
      */
     @Nullable
-    public static <T> T executeScript( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TransformerContext context, @Nonnull AbstractRule rule, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
+    public static <T> T executeScript( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TransformerContext context, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nullable ExecutableScript executableScript,
+        @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
     {
         if ( executableScript == null )
         {
@@ -123,13 +125,10 @@ public abstract class TransformerUtils
         }
 
         final Map<String, Object> arguments = new HashMap<>();
-        if ( rule.getDhisDataReferences() != null )
-        {
-            rule.getDhisDataReferences().stream().filter( r -> StringUtils.isNotBlank( r.getScriptArgName() ) ).forEach( r -> arguments.put( r.getScriptArgName(), r.getDataReference() ) );
-        }
+        ruleInfo.getDhisDataReferences().stream().filter( r -> StringUtils.isNotBlank( r.getScriptArgName() ) ).forEach( r -> arguments.put( r.getScriptArgName(), r.getDataReference() ) );
 
         return scriptExecutor.execute( executableScript, context.getFhirVersion(), variables, arguments,
-            createScriptContextVariables( context, rule ), resultClass );
+            createScriptContextVariables( context, ruleInfo ), resultClass );
     }
 
     private TransformerUtils()

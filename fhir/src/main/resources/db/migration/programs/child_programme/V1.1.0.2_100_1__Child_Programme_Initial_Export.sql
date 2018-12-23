@@ -26,11 +26,21 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
--- Tracker Program Child Programme, Baby Postnatal: Measles given
-INSERT INTO fhir_executable_script (id, version, script_id, name, code)
-VALUES ('87ac1eff-f011-4428-92bb-c4e2da2d3490', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'CP: Measles given to FHIR', 'CP_MEASLES_GIVEN_EXP');
+-- Tracker Program Child Programme, Birth: BCG dose
 UPDATE fhir_rule
-SET transform_exp_script_id = '87ac1eff-f011-4428-92bb-c4e2da2d3490'
+SET transform_exp_script_id = '864e47fe-a186-4340-9b4c-d728150fb45b'
+WHERE id = '9843c898-6a41-4388-ab6e-30503708ac91';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '68411080-52b6-4abd-8eb9-d27d8d6f389b', 0, id, 'CODE:DE_2006101', 'dataElement', true
+FROM fhir_rule
+WHERE id = '9843c898-6a41-4388-ab6e-30503708ac91';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '19df546e-7eb9-4384-87d1-162346d322fc';
+
+-- Tracker Program Child Programme, Baby Postnatal: Measles given
+UPDATE fhir_rule
+SET transform_exp_script_id = '864e47fe-a186-4340-9b4c-d728150fb45b'
 WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
 INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
 SELECT '651406fe-4612-48d9-92cb-9c4d162371d0', 0, id, 'CODE:DE_2006125', 'dataElement', true
@@ -39,3 +49,15 @@ WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = '86759369-63d9-4a2c-84f8-e9897f69166a';
+
+-- Tracker Program Child Programme, Baby Postnatal: Yellow fever given
+UPDATE fhir_rule
+SET transform_exp_script_id = '864e47fe-a186-4340-9b4c-d728150fb45b'
+WHERE id = '9dd587e7-c7ca-4365-93f3-7263aa3cfb82';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '8931b1f9-47a1-4248-9348-5376472c45a0', 0, id, 'CODE:DE_2006126', 'dataElement', true
+FROM fhir_rule
+WHERE id = '9dd587e7-c7ca-4365-93f3-7263aa3cfb82';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '8bb6914e-5014-428b-a3fc-19e18e13df33';

@@ -52,6 +52,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.model.EventDecisionType;
@@ -154,32 +155,32 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Nullable
     @Override
     public FhirToDhisTransformOutcome<Event> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
-        @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( !rule.getProgramStage().isEnabled() || !rule.getProgramStage().getProgram().isEnabled() )
+        if ( !ruleInfo.getRule().getProgramStage().isEnabled() || !ruleInfo.getRule().getProgramStage().getProgram().isEnabled() )
         {
             logger.debug( "Ignoring not enabled program stage \"{}\" of program \"{}\".",
-                rule.getProgramStage().getName(), rule.getProgramStage().getProgram().getName() );
+                ruleInfo.getRule().getProgramStage().getName(), ruleInfo.getRule().getProgramStage().getProgram().getName() );
             return null;
         }
 
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        addBasicScriptVariables( variables, rule );
-        final FhirResourceMapping resourceMapping = getResourceMapping( rule );
+        addBasicScriptVariables( variables, ruleInfo );
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
         final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context,
-            rule.getProgramStage().getProgram().getTrackedEntityRule(), resourceMapping, variables, false ).orElse( null );
+            new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ), resourceMapping, variables, false ).orElse( null );
         if ( trackedEntityInstance == null )
         {
             return null;
         }
 
-        addScriptVariables( context, variables, rule, trackedEntityInstance );
-        final Event event = getResource( context, rule, variables ).orElse( null );
+        addScriptVariables( context, variables, ruleInfo, trackedEntityInstance );
+        final Event event = getResource( context, ruleInfo, variables ).orElse( null );
         if ( event == null )
         {
             return null;
         }
-        rule.getEventStatusUpdate().update( event );
+        ruleInfo.getRule().getEventStatusUpdate().update( event );
 
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
         final Program program = TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class );
@@ -189,16 +190,16 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
         final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, event.getEnrollment(), scriptedTrackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), scriptedEnrollment );
-        if ( !event.isNewResource() && !beforeEnrollmentEvent( context, rule, programStage, event.getEnrollment(), scriptVariables ) )
+        if ( !event.isNewResource() && !beforeEnrollmentEvent( context, ruleInfo, programStage, event.getEnrollment(), scriptVariables ) )
         {
             return null;
         }
 
-        if ( !isStatusApplicable( rule, event ) )
+        if ( !isStatusApplicable( ruleInfo, event ) )
         {
             return null;
         }
-        if ( !isEffectiveDateApplicable( context, resourceMapping, rule, programStage, event, variables ) )
+        if ( !isEffectiveDateApplicable( context, resourceMapping, ruleInfo, programStage, event, variables ) )
         {
             return null;
         }
@@ -207,15 +208,15 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             context, program, programStage, event, scriptedTrackedEntityInstance, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedEvent );
 
-        updateEventDate( context, rule, resourceMapping, event.getEnrollment(), programStage, event, variables );
-        if ( !transform( context, rule, variables ) )
+        updateEventDate( context, ruleInfo, resourceMapping, event.getEnrollment(), programStage, event, variables );
+        if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
         }
-        updateCoordinates( context, rule, resourceMapping, program, scriptedEnrollment, programStage, scriptedEvent, variables );
+        updateCoordinates( context, ruleInfo, resourceMapping, program, scriptedEnrollment, programStage, scriptedEvent, variables );
 
-        if ( !afterEvent( context, rule, programStage, scriptVariables ) ||
-            !afterEnrollmentEvent( context, rule, programStage, scriptVariables ) )
+        if ( !afterEvent( context, ruleInfo, programStage, scriptVariables ) ||
+            !afterEnrollmentEvent( context, ruleInfo, programStage, scriptVariables ) )
         {
             return null;
         }
@@ -235,11 +236,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return new FhirToDhisTransformOutcome<>( event );
     }
 
-    protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull ProgramStageRule rule ) throws TransformerException
+    protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo ) throws TransformerException
     {
-        final Program program = programMetadataService.findProgramByReference( rule.getProgramStage().getProgram().getProgramReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Mapping " + rule + " requires program \"" +
-                rule.getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
+        final Program program = programMetadataService.findProgramByReference( ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Mapping " + ruleInfo + " requires program \"" +
+                ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
         variables.put( ScriptVariable.PROGRAM.getVariableName(), program );
 
         final TrackedEntityAttributes attributes = trackedEntityMetadataService.getAttributes();
@@ -251,7 +252,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
     }
 
-    protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull ProgramStageRule rule,
+    protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull TrackedEntityInstance trackedEntityInstance ) throws TransformerException
     {
         if ( trackedEntityInstance.getIdentifier() == null )
@@ -265,27 +266,27 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
         final Program program = TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class );
         final ProgramStage programStage =
-            program.getOptionalStage( rule.getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + rule + " requires program stage \"" +
-                rule.getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + rule.getProgramStage().getProgram().getName() + "\"." ) );
+            program.getOptionalStage( ruleInfo.getRule().getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " requires program stage \"" +
+                ruleInfo.getRule().getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + ruleInfo.getRule().getProgramStage().getProgram().getName() + "\"." ) );
         variables.put( ScriptVariable.PROGRAM_STAGE.getVariableName(), programStage );
     }
 
-    protected void updateCoordinates( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
+    protected void updateCoordinates( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Program program, @Nonnull WritableScriptedEnrollment scriptedEnrollment,
         @Nonnull ProgramStage programStage, @Nonnull WritableScriptedEvent scriptedEvent, @Nonnull Map<String, Object> scriptVariables )
     {
         if ( program.isCaptureCoordinates() && (scriptedEnrollment.getCoordinate() == null) )
         {
-            scriptedEnrollment.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEnrollmentGeoLookupScript(), scriptVariables ) );
+            scriptedEnrollment.setCoordinate( getCoordinate( context, ruleInfo, resourceMapping.getImpEnrollmentGeoLookupScript(), scriptVariables ) );
         }
         if ( programStage.isCaptureCoordinates() && (scriptedEvent.getCoordinate() == null) )
         {
-            scriptedEvent.setCoordinate( getCoordinate( context, rule, resourceMapping.getImpEventGeoLookupScript(), scriptVariables ) );
+            scriptedEvent.setCoordinate( getCoordinate( context, ruleInfo, resourceMapping.getImpEventGeoLookupScript(), scriptVariables ) );
         }
     }
 
     @Override
-    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return true;
     }
@@ -300,7 +301,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     @Nonnull
     @Override
-    protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
+    protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
@@ -310,7 +311,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
 
         final Event event = eventInfo.getEvents().stream().findFirst().orElseThrow( () -> new IllegalStateException( "Events have not been populated." ) );
-        if ( rule.getProgramStage().getBeforeScript() != null )
+        if ( ruleInfo.getRule().getProgramStage().getBeforeScript() != null )
         {
             final Enrollment enrollment = eventInfo.getEnrollment().orElseThrow(
                 () -> new TransformerMappingException( "Enrolled events do not have an enrollment." ) );
@@ -318,11 +319,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
             final Map<String, Object> variables = createResourceVariables( context, scriptVariables, eventInfo, enrollment );
 
-            final FhirResourceMapping resourceMapping = getResourceMapping( rule );
-            final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, rule, resourceMapping, enrollment, variables );
+            final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+            final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping, enrollment, variables );
             variables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
 
-            final EventDecisionType eventDecisionType = executeScript( context, rule, rule.getProgramStage().getBeforeScript(), variables, EventDecisionType.class );
+            final EventDecisionType eventDecisionType = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getBeforeScript(), variables, EventDecisionType.class );
             if ( (eventDecisionType == null) || (eventDecisionType == EventDecisionType.BREAK) )
             {
                 logger.info( "Processing of event for program stage \"{}\" has been cancelled by event script after execution. " +
@@ -345,45 +346,45 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     @Nullable
     @Override
-    protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule,
+    protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
-        if ( context.isCreationDisabled() || !rule.isEventCreationEnabled() || !rule.getProgramStage().isCreationEnabled() )
+        if ( context.isCreationDisabled() || !ruleInfo.getRule().isEventCreationEnabled() || !ruleInfo.getRule().getProgramStage().isCreationEnabled() )
         {
             return null;
         }
 
         final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
         // creation of event may not be applicable
-        if ( (rule.getProgramStage().getCreationApplicableScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getProgramStage().getCreationApplicableScript(), scriptVariables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getProgramStage().getCreationApplicableScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getCreationApplicableScript(), scriptVariables, Boolean.class ) ) )
         {
             logger.info( "Creation of program stage instance \"{}\" is not applicable.", eventInfo.getProgramStage().getName() );
             return null;
         }
 
-        final FhirResourceMapping resourceMapping = getResourceMapping( rule );
-        final Enrollment enrollment = eventInfo.getEnrollment().orElseGet( () -> createEnrollment( context, rule, resourceMapping, scriptVariables ) );
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+        final Enrollment enrollment = eventInfo.getEnrollment().orElseGet( () -> createEnrollment( context, ruleInfo, resourceMapping, scriptVariables ) );
         if ( enrollment == null )
         {
             return null;
         }
 
         // without an organization unit no event can be created
-        final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, rule, resourceMapping, enrollment, scriptVariables );
+        final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping, enrollment, scriptVariables );
         if ( !orgUnit.isPresent() )
         {
             return null;
         }
 
         final Map<String, Object> variables = createResourceVariables( context, scriptVariables, eventInfo, enrollment );
-        if ( !beforeEnrollmentEvent( context, rule, eventInfo.getProgramStage(), enrollment, scriptVariables ) )
+        if ( !beforeEnrollmentEvent( context, ruleInfo, eventInfo.getProgramStage(), enrollment, scriptVariables ) )
         {
             return null;
         }
 
         final Event event = new Event( true );
-        event.setStatus( rule.getProgramStage().getCreationStatus() );
+        event.setStatus( ruleInfo.getRule().getProgramStage().getCreationStatus() );
         event.setEnrollment( enrollment );
         event.setOrgUnitId( orgUnit.get().getId() );
         event.setProgramId( eventInfo.getProgram().getId() );
@@ -396,13 +397,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         variables.put( ScriptVariable.EVENT.getVariableName(), scriptedEvent );
 
         final ZonedDateTime eventDate;
-        if ( rule.getProgramStage().isEventDateIsIncident() && !eventInfo.getProgramStage().isGeneratedByEnrollmentDate() )
+        if ( ruleInfo.getRule().getProgramStage().isEventDateIsIncident() && !eventInfo.getProgramStage().isGeneratedByEnrollmentDate() )
         {
             eventDate = enrollment.getIncidentDate().plusDays( eventInfo.getProgramStage().getMinDaysFromStart() );
         }
         else
         {
-            eventDate = getEventDate( context, rule, resourceMapping, enrollment, eventInfo.getProgramStage(), variables );
+            eventDate = getEventDate( context, ruleInfo, resourceMapping, enrollment, eventInfo.getProgramStage(), variables );
             if ( eventDate == null )
             {
                 return null;
@@ -412,8 +413,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         event.setDueDate( Stream.of( enrollment.getIncidentDate().plusDays( eventInfo.getProgramStage().getMinDaysFromStart() ), eventDate )
             .max( Comparator.naturalOrder() ).get() );
 
-        if ( (rule.getProgramStage().getCreationScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getProgramStage().getCreationScript(), variables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getProgramStage().getCreationScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getCreationScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Creation of program stage instance \"{}\" has been cancelled by creation script.",
                 eventInfo.getProgramStage().getName() );
@@ -450,12 +451,12 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return variables;
     }
 
-    protected void updateEventDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment,
+    protected void updateEventDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Enrollment enrollment,
         @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull Map<String, Object> variables )
     {
-        if ( rule.isUpdateEventDate() && !programStage.isGeneratedByEnrollmentDate() )
+        if ( ruleInfo.getRule().isUpdateEventDate() && !programStage.isGeneratedByEnrollmentDate() )
         {
-            final ZonedDateTime eventDate = getEventDate( context, rule, resourceMapping, enrollment, programStage, variables );
+            final ZonedDateTime eventDate = getEventDate( context, ruleInfo, resourceMapping, enrollment, programStage, variables );
             if ( (eventDate != null) && !Objects.equals( event.getEventDate(), eventDate ) )
             {
                 event.setEventDate( eventDate );
@@ -465,7 +466,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
     }
 
-    private ZonedDateTime getEventDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
+    private ZonedDateTime getEventDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Enrollment enrollment, @Nonnull ProgramStage programStage, @Nonnull Map<String, Object> variables )
     {
         ZonedDateTime eventDate;
@@ -475,7 +476,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
         else
         {
-            eventDate = valueConverter.convert( executeScript( context, rule, resourceMapping.getImpEventDateLookupScript(), variables, Object.class ),
+            eventDate = valueConverter.convert( executeScript( context, ruleInfo, resourceMapping.getImpEventDateLookupScript(), variables, Object.class ),
                 ValueType.DATETIME, ZonedDateTime.class );
         }
         if ( eventDate == null )
@@ -498,15 +499,15 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nullable
-    protected Enrollment createEnrollment( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
+    protected Enrollment createEnrollment( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables )
     {
-        if ( context.isCreationDisabled() || !rule.isEnrollmentCreationEnabled() )
+        if ( context.isCreationDisabled() || !ruleInfo.getRule().isEnrollmentCreationEnabled() )
         {
             return null;
         }
 
-        final MappedTrackerProgram mappedProgram = rule.getProgramStage().getProgram();
+        final MappedTrackerProgram mappedProgram = ruleInfo.getRule().getProgramStage().getProgram();
         if ( !mappedProgram.isCreationEnabled() )
         {
             logger.info( "Creation of program stage has not been enabled." );
@@ -520,7 +521,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
                 "\" since program is without registration." );
         }
 
-        final ZonedDateTime enrollmentDate = getEnrollmentDate( context, rule, resourceMapping, program, scriptVariables );
+        final ZonedDateTime enrollmentDate = getEnrollmentDate( context, ruleInfo, resourceMapping, program, scriptVariables );
         if ( enrollmentDate == null )
         {
             return null;
@@ -530,13 +531,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.DATE_TIME.getVariableName(), enrollmentDate );
         if ( (mappedProgram.getCreationApplicableScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, mappedProgram.getCreationApplicableScript(), variables, Boolean.class ) ) )
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, mappedProgram.getCreationApplicableScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Creation of program instance \"{}\" is not applicable.", mappedProgram.getName() );
             return null;
         }
 
-        final Optional<OrganizationUnit> organisationUnit = getOrgUnit( context, rule, resourceMapping.getImpEnrollmentOrgLookupScript(), variables );
+        final Optional<OrganizationUnit> organisationUnit = getOrgUnit( context, ruleInfo, resourceMapping.getImpEnrollmentOrgLookupScript(), variables );
         if ( !organisationUnit.isPresent() )
         {
             return null;
@@ -553,7 +554,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), scriptedEnrollment );
 
         if ( (mappedProgram.getCreationScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, mappedProgram.getCreationScript(), variables, Boolean.class ) ) )
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, mappedProgram.getCreationScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Creation of program instance \"{}\" has been cancelled by creation script.", program.getName() );
             return null;
@@ -563,7 +564,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         {
             return null;
         }
-        if ( rule.getProgramStage().getProgram().isEnrollmentDateIsIncident() )
+        if ( ruleInfo.getRule().getProgramStage().getProgram().isEnrollmentDateIsIncident() )
         {
             enrollment.setEnrollmentDate( enrollment.getIncidentDate() );
         }
@@ -582,14 +583,14 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return enrollment;
     }
 
-    protected boolean beforeEnrollmentEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull ProgramStage programStage, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptVariables )
+    protected boolean beforeEnrollmentEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull ProgramStage programStage, @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptVariables )
     {
         if ( enrollment.isNewResource() )
         {
             return true;
         }
-        if ( (rule.getProgramStage().getProgram().getBeforeScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getProgramStage().getProgram().getBeforeScript(), scriptVariables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getProgramStage().getProgram().getBeforeScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getProgram().getBeforeScript(), scriptVariables, Boolean.class ) ) )
         {
             logger.info( "Processing of event for program stage \"{}\" has been cancelled by enrollment script before execution.", programStage.getName() );
             return false;
@@ -597,10 +598,10 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return true;
     }
 
-    protected boolean afterEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull ProgramStage programStage, @Nonnull Map<String, Object> scriptVariables )
+    protected boolean afterEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull ProgramStage programStage, @Nonnull Map<String, Object> scriptVariables )
     {
-        if ( (rule.getProgramStage().getAfterScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getProgramStage().getAfterScript(), scriptVariables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getProgramStage().getAfterScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getAfterScript(), scriptVariables, Boolean.class ) ) )
         {
             logger.info( "Processing of event for program stage \"{}\" has been cancelled by event script after execution.", programStage.getName() );
             return false;
@@ -608,10 +609,10 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return true;
     }
 
-    protected boolean afterEnrollmentEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull ProgramStage programStage, @Nonnull Map<String, Object> scriptVariables )
+    protected boolean afterEnrollmentEvent( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull ProgramStage programStage, @Nonnull Map<String, Object> scriptVariables )
     {
-        if ( (rule.getProgramStage().getProgram().getAfterScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getProgramStage().getProgram().getAfterScript(), scriptVariables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getProgramStage().getProgram().getAfterScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getProgram().getAfterScript(), scriptVariables, Boolean.class ) ) )
         {
             logger.info( "Processing of event for program stage \"{}\" has been cancelled by enrollment script after execution.", programStage.getName() );
             return false;
@@ -652,9 +653,9 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nullable
-    protected ZonedDateTime getEnrollmentDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Program program, @Nonnull Map<String, Object> scriptVariables )
+    protected ZonedDateTime getEnrollmentDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Program program, @Nonnull Map<String, Object> scriptVariables )
     {
-        ZonedDateTime enrollmentDate = valueConverter.convert( executeScript( context, rule, resourceMapping.getImpEnrollmentDateLookupScript(),
+        ZonedDateTime enrollmentDate = valueConverter.convert( executeScript( context, ruleInfo, resourceMapping.getImpEnrollmentDateLookupScript(),
             scriptVariables, Object.class ), ValueType.DATETIME, ZonedDateTime.class );
         if ( enrollmentDate == null )
         {
@@ -700,21 +701,21 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected FhirResourceMapping getResourceMapping( @Nonnull ProgramStageRule rule )
+    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<ProgramStageRule> ruleInfo )
     {
-        return resourceMappingRepository.findByFhirResourceType( rule.getFhirResourceType() )
-            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
+        return resourceMappingRepository.findByFhirResourceType( ruleInfo.getRule().getFhirResourceType() )
+            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "." ) );
     }
 
     @Nonnull
-    protected Optional<OrganizationUnit> getEventOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping,
+    protected Optional<OrganizationUnit> getEventOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Enrollment enrollment, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, valueConverter ) ) );
-        return getOrgUnit( context, rule, resourceMapping.getImpEventOrgLookupScript(), variables );
+        return getOrgUnit( context, ruleInfo, resourceMapping.getImpEventOrgLookupScript(), variables );
     }
 
     @Nonnull
@@ -751,30 +752,30 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return new EventInfo( program, programStage, trackedEntityType, trackedEntityInstance, enrollment, events );
     }
 
-    protected boolean isEffectiveDateApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping, @Nonnull ProgramStageRule rule,
+    protected boolean isEffectiveDateApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull FhirResourceMapping resourceMapping, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull Map<String, Object> variables )
     {
-        if ( (rule.getResultingBeforePeriodDayType() == null) && (rule.getResultingAfterPeriodDayType() == null) )
+        if ( (ruleInfo.getRule().getResultingBeforePeriodDayType() == null) && (ruleInfo.getRule().getResultingAfterPeriodDayType() == null) )
         {
             return true;
         }
 
-        final LocalDate effectiveDate = getEffectiveDate( context, rule, resourceMapping, variables ).toLocalDate();
-        if ( rule.getResultingBeforePeriodDayType() != null )
+        final LocalDate effectiveDate = getEffectiveDate( context, ruleInfo, resourceMapping, variables ).toLocalDate();
+        if ( ruleInfo.getRule().getResultingBeforePeriodDayType() != null )
         {
-            final ZonedDateTime periodDay = rule.getResultingBeforePeriodDayType().getDate( programStage, event );
+            final ZonedDateTime periodDay = ruleInfo.getRule().getResultingBeforePeriodDayType().getDate( programStage, event );
             final int days = (int) Period.between( effectiveDate, periodDay.toLocalDate() ).get( ChronoUnit.DAYS );
-            if ( days > rule.getResultingBeforePeriodDays() )
+            if ( days > ruleInfo.getRule().getResultingBeforePeriodDays() )
             {
                 logger.debug( "Effective date {} is {} days before {}.", effectiveDate, days, periodDay );
                 return false;
             }
         }
-        if ( rule.getResultingAfterPeriodDayType() != null )
+        if ( ruleInfo.getRule().getResultingAfterPeriodDayType() != null )
         {
-            final ZonedDateTime periodDay = rule.getResultingAfterPeriodDayType().getDate( programStage, event );
+            final ZonedDateTime periodDay = ruleInfo.getRule().getResultingAfterPeriodDayType().getDate( programStage, event );
             final int days = (int) Period.between( periodDay.toLocalDate(), effectiveDate ).get( ChronoUnit.DAYS );
-            if ( days > rule.getResultingAfterPeriodDays() )
+            if ( days > ruleInfo.getRule().getResultingAfterPeriodDays() )
             {
                 logger.debug( "Effective date {} is {} days after {}.", effectiveDate, days, periodDay );
                 return false;
@@ -784,10 +785,10 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected ZonedDateTime getEffectiveDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
+    protected ZonedDateTime getEffectiveDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
     {
         ZonedDateTime effectiveDate;
-        effectiveDate = valueConverter.convert( executeScript( context, rule, resourceMapping.getImpEffectiveDateLookupScript(), variables, Object.class ), ValueType.DATETIME, ZonedDateTime.class );
+        effectiveDate = valueConverter.convert( executeScript( context, ruleInfo, resourceMapping.getImpEffectiveDateLookupScript(), variables, Object.class ), ValueType.DATETIME, ZonedDateTime.class );
         if ( effectiveDate == null )
         {
             final IAnyResource resource = TransformerUtils.getScriptVariable( variables, ScriptVariable.INPUT, IAnyResource.class );
@@ -803,16 +804,16 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return effectiveDate;
     }
 
-    protected boolean isStatusApplicable( @Nonnull ProgramStageRule rule, @Nonnull Event event )
+    protected boolean isStatusApplicable( @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Event event )
     {
-        if ( !rule.getApplicableEnrollmentStatus().isApplicable( event.getEnrollment().getStatus() ) )
+        if ( !ruleInfo.getRule().getApplicableEnrollmentStatus().isApplicable( event.getEnrollment().getStatus() ) )
         {
-            logger.info( "Enrollment status {} is not applicable for rule {}.", event.getEnrollment().getStatus(), rule );
+            logger.info( "Enrollment status {} is not applicable for rule {}.", event.getEnrollment().getStatus(), ruleInfo );
             return false;
         }
-        if ( !rule.getApplicableEventStatus().isApplicable( event.getStatus() ) )
+        if ( !ruleInfo.getRule().getApplicableEventStatus().isApplicable( event.getStatus() ) )
         {
-            logger.info( "Event status {} is not applicable for rule {}.", event.getStatus(), rule );
+            logger.info( "Event status {} is not applicable for rule {}.", event.getStatus(), ruleInfo );
             return false;
         }
         return true;

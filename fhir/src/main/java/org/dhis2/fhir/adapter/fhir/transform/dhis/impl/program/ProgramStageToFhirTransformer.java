@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -46,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -55,6 +57,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -105,16 +108,21 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform(
         @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
-        @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final FhirResourceMapping resourceMapping = getResourceMapping( rule );
-
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( remoteSubscription, context,
-            rule.getProgramStage().getProgram().getTrackedEntityRule(), Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
-            .orElseThrow( () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
+        if ( !addScriptVariables( variables, input ) )
+        {
+            return null;
+        }
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
+        final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( remoteSubscription, context,
+            new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ),
+            Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
+            .orElseThrow( () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
+        variables.put( ScriptVariable.TEI_FHIR_RESOURCE.getVariableName(), trackedEntityFhirResource );
+
+        final IBaseResource resource = getResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -122,13 +130,22 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
-        if ( !transform( context, rule, variables ) )
+        if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
         }
 
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+        if ( (resourceMapping.getExpTeiTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpTeiTransformScript(), variables, Boolean.class ) ) )
+        {
+            logger.info( "Resulting DHIS TEI {} could not be transformed into FHIR resource {}.",
+                trackedEntityFhirResource.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
+            return null;
+        }
+
         if ( (resourceMapping.getExpOrgUnitTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, resourceMapping.getExpOrgUnitTransformScript(), variables, Boolean.class ) ) )
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpOrgUnitTransformScript(), variables, Boolean.class ) ) )
         {
             logger.info( "DHIS Organization Unit {} could not be transformed into FHIR resource {}.",
                 input.getOrganizationUnitId(), resourceMapping.getFhirResourceType() );
@@ -137,8 +154,16 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
         // may update transformed organization unit
         if ( (resourceMapping.getExpGeoTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
         {
+            return null;
+        }
+
+        if ( (resourceMapping.getExpDateTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpDateTransformScript(), variables, Boolean.class ) ) )
+        {
+            logger.info( "Event date could not be transformed into FHIR resource {}.",
+                resourceMapping.getFhirResourceType() );
             return null;
         }
 
@@ -150,15 +175,25 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         return new DhisToFhirTransformOutcome<>( modifiedResource );
     }
 
+    protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull ScriptedEvent scriptedEvent ) throws TransformerException
+    {
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = Objects.requireNonNull( scriptedEvent.getTrackedEntityInstance() );
+        variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), scriptedTrackedEntityInstance.getTrackedEntityAttributes() );
+        variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), scriptedTrackedEntityInstance.getType() );
+
+        // is applicable for further processing
+        return true;
+    }
+
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return Optional.empty();
     }
 
     @Override
-    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ProgramStageRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedEvent scriptedEvent =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedEvent.class );
@@ -169,7 +204,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
     @Nullable
     @Override
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull ProgramStageRule rule, @Nullable ExecutableScript identifierLookupScript,
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript,
         @Nonnull ScriptedEvent scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
     {
         // for events no identifier value can be created
@@ -177,9 +212,9 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     }
 
     @Nonnull
-    protected FhirResourceMapping getResourceMapping( @Nonnull ProgramStageRule rule )
+    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<ProgramStageRule> ruleInfo )
     {
-        return resourceMappingRepository.findByFhirResourceType( rule.getFhirResourceType() )
-            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + rule.getFhirResourceType() + "." ) );
+        return resourceMappingRepository.findByFhirResourceType( ruleInfo.getRule().getFhirResourceType() )
+            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "." ) );
     }
 }

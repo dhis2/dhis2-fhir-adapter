@@ -74,6 +74,10 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript expGeoTransformScript;
 
+    private ExecutableScript expTeiTransformScript;
+
+    private ExecutableScript expDateTransformScript;
+
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
     @Enumerated( EnumType.STRING )
@@ -205,5 +209,29 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setExpGeoTransformScript( ExecutableScript expLocationTransformScript )
     {
         this.expGeoTransformScript = expLocationTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_tei_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpTeiTransformScript()
+    {
+        return expTeiTransformScript;
+    }
+
+    public void setExpTeiTransformScript( ExecutableScript expTeiTransformScript )
+    {
+        this.expTeiTransformScript = expTeiTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_date_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpDateTransformScript()
+    {
+        return expDateTransformScript;
+    }
+
+    public void setExpDateTransformScript( ExecutableScript expDateTransformScript )
+    {
+        this.expDateTransformScript = expDateTransformScript;
     }
 }

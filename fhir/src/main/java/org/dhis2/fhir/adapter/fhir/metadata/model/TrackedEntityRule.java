@@ -28,14 +28,17 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
@@ -48,9 +51,15 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table( name = "fhir_tracked_entity_rule" )
 @DiscriminatorValue( "TRACKED_ENTITY" )
+@NamedQuery( name = TrackedEntityRule.FIND_ALL_BY_TYPE_NAMED_QUERY, query = "SELECT ter FROM TrackedEntityRule ter JOIN ter.trackedEntity te " +
+    "WHERE ter.enabled=true AND ter.expEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) " +
+    "AND te.enabled=true AND te.expEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
+@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
 public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
+
+    public static final String FIND_ALL_BY_TYPE_NAMED_QUERY = "TrackedEntityRule.findAllByType";
 
     @NotNull
     private MappedTrackedEntity trackedEntity;

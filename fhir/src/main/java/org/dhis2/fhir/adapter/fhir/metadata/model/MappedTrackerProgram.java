@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
-import org.dhis2.fhir.adapter.jackson.JsonIgnoreCache;
 import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
@@ -137,7 +136,6 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
         this.enabled = enabled;
     }
 
-    @JsonIgnoreCache
     @ManyToOne( optional = false )
     @JoinColumn( name = "tracked_entity_rule_id", referencedColumnName = "id", nullable = false )
     public TrackedEntityRule getTrackedEntityRule()

@@ -71,4 +71,16 @@ public abstract class AbstractDateTimeDhisToFhirTransformerUtils extends Abstrac
         args = @ScriptMethodArg( value = "dateTime", description = "The date/time value for which the evaluation should be performed." ),
         returnDescription = "Returns if the specified date/time value as date/time element or null when it has not at least day precision." )
     public abstract IPrimitiveType<Date> getPreciseDateElement( @Nullable Object dateTime );
+
+    @Nullable
+    @ScriptMethod( description = "Returns a date/time element for the specified date/time value.",
+        args = @ScriptMethodArg( value = "dateTime", description = "The date/time value that should be converted." ),
+        returnDescription = "Returns if the specified date/time value as date/time element." )
+    public abstract IPrimitiveType<Date> getDateTimeElement( @Nullable Object dateTime );
+
+    @Nullable
+    @ScriptMethod( description = "Returns a date/time element for the specified date/time value with day precision.",
+        args = @ScriptMethodArg( value = "dateTime", description = "The date/time value that should be converted." ),
+        returnDescription = "Returns if the specified date/time value as date/time element with day precision." )
+    public abstract IPrimitiveType<Date> getDayDateTimeElement( @Nullable Object dateTime );
 }

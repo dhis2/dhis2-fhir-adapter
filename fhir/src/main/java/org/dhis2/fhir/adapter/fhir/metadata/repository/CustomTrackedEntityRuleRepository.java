@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,26 +28,22 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Map;
+import java.util.Collection;
 
 /**
- * Provides an identifier value of a resource.
+ * Custom repository for {@link TrackedEntityRule}s.
  *
- * @param <U> the concrete type of the rule that is associated with the resource.
- * @param <R> the concrete type of the scripted DHIS resource for which the identifier should be returned.
  * @author volsch
  */
-public interface IdentifierValueProvider<U extends AbstractRule, R extends ScriptedDhisResource>
+public interface CustomTrackedEntityRuleRepository
 {
-    @Nullable
-    String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
-        @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables );
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<RuleInfo<TrackedEntityRule>> findAllByType( @Nonnull Collection<Reference> typeReferences );
 }
