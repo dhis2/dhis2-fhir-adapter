@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -29,67 +29,78 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
-import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
-import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
-import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractLocationFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Location;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Transformer utilities for FHIR organizations.
+ * FHIR version DSTU3 implementation of {@link AbstractLocationFhirToDhisTransformerUtils}.
  *
  * @author volsch
  */
+@Component
 @Scriptable
-@ScriptType( value = "OrganizationUtils", transformType = ScriptTransformType.IMP, var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR organizations." )
-public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractOrgUnitFhirToDhisTransformerUtils
+public class Dstu3LocationFhirToDhisTransformerUtils extends AbstractLocationFhirToDhisTransformerUtils
 {
-    public static final String SCRIPT_ATTR_NAME = "organizationUtils";
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-
-    public AbstractOrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
+    public Dstu3LocationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
+        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+        @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
     {
         super( scriptExecutionContext, organizationUnitService, subscriptionResourceRepository, remoteFhirResourceRepository, remoteHierarchicallyFhirResourceRepository );
     }
 
     @Nonnull
     @Override
-    public String getScriptAttrName()
+    public Set<FhirVersion> getFhirVersions()
     {
-        return SCRIPT_ATTR_NAME;
+        return FhirVersion.DSTU3_ONLY;
     }
 
     @Nullable
-    @ScriptMethod( description = "Return a list with all FHIR organizations from the specified organization reference until the root FHIR organization. The first list item is the organization resource that is referenced by the specified reference.",
-        args = @ScriptMethodArg( value = "childReference", description = "The reference to a FHIR organization resource for which all parents should be returned (including the specified child)." ),
-        returnDescription = "List of FHIR resources in the hierarchy up to the root organization." )
-    public List<? extends IBaseResource> findHierarchy( @Nullable IBaseReference childReference )
+    @Override
+    protected IBaseReference getParentReference( @Nullable IBaseResource resource )
     {
-        return findHierarchy( childReference, new HashSet<>() );
+        if ( resource == null )
+        {
+            return null;
+        }
+        return ((Location) resource).getPartOf();
     }
 
     @Nonnull
     @Override
-    protected FhirResourceType getFhirResourceType()
+    protected List<IBaseResource> extractResources( @Nullable IBaseBundle bundle )
     {
-        return FhirResourceType.ORGANIZATION;
+        if ( bundle == null )
+        {
+            return Collections.emptyList();
+        }
+
+        final Bundle b = (Bundle) bundle;
+        if ( b.getEntry() == null )
+        {
+            return Collections.emptyList();
+        }
+
+        return b.getEntry().stream().map( Bundle.BundleEntryComponent::getResource ).collect( Collectors.toList() );
     }
 }

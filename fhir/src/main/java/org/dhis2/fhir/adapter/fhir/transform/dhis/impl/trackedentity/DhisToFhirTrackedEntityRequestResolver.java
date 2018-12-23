@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -89,7 +90,7 @@ public class DhisToFhirTrackedEntityRequestResolver extends AbstractDhisToFhirRe
 
     @Nonnull
     @Override
-    public List<? extends AbstractRule> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
+    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
         return ruleRepository.findAllByType( tei.getType().getAllReferences() ).stream()

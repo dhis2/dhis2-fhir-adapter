@@ -42,6 +42,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -100,9 +101,9 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Nullable
     @Override
     public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
-        @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return transform( context, input, getRuleClass().cast( rule ), scriptVariables );
+        return transform( context, input, new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), scriptVariables );
     }
 
     @Nonnull
@@ -124,52 +125,52 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     @Nonnull
     protected Optional<R> getResource( @Nonnull FhirToDhisTransformerContext context,
-        @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final String id = getDhisId( context, rule );
+        final String id = getDhisId( context, ruleInfo );
         R resource = getResourceById( id ).orElse( null );
         if ( resource != null )
         {
             return Optional.of( resource );
         }
 
-        resource = getActiveResource( context, rule, scriptVariables, false ).orElse( null );
+        resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
         if ( resource != null )
         {
             return Optional.of( resource );
         }
 
-        resource = createResource( context, rule, id, scriptVariables, false );
-        if ( (resource != null) && isSyncRequired( context, rule, scriptVariables ) )
+        resource = createResource( context, ruleInfo, id, scriptVariables, false );
+        if ( (resource != null) && isSyncRequired( context, ruleInfo, scriptVariables ) )
         {
             // the active resource may have been created in the meantime
-            resource = getActiveResource( context, rule, scriptVariables, true ).orElse( null );
+            resource = getActiveResource( context, ruleInfo, scriptVariables, true ).orElse( null );
             if ( resource != null )
             {
                 return Optional.of( resource );
             }
-            resource = createResource( context, rule, id, scriptVariables, true );
+            resource = createResource( context, ruleInfo, id, scriptVariables, true );
         }
 
         return Optional.ofNullable( resource );
     }
 
-    protected abstract boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+    protected abstract boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nonnull
     protected abstract Optional<R> getResourceById( @Nullable String id ) throws TransformerException;
 
     @Nonnull
     protected abstract Optional<R> getActiveResource(
-        @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule,
+        @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
 
     @Nullable
-    protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule,
+    protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
         @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
 
     @Nullable
-    protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule )
+    protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo )
     {
         final String resourceId = context.getFhirRequest().getResourceId();
         if ( (resourceId != null) && context.getFhirRequest().isRemoteSubscription() )
@@ -180,15 +181,15 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         return resourceId;
     }
 
-    protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return Boolean.TRUE.equals( executeScript( context, rule, rule.getTransformImpScript(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getTransformImpScript(), scriptVariables, Boolean.class ) );
     }
 
     @Nonnull
-    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
+    protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Reference orgUnitReference = executeScript( context, rule, lookupScript, scriptVariables, Reference.class );
+        final Reference orgUnitReference = executeScript( context, ruleInfo, lookupScript, scriptVariables, Reference.class );
         if ( orgUnitReference == null )
         {
             logger.info( "Could not extract organization unit reference." );
@@ -209,30 +210,30 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nonnull
-    protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule,
+    protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
-        final IBaseResource baseResource = getTrackedEntityInstanceResource( context, rule, resourceMapping, scriptVariables );
+        final IBaseResource baseResource = getTrackedEntityInstanceResource( context, ruleInfo, resourceMapping, scriptVariables );
         if ( baseResource == null )
         {
             logger.info( "Tracked entity instance resource could not be extracted from input." );
             return Optional.empty();
         }
         final TrackedEntityInstance trackedEntityInstance =
-            getTrackedEntityInstanceByIdentifier( context, rule, baseResource, scriptVariables, sync )
+            getTrackedEntityInstanceByIdentifier( context, ruleInfo, baseResource, scriptVariables, sync )
                 .orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) );
         return Optional.of( trackedEntityInstance );
     }
 
     @Nullable
-    protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull FhirResourceMapping resourceMapping,
+    protected IBaseResource getTrackedEntityInstanceResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return executeScript( context, rule, resourceMapping.getImpTeiLookupScript(), scriptVariables, IBaseResource.class );
+        return executeScript( context, ruleInfo, resourceMapping.getImpTeiLookupScript(), scriptVariables, IBaseResource.class );
     }
 
     @Nonnull
-    protected Optional<TrackedEntityInstance> getTrackedEntityInstanceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull TrackedEntityRule rule, @Nonnull IBaseResource baseResource,
+    protected Optional<TrackedEntityInstance> getTrackedEntityInstanceByIdentifier( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull IBaseResource baseResource,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
         String identifier = getIdentifier( context, baseResource, scriptVariables );
@@ -243,8 +244,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         identifier = createFullQualifiedTrackedEntityInstanceIdentifier( context, baseResource, identifier );
 
         final TrackedEntityAttributes trackedEntityAttributes = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
-        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( rule.getTrackedEntity().getTrackedEntityIdentifierReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + rule.getTrackedEntity().getTrackedEntityIdentifierReference() ) );
+        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( ruleInfo.getRule().getTrackedEntity().getTrackedEntityIdentifierReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + ruleInfo.getRule().getTrackedEntity().getTrackedEntityIdentifierReference() ) );
 
         final TrackedEntityType trackedEntityType = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
         final Collection<TrackedEntityInstance> result;
@@ -260,7 +261,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
         if ( result.size() > 1 )
         {
-            throw new TransformerMappingException( "Filtering with identifier of rule " + rule +
+            throw new TransformerMappingException( "Filtering with identifier of rule " + ruleInfo +
                 " returned more than one tracked entity instance: " + identifier );
         }
 
@@ -312,9 +313,9 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nullable
-    protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull U rule, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
+    protected Location getCoordinate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull ExecutableScript locationLookupScript, @Nonnull Map<String, Object> scriptVariable )
     {
-        return executeScript( context, rule, locationLookupScript, scriptVariable, Location.class );
+        return executeScript( context, ruleInfo, locationLookupScript, scriptVariable, Location.class );
     }
 
     /**
@@ -322,7 +323,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
      * the script has not been provided, the script will not be executed at all.
      *
      * @param context          the transformer context of the transformation.
-     * @param rule             the rule of the transformation.
+     * @param ruleInfo         the rule of the transformation.
      * @param executableScript the script that should be executed.
      * @param variables        the variables that the script requires.
      * @param resultClass      the type of the result the script returns.
@@ -331,8 +332,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
      * @throws ScriptExecutionException thrown if the
      */
     @Nullable
-    protected <T> T executeScript( @Nonnull TransformerContext context, @Nonnull AbstractRule rule, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
+    protected <T> T executeScript( @Nonnull TransformerContext context, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nullable ExecutableScript executableScript, @Nonnull Map<String, Object> variables, @Nonnull Class<T> resultClass )
     {
-        return TransformerUtils.executeScript( scriptExecutor, context, rule, executableScript, variables, resultClass );
+        return TransformerUtils.executeScript( scriptExecutor, context, ruleInfo, executableScript, variables, resultClass );
     }
 }

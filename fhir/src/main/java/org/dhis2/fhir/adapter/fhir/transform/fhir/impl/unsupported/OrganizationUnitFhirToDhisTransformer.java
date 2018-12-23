@@ -56,7 +56,7 @@ public class OrganizationUnitFhirToDhisTransformer extends AbstractUnsupportedFh
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.ORGANISATION_UNIT;
+        return DhisResourceType.ORGANIZATION_UNIT;
     }
 
     @Nonnull

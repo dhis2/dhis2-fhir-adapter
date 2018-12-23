@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
@@ -85,7 +86,7 @@ public class SystemCodeValue implements Serializable, Comparable<SystemCodeValue
     }
 
     @JsonCreator
-    public SystemCodeValue( @Nullable String system, @Nonnull String code, @Nullable String displayName )
+    public SystemCodeValue( @JsonProperty( "system" ) @Nullable String system, @JsonProperty( "code" ) @Nonnull String code, @JsonProperty( "displayName" ) @Nullable String displayName )
     {
         this.system = system;
         this.code = code;

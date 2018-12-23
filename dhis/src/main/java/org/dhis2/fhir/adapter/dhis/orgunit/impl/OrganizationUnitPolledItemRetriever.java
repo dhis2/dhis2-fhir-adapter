@@ -51,7 +51,7 @@ public class OrganizationUnitPolledItemRetriever extends AbstractPolledItemRetri
 
     public OrganizationUnitPolledItemRetriever( @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount, @Nonnull ZoneId zoneId )
     {
-        super( DhisResourceType.ORGANISATION_UNIT, restTemplate, POLL_URI, toleranceMillis, maxSearchCount, OrganizationUnitPolledItems.class, zoneId );
+        super( DhisResourceType.ORGANIZATION_UNIT, restTemplate, POLL_URI, toleranceMillis, maxSearchCount, OrganizationUnitPolledItems.class, zoneId );
     }
 
     @Nonnull

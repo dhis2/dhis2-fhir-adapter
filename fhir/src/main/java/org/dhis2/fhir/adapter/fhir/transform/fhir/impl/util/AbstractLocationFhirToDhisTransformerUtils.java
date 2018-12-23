@@ -50,21 +50,20 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Transformer utilities for FHIR organizations.
+ * Transformer utilities for FHIR locations.
  *
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "OrganizationUtils", transformType = ScriptTransformType.IMP, var = AbstractOrganizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR organizations." )
-public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends AbstractOrgUnitFhirToDhisTransformerUtils
+@ScriptType( value = "LocationUtils", transformType = ScriptTransformType.IMP, var = AbstractLocationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR locations." )
+public abstract class AbstractLocationFhirToDhisTransformerUtils extends AbstractOrgUnitFhirToDhisTransformerUtils
 {
-    public static final String SCRIPT_ATTR_NAME = "organizationUtils";
+    public static final String SCRIPT_ATTR_NAME = "locationUtils";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-
-    public AbstractOrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
+    public AbstractLocationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
         @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
     {
         super( scriptExecutionContext, organizationUnitService, subscriptionResourceRepository, remoteFhirResourceRepository, remoteHierarchicallyFhirResourceRepository );
@@ -78,9 +77,9 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
     }
 
     @Nullable
-    @ScriptMethod( description = "Return a list with all FHIR organizations from the specified organization reference until the root FHIR organization. The first list item is the organization resource that is referenced by the specified reference.",
-        args = @ScriptMethodArg( value = "childReference", description = "The reference to a FHIR organization resource for which all parents should be returned (including the specified child)." ),
-        returnDescription = "List of FHIR resources in the hierarchy up to the root organization." )
+    @ScriptMethod( description = "Return a list with all FHIR locations from the specified organization reference until the root FHIR location. The first list item is the location resource that is referenced by the specified reference.",
+        args = @ScriptMethodArg( value = "childReference", description = "The reference to a FHIR location resource for which all parents should be returned (including the specified child)." ),
+        returnDescription = "List of FHIR resources in the hierarchy up to the root location." )
     public List<? extends IBaseResource> findHierarchy( @Nullable IBaseReference childReference )
     {
         return findHierarchy( childReference, new HashSet<>() );
@@ -90,6 +89,6 @@ public abstract class AbstractOrganizationFhirToDhisTransformerUtils extends Abs
     @Override
     protected FhirResourceType getFhirResourceType()
     {
-        return FhirResourceType.ORGANIZATION;
+        return FhirResourceType.LOCATION;
     }
 }

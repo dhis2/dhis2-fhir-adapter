@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hibernate.Hibernate;
@@ -71,7 +72,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Cacheable( keyGenerator = "ruleFindAllByInputDataKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
     @Transactional( readOnly = true )
     @Nonnull
-    public List<? extends AbstractRule> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
+    public List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
         final List<AbstractRule> rules;
         if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
@@ -89,7 +90,9 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
                 .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }
         Collections.sort( rules );
-        rules.forEach( r -> Hibernate.initialize( r.getDhisDataReferences() ) );
-        return rules;
+        return rules.stream().map( r -> {
+            Hibernate.initialize( r.getDhisDataReferences() );
+            return new RuleInfo<>( r, r.getDhisDataReferences() );
+        } ).collect( Collectors.toList() );
     }
 }

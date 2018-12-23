@@ -76,7 +76,7 @@ public class OrganizationUnit implements DhisResource, Serializable
     @Override
     public DhisResourceType getResourceType()
     {
-        return DhisResourceType.ORGANISATION_UNIT;
+        return DhisResourceType.ORGANIZATION_UNIT;
     }
 
     @JsonIgnore
@@ -90,7 +90,7 @@ public class OrganizationUnit implements DhisResource, Serializable
     @Override
     public DhisResourceId getResourceId()
     {
-        return new DhisResourceId( DhisResourceType.ORGANISATION_UNIT, getId() );
+        return new DhisResourceId( DhisResourceType.ORGANIZATION_UNIT, getId() );
     }
 
     @Override

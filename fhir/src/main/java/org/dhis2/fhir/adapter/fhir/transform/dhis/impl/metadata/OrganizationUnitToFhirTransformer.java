@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
@@ -81,7 +82,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.ORGANISATION_UNIT;
+        return DhisResourceType.ORGANIZATION_UNIT;
     }
 
     @Nonnull
@@ -101,21 +102,21 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Nullable
     @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
-        @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
-            organizationUnitService, getRemoteFhirResourceRepository(), remoteSubscription, context, rule, variables,
+            organizationUnitService, getRemoteFhirResourceRepository(), remoteSubscription, context, ruleInfo, variables,
             new DefaultIdentifierValueProvider() ) );
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
+        final IBaseResource resource = getResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
         }
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
-        if ( !transform( context, rule, variables ) )
+        if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
         }
@@ -131,7 +132,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     @Nonnull
     @Override
     protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         // not supported
         return Optional.empty();
@@ -139,7 +140,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Override
     protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedOrganizationUnit scriptedOrganizationUnit =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedOrganizationUnit.class );
@@ -149,9 +150,9 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Override
     @Nullable
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
         @Nonnull Map<String, Object> scriptVariables )
     {
-        return executeScript( context, rule, (identifierLookupScript == null) ? rule.getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
+        return executeScript( context, ruleInfo, (identifierLookupScript == null) ? ruleInfo.getRule().getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
     }
 }

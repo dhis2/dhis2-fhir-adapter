@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -96,15 +97,15 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     @Nullable
     @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedTrackedEntityInstance input,
-        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        if ( !addScriptVariables( variables, rule, input ) )
+        if ( !addScriptVariables( variables, ruleInfo, input ) )
         {
             return null;
         }
 
-        final IBaseResource resource = getResource( remoteSubscription, context, rule, variables ).orElse( null );
+        final IBaseResource resource = getResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -112,22 +113,22 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
-        if ( !transform( context, rule, variables ) )
+        if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
         }
 
         // transform organization unit into output FHIR resource
-        if ( (rule.getExpOuTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getExpOuTransformScript(), variables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getExpOuTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpOuTransformScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
             return null;
         }
 
         // transformation of GEO information must follow normal transformation since normal transformation may reset this information
-        if ( (rule.getExpGeoTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, rule, rule.getExpGeoTransformScript(), variables, Boolean.class ) ) )
+        if ( (ruleInfo.getRule().getExpGeoTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpGeoTransformScript(), variables, Boolean.class ) ) )
         {
             return null;
         }
@@ -140,7 +141,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         return new DhisToFhirTransformOutcome<>( modifiedResource );
     }
 
-    protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull TrackedEntityRule rule, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance ) throws TransformerException
+    protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance ) throws TransformerException
     {
         variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), scriptedTrackedEntityInstance.getTrackedEntityAttributes() );
         variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), scriptedTrackedEntityInstance.getType() );
@@ -152,7 +153,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     @Nonnull
     @Override
     protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         // not required at the moment
         return Optional.empty();
@@ -160,7 +161,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
     @Override
     protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull TrackedEntityRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
@@ -170,13 +171,13 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 
     @Override
     @Nullable
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull TrackedEntityRule rule, @Nullable ExecutableScript identifierLookupScript,
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript,
         @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull Map<String, Object> scriptVariables )
     {
         if ( identifierLookupScript != null )
         {
             throw new FatalTransformerException( "Lookup of tracked entity instance identifier cannot be made with an alternative lookup script." );
         }
-        return getTrackedEntityIdentifierValue( context, rule, scriptedTrackedEntityInstance, scriptVariables );
+        return getTrackedEntityIdentifierValue( context, ruleInfo, scriptedTrackedEntityInstance, scriptVariables );
     }
 }

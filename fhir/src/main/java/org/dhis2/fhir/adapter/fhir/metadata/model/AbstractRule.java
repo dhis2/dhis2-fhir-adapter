@@ -28,14 +28,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.PersistentBagConverter;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCache;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -85,6 +86,7 @@ import java.util.List;
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
 } )
+@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
@@ -347,9 +349,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.containedAllowed = containedAllowed;
     }
 
-    @JsonInclude( JsonInclude.Include.NON_EMPTY )
+    @JsonIgnoreCache
     @OneToMany( mappedBy = "rule" )
-    @JsonSerialize( converter = PersistentBagConverter.class )
     public List<RuleDhisDataReference> getDhisDataReferences()
     {
         return dhisDataReferences;

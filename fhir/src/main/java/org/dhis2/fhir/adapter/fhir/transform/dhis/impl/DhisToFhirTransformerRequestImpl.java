@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
@@ -55,14 +56,14 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private final RemoteSubscription remoteSubscription;
 
-    private final List<? extends AbstractRule> rules;
+    private final List<RuleInfo<? extends AbstractRule>> rules;
 
     private final Map<String, DhisToFhirTransformerUtils> transformerUtils;
 
     private int ruleIndex;
 
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull RemoteSubscription remoteSubscription, @Nonnull List<? extends AbstractRule> rules, @Nonnull Map<String,
-        DhisToFhirTransformerUtils> transformerUtils )
+    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull RemoteSubscription remoteSubscription, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
+        @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
     {
         this.context = context;
         this.input = input;
@@ -93,7 +94,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
     }
 
     @Nonnull
-    public List<? extends AbstractRule> getRules()
+    public List<RuleInfo<? extends AbstractRule>> getRules()
     {
         return rules;
     }
@@ -115,7 +116,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
     }
 
     @Nullable
-    public AbstractRule nextRule()
+    public RuleInfo<? extends AbstractRule> nextRule()
     {
         if ( ruleIndex >= rules.size() )
         {

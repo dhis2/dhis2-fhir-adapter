@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
@@ -87,15 +88,15 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
     @Nullable
     public ICompositeType getRuleCodeableConcept()
     {
-        final AbstractRule rule = getScriptContextVariable( TransformerUtils.RULE_VAR_NAME, AbstractRule.class );
-        if ( rule.getApplicableCodeSet() == null )
+        @SuppressWarnings( "unchecked" ) final RuleInfo<? extends AbstractRule> ruleInfo = getScriptContextVariable( TransformerUtils.RULE_VAR_NAME, RuleInfo.class );
+        if ( ruleInfo.getRule().getApplicableCodeSet() == null )
         {
             return null;
         }
-        SystemCodeValues systemCodeValues = systemCodeRepository.findPreferredByCodeSetId( rule.getApplicableCodeSet().getId() );
+        SystemCodeValues systemCodeValues = systemCodeRepository.findPreferredByCodeSetId( ruleInfo.getRule().getApplicableCodeSet().getId() );
         if ( systemCodeValues == null )
         {
-            systemCodeValues = new SystemCodeValues( rule.getApplicableCodeSet().getName(), Collections.emptyList() );
+            systemCodeValues = new SystemCodeValues( ruleInfo.getRule().getApplicableCodeSet().getName(), Collections.emptyList() );
         }
         return createCodeableConcept( systemCodeValues );
     }

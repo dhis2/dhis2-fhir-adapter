@@ -29,63 +29,50 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomProgramStageRuleRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomTrackedEntityRuleRepository;
 import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link CustomProgramStageRuleRepository}.
+ * Implementation of {@link CustomTrackedEntityRuleRepository}.
  *
  * @author volsch
  */
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public class CustomProgramStageRuleRepositoryImpl implements CustomProgramStageRuleRepository
+public class CustomTrackedEntityRuleRepositoryImpl implements CustomTrackedEntityRuleRepository
 {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public CustomProgramStageRuleRepositoryImpl( @Nonnull EntityManager entityManager )
+    public CustomTrackedEntityRuleRepositoryImpl( @Nonnull EntityManager entityManager )
     {
         this.entityManager = entityManager;
     }
 
-    @Nonnull
-    @RestResource( exported = false )
-    @Cacheable( keyGenerator = "programStageRuleFindAllExpKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "programStageRule" )
-    @Transactional( readOnly = true )
     @Override
-    public Collection<RuleInfo<ProgramStageRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nonnull Collection<Reference> programStageReferences, @Nullable Collection<Reference> dataReferences )
+    @Nonnull
+    @Transactional( readOnly = true )
+    @RestResource( exported = false )
+    @Cacheable( keyGenerator = "trackedEntityRuleFindAllByTypeKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    public Collection<RuleInfo<TrackedEntityRule>> findAllByType( @Param( "typeReferences" ) @Nonnull Collection<Reference> typeReferences )
     {
-        final List<ProgramStageRule> rules;
-        if ( (dataReferences == null) || dataReferences.isEmpty() )
-        {
-            rules = new ArrayList<>(
-                entityManager.createNamedQuery( ProgramStageRule.FIND_ALL_EXP_NAMED_QUERY, ProgramStageRule.class )
-                    .setParameter( "programReferences", programReferences )
-                    .setParameter( "programStageReferences", programStageReferences ).getResultList() );
-        }
-        else
-        {
-            rules = new ArrayList<>( entityManager.createNamedQuery( ProgramStageRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY, ProgramStageRule.class )
-                .setParameter( "programStageReferences", programStageReferences )
-                .setParameter( "programReferences", programReferences )
-                .setParameter( "dataReferences", dataReferences ).getResultList() );
-        }
-        return rules.stream().map( r -> {
+        final List<TrackedEntityRule> trackedEntityRules = entityManager.createNamedQuery(
+            TrackedEntityRule.FIND_ALL_BY_TYPE_NAMED_QUERY, TrackedEntityRule.class )
+            .setParameter( "typeReferences", typeReferences ).getResultList();
+        return trackedEntityRules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );
             return new RuleInfo<>( r, r.getDhisDataReferences() );
         } ).collect( Collectors.toList() );

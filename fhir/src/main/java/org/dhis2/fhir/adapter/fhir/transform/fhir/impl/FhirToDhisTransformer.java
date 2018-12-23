@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
@@ -60,10 +61,10 @@ public interface FhirToDhisTransformer<R extends DhisResource, U extends Abstrac
     Class<U> getRuleClass();
 
     @Nullable
-    FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull U rule,
+    FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nullable
-    FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull AbstractRule rule,
+    FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 }

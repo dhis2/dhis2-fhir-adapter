@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomOrganizationUnitRuleRepository;
 import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.CacheConfig;
@@ -41,6 +42,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link CustomOrganizationUnitRuleRepository}.
@@ -60,11 +62,13 @@ public class CustomOrganizationUnitRuleRepositoryImpl implements CustomOrganizat
     @Nonnull
     @Cacheable( key = "{#root.methodName}" )
     @Transactional( readOnly = true )
-    public Collection<OrganizationUnitRule> findAllExp()
+    public Collection<RuleInfo<OrganizationUnitRule>> findAllExp()
     {
         final List<OrganizationUnitRule> rules = entityManager.createNamedQuery(
             OrganizationUnitRule.FIND_ALL_EXP_NAMED_QUERY, OrganizationUnitRule.class ).getResultList();
-        rules.forEach( r -> Hibernate.initialize( r.getDhisDataReferences() ) );
-        return rules;
+        return rules.stream().map( r -> {
+            Hibernate.initialize( r.getDhisDataReferences() );
+            return new RuleInfo<>( r, r.getDhisDataReferences() );
+        } ).collect( Collectors.toList() );
     }
 }

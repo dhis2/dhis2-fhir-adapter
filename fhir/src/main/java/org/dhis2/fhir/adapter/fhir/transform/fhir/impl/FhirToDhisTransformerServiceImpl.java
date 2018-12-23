@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -139,8 +140,8 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
         final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
-        final List<? extends AbstractRule> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
-            .stream().filter( r -> !contained || r.isContainedAllowed() ).sorted().collect( Collectors.toList() );
+        final List<RuleInfo<? extends AbstractRule>> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
+            .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
 
         return new FhirToDhisTransformerRequestImpl( new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }
@@ -160,30 +161,30 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         }
 
         final boolean firstRule = transformerRequestImpl.isFirstRule();
-        AbstractRule rule;
-        while ( (rule = transformerRequestImpl.nextRule()) != null )
+        RuleInfo<? extends AbstractRule> ruleInfo;
+        while ( (ruleInfo = transformerRequestImpl.nextRule()) != null )
         {
             final FhirToDhisTransformer<?, ?> transformer = this.transformers.get(
-                new FhirVersionedValue<>( transformerRequestImpl.getContext().getFhirRequest().getVersion(), rule.getDhisResourceType() ) );
+                new FhirVersionedValue<>( transformerRequestImpl.getContext().getFhirRequest().getVersion(), ruleInfo.getRule().getDhisResourceType() ) );
             if ( transformer == null )
             {
                 throw new TransformerMappingException( "No transformer can be found for FHIR version " +
                     transformerRequestImpl.getContext().getFhirRequest().getVersion() +
-                    " mapping of DHIS resource type " + rule.getDhisResourceType() );
+                    " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
             }
 
             final Map<String, Object> scriptVariables = new HashMap<>( transformerUtils );
             scriptVariables.put( ScriptVariable.CONTEXT.getVariableName(), transformerRequestImpl.getContext() );
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
-            if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables ) )
+            if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
                 final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted(
-                    transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), rule, scriptVariables );
+                    transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {
                     logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
-                        rule, transformerRequestImpl.getInput().getIdElement(), rule.isStop() );
-                    return new FhirToDhisTransformOutcome<>( outcome, (rule.isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
+                        ruleInfo, transformerRequestImpl.getInput().getIdElement(), ruleInfo.getRule().isStop() );
+                    return new FhirToDhisTransformOutcome<>( outcome, (ruleInfo.getRule().isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
@@ -197,12 +198,12 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     }
 
     private boolean isApplicable( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
-        @Nonnull AbstractRule rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( rule.getApplicableImpScript() == null )
+        if ( ruleInfo.getRule().getApplicableImpScript() == null )
         {
             return true;
         }
-        return Boolean.TRUE.equals( TransformerUtils.executeScript( scriptExecutor, context, rule, rule.getApplicableImpScript(), scriptVariables, Boolean.class ) );
+        return Boolean.TRUE.equals( TransformerUtils.executeScript( scriptExecutor, context, ruleInfo, ruleInfo.getRule().getApplicableImpScript(), scriptVariables, Boolean.class ) );
     }
 }

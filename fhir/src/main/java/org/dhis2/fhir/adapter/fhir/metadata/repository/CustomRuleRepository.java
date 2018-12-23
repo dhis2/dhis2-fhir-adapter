@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -48,5 +49,5 @@ public interface CustomRuleRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    List<? extends AbstractRule> findAllByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
+    List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
 }

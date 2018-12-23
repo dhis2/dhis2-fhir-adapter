@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
@@ -74,20 +75,20 @@ public class OrganizationUnitResolver
 
     private final DhisToFhirTransformerContext context;
 
-    private final OrganizationUnitRule rule;
+    private final RuleInfo<OrganizationUnitRule> ruleInfo;
 
     private final Map<String, Object> scriptVariables;
 
     public OrganizationUnitResolver(
         @Nonnull OrganizationUnitService organizationUnitService, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
-        @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull OrganizationUnitRule rule, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
         @Nonnull IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider )
     {
         this.organizationUnitService = organizationUnitService;
         this.remoteFhirResourceRepository = remoteFhirResourceRepository;
         this.remoteSubscription = remoteSubscription;
         this.context = context;
-        this.rule = rule;
+        this.ruleInfo = ruleInfo;
         this.scriptVariables = scriptVariables;
         this.identifierValueProvider = identifierValueProvider;
     }
@@ -103,7 +104,7 @@ public class OrganizationUnitResolver
     @Nullable
     public IBaseResource getFhirResource( @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit )
     {
-        return getFhirResource( scriptedOrganizationUnit, rule.getFhirResourceType() );
+        return getFhirResource( scriptedOrganizationUnit, ruleInfo.getRule().getFhirResourceType() );
     }
 
     @Nullable
@@ -120,21 +121,21 @@ public class OrganizationUnitResolver
         }
 
         final ExecutableScript identifierLookupScript;
-        if ( resourceType == rule.getFhirResourceType() )
+        if ( resourceType == ruleInfo.getRule().getFhirResourceType() )
         {
-            identifierLookupScript = rule.getIdentifierLookupScript();
+            identifierLookupScript = ruleInfo.getRule().getIdentifierLookupScript();
         }
         else
         {
             if ( resourceType != FhirResourceType.ORGANIZATION )
             {
-                throw new TransformerScriptException( "FHIR resource type organization must be requested when rule uses " + rule.getFhirResourceType() );
+                throw new TransformerScriptException( "FHIR resource type organization must be requested when rule uses " + ruleInfo.getRule().getFhirResourceType() );
             }
-            identifierLookupScript = rule.getManagingOrgIdentifierLookupScript();
+            identifierLookupScript = ruleInfo.getRule().getManagingOrgIdentifierLookupScript();
             if ( identifierLookupScript == null )
             {
                 throw new TransformerMappingException( "Managing organization lookup script must be set on rule \"" +
-                    rule.getName() + "\" in order to lookup managing organization." );
+                    ruleInfo.getRule().getName() + "\" in order to lookup managing organization." );
             }
         }
 
@@ -143,14 +144,14 @@ public class OrganizationUnitResolver
         variables.remove( ScriptVariable.OUTPUT.getVariableName() );
 
         final String identifier = identifierValueProvider.getIdentifierValue(
-            context, rule, identifierLookupScript, scriptedOrganizationUnit, variables );
+            context, ruleInfo, identifierLookupScript, scriptedOrganizationUnit, variables );
         if ( identifier == null )
         {
             return null;
         }
 
         final ResourceSystem resourceSystem = context.getOptionalResourceSystem( resourceType )
-            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + rule.getFhirResourceType() + "." ) );
+            .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + ruleInfo.getRule().getFhirResourceType() + "." ) );
         return remoteFhirResourceRepository.findByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
             resourceType.getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
     }

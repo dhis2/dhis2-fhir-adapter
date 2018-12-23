@@ -28,7 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 
 import java.util.Comparator;
 
@@ -38,7 +39,7 @@ import java.util.Comparator;
  *
  * @author volsch
  */
-public class DhisToFhirRuleComparator implements Comparator<TrackedEntityRule>
+public class DhisToFhirRuleComparator implements Comparator<RuleInfo<? extends AbstractRule>>
 {
     public static final DhisToFhirRuleComparator INSTANCE = new DhisToFhirRuleComparator();
 
@@ -48,13 +49,13 @@ public class DhisToFhirRuleComparator implements Comparator<TrackedEntityRule>
     }
 
     @Override
-    public int compare( TrackedEntityRule o1, TrackedEntityRule o2 )
+    public int compare( RuleInfo<? extends AbstractRule> o1, RuleInfo<? extends AbstractRule> o2 )
     {
-        int value = o1.getFhirResourceType().getOrder() - o2.getFhirResourceType().getOrder();
+        int value = o1.getRule().getFhirResourceType().getOrder() - o2.getRule().getFhirResourceType().getOrder();
         if ( value != 0 )
         {
             return value;
         }
-        return o1.compareTo( o2 );
+        return o1.getRule().compareTo( o2.getRule() );
     }
 }

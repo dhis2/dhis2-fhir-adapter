@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.FhirToDhisTransformerUtils;
@@ -54,11 +55,11 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     private final Map<String, FhirToDhisTransformerUtils> transformerUtils;
 
-    private final List<? extends AbstractRule> rules;
+    private final List<RuleInfo<? extends AbstractRule>> rules;
 
     private int ruleIndex;
 
-    public FhirToDhisTransformerRequestImpl( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils, @Nonnull List<? extends AbstractRule> rules )
+    public FhirToDhisTransformerRequestImpl( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         this.context = context;
         this.input = input;
@@ -87,7 +88,7 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
     }
 
     @Nonnull
-    public List<? extends AbstractRule> getRules()
+    public List<RuleInfo<? extends AbstractRule>> getRules()
     {
         return rules;
     }
@@ -103,7 +104,7 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
     }
 
     @Nullable
-    public AbstractRule nextRule()
+    public RuleInfo<? extends AbstractRule> nextRule()
     {
         if ( ruleIndex >= rules.size() )
         {

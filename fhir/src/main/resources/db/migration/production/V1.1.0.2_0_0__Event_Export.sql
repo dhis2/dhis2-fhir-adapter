@@ -28,6 +28,8 @@
 
 -- @formatter:off
 
+INSERT INTO fhir_script_variable_enum VALUES('TEI_FHIR_RESOURCE');
+
 ALTER TABLE fhir_system ADD fhir_display_name VARCHAR(100);
 COMMENT ON COLUMN fhir_system.fhir_display_name IS 'Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR servers.';
 
@@ -459,8 +461,137 @@ VALUES ('30ee57d1-062f-4847-85b9-f2262a678151', 0, 'ed2e0cde-fc19-4468-8d84-6d31
         'Transforms GEO Coordinates to FHIR Resource', 'TRANSFORM_DHIS_GEO_FHIR',
         'Transforms GEO coordinates to FHIR Resource.');
 
+ALTER TABLE fhir_resource_mapping
+  ADD exp_tei_transform_script_id  UUID,
+  ADD CONSTRAINT fhir_resource_mapping_fk12 FOREIGN KEY (exp_tei_transform_script_id) REFERENCES fhir_executable_script(id);
+COMMENT ON COLUMN fhir_resource_mapping.exp_tei_transform_script_id IS 'References the executable script that transforms the TEI FHIR resource into the exported FHIR resource.';
+CREATE INDEX fhir_resource_mapping_i9 ON fhir_resource_mapping(exp_tei_transform_script_id);
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('190ae3fa-471e-458a-be1d-3f173f7d3c75', 0, 'Transforms TEI FHIR Patient to FHIR Resource', 'TRANSFORM_TEI_FHIR_PATIENT',
+        'Transforms TEI FHIR Patient to FHIR Resource.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', NULL, NULL);
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('190ae3fa-471e-458a-be1d-3f173f7d3c75', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('190ae3fa-471e-458a-be1d-3f173f7d3c75', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('190ae3fa-471e-458a-be1d-3f173f7d3c75', 'TEI_FHIR_RESOURCE');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('17931cd6-b2dc-4bb9-a9b0-bec16139ce07', 0, '190ae3fa-471e-458a-be1d-3f173f7d3c75',
+'var updated = false;
+if (output.patient)
+{
+  output.setPatient(fhirResourceUtils.createReference(teiFhirResource));
+  updated = true;
+}
+else if (output.subject)
+{
+  output.setSubject(fhirResourceUtils.createReference(teiFhirResource));
+  updated = true;
+}
+updated', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('17931cd6-b2dc-4bb9-a9b0-bec16139ce07', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('f7863a17-86da-42d2-89fd-7f6c3d214f1b', 0, '190ae3fa-471e-458a-be1d-3f173f7d3c75',
+        'Transforms TEI FHIR Patient to FHIR Resource', 'TRANSFORM_TEI_FHIR_PATIENT',
+        'Transforms TEI FHIR Patient to FHIR Resource.');
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('094a3f6b-6f36-4a49-8308-5a05b0acc4ce', 0, 'Transforms DHIS event date to FHIR Resource', 'TRANSFORM_DHIS_EVENT_DATE_FHIR_PATIENT',
+        'Transforms DHIS event date to FHIR Resource.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', NULL, NULL);
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('094a3f6b-6f36-4a49-8308-5a05b0acc4ce', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('094a3f6b-6f36-4a49-8308-5a05b0acc4ce', 'INPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('4a0b6fde-c0d6-4ad2-89da-992f4a47a115', 0, '094a3f6b-6f36-4a49-8308-5a05b0acc4ce',
+'var updated = false;
+if (output.dateElement)
+{
+  output.setDateElement(dateTimeUtils.getDayDateTimeElement(input.getEventDate()));
+  updated = true;
+}
+else if (output.effective)
+{
+  output.setEffective(dateTimeUtils.getDayDateTimeElement(input.getEventDate()));
+  updated = true;
+}
+updated', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('4a0b6fde-c0d6-4ad2-89da-992f4a47a115', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('deb4fd13-d5b2-41df-9f30-0fb73b063c8b', 0, '094a3f6b-6f36-4a49-8308-5a05b0acc4ce',
+        'Transforms DHIS event date to FHIR Resource', 'TRANSFORM_DHIS_EVENT_DATE_FHIR_PATIENT',
+        'Transforms DHIS event date to FHIR Resource.');
+
 UPDATE fhir_resource_mapping SET
   exp_ou_transform_script_id = '416decee-4604-473a-b650-1a997d731ff0',
-  exp_geo_transform_script_id = '30ee57d1-062f-4847-85b9-f2262a678151'
+  exp_geo_transform_script_id = '30ee57d1-062f-4847-85b9-f2262a678151',
+  exp_tei_transform_script_id = 'f7863a17-86da-42d2-89fd-7f6c3d214f1b',
+  exp_date_transform_script_id = 'deb4fd13-d5b2-41df-9f30-0fb73b063c8b'
 WHERE fhir_resource_type='IMMUNIZATION';
 
+UPDATE fhir_script_source SET source_text=
+'var mappedCode = null;
+if (input.managingOrganization)
+{
+  var organizationReference = input.managingOrganization;
+  if ( organizationReference != null )
+  {
+    var hierarchy = organizationUtils.findHierarchy( organizationReference );
+    if ( hierarchy != null )
+    {
+      for ( var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++ )
+      {
+        var code = identifierUtils.getResourceIdentifier( hierarchy.get( i ), ''ORGANIZATION'' );
+        if ( code != null )
+        {
+          mappedCode = codeUtils.getMappedCode( code, ''ORGANIZATION'' );
+          if ( (mappedCode == null) && args[''useIdentifierCode''] )
+          {
+            mappedCode = organizationUtils.existsWithPrefix( code );
+          }
+        }
+      }
+    }
+  }
+}
+else if (input.location)
+{
+  var locationReference = input.location;
+  if ( locationReference != null )
+  {
+    var hierarchy = locationUtils.findHierarchy( locationReference );
+    if ( hierarchy != null )
+    {
+      for ( var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++ )
+      {
+        var code = identifierUtils.getResourceIdentifier( hierarchy.get( i ), ''LOCATION'' );
+        if ( code != null )
+        {
+          mappedCode = codeUtils.getMappedCode( code, ''LOCATION'' );
+          if ( (mappedCode == null) && args[''useIdentifierCode''] )
+          {
+            mappedCode = locationUtils.existsWithPrefix( code );
+          }
+        }
+      }
+    }
+  }
+}
+if (mappedCode == null)
+{
+  mappedCode = args[''defaultCode''];
+}
+var ref = null;
+if (mappedCode != null)
+{
+  ref = context.createReference(mappedCode, ''CODE'');
+}
+if ((ref == null) && args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+{
+  ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+}
+ref' WHERE id='7b94feba-bcf6-4635-929a-01311b25d975' AND version=0;
+DELETE FROM fhir_script_argument WHERE id='c0175733-83fc-4de2-9cd0-a2ae6b92e991' AND version=0;

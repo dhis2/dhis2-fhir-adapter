@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
@@ -49,6 +51,7 @@ import javax.persistence.Transient;
 @Table( name = "fhir_organization_unit_rule" )
 @DiscriminatorValue( "ORGANIZATION_UNIT" )
 @NamedQuery( name = OrganizationUnitRule.FIND_ALL_EXP_NAMED_QUERY, query = "SELECT our FROM OrganizationUnitRule our WHERE our.enabled=true AND our.expEnabled=true AND (our.fhirCreateEnabled=true OR our.fhirUpdateEnabled=true)" )
+@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
 public class OrganizationUnitRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
@@ -61,7 +64,7 @@ public class OrganizationUnitRule extends AbstractRule
 
     public OrganizationUnitRule()
     {
-        super( DhisResourceType.ORGANISATION_UNIT );
+        super( DhisResourceType.ORGANIZATION_UNIT );
     }
 
     @ManyToOne( optional = false )
