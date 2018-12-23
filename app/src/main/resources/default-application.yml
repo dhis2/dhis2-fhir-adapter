@@ -46,7 +46,7 @@ spring:
       # The size should be at least double the size of the defined maximum
       # of message queue listener concurrency that is defined below. The
       # database must be able to handle this amount of connections.
-      maximum-pool-size: 50
+      maximum-pool-size: 100
   # Settings for the Redis cache (at least version 4 or later). If no cache
   # that is specified below uses Redis, then these settings will not be used.
   redis:
