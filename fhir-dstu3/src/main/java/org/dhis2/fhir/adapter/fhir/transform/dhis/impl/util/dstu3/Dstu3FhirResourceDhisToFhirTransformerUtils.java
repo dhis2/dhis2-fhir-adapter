@@ -102,7 +102,7 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
         {
             return new Reference( (Resource) resource );
         }
-        return new Reference( resource.getIdElement() );
+        return new Reference( resource.getIdElement().toUnqualifiedVersionless() );
     }
 
     @Override

@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Immutable scripted event.
@@ -176,6 +177,13 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     public Boolean getBooleanValue( @Nonnull Reference dataElementReference )
     {
         return delegate.getBooleanValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
+    {
+        return delegate.getIntegerOptionValue( dataElementReference, valueBase, optionValuePattern );
     }
 
     @Override

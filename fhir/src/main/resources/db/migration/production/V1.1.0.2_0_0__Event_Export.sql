@@ -236,6 +236,42 @@ VALUES ('6ede1e58-17c1-49bd-a7e4-36ef9c87521f', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('864e47fe-a186-4340-9b4c-d728150fb45b', 0, 'c8a937b5-665b-485c-bbc9-7a83e21a4e47', 'Transforms DHIS Immunization Y/N data element to FHIR', 'TRANSFORM_DHIS_IMMUNIZATION_YN', 'Transforms DHIS Immunization Y/N data element to FHIR.');
 
+-- Script that sets for a data element if a FHIR Immunization has been given (including dose sequence extracted from option value)
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type, base_script_id)
+VALUES ('33952dc7-bbf9-474d-8eaa-ab866a926da3', 0, 'TRANSFORM_DHIS_IMMUNIZATION_OS', 'Transforms DHIS Immunization option set data element to FHIR', 'Transforms DHIS Immunization option set data element to FHIR.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_IMMUNIZATION', 'f18acd12-bc85-4f79-935d-353904eadc0b');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('33952dc7-bbf9-474d-8eaa-ab866a926da3', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('33952dc7-bbf9-474d-8eaa-ab866a926da3', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('33952dc7-bbf9-474d-8eaa-ab866a926da3', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('78b4af9b-c247-4290-abee-44983938b265', 0, '33952dc7-bbf9-474d-8eaa-ab866a926da3',
+'var result;
+var doseGiven = input.getIntegerOptionValue(args[''dataElement''], 1, args[''optionValuePattern'']);
+if (doseGiven == null)
+{
+  output.setNotGiven(true);
+  result = !output.getIdElement().isEmpty();
+}
+else
+{
+  output.setVaccineCode(codeUtils.getRuleCodeableConcept());
+  if (output.getVaccineCode().isEmpty())
+  {
+    output.getVaccineCode().setText(dataElementUtils.getDataElementName(args[''dataElement'']));
+  }
+  output.setPrimarySource(input.isProvidedElsewhere(args[''dataElement'']) == false);
+  output.setNotGiven(false);
+  output.setVaccinationProtocol(null);
+  output.addVaccinationProtocol().setDoseSequence(doseGiven);
+  result = true;
+}
+result', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('78b4af9b-c247-4290-abee-44983938b265', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a5b648c0-3d7d-4a19-8bda-3ec37f9d31a2', 0, '33952dc7-bbf9-474d-8eaa-ab866a926da3', 'Transforms DHIS Immunization option set data element to FHIR', 'TRANSFORM_DHIS_IMMUNIZATION_OS',
+        'Transforms DHIS Immunization option set data element to FHIR.');
+
 ALTER TABLE fhir_code ADD enabled BOOLEAN DEFAULT TRUE NOT NULL;
 COMMENT ON COLUMN fhir_code.enabled IS 'Specifies if the code should be used during evaluations and transformations.';
 ALTER TABLE fhir_system_code ADD enabled BOOLEAN DEFAULT TRUE NOT NULL;
@@ -252,13 +288,19 @@ ALTER TABLE fhir_system_code ALTER COLUMN display_name SET NOT NULL;
 
 --- BCG is marked as preferred BCG vaccine
 UPDATE fhir_code_set_value SET preferred_export=TRUE
-WHERE code_set_id='31c6b008-eb0d-48a3-970d-70725b92bd24' AND code_id='c00aaec0-b02d-480e-9fd6-58578e224e1d';
+WHERE code_set_id='7348c790-136f-4b4b-a974-f241fb5dbb55' AND code_id='c00aaec0-b02d-480e-9fd6-58578e224e1d';
 --- MMR is marked as preferred measles vaccine
 UPDATE fhir_code_set_value SET preferred_export=TRUE
-WHERE code_set_id='7348c790-136f-4b4b-a974-f241fb5dbb55' AND code_id='71f5536a-2587-45b9-88ac-9aba362a424a';
+WHERE code_set_id='31c6b008-eb0d-48a3-970d-70725b92bd24' AND code_id='71f5536a-2587-45b9-88ac-9aba362a424a';
 -- 17D is marked as preferred yellow fever vaccine
 UPDATE fhir_code_set_value SET preferred_export=TRUE
 WHERE code_set_id='f3769ff6-e994-4182-8d56-572a23b48312' AND code_id='a22bd4d3-9ada-48ce-a05d-fcdcc199ed22';
+-- OPV
+UPDATE fhir_code_set_value SET preferred_export=TRUE
+WHERE code_set_id='bf62319c-d93c-444d-a47c-b91133b3f99a' AND code_id='f2f15a43-6c57-4d57-a32d-d12b468cef7e';
+-- DTP preferred is pure DTaP
+UPDATE fhir_code_set_value SET preferred_export=TRUE
+WHERE code_set_id='bb66ee91-8e86-422c-bb00-5a90ac95a558' AND code_id='f9462e8c-653b-4c6a-a502-8470a1ab2187';
 
 -- script may have been deleted in the meanwhile
 INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
@@ -451,15 +493,12 @@ INSERT INTO fhir_script_variable (script_id, variable)
 VALUES ('ed2e0cde-fc19-4468-8d84-6d31841d55e6', 'INPUT');
 INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
 VALUES ('dcf956e8-23cc-4934-8e42-0fbc9a23eeb9', 0, 'ed2e0cde-fc19-4468-8d84-6d31841d55e6',
-'if (input.coordinate && output.location)
+'if (input.coordinate && output.location && (input.getCoordinate() != null))
 {
-  if (input.getCoordinate() != null)
-  {
-    var location = fhirResourceUtils.createResource(''Location'');
-	  location.setPosition(geoUtils.createPosition(input.getCoordinate()));
-	  location.setPartOf(output.getLocation());
-	  output.setLocation(fhirResourceUtils.createReference(location));
-  }
+  var location = fhirResourceUtils.createResource(''Location'');
+	location.setPosition(geoUtils.createPosition(input.getCoordinate()));
+	location.setPartOf(output.getLocation());
+	output.setLocation(fhirResourceUtils.createReference(location));
 }
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)

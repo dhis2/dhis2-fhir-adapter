@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
@@ -291,14 +292,41 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return setValue( dataElement, value, providedElsewhere, override, ScriptedDateTimeUtils.toZonedDateTime( lastUpdated, valueConverter ) );
     }
 
-    public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, boolean decrementAllowed, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
+    @Override
+    @Nullable
+    public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
+    {
+        final ProgramStageDataElement dataElement = getOptionDataElement( dataElementReference );
+        final String selectedCode = valueConverter.convert( event.getDataValue( dataElement.getElementId() ).getValue(), String.class );
+        if ( StringUtils.isBlank( selectedCode ) )
+        {
+            return null;
+        }
+
+        final List<String> codes = FhirToDhisOptionSetUtils.resolveIntegerOptionCodes( dataElement.getElement().getOptionSet(), optionValuePattern );
+        final int index = codes.indexOf( selectedCode );
+        if ( index < 0 )
+        {
+            return null;
+        }
+
+        return valueBase + index;
+    }
+
+    @Nonnull
+    private ProgramStageDataElement getOptionDataElement( @Nonnull Reference dataElementReference )
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
         if ( !dataElement.getElement().isOptionSetValue() || (dataElement.getElement().getOptionSet() == null) )
         {
             throw new TransformerMappingException( "Data element \"" + dataElementReference + "\" is not an option set." );
         }
+        return dataElement;
+    }
 
+    public boolean setIntegerOptionValue( @Nonnull Reference dataElementReference, int value, int valueBase, boolean decrementAllowed, @Nullable Pattern optionValuePattern, @Nullable Boolean providedElsewhere )
+    {
+        final ProgramStageDataElement dataElement = getOptionDataElement( dataElementReference );
         if ( value < valueBase )
         {
             return false;

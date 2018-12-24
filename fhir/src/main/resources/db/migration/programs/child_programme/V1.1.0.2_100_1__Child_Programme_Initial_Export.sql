@@ -61,3 +61,27 @@ WHERE id = '9dd587e7-c7ca-4365-93f3-7263aa3cfb82';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = '8bb6914e-5014-428b-a3fc-19e18e13df33';
+
+-- Tracker Program Child Programme, Birth: OPV Dose
+UPDATE fhir_rule
+SET transform_exp_script_id = 'a5b648c0-3d7d-4a19-8bda-3ec37f9d31a2'
+WHERE id = '91ae6f5f-db07-4391-97cd-407a77794a1b';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT 'e66efbcb-7142-445a-8e1a-d1ef524977c1', 0, id, 'CODE:DE_2006104', 'dataElement', true
+FROM fhir_rule
+WHERE id = '91ae6f5f-db07-4391-97cd-407a77794a1b';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '4a8ba215-10e9-46f2-921f-da3973836119';
+
+-- Tracker Program Child Programme, Baby Postnatal: DPT Dose
+UPDATE fhir_rule
+SET transform_exp_script_id = 'a5b648c0-3d7d-4a19-8bda-3ec37f9d31a2'
+WHERE id = '2f70e895-e238-40d3-ae0b-9e18e69792d6';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '7c1bcaf5-d49c-406c-9e8c-ea76e1e71186', 0, id, 'CODE:DE_2006105', 'dataElement', true
+FROM fhir_rule
+WHERE id = '2f70e895-e238-40d3-ae0b-9e18e69792d6';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '528db27f-1927-4ae0-8326-b4e693349c52';

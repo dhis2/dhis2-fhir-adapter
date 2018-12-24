@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.regex.Pattern;
 
 /**
  * Mutable or immutable event resource that can be used by scripts safely.
@@ -73,6 +74,9 @@ public interface ScriptedEvent extends ScriptedDhisResource
 
     @Nullable
     Boolean getBooleanValue( @Nonnull Reference attributeReference );
+
+    @Nullable
+    Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern );
 
     boolean isProvidedElsewhere( @Nonnull Reference attributeReference );
 }
