@@ -28,11 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleDhisDataReference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
@@ -116,6 +118,12 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
 
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+        if ( isDataAbsent( context, input, ruleInfo ) )
+        {
+            return handleDataAbsent( remoteSubscription, context, ruleInfo, variables, resourceMapping );
+        }
+
         final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( remoteSubscription, context,
             new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ),
             Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
@@ -130,12 +138,14 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
-        if ( !transform( context, ruleInfo, variables ) )
+        if ( (resourceMapping.getExpStatusTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpStatusTransformScript(), variables, Boolean.class ) ) )
         {
+            logger.info( "Resulting DHIS status could not be transformed into FHIR resource {}.",
+                trackedEntityFhirResource.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
             return null;
         }
 
-        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
         if ( (resourceMapping.getExpTeiTransformScript() != null) &&
             !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpTeiTransformScript(), variables, Boolean.class ) ) )
         {
@@ -152,7 +162,6 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
 
-        // may update transformed organization unit
         if ( (resourceMapping.getExpGeoTransformScript() != null) &&
             !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
         {
@@ -167,6 +176,40 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
 
+        if ( !transform( context, ruleInfo, variables ) )
+        {
+            return null;
+        }
+        return createResult( context, variables, resource, modifiedResource );
+    }
+
+    @Nullable
+    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataAbsent( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
+        @Nonnull Map<String, Object> variables, @Nonnull FhirResourceMapping resourceMapping )
+    {
+        if ( resourceMapping.getExpAbsentTransformScript() == null )
+        {
+            return null;
+        }
+
+        final IBaseResource resource = getExistingResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
+        if ( resource == null )
+        {
+            return null;
+        }
+        final IBaseResource modifiedResource = clone( context, resource );
+        variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
+
+        if ( !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpAbsentTransformScript(), variables, Boolean.class ) ) )
+        {
+            return null;
+        }
+        return createResult( context, variables, resource, modifiedResource );
+    }
+
+    @Nonnull
+    private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull IBaseResource resource, @Nonnull IBaseResource modifiedResource )
+    {
         if ( equalsDeep( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
@@ -183,6 +226,18 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
         // is applicable for further processing
         return true;
+    }
+
+    protected boolean isDataAbsent( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input, @Nonnull RuleInfo<ProgramStageRule> ruleInfo )
+    {
+        for ( RuleDhisDataReference reference : ruleInfo.getDhisDataReferences() )
+        {
+            if ( reference.isRequired() && StringUtils.isBlank( input.getStringValue( reference.getDataReference() ) ) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nonnull

@@ -271,6 +271,20 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         return valueConverter.convert( getValue( dataElementReference ), Boolean.class );
     }
 
+    @Nullable
+    @Override
+    public Integer getIntegerValue( @Nonnull Reference dataElementReference )
+    {
+        return valueConverter.convert( getValue( dataElementReference ), Integer.class );
+    }
+
+    @Nullable
+    @Override
+    public String getStringValue( @Nonnull Reference dataElementReference )
+    {
+        return valueConverter.convert( getValue( dataElementReference ), String.class );
+    }
+
     public boolean setValue( @Nonnull Reference dataElementReference, @Nullable Object value ) throws TransformerException
     {
         return setValue( dataElementReference, value, null );

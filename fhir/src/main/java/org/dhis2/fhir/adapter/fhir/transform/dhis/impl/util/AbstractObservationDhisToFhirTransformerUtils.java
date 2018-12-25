@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,61 +28,44 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
-import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.regex.Pattern;
 
 /**
- * Mutable or immutable event resource that can be used by scripts safely.
+ * DHIS2 to FHIR transformer utility methods for FHIR identifiers.
  *
  * @author volsch
  */
 @Scriptable
-public interface ScriptedEvent extends ScriptedDhisResource
+@ScriptType( value = "ObservationUtils", transformType = ScriptTransformType.EXP, var = AbstractObservationDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle DHIS2 to FHIR transformations of FHIR observations." )
+public abstract class AbstractObservationDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
-    @Nonnull
-    Program getProgram();
+    public static final String SCRIPT_ATTR_NAME = "observationUtils";
+
+    protected AbstractObservationDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
 
     @Nonnull
-    ProgramStage getProgramStage();
+    @Override
+    public final String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
 
     @Nullable
-    EventStatus getStatus();
-
-    @Nullable
-    ZonedDateTime getEventDate();
-
-    @Nullable
-    ZonedDateTime getDueDate();
-
-    @Nullable
-    Location getCoordinate();
-
-    @Nullable
-    String getEnrollmentId();
-
-    @Nullable
-    Object getValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Boolean getBooleanValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Integer getIntegerValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    String getStringValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern );
-
-    boolean isProvidedElsewhere( @Nonnull Reference attributeReference );
+    @ScriptMethod( description = "Returns the observation status for the specified code.",
+        args = @ScriptMethodArg( value = "code", description = "The code for which a observation status should be returned." ),
+        returnDescription = "The observation status for the specified code." )
+    public abstract Enum<?> getObservationStatus( @Nonnull String code ) throws TransformerException;
 }

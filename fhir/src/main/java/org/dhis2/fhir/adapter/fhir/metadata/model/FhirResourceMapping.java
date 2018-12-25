@@ -78,6 +78,10 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript expDateTransformScript;
 
+    private ExecutableScript expAbsentTransformScript;
+
+    private ExecutableScript expStatusTransformScript;
+
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
     @Enumerated( EnumType.STRING )
@@ -233,5 +237,29 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setExpDateTransformScript( ExecutableScript expDateTransformScript )
     {
         this.expDateTransformScript = expDateTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_absent_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpAbsentTransformScript()
+    {
+        return expAbsentTransformScript;
+    }
+
+    public void setExpAbsentTransformScript( ExecutableScript expAbsentTransformScript )
+    {
+        this.expAbsentTransformScript = expAbsentTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_status_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpStatusTransformScript()
+    {
+        return expStatusTransformScript;
+    }
+
+    public void setExpStatusTransformScript( ExecutableScript expStatusTransformScript )
+    {
+        this.expStatusTransformScript = expStatusTransformScript;
     }
 }

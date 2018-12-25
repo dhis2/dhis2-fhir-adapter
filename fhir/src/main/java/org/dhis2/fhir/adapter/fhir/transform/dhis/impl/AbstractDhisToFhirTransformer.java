@@ -132,8 +132,8 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     }
 
     @Nonnull
-    protected Optional<? extends IBaseResource> getResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    protected Optional<? extends IBaseResource> getExistingResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( context.isUseAdapterIdentifier() )
         {
@@ -168,6 +168,19 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
                 logger.info( "Existing active FHIR resource could be found, but rule {} does not allow updating FHIR resources.", ruleInfo );
                 return Optional.empty();
             }
+            return Optional.of( resource );
+        }
+
+        return Optional.empty();
+    }
+
+    @Nonnull
+    protected Optional<? extends IBaseResource> getResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    {
+        IBaseResource resource = getExistingResource( remoteSubscription, context, ruleInfo, scriptVariables ).orElse( null );
+        if ( resource != null )
+        {
             return Optional.of( resource );
         }
 

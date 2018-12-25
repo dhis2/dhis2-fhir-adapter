@@ -181,6 +181,20 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
 
     @Nullable
     @Override
+    public Integer getIntegerValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getIntegerValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public String getStringValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getStringValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
     public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
     {
         return delegate.getIntegerOptionValue( dataElementReference, valueBase, optionValuePattern );

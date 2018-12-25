@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,61 +28,52 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
-import org.dhis2.fhir.adapter.geo.Location;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractObservationDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 /**
- * Mutable or immutable event resource that can be used by scripts safely.
+ * DSTU3 specific implementation of {@link AbstractObservationDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
 @Scriptable
-public interface ScriptedEvent extends ScriptedDhisResource
+@Component
+public class Dstu3ObservationDhisToFhirTransformerUtils extends AbstractObservationDhisToFhirTransformerUtils
 {
-    @Nonnull
-    Program getProgram();
+    public Dstu3ObservationDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
 
     @Nonnull
-    ProgramStage getProgramStage();
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
+    }
 
     @Nullable
-    EventStatus getStatus();
-
-    @Nullable
-    ZonedDateTime getEventDate();
-
-    @Nullable
-    ZonedDateTime getDueDate();
-
-    @Nullable
-    Location getCoordinate();
-
-    @Nullable
-    String getEnrollmentId();
-
-    @Nullable
-    Object getValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Boolean getBooleanValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Integer getIntegerValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    String getStringValue( @Nonnull Reference dataElementReference );
-
-    @Nullable
-    Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern );
-
-    boolean isProvidedElsewhere( @Nonnull Reference attributeReference );
+    @Override
+    public Enum<?> getObservationStatus( @Nonnull String code ) throws TransformerException
+    {
+        try
+        {
+            return Observation.ObservationStatus.fromCode( code );
+        }
+        catch ( FHIRException e )
+        {
+            throw new TransformerScriptException( "Unknown observation status code: " + code, e );
+        }
+    }
 }
