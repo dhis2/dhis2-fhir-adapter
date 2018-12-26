@@ -41,6 +41,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implementation of {@link FhirToDhisTransformerContext}.
@@ -54,6 +56,8 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     private final FhirRequest fhirRequest;
 
     private final boolean creationDisabled;
+
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public FhirToDhisTransformerContextImpl( @Nonnull FhirRequest fhirRequest, boolean creationDisabled )
     {
@@ -120,5 +124,18 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
     public FhirVersion getFhirVersion()
     {
         return getFhirRequest().getVersion();
+    }
+
+    @Override
+    public void setAttribute( @Nonnull String name, @Nullable Object value )
+    {
+        attributes.put( name, value );
+    }
+
+    @Nullable
+    @Override
+    public Object getAttribute( @Nonnull String name )
+    {
+        return attributes.get( name );
     }
 }

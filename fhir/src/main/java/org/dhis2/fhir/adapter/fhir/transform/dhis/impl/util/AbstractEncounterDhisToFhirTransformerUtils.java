@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,32 +28,44 @@ package org.dhis2.fhir.adapter.fhir.transform;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * The base interface of importing and exporting transformer.
+ * DHIS2 to FHIR transformer utility methods for FHIR encounters.
  *
  * @author volsch
  */
-public interface TransformerContext
+@Scriptable
+@ScriptType( value = "EncounterUtils", transformType = ScriptTransformType.EXP, var = AbstractEncounterDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle DHIS2 to FHIR transformations of FHIR encounters." )
+public abstract class AbstractEncounterDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
-    /**
-     * @return the DHIS username that is used for processing the current request.
-     */
-    @Nullable
-    String getDhisUsername();
+    public static final String SCRIPT_ATTR_NAME = "encounterUtils";
 
-    /**
-     * @return the FHIR version that is used for the current request.
-     */
+    protected AbstractEncounterDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
+
     @Nonnull
-    FhirVersion getFhirVersion();
-
-    void setAttribute( @Nonnull String name, @Nullable Object value );
+    @Override
+    public final String getScriptAttrName()
+    {
+        return SCRIPT_ATTR_NAME;
+    }
 
     @Nullable
-    Object getAttribute( @Nonnull String name );
+    @ScriptMethod( description = "Returns the encounter status for the specified code.",
+        args = @ScriptMethodArg( value = "code", description = "The code for which a encounter status should be returned." ),
+        returnDescription = "The encounter status for the specified code." )
+    public abstract Enum<?> getEncounterStatus( @Nonnull String code ) throws TransformerException;
 }

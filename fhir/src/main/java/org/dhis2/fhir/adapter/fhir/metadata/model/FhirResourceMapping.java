@@ -82,6 +82,8 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript expStatusTransformScript;
 
+    private ExecutableScript expGroupTransformScript;
+
     private boolean deleteWhenAbsent;
 
     @Basic
@@ -263,6 +265,18 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setExpStatusTransformScript( ExecutableScript expStatusTransformScript )
     {
         this.expStatusTransformScript = expStatusTransformScript;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "exp_group_transform_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpGroupTransformScript()
+    {
+        return expGroupTransformScript;
+    }
+
+    public void setExpGroupTransformScript( ExecutableScript expGroupTransformScript )
+    {
+        this.expGroupTransformScript = expGroupTransformScript;
     }
 
     @Basic

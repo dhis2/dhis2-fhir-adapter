@@ -44,6 +44,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,6 +66,8 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     private final Map<FhirResourceType, AvailableRemoteSubscriptionResource> availableResourcesByType;
 
     private final Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
+
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription,
         @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType, @Nonnull Collection<AvailableRemoteSubscriptionResource> availableResources )
@@ -168,5 +171,18 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public String getDhisUsername()
     {
         return remoteSubscription.getDhisEndpoint().getUsername();
+    }
+
+    @Override
+    public void setAttribute( @Nonnull String name, @Nullable Object value )
+    {
+        attributes.put( name, value );
+    }
+
+    @Nullable
+    @Override
+    public Object getAttribute( @Nonnull String name )
+    {
+        return attributes.get( name );
     }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,38 +28,52 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractEncounterDhisToFhirTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.dstu3.model.Encounter;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * DSTU3 specific implementation of {@link AbstractEncounterDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-public enum TransformDataType
+@Scriptable
+@Component
+public class Dstu3EncounterDhisToFhirTransformerUtils extends AbstractEncounterDhisToFhirTransformerUtils
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON );
-
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    public Dstu3EncounterDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        this.fhirResourceType = fhirResourceType;
+        super( scriptExecutionContext );
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
     }
 
     @Nullable
-    public FhirResourceType getFhirResourceType()
+    @Override
+    public Enum<?> getEncounterStatus( @Nonnull String code ) throws TransformerException
     {
-        return fhirResourceType;
+        try
+        {
+            return Encounter.EncounterStatus.fromCode( code );
+        }
+        catch ( FHIRException e )
+        {
+            throw new TransformerScriptException( "Unknown encounter status code: " + code, e );
+        }
     }
 }

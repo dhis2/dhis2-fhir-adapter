@@ -158,3 +158,15 @@ WHERE id = '3fdad25a-63ce-4754-9a37-602b08bd8396';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = 'ea619e25-dd65-4e8e-a9ea-6452e7cefc88';
+
+-- Encounter Child Programme, Birth
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled)
+VALUES ('9d342f13-aec1-4629-9d65-4f03fd0e848c', 0, 'Child Programme Birth Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a9-0ff4-43b0-a7d0-5a6e726ca80e', TRUE, TRUE, TRUE);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('9d342f13-aec1-4629-9d65-4f03fd0e848c', '4c074c85-be49-4b9d-8973-9e16b9615dad');
+
+-- Encounter Child Programme, Baby Postnatal
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled)
+VALUES ('1f2da6ec-41b0-4b64-99d9-e98fca864b0f', 0, 'Child Programme Baby Postnatal Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a9-0ff4-43b0-a7d0-5a6e726ca80e', TRUE, TRUE, TRUE);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('1f2da6ec-41b0-4b64-99d9-e98fca864b0f', '526b4e01-7747-47ef-a25d-f32ccd739e87');

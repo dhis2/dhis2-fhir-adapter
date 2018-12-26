@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 public enum FhirResourceType
 {
     DIAGNOSTIC_REPORT( "DiagnosticReport", 30, "DiagnosticReport" ),
+    ENCOUNTER( "Encounter", 4, "Encounter" ),
     IMMUNIZATION( "Immunization", 22, "Immunization" ),
     LOCATION( "Location", 2, "Location" ),
     MEDICATION_REQUEST( "MedicationRequest", 21, "MedicationRequest" ),

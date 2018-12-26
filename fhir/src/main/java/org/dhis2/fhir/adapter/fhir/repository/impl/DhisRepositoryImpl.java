@@ -343,6 +343,8 @@ public class DhisRepositoryImpl implements DhisRepository
                         else
                         {
                             final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            // resource may have been set as attribute in transformer context (e.g. shared encounter)
+                            outcome.getResource().setId( resultingResource.getIdElement() );
                             fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getRemoteSubscription(),
                                 resource.getResourceId(), resultingResource.getIdElement() );
                             logger.info( "Saved FHIR resource {} for remote subscription {}.",

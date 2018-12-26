@@ -182,6 +182,13 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
 
+        if ( (resourceMapping.getExpGroupTransformScript() != null) &&
+            !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGroupTransformScript(), variables, Boolean.class ) ) )
+        {
+            logger.info( "Resulting grouping could not be transformed into FHIR resource {}.", resourceMapping.getFhirResourceType() );
+            return null;
+        }
+
         if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
@@ -258,6 +265,8 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = Objects.requireNonNull( scriptedEvent.getTrackedEntityInstance() );
         variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), scriptedTrackedEntityInstance.getTrackedEntityAttributes() );
         variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), scriptedTrackedEntityInstance.getType() );
+        variables.put( ScriptVariable.PROGRAM.getVariableName(), scriptedEvent.getProgram() );
+        variables.put( ScriptVariable.PROGRAM_STAGE.getVariableName(), scriptedEvent.getProgramStage() );
 
         // is applicable for further processing
         return true;

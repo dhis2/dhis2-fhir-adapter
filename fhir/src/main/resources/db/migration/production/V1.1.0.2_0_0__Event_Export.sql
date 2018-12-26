@@ -449,7 +449,6 @@ INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_iden
 
 UPDATE fhir_script_source SET source_text=
 'var ok = false;
-var resourceType = null;
 var code = null;
 if (output.location)
 {
@@ -464,17 +463,34 @@ if (output.location)
   }
   else
   {
-    resourceType = ''LOCATION'';
     code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''LOCATION'');
     if ((code == null) && args[''useLocationIdentifierCode''])
     {
       code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''LOCATION'');
     }
   }
+  if (code != null)
+  {
+    var resource = fhirClientUtils.findBySystemIdentifier(''LOCATION'', code);
+    if (resource == null)
+    {
+      context.missingDhisResource(organizationUnit.getResourceId());
+    }
+    output.setLocation(null);
+    if (typeof output.addLocation !== ''undefined'')
+    {
+      output.addLocation().getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    }
+    else
+    {
+      output.getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    }
+    ok = true;
+  }
 }
-else if (output.managingOrganization || output.performer)
+if (output.managingOrganization || output.performer || output.serviceProvider)
 {
-  if (((output.managingOrganization && !output.getManagingOrganization().isEmpty()) || (output.performer && !output.getPerformer().isEmpty())) && !args[''overrideExisting''])
+  if (((output.managingOrganization && !output.getManagingOrganization().isEmpty()) || (output.performer && !output.getPerformer().isEmpty()) || (output.serviceProvider && !output.getServiceProvider().isEmpty())) && !args[''overrideExisting''])
   {
     ok = true;
   }
@@ -490,41 +506,45 @@ else if (output.managingOrganization || output.performer)
       output.setPerformer(null);
       ok = true;
     }
+    else if (output.serviceProvider)
+    {
+      output.setServiceProvider(null);
+      ok = true;
+    }
   }
   else
   {
-    resourceType = ''ORGANIZATION'';
     code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
     if ((code == null) && args[''useIdentifierCode''])
     {
       code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
     }
   }
-}
-if (code != null)
-{
-  var resource = fhirClientUtils.findBySystemIdentifier(resourceType, code);
-  if (resource == null)
+  if (code != null)
   {
-    context.missingDhisResource(organizationUnit.getResourceId());
-  }
-  if (output.location)
-  {
-    output.setLocation(null);
-    output.getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
-    ok = true;
-  }
-  else if (output.managingOrganization)
-  {
-    output.setManagingOrganization(null);
-    output.getManagingOrganization().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
-    ok = true;
-  }
-  else if (output.performer)
-  {
-    output.setPerformer(null);
-    output.addPerformer().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
-    ok = true;
+    var resource = fhirClientUtils.findBySystemIdentifier(''ORGANIZATION'', code);
+    if (resource == null)
+    {
+      context.missingDhisResource(organizationUnit.getResourceId());
+    }
+    if (output.managingOrganization)
+    {
+      output.setManagingOrganization(null);
+      output.getManagingOrganization().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      ok = true;
+    }
+    else if (output.performer)
+    {
+      output.setPerformer(null);
+      output.addPerformer().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      ok = true;
+    }
+    else if (output.serviceProvider)
+    {
+      output.setServiceProvider(null);
+      output.getServiceProvider().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      ok = true;
+    }
   }
 }
 ok' WHERE id = '78c2b73c-469c-4ab4-8244-07e817b72d4a';
@@ -541,9 +561,18 @@ VALUES ('dcf956e8-23cc-4934-8e42-0fbc9a23eeb9', 0, 'ed2e0cde-fc19-4468-8d84-6d31
 'if (input.coordinate && output.location && (input.getCoordinate() != null))
 {
   var location = fhirResourceUtils.createResource(''Location'');
-	location.setPosition(geoUtils.createPosition(input.getCoordinate()));
-	location.setPartOf(output.getLocation());
-	output.setLocation(fhirResourceUtils.createReference(location));
+  location.setPosition(geoUtils.createPosition(input.getCoordinate()));
+  if (typeof output.getLocationFirstRep !== ''undefined'')
+  {
+    location.setPartOf(output.getLocationFirstRep().getLocation());
+    output.setLocation(null);
+    output.getLocationFirstRep().setLocation(fhirResourceUtils.createReference(location));
+  }
+  else
+  {
+    location.setPartOf(output.getLocation());
+    output.setLocation(fhirResourceUtils.createReference(location));
+  }
 }
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
@@ -607,6 +636,12 @@ if (typeof output.dateElement !== ''undefined'')
 else if (typeof output.effective !== ''undefined'')
 {
   output.setEffective(dateTimeUtils.getDayDateTimeElement(input.getEventDate()));
+  updated = true;
+}
+else if (typeof output.period !== ''undefined'')
+{
+  output.setPeriod(null);
+  output.getPeriod().setStartElement(dateTimeUtils.getDayDateTimeElement(input.getEventDate()));
   updated = true;
 }
 updated', 'JAVASCRIPT');
@@ -758,7 +793,7 @@ WHERE fhir_resource_type = 'IMMUNIZATION';
 
 -- Script that sets the FHIR observation to absent
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
-VALUES ('ba1f2dad-c008-4ded-8b02-108f94fad74c', 0, 'TRANSFORM_ABSENT_FHIR_OM', 'Transforms absence of data element to FHIR Observation', 'Transforms absence of data element to FHIR Observation.',
+VALUES ('ba1f2dad-c008-4ded-8b02-108f94fad74c', 0, 'TRANSFORM_ABSENT_FHIR_OB', 'Transforms absence of data element to FHIR Observation', 'Transforms absence of data element to FHIR Observation.',
 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_OBSERVATION');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ba1f2dad-c008-4ded-8b02-108f94fad74c', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ba1f2dad-c008-4ded-8b02-108f94fad74c', 'INPUT');
@@ -770,12 +805,12 @@ INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('efeb5e98-5760-4d12-a0c4-20efb1d71174', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('9d591156-05de-4e12-8986-dfcaaa1f0f25', 0, 'ba1f2dad-c008-4ded-8b02-108f94fad74c',
-        'Transforms absence of data element to FHIR Observation', 'TRANSFORM_ABSENT_FHIR_OM',
+        'Transforms absence of data element to FHIR Observation', 'TRANSFORM_ABSENT_FHIR_OB',
         'Transforms absence of data element to FHIR Observation.');
 
 -- Script that sets the FHIR observation to the status of the DHIS event
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
-VALUES ('6a644b78-7878-4512-adad-a710a5c901d4', 0, 'TRANSFORM_STATUS_FHIR_OM', 'Transforms DHIS event status to FHIR Observation', 'Transforms DHIS event status to FHIR Observation.',
+VALUES ('6a644b78-7878-4512-adad-a710a5c901d4', 0, 'TRANSFORM_STATUS_FHIR_OB', 'Transforms DHIS event status to FHIR Observation', 'Transforms DHIS event status to FHIR Observation.',
 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_OBSERVATION');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('6a644b78-7878-4512-adad-a710a5c901d4', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('6a644b78-7878-4512-adad-a710a5c901d4', 'INPUT');
@@ -787,7 +822,7 @@ INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('b3d2ce26-ec5f-480d-abc6-910bedc7d38c', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('a78e3852-e18b-44bc-a2c6-9cae29974439', 0, '6a644b78-7878-4512-adad-a710a5c901d4',
-        'Transforms DHIS event status to FHIR Observation', 'TRANSFORM_STATUS_FHIR_OM',
+        'Transforms DHIS event status to FHIR Observation', 'TRANSFORM_STATUS_FHIR_OB',
         'Transforms DHIS event status to FHIR Observation.');
 
 -- coordinate must be used from encounter
@@ -858,3 +893,128 @@ COMMENT ON COLUMN fhir_dhis_assignment.remote_subscription_id IS 'The reference 
 COMMENT ON COLUMN fhir_dhis_assignment.rule_id IS 'The rule that created the assignment.';
 COMMENT ON COLUMN fhir_dhis_assignment.fhir_resource_id IS 'The unqualified FHIR resource ID part.';
 COMMENT ON COLUMN fhir_dhis_assignment.dhis_resource_id IS 'The unqualified DHIS resource ID part.';
+
+INSERT INTO fhir_transform_data_type_enum VALUES ('FHIR_ENCOUNTER');
+-- Script that sets the FHIR encounter to absent
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('37323ef8-5dd2-4d86-b82d-a9c43b0df27a', 0, 'TRANSFORM_ABSENT_FHIR_EN', 'Transforms absence of data element to FHIR Encounter', 'Transforms absence of data element to FHIR Encounter.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_ENCOUNTER');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('37323ef8-5dd2-4d86-b82d-a9c43b0df27a', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('37323ef8-5dd2-4d86-b82d-a9c43b0df27a', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('37323ef8-5dd2-4d86-b82d-a9c43b0df27a', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('6dd56290-b513-4c9a-ba4b-6c5169b16559', 0, '37323ef8-5dd2-4d86-b82d-a9c43b0df27a',
+'output.setStatus(encounterUtils.getEncounterStatus(''cancelled'')); true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('6dd56290-b513-4c9a-ba4b-6c5169b16559', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('c51681da-3d4c-4936-bec9-91f53cc05953', 0, '37323ef8-5dd2-4d86-b82d-a9c43b0df27a',
+        'Transforms absence of data element to FHIR Encounter', 'TRANSFORM_ABSENT_FHIR_EN',
+        'Transforms absence of data element to FHIR Encounter.');
+
+-- Script that sets the FHIR encounter to the status of the DHIS event
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('ee82d0ca-a5d6-417f-9dae-dbe84ccf8964', 0, 'TRANSFORM_STATUS_FHIR_EN', 'Transforms DHIS event status to FHIR Encounter', 'Transforms DHIS event status to FHIR Encounter.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_ENCOUNTER');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ee82d0ca-a5d6-417f-9dae-dbe84ccf8964', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ee82d0ca-a5d6-417f-9dae-dbe84ccf8964', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ee82d0ca-a5d6-417f-9dae-dbe84ccf8964', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('78490c08-217f-40ba-8663-d51dbe730b6d', 0, 'ee82d0ca-a5d6-417f-9dae-dbe84ccf8964',
+'var eventStatus = input.getStatus();
+var encounterStatus = ''planned'';
+if (eventStatus == ''COMPLETED'')
+{
+  encounterStatus = ''finished'';
+}
+else if (eventStatus == ''SKIPPED'')
+{
+  encounterStatus = ''cancelled'';
+}
+else if (eventStatus == ''ACTIVE'')
+{
+  encounterStatus = ''in-progress'';
+}
+output.setStatus(encounterUtils.getEncounterStatus(encounterStatus));
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('78490c08-217f-40ba-8663-d51dbe730b6d', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a726bc90-8152-48a3-9427-55477a948907', 0, 'ee82d0ca-a5d6-417f-9dae-dbe84ccf8964',
+        'Transforms DHIS event status to FHIR Encounter', 'TRANSFORM_STATUS_FHIR_EN',
+        'Transforms DHIS event status to FHIR Encounter.');
+
+INSERT INTO fhir_resource_type_enum VALUES ('ENCOUNTER');
+INSERT INTO fhir_resource_mapping(id, version, fhir_resource_type,
+                                  exp_absent_transform_script_id, exp_status_transform_script_id,
+                                  exp_tei_transform_script_id, exp_ou_transform_script_id, exp_geo_transform_script_id,
+                                  exp_date_transform_script_id)
+VALUES ('248d964c-4dbf-4271-bb57-22f5aed5c9f9', 0, 'ENCOUNTER',
+        'c51681da-3d4c-4936-bec9-91f53cc05953', 'a726bc90-8152-48a3-9427-55477a948907',
+        'f7863a17-86da-42d2-89fd-7f6c3d214f1b', '416decee-4604-473a-b650-1a997d731ff0', '30ee57d1-062f-4847-85b9-f2262a678151',
+        'deb4fd13-d5b2-41df-9f30-0fb73b063c8b');
+
+-- Script that sets the FHIR observation to the status of the DHIS event
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('1e06ef05-2466-4ed9-b32e-7f9dfecf4d45', 0, 'TRANSFORM_EVENT_FHIR_EN', 'Transforms DHIS event to FHIR Encounter', 'Transforms DHIS event to FHIR Encounter.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_ENCOUNTER');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef05-2466-4ed9-b32e-7f9dfecf4d45', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef05-2466-4ed9-b32e-7f9dfecf4d45', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef05-2466-4ed9-b32e-7f9dfecf4d45', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('cfec6b38-4777-49fd-944d-ddab80421bc2', 0, '1e06ef05-2466-4ed9-b32e-7f9dfecf4d45',
+'output.setType(null);
+output.addType().setText(program.getName() + '': '' + programStage.getName());
+context.setAttribute(''group-encounter-event-'' + input.getId(), output);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('cfec6b38-4777-49fd-944d-ddab80421bc2', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('5eab76a9-0ff4-43b0-a7d0-5a6e726ca80e', 0, '1e06ef05-2466-4ed9-b32e-7f9dfecf4d45',
+        'Transforms DHIS event to FHIR Encounter', 'TRANSFORM_EVENT_FHIR_EN',
+        'Transforms DHIS event to FHIR Encounter.');
+
+-- Script that sets the collected FHIR encounter to the updated FHIR resource
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('45c39ea9-3f44-4db9-8ce5-34d23031db27', 0, 'TRANSFORM_GROUP_FHIR', 'Transforms the grouping FHIR resource to FHIR resource', 'Transforms the grouping FHIR resource to FHIR resource.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_OBSERVATION');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('45c39ea9-3f44-4db9-8ce5-34d23031db27', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('45c39ea9-3f44-4db9-8ce5-34d23031db27', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('45c39ea9-3f44-4db9-8ce5-34d23031db27', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('9c4c5b88-52b8-4bae-b07f-7f3ee7392d13', 0, '45c39ea9-3f44-4db9-8ce5-34d23031db27',
+'var encounter = context.getAttribute(''group-encounter-event-'' + input.getId());
+var updated = false;
+if (output.encounter)
+{
+  output.setEncounter(null);
+  if (encounter != null)
+  {
+    output.setEncounter(fhirResourceUtils.createReference(encounter));
+  }
+  updated = true;
+}
+else if (output.context)
+{
+  output.setContext(null);
+  if (encounter != null)
+  {
+    output.setContext(fhirResourceUtils.createReference(encounter));
+  }
+  updated = true;
+}
+updated', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('9c4c5b88-52b8-4bae-b07f-7f3ee7392d13', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('2347ba1f-2d5b-4276-8934-100cbdb0fcfa', 0, '45c39ea9-3f44-4db9-8ce5-34d23031db27',
+        'Transforms the grouping FHIR resource to FHIR resource', 'TRANSFORM_GROUP_FHIR',
+        'Transforms the grouping FHIR resource to FHIR resource.');
+
+ALTER TABLE fhir_resource_mapping
+  ADD COLUMN exp_group_transform_script_id UUID,
+  ADD CONSTRAINT fhir_resource_mapping_fk16 FOREIGN KEY (exp_group_transform_script_id) REFERENCES fhir_executable_script(id);
+COMMENT ON COLUMN fhir_resource_mapping.exp_group_transform_script_id IS 'Specifies the transformation script that sets the group reference (e.g. encounter).';
+CREATE INDEX fhir_resource_mapping_i17 ON fhir_resource_mapping(exp_group_transform_script_id);
+UPDATE fhir_resource_mapping SET exp_group_transform_script_id = '2347ba1f-2d5b-4276-8934-100cbdb0fcfa' WHERE fhir_resource_type='IMMUNIZATION';
+UPDATE fhir_resource_mapping SET exp_group_transform_script_id = '2347ba1f-2d5b-4276-8934-100cbdb0fcfa' WHERE fhir_resource_type='OBSERVATION';

@@ -43,6 +43,12 @@ UPDATE fhir_rule SET exp_enabled = true, fhir_update_enabled = true WHERE id = '
 UPDATE fhir_rule SET fhir_delete_enabled = true;
 UPDATE fhir_resource_mapping SET exp_delete_when_absent = true;
 
+-- virtual subscription for FHIR encounters
+INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
+VALUES ('5eb586df-3042-492c-8f81-353c642c01e6', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'ENCOUNTER', TRUE, NULL, 'Virtual subscription for all Encounters.');
+INSERT INTO fhir_remote_subscription_resource_update(id)
+VALUES ('5eb586df-3042-492c-8f81-353c642c01e6');
+
 -- virtual subscription for FHIR locations
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
 VALUES ('527d1f3d-623e-4c23-af8f-8f817d902b34', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'LOCATION', TRUE, NULL, 'Virtual subscription for all Locations.');
