@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
@@ -88,12 +89,16 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     private final RemoteFhirResourceRepository remoteFhirResourceRepository;
 
-    public AbstractDhisToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+    private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
+
+    public AbstractDhisToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository,
+        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.scriptExecutor = scriptExecutor;
         this.lockManager = lockManager;
         this.systemRepository = systemRepository;
         this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
     @Nonnull
@@ -155,6 +160,17 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             if ( !ruleInfo.getRule().isEffectiveFhirUpdateEnable() )
             {
                 logger.info( "Existing FHIR resource could be found by system identifier, but rule {} does not allow updating FHIR resources.", ruleInfo );
+                return Optional.empty();
+            }
+            return Optional.of( resource );
+        }
+
+        resource = getResourceByAssignment( remoteSubscription, context, ruleInfo, scriptVariables ).orElse( null );
+        if ( resource != null )
+        {
+            if ( !ruleInfo.getRule().isEffectiveFhirUpdateEnable() )
+            {
+                logger.info( "Existing FHIR resource could be found by assigned identifier, but rule {} does not allow updating FHIR resources.", ruleInfo );
                 return Optional.empty();
             }
             return Optional.of( resource );
@@ -230,6 +246,22 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
         return getResourceBySystemIdentifierInternal( remoteSubscription, context, ruleInfo,
             scriptedDhisResource, scriptVariables, new DefaultIdentifierValueProvider() );
+    }
+
+    @Nonnull
+    protected Optional<? extends IBaseResource> getResourceByAssignment( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final R scriptedDhisResource = getDhisResourceClass().cast(
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
+        final String fhirResourceId = fhirDhisAssignmentRepository.findFirstFhirResourceId( ruleInfo.getRule(), remoteSubscription,
+            Objects.requireNonNull( scriptedDhisResource.getResourceId() ) );
+        if ( fhirResourceId == null )
+        {
+            return Optional.empty();
+        }
+        return getRemoteFhirResourceRepository().findRefreshed( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(), ruleInfo.getRule().getFhirResourceType().getResourceTypeName(), fhirResourceId )
+            .map( r -> clone( context, r ) );
     }
 
     @Nonnull

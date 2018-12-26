@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -68,9 +69,10 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public TrackedEntityToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+    public TrackedEntityToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
-        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository );
+        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository, fhirDhisAssignmentRepository );
     }
 
     @Nonnull
@@ -136,9 +138,9 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         if ( equalsDeep( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
-            return new DhisToFhirTransformOutcome<>( null );
+            return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
         }
-        return new DhisToFhirTransformOutcome<>( modifiedResource );
+        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
     }
 
     protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance ) throws TransformerException

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir;
+package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,31 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 
 /**
- * The outcome of the transformation between a FHIR resource and a DHIS 2 resource.
+ * Custom repository for {@link FhirDhisAssignment}s.
  *
- * @param <R> the concrete type of the returned DHIS 2 resource.
  * @author volsch
  */
-public class FhirToDhisTransformOutcome<R extends DhisResource> implements Serializable
+public interface CustomFhirDhisAssignmentRepository
 {
-    private static final long serialVersionUID = -1022009827965716982L;
-
-    private final AbstractRule rule;
-
-    private final R resource;
-
-    private final FhirToDhisTransformerRequest nextTransformerRequest;
-
-    public FhirToDhisTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
-    {
-        this.rule = rule;
-        this.resource = resource;
-        this.nextTransformerRequest = null;
-    }
-
-    public FhirToDhisTransformOutcome( @Nonnull FhirToDhisTransformOutcome<R> outcome, @Nullable FhirToDhisTransformerRequest nextTransformerRequest )
-    {
-        this.rule = outcome.getRule();
-        this.resource = outcome.getResource();
-        this.nextTransformerRequest = nextTransformerRequest;
-    }
-
-    @Nonnull
-    public AbstractRule getRule()
-    {
-        return rule;
-    }
-
-    @Nonnull
-    public R getResource()
-    {
-        return resource;
-    }
+    @Nullable
+    String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId );
 
     @Nullable
-    public FhirToDhisTransformerRequest getNextTransformerRequest()
-    {
-        return nextTransformerRequest;
-    }
+    String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull DhisResourceId dhisResourceId );
+
+    boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
+
+    boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId );
+
+    boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId );
 }

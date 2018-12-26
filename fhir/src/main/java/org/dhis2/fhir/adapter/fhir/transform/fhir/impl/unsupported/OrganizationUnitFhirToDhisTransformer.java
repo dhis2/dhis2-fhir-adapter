@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -47,9 +48,10 @@ import javax.annotation.Nonnull;
 @Component
 public class OrganizationUnitFhirToDhisTransformer extends AbstractUnsupportedFhirToDhisTransformer<OrganizationUnit, OrganizationUnitRule>
 {
-    public OrganizationUnitFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
+    public OrganizationUnitFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
-        super( scriptExecutor, organizationUnitService, trackedEntityService );
+        super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
     }
 
     @Nonnull

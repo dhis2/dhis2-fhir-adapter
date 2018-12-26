@@ -31,7 +31,9 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -55,14 +57,16 @@ import java.util.Optional;
  */
 public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisResource, U extends AbstractRule> extends AbstractFhirToDhisTransformer<R, U>
 {
-    protected AbstractUnsupportedFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
+    protected AbstractUnsupportedFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
-        super( scriptExecutor, organizationUnitService, trackedEntityService );
+        super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
     }
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<R> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    public FhirToDhisTransformOutcome<R> transform( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo,
+        @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( ruleInfo.getRule().isImpEnabled() )
         {
@@ -90,6 +94,14 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
     {
         return Optional.empty();
     }
+
+    @Nonnull
+    @Override
+    protected Optional<R> findResourceById( @Nonnull String id )
+    {
+        return Optional.empty();
+    }
+
 
     @Nullable
     @Override

@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
@@ -105,6 +106,8 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final RemoteFhirResourceRepository remoteFhirResourceRepository;
 
+    private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
+
     public DhisRepositoryImpl(
         @Nonnull AuthorizationContext authorizationContext,
         @Nonnull Authorization systemDhis2Authorization,
@@ -115,7 +118,8 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull StoredDhisResourceService storedItemService,
         @Nonnull DhisResourceRepository dhisResourceRepository,
         @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.authorizationContext = authorizationContext;
         this.systemDhis2Authorization = systemDhis2Authorization;
@@ -127,6 +131,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.dhisResourceRepository = dhisResourceRepository;
         this.dhisToFhirTransformerService = dhisToFhirTransformerService;
         this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
     @Override
@@ -330,12 +335,16 @@ public class DhisRepositoryImpl implements DhisRepository
                         if ( outcome.isDelete() )
                         {
                             final boolean deleted = remoteFhirResourceRepository.delete( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            fhirDhisAssignmentRepository.deleteFhirResourceId( outcome.getRule(), transformerRequest.getRemoteSubscription(),
+                                outcome.getResource().getIdElement() );
                             logger.info( "Deleted (found={}) resource {} for remote subscription {}.", deleted,
                                 outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getRemoteSubscription().getId() );
                         }
                         else
                         {
                             final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getRemoteSubscription(),
+                                resource.getResourceId(), resultingResource.getIdElement() );
                             logger.info( "Saved FHIR resource {} for remote subscription {}.",
                                 resultingResource.getIdElement().toUnqualified(), transformerRequest.getRemoteSubscription().getId() );
                         }

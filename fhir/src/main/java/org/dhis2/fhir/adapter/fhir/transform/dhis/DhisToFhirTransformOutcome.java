@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -44,23 +45,26 @@ public class DhisToFhirTransformOutcome<R extends IBaseResource> implements Seri
 {
     private static final long serialVersionUID = -1022009827965716982L;
 
+    private final AbstractRule rule;
+
     private final R resource;
 
     private final boolean delete;
 
     private final DhisToFhirTransformerRequest nextTransformerRequest;
 
-    public DhisToFhirTransformOutcome( @Nullable R resource )
+    public DhisToFhirTransformOutcome( @Nonnull AbstractRule rule, @Nullable R resource )
     {
-        this( resource, false );
+        this( rule, resource, false );
     }
 
-    public DhisToFhirTransformOutcome( @Nullable R resource, boolean delete )
+    public DhisToFhirTransformOutcome( @Nonnull AbstractRule rule, @Nullable R resource, boolean delete )
     {
         if ( delete && (resource == null) )
         {
             throw new IllegalArgumentException( "Resource must be specified when it should be deleted" );
         }
+        this.rule = rule;
         this.resource = resource;
         this.delete = delete;
         this.nextTransformerRequest = null;
@@ -68,9 +72,16 @@ public class DhisToFhirTransformOutcome<R extends IBaseResource> implements Seri
 
     public DhisToFhirTransformOutcome( @Nonnull DhisToFhirTransformOutcome<R> outcome, @Nullable DhisToFhirTransformerRequest nextTransformerRequest )
     {
+        this.rule = outcome.getRule();
         this.resource = outcome.getResource();
         this.delete = outcome.isDelete();
         this.nextTransformerRequest = nextTransformerRequest;
+    }
+
+    @Nonnull
+    public AbstractRule getRule()
+    {
+        return rule;
     }
 
     @Nullable

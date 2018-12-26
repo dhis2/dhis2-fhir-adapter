@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
@@ -124,7 +125,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nonnull
     @Override
-    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull IBaseResource originalInput, boolean contained )
+    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull IBaseResource originalInput, boolean contained )
     {
         final Map<String, FhirToDhisTransformerUtils> transformerUtils = this.transformerUtils.get( fhirRequest.getVersion() );
         if ( transformerUtils == null )
@@ -143,7 +144,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         final List<RuleInfo<? extends AbstractRule>> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
             .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
 
-        return new FhirToDhisTransformerRequestImpl( new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
+        return new FhirToDhisTransformerRequestImpl( remoteSubscriptionResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }
 
     @Nullable
@@ -178,7 +179,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted(
+                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getRemoteSubscriptionResource(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {

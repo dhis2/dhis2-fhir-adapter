@@ -66,6 +66,9 @@ WHERE id = '9843c898-6a41-4388-ab6e-30503708ac91';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = '19df546e-7eb9-4384-87d1-162346d322fc';
+UPDATE fhir_program_stage_rule
+SET exp_delete_evaluate_script_id='2db4dba6-b445-4fce-a9a5-b3f24d0a12cc'
+WHERE id = '9843c898-6a41-4388-ab6e-30503708ac91';
 
 -- Tracker Program Child Programme, Baby Postnatal: Measles given
 UPDATE fhir_rule

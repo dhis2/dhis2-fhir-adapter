@@ -248,7 +248,21 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
             storedItemService.stored( subscription, processedItemInfo.toIdString( Instant.now() ) );
         }
 
-        return (methodOutcome.getResource() == null) ? resource : methodOutcome.getResource();
+        final IBaseResource result;
+        if ( methodOutcome.getResource() == null )
+        {
+            result = resource;
+            if ( methodOutcome.getId() != null )
+            {
+                result.setId( methodOutcome.getId() );
+            }
+        }
+        else
+        {
+            result = methodOutcome.getResource();
+        }
+
+        return result;
     }
 
     @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedRemoteSubscriptionResourceEvent.class )

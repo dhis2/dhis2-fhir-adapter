@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir;
+package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,58 +28,16 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.Serializable;
+import java.util.UUID;
 
 /**
- * The outcome of the transformation between a FHIR resource and a DHIS 2 resource.
+ * Repository for {@link FhirDhisAssignment}s.
  *
- * @param <R> the concrete type of the returned DHIS 2 resource.
  * @author volsch
  */
-public class FhirToDhisTransformOutcome<R extends DhisResource> implements Serializable
+public interface FhirDhisAssignmentRepository extends JpaRepository<FhirDhisAssignment, UUID>, CustomFhirDhisAssignmentRepository
 {
-    private static final long serialVersionUID = -1022009827965716982L;
-
-    private final AbstractRule rule;
-
-    private final R resource;
-
-    private final FhirToDhisTransformerRequest nextTransformerRequest;
-
-    public FhirToDhisTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
-    {
-        this.rule = rule;
-        this.resource = resource;
-        this.nextTransformerRequest = null;
-    }
-
-    public FhirToDhisTransformOutcome( @Nonnull FhirToDhisTransformOutcome<R> outcome, @Nullable FhirToDhisTransformerRequest nextTransformerRequest )
-    {
-        this.rule = outcome.getRule();
-        this.resource = outcome.getResource();
-        this.nextTransformerRequest = nextTransformerRequest;
-    }
-
-    @Nonnull
-    public AbstractRule getRule()
-    {
-        return rule;
-    }
-
-    @Nonnull
-    public R getResource()
-    {
-        return resource;
-    }
-
-    @Nullable
-    public FhirToDhisTransformerRequest getNextTransformerRequest()
-    {
-        return nextTransformerRequest;
-    }
 }

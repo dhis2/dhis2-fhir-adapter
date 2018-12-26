@@ -40,6 +40,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
@@ -76,9 +78,9 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     public FhirToTrackedEntityTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ValueConverter valueConverter )
+        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ), fhirDhisAssignmentRepository );
         this.lockManager = lockManager;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.valueConverter = valueConverter;
@@ -107,7 +109,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<TrackedEntityInstance> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
+    public FhirToDhisTransformOutcome<TrackedEntityInstance> transform( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( !ruleInfo.getRule().getTrackedEntity().isEnabled() )
@@ -123,7 +125,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
         final TrackedEntityAttributes trackedEntityAttributes = TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class );
         final TrackedEntityType trackedEntityType = TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class );
-        final TrackedEntityInstance trackedEntityInstance = getResource( context, ruleInfo, variables ).orElse( null );
+        final TrackedEntityInstance trackedEntityInstance = getResource( remoteSubscriptionResource, context, ruleInfo, variables ).orElse( null );
         if ( trackedEntityInstance == null )
         {
             return null;
@@ -166,7 +168,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             Collections.singletonMap( RequiredValueType.ORG_UNIT_CODE, organizationUnit.get().getCode() ) );
         scriptedTrackedEntityInstance.validate();
 
-        return new FhirToDhisTransformOutcome<>( trackedEntityInstance );
+        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), trackedEntityInstance );
     }
 
     protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo ) throws TransformerException
@@ -212,6 +214,13 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
                 .lock( "in-te-fhir-resource-id:" + baseResource.getIdElement().toUnqualifiedVersionless() );
         }
         return getTrackedEntityInstanceByIdentifier( context, ruleInfo, baseResource, scriptVariables, sync );
+    }
+
+    @Nonnull
+    @Override
+    protected Optional<TrackedEntityInstance> findResourceById( @Nonnull String id )
+    {
+        return getTrackedEntityService().findOneById( id );
     }
 
     @Nullable

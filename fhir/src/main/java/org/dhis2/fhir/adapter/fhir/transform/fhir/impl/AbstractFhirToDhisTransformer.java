@@ -38,10 +38,12 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
@@ -91,19 +93,23 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     private final TrackedEntityService trackedEntityService;
 
-    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService )
+    private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
+
+    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.scriptExecutor = scriptExecutor;
         this.organizationUnitService = organizationUnitService;
         this.trackedEntityService = trackedEntityService.getIfAvailable();
+        this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
+    public FhirToDhisTransformOutcome<R> transformCasted( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return transform( context, input, new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), scriptVariables );
+        return transform( remoteSubscriptionResource, context, input, new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), scriptVariables );
     }
 
     @Nonnull
@@ -124,11 +130,17 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nonnull
-    protected Optional<R> getResource( @Nonnull FhirToDhisTransformerContext context,
+    protected Optional<R> getResource( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context,
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final String id = getDhisId( context, ruleInfo );
         R resource = getResourceById( id ).orElse( null );
+        if ( resource != null )
+        {
+            return Optional.of( resource );
+        }
+
+        resource = getResourceByAssignment( remoteSubscriptionResource, context, ruleInfo, scriptVariables ).orElse( null );
         if ( resource != null )
         {
             return Optional.of( resource );
@@ -164,6 +176,23 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected abstract Optional<R> getActiveResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
+
+    @Nonnull
+    protected Optional<R> getResourceByAssignment( @Nonnull RemoteSubscriptionResource subscriptionResource,
+        @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    {
+        final IBaseResource fhirResource = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
+        final String dhisResourceId = fhirDhisAssignmentRepository.findFirstDhisResourceId( ruleInfo.getRule(), subscriptionResource.getRemoteSubscription(),
+            fhirResource.getIdElement() );
+        if ( dhisResourceId == null )
+        {
+            return Optional.empty();
+        }
+        return findResourceById( dhisResourceId );
+    }
+
+    @Nonnull
+    protected abstract Optional<R> findResourceById( @Nonnull String id );
 
     @Nullable
     protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,

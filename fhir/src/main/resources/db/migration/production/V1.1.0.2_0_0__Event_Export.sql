@@ -836,3 +836,25 @@ if ((latestApgarScore != null) && latestApgarScore.hasValueQuantity())
   }
 }
 updated' WHERE id = '628348ae-9a40-4f0d-af78-5c6e0bfa1c6d';
+
+CREATE TABLE fhir_dhis_assignment(
+  id                      UUID NOT NULL,
+  created_at              TIMESTAMP(3) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
+  remote_subscription_id  UUID NOT NULL,
+  rule_id                 UUID NOT NULL,
+  fhir_resource_id        VARCHAR(200) NOT NULL,
+  dhis_resource_id        VARCHAR(200) NOT NULL,
+  CONSTRAINT fhir_dhis_assignment_pk PRIMARY KEY (id),
+  CONSTRAINT fhir_dhis_assignment_fk1 FOREIGN KEY (remote_subscription_id) REFERENCES fhir_remote_subscription(id) ON DELETE CASCADE ,
+  CONSTRAINT fhir_dhis_assignment_fk2 FOREIGN KEY (rule_id) REFERENCES fhir_rule(id) ON DELETE CASCADE ,
+  CONSTRAINT fhir_dhis_assignment_uk1 UNIQUE (rule_id, remote_subscription_id, fhir_resource_id),
+  CONSTRAINT fhir_dhis_assignment_uk2 UNIQUE (rule_id, remote_subscription_id, dhis_resource_id)
+);
+CREATE INDEX fhir_dhis_assignment_i1 ON fhir_dhis_assignment(remote_subscription_id);
+COMMENT ON TABLE fhir_dhis_assignment IS 'Contains the assignments from DHIS to FHIR resource IDs and vice versa.';
+COMMENT ON COLUMN fhir_dhis_assignment.id IS 'The unique ID of the assignment.';
+COMMENT ON COLUMN fhir_dhis_assignment.created_at IS 'The timestamp when the assignment has been created.';
+COMMENT ON COLUMN fhir_dhis_assignment.remote_subscription_id IS 'The reference to the remote subscription to which the resource belongs to.';
+COMMENT ON COLUMN fhir_dhis_assignment.rule_id IS 'The rule that created the assignment.';
+COMMENT ON COLUMN fhir_dhis_assignment.fhir_resource_id IS 'The unqualified FHIR resource ID part.';
+COMMENT ON COLUMN fhir_dhis_assignment.dhis_resource_id IS 'The unqualified DHIS resource ID part.';

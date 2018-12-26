@@ -49,9 +49,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
@@ -119,9 +121,9 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     public FhirToProgramStageTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull LockManager lockManager,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService,
-        @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull ValueConverter valueConverter )
+        @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ) );
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ), fhirDhisAssignmentRepository );
         this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
@@ -154,7 +156,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<Event> transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
+    public FhirToDhisTransformOutcome<Event> transform( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( !ruleInfo.getRule().getProgramStage().isEnabled() || !ruleInfo.getRule().getProgramStage().getProgram().isEnabled() )
@@ -175,7 +177,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
 
         addScriptVariables( context, variables, ruleInfo, trackedEntityInstance );
-        final Event event = getResource( context, ruleInfo, variables ).orElse( null );
+        final Event event = getResource( remoteSubscriptionResource, context, ruleInfo, variables ).orElse( null );
         if ( event == null )
         {
             return null;
@@ -233,7 +235,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         event.setTrackedEntityInstance( trackedEntityInstance );
         scriptedProgramStageEvents.stream().filter( se -> se.isNewResource() || se.isModified() || se.isAnyDataValueModified() ).forEach( WritableScriptedEvent::validate );
 
-        return new FhirToDhisTransformOutcome<>( event );
+        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), event );
     }
 
     protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo ) throws TransformerException
@@ -342,6 +344,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             }
         }
         return Optional.of( event );
+    }
+
+    @Nonnull
+    @Override
+    protected Optional<Event> findResourceById( @Nonnull String id )
+    {
+        return eventService.findOneById( id );
     }
 
     @Nullable

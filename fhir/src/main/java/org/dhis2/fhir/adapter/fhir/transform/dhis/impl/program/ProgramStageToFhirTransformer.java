@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
@@ -79,9 +80,9 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     private final FhirResourceMappingRepository resourceMappingRepository;
 
     public ProgramStageToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
-        @Nonnull FhirResourceMappingRepository resourceMappingRepository )
+        @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
-        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository );
+        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository, fhirDhisAssignmentRepository );
         this.resourceMappingRepository = resourceMappingRepository;
     }
 
@@ -185,7 +186,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         {
             return null;
         }
-        return createResult( context, variables, resource, modifiedResource );
+        return createResult( context, ruleInfo, variables, resource, modifiedResource );
     }
 
     private boolean isDataDelete( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, FhirResourceMapping resourceMapping, Map<String, Object> variables )
@@ -217,7 +218,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final IBaseResource modifiedResource = clone( context, resource );
         if ( delete )
         {
-            return new DhisToFhirTransformOutcome<>( modifiedResource, true );
+            return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource, true );
         }
 
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
@@ -225,7 +226,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         {
             return null;
         }
-        return createResult( context, variables, resource, modifiedResource );
+        return createResult( context, ruleInfo, variables, resource, modifiedResource );
     }
 
     @Nullable
@@ -237,18 +238,19 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
         lockResource( remoteSubscription, context, ruleInfo, variables );
-        return new DhisToFhirTransformOutcome<>( resource, true );
+        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), resource, true );
     }
 
     @Nonnull
-    private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull IBaseResource resource, @Nonnull IBaseResource modifiedResource )
+    private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> variables, @Nonnull IBaseResource resource,
+        @Nonnull IBaseResource modifiedResource )
     {
         if ( equalsDeep( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
-            return new DhisToFhirTransformOutcome<>( null );
+            return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
         }
-        return new DhisToFhirTransformOutcome<>( modifiedResource );
+        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
     }
 
     protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull ScriptedEvent scriptedEvent ) throws TransformerException

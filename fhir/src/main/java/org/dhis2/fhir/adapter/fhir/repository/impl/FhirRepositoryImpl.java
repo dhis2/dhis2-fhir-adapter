@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -120,6 +121,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final DhisResourceRepository dhisResourceRepository;
 
+    private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
+
     private final ZoneId zoneId = ZoneId.systemDefault();
 
     public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext, @Nonnull LockManager lockManager,
@@ -128,7 +131,7 @@ public class FhirRepositoryImpl implements FhirRepository
         @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
         @Nonnull StoredRemoteFhirResourceService storedItemService,
         @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
-        @Nonnull DhisResourceRepository dhisResourceRepository )
+        @Nonnull DhisResourceRepository dhisResourceRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.authorizationContext = authorizationContext;
         this.lockManager = lockManager;
@@ -139,6 +142,7 @@ public class FhirRepositoryImpl implements FhirRepository
         this.remoteFhirResourceRepository = remoteFhirResourceRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.dhisResourceRepository = dhisResourceRepository;
+        this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
     @Override
@@ -396,7 +400,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );
         boolean saved = false;
-        FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, resource, contained );
+        FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, subscriptionResource, resource, contained );
         do
         {
             FhirToDhisTransformOutcome<? extends DhisResource> outcome;
@@ -418,6 +422,9 @@ public class FhirRepositoryImpl implements FhirRepository
                 else
                 {
                     dhisResourceRepository.save( outcome.getResource() );
+                    fhirDhisAssignmentRepository.saveDhisResourceId(
+                        outcome.getRule(), subscriptionResource.getRemoteSubscription(),
+                        resource.getIdElement(), outcome.getResource().getResourceId() );
                     saved = true;
                     transformerRequest = outcome.getNextTransformerRequest();
                 }

@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
@@ -72,9 +73,9 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     private final OrganizationUnitService organizationUnitService;
 
     public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
-        @Nonnull OrganizationUnitService organizationUnitService )
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService )
     {
-        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository );
+        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository, fhirDhisAssignmentRepository );
         this.organizationUnitService = organizationUnitService;
     }
 
@@ -124,9 +125,9 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         if ( equalsDeep( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
-            return new DhisToFhirTransformOutcome<>( null );
+            return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
         }
-        return new DhisToFhirTransformOutcome<>( modifiedResource );
+        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
     }
 
     @Nonnull
