@@ -327,9 +327,18 @@ public class DhisRepositoryImpl implements DhisRepository
                 {
                     if ( outcome.getResource() != null )
                     {
-                        final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
-                        logger.info( "Saved FHIR resource {} for remote subscription {}.",
-                            resultingResource.getIdElement().toUnqualified(), transformerRequest.getRemoteSubscription().getId() );
+                        if ( outcome.isDelete() )
+                        {
+                            final boolean deleted = remoteFhirResourceRepository.delete( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            logger.info( "Deleted (found={}) resource {} for remote subscription {}.", deleted,
+                                outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getRemoteSubscription().getId() );
+                        }
+                        else
+                        {
+                            final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            logger.info( "Saved FHIR resource {} for remote subscription {}.",
+                                resultingResource.getIdElement().toUnqualified(), transformerRequest.getRemoteSubscription().getId() );
+                        }
                     }
                     saved = true;
                     transformerRequest = outcome.getNextTransformerRequest();

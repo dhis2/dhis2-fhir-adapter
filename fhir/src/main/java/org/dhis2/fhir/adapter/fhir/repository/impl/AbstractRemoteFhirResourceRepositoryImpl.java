@@ -176,6 +176,32 @@ public abstract class AbstractRemoteFhirResourceRepositoryImpl implements Remote
     @HystrixCommand
     @CacheEvict( key = "{#subscription.id, #subscription.fhirVersion, " +
         "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart()}" )
+    @Override
+    public boolean delete( @Nonnull RemoteSubscription subscription, @Nonnull IBaseResource resource )
+    {
+        final FhirContext fhirContext = fhirContexts.get( subscription.getFhirVersion() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, subscription.getFhirEndpoint() );
+
+        try
+        {
+            client.delete().resource( resource ).execute();
+        }
+        catch ( PreconditionFailedException e )
+        {
+            throw new OptimisticFhirResourceLockException( "Could not delete FHIR resource " +
+                resource.getIdElement() + " because of an optimistic locking failure.", e );
+        }
+        catch ( ResourceNotFoundException e )
+        {
+            logger.debug( "Resource {} to be deleted could not be found.", resource.getIdElement() );
+            return false;
+        }
+        return true;
+    }
+
+    @HystrixCommand
+    @CacheEvict( key = "{#subscription.id, #subscription.fhirVersion, " +
+        "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart()}" )
     @Nonnull
     @Override
     public IBaseResource save( @Nonnull RemoteSubscription subscription, @Nonnull IBaseResource resource )

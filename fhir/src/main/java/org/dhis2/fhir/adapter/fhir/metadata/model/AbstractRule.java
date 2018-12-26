@@ -123,6 +123,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private boolean fhirUpdateEnabled;
 
+    private boolean fhirDeleteEnabled;
+
     private boolean stop;
 
     private ExecutableScript applicableImpScript;
@@ -303,6 +305,18 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @Basic
+    @Column( name = "fhir_delete_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirDeleteEnabled()
+    {
+        return fhirDeleteEnabled;
+    }
+
+    public void setFhirDeleteEnabled( boolean fhirDeleteEnabled )
+    {
+        this.fhirDeleteEnabled = fhirDeleteEnabled;
+    }
+
+    @Basic
     @Column( name = "stop", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isStop()
     {
@@ -373,6 +387,10 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @Transient
     @JsonIgnore
     public abstract boolean isEffectiveFhirUpdateEnable();
+
+    @Transient
+    @JsonIgnore
+    public abstract boolean isEffectiveFhirDeleteEnable();
 
     @Override
     public int compareTo( @Nonnull AbstractRule o )

@@ -175,4 +175,12 @@ public class TrackedEntityRule extends AbstractRule
     {
         return isExpEnabled() && isFhirUpdateEnabled() && getTrackedEntity().isExpEnabled() && getTrackedEntity().isFhirUpdateEnabled();
     }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirDeleteEnable()
+    {
+        return isExpEnabled() && isFhirDeleteEnabled();
+    }
 }

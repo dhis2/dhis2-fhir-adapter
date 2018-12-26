@@ -135,21 +135,28 @@ UPDATE fhir_script_source SET source_text=
 }
 true' WHERE id = '650e2d25-82d7-450a-bac0-3a20f31817b2';
 
+ALTER TABLE fhir_rule ADD COLUMN fhir_delete_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+COMMENT ON COLUMN fhir_rule.fhir_delete_enabled IS 'Specifies if the deletion of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
+
 ALTER TABLE fhir_tracker_program_stage
   ADD COLUMN exp_enabled BOOLEAN DEFAULT FALSE NOT NULL,
   ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
-  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN fhir_delete_enabled BOOLEAN DEFAULT FALSE NOT NULL;
 COMMENT ON COLUMN fhir_tracker_program_stage.exp_enabled IS 'Specifies if transformation from DHIS to FHIR resource is enabled.';
 COMMENT ON COLUMN fhir_tracker_program_stage.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 COMMENT ON COLUMN fhir_tracker_program_stage.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.fhir_delete_enabled IS 'Specifies if the deletion of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 
 ALTER TABLE fhir_tracker_program
   ADD COLUMN exp_enabled BOOLEAN DEFAULT FALSE NOT NULL,
   ADD COLUMN fhir_create_enabled BOOLEAN DEFAULT TRUE NOT NULL,
-  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+  ADD COLUMN fhir_update_enabled BOOLEAN DEFAULT FALSE NOT NULL,
+  ADD COLUMN fhir_delete_enabled BOOLEAN DEFAULT FALSE NOT NULL;
 COMMENT ON COLUMN fhir_tracker_program.exp_enabled IS 'Specifies if transformation from DHIS to FHIR resource is enabled.';
 COMMENT ON COLUMN fhir_tracker_program.fhir_create_enabled IS 'Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 COMMENT ON COLUMN fhir_tracker_program.fhir_update_enabled IS 'Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
+COMMENT ON COLUMN fhir_tracker_program_stage.fhir_delete_enabled IS 'Specifies if the deletion of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule.';
 
 CREATE TABLE fhir_rule_dhis_data_ref (
   id              UUID                           NOT NULL DEFAULT UUID_GENERATE_V4(),
@@ -202,7 +209,8 @@ ALTER TABLE fhir_resource_mapping
   ADD COLUMN exp_absent_transform_script_id UUID,
   ADD CONSTRAINT fhir_resource_mapping_fk12 FOREIGN KEY (exp_absent_transform_script_id) REFERENCES fhir_executable_script(id),
   ADD COLUMN exp_status_transform_script_id UUID,
-  ADD CONSTRAINT fhir_resource_mapping_fk13 FOREIGN KEY (exp_status_transform_script_id) REFERENCES fhir_executable_script(id);
+  ADD CONSTRAINT fhir_resource_mapping_fk13 FOREIGN KEY (exp_status_transform_script_id) REFERENCES fhir_executable_script(id),
+  ADD COLUMN exp_delete_when_absent BOOLEAN DEFAULT FALSE NOT NULL;
 COMMENT ON COLUMN fhir_resource_mapping.exp_ou_transform_script_id IS 'References the transformation script that integrates the DHIS organization unit into the FHIR resource.';
 COMMENT ON COLUMN fhir_resource_mapping.exp_geo_transform_script_id IS 'References the transformation script that integrates the DHIS GEO location coordinates into the FHIR resource.';
 COMMENT ON COLUMN fhir_resource_mapping.exp_date_transform_script_id IS 'References the transformation script that integrates the DHIS effective date into the FHIR resource.';
@@ -547,9 +555,9 @@ VALUES ('30ee57d1-062f-4847-85b9-f2262a678151', 0, 'ed2e0cde-fc19-4468-8d84-6d31
 
 ALTER TABLE fhir_resource_mapping
   ADD exp_tei_transform_script_id  UUID,
-  ADD CONSTRAINT fhir_resource_mapping_fk14 FOREIGN KEY (exp_tei_transform_script_id) REFERENCES fhir_executable_script(id);
+  ADD CONSTRAINT fhir_resource_mapping_fk15 FOREIGN KEY (exp_tei_transform_script_id) REFERENCES fhir_executable_script(id);
 COMMENT ON COLUMN fhir_resource_mapping.exp_tei_transform_script_id IS 'References the executable script that transforms the TEI FHIR resource into the exported FHIR resource.';
-CREATE INDEX fhir_resource_mapping_i15 ON fhir_resource_mapping(exp_tei_transform_script_id);
+CREATE INDEX fhir_resource_mapping_i16 ON fhir_resource_mapping(exp_tei_transform_script_id);
 
 INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
 VALUES ('190ae3fa-471e-458a-be1d-3f173f7d3c75', 0, 'Transforms TEI FHIR Patient to FHIR Resource', 'TRANSFORM_TEI_FHIR_PATIENT',
@@ -719,6 +727,30 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code, descript
 VALUES ('a5e07a03-69ba-45b5-b58f-247666ec21d0', 0, '475e192c-09f2-4357-b545-c1069b9518b3',
         'Transforms absence of data element to FHIR Immunization', 'TRANSFORM_ABSENT_FHIR_IM',
         'Transforms absence of data element to FHIR Immunization.');
+
+-- Script that checks if FHIR immunization should be deleted
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f38d27f2-b912-4cbf-9250-b62f5be747ff', 0, 'CHECK_DELETE_FHIR_IM', 'Returns if FHIR immunization should be deleted', 'Returns if FHIR immunization should be deleted based on the input data.',
+'EVALUATE', 'BOOLEAN', 'DHIS_EVENT', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f38d27f2-b912-4cbf-9250-b62f5be747ff', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f38d27f2-b912-4cbf-9250-b62f5be747ff', 'INPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('028f5a98-b5ca-4893-8b21-5797fd110f0f', 0, 'f38d27f2-b912-4cbf-9250-b62f5be747ff',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element on which the deletion check is made.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('ab8525cf-1e54-476a-813a-329c23ad5672', 0, 'f38d27f2-b912-4cbf-9250-b62f5be747ff',
+'var value = input.getBooleanValue(args[''dataElement'']); ((value == null) || (value == false))', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('ab8525cf-1e54-476a-813a-329c23ad5672', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('2db4dba6-b445-4fce-a9a5-b3f24d0a12cc', 0, 'f38d27f2-b912-4cbf-9250-b62f5be747ff',
+        'Returns if FHIR immunization should be deleted', 'CHECK_DELETE_FHIR_IM',
+        'Returns if FHIR immunization should be deleted based on the input data.');
+
+ALTER TABLE fhir_program_stage_rule
+  ADD exp_delete_evaluate_script_id UUID,
+  ADD CONSTRAINT fhir_program_stage_rule_fk5 FOREIGN KEY (exp_delete_evaluate_script_id) REFERENCES fhir_executable_script(id);
+COMMENT ON COLUMN fhir_program_stage_rule.exp_delete_evaluate_script_id IS 'References the evaluation script that checks if the FHIR resources should be deleted according to the content of the DHIS data element.';
 
 UPDATE fhir_resource_mapping SET
   exp_absent_transform_script_id='a5e07a03-69ba-45b5-b58f-247666ec21d0'

@@ -139,7 +139,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     }
 
     @Override
-    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+    protected void lockResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedOrganizationUnit scriptedOrganizationUnit =

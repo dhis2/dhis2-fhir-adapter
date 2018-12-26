@@ -69,4 +69,6 @@ public interface RemoteFhirResourceRepository
 
     @Nonnull
     IBaseResource save( @Nonnull RemoteSubscription subscription, @Nonnull IBaseResource resource );
+
+    boolean delete( @Nonnull RemoteSubscription subscription, @Nonnull IBaseResource resource );
 }

@@ -46,17 +46,30 @@ public class DhisToFhirTransformOutcome<R extends IBaseResource> implements Seri
 
     private final R resource;
 
+    private final boolean delete;
+
     private final DhisToFhirTransformerRequest nextTransformerRequest;
 
     public DhisToFhirTransformOutcome( @Nullable R resource )
     {
+        this( resource, false );
+    }
+
+    public DhisToFhirTransformOutcome( @Nullable R resource, boolean delete )
+    {
+        if ( delete && (resource == null) )
+        {
+            throw new IllegalArgumentException( "Resource must be specified when it should be deleted" );
+        }
         this.resource = resource;
+        this.delete = delete;
         this.nextTransformerRequest = null;
     }
 
     public DhisToFhirTransformOutcome( @Nonnull DhisToFhirTransformOutcome<R> outcome, @Nullable DhisToFhirTransformerRequest nextTransformerRequest )
     {
         this.resource = outcome.getResource();
+        this.delete = outcome.isDelete();
         this.nextTransformerRequest = nextTransformerRequest;
     }
 
@@ -64,6 +77,11 @@ public class DhisToFhirTransformOutcome<R extends IBaseResource> implements Seri
     public R getResource()
     {
         return resource;
+    }
+
+    public boolean isDelete()
+    {
+        return delete;
     }
 
     @Nullable

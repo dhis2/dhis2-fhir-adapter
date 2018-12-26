@@ -105,7 +105,7 @@ public class OrganizationUnitRule extends AbstractRule
     @Override
     public boolean isEffectiveFhirCreateEnable()
     {
-        return isFhirCreateEnabled();
+        return isExpEnabled() && isFhirCreateEnabled();
     }
 
     @Transient
@@ -113,6 +113,14 @@ public class OrganizationUnitRule extends AbstractRule
     @Override
     public boolean isEffectiveFhirUpdateEnable()
     {
-        return isFhirUpdateEnabled();
+        return isExpEnabled() && isFhirUpdateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    @Override
+    public boolean isEffectiveFhirDeleteEnable()
+    {
+        return isExpEnabled() && isFhirDeleteEnabled();
     }
 }

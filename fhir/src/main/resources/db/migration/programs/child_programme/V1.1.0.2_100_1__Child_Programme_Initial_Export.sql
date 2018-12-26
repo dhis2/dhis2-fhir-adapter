@@ -78,6 +78,9 @@ WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = '86759369-63d9-4a2c-84f8-e9897f69166a';
+UPDATE fhir_program_stage_rule
+SET exp_delete_evaluate_script_id='2db4dba6-b445-4fce-a9a5-b3f24d0a12cc'
+WHERE id = '8019cebe-da61-4aff-a2fd-579a538c8671';
 
 -- Tracker Program Child Programme, Baby Postnatal: Yellow fever given
 UPDATE fhir_rule
@@ -90,6 +93,9 @@ WHERE id = '9dd587e7-c7ca-4365-93f3-7263aa3cfb82';
 DELETE
 FROM fhir_executable_script_argument
 WHERE id = '8bb6914e-5014-428b-a3fc-19e18e13df33';
+UPDATE fhir_program_stage_rule
+SET exp_delete_evaluate_script_id='2db4dba6-b445-4fce-a9a5-b3f24d0a12cc'
+WHERE id = '9dd587e7-c7ca-4365-93f3-7263aa3cfb82';
 
 -- Tracker Program Child Programme, Birth: OPV Dose
 UPDATE fhir_rule

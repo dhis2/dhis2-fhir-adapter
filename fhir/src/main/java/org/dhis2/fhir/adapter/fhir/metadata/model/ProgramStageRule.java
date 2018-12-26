@@ -104,6 +104,8 @@ public class ProgramStageRule extends AbstractRule
 
     private EventStatusUpdate eventStatusUpdate;
 
+    private ExecutableScript expDeleteEvaluateScript;
+
     private boolean expEnabled;
 
     private boolean fhirCreateEnabled = true;
@@ -245,6 +247,18 @@ public class ProgramStageRule extends AbstractRule
         this.eventStatusUpdate = eventStatusUpdate;
     }
 
+    @ManyToOne
+    @JoinColumn( name = "exp_delete_evaluate_script_id", referencedColumnName = "id" )
+    public ExecutableScript getExpDeleteEvaluateScript()
+    {
+        return expDeleteEvaluateScript;
+    }
+
+    public void setExpDeleteEvaluateScript( ExecutableScript expDeleteEvaluateScript )
+    {
+        this.expDeleteEvaluateScript = expDeleteEvaluateScript;
+    }
+
     @JsonIgnore
     @Transient
     public EventPeriodDayType getResultingBeforePeriodDayType()
@@ -296,5 +310,13 @@ public class ProgramStageRule extends AbstractRule
     public boolean isEffectiveFhirUpdateEnable()
     {
         return isExpEnabled() && isFhirUpdateEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirUpdateEnabled();
+    }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirDeleteEnable()
+    {
+        return isExpEnabled() && isFhirDeleteEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirDeleteEnabled();
     }
 }

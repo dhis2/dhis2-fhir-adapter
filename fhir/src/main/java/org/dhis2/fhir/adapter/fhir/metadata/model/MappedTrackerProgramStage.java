@@ -90,6 +90,8 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
 
     private boolean fhirUpdateEnabled;
 
+    private boolean fhirDeleteEnabled;
+
     @Basic
     @Column( name = "name", nullable = false, length = 230 )
     public String getName()
@@ -318,6 +320,18 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
         this.fhirUpdateEnabled = fhirUpdateEnabled;
     }
 
+    @Basic
+    @Column( name = "fhir_delete_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirDeleteEnabled()
+    {
+        return fhirDeleteEnabled;
+    }
+
+    public void setFhirDeleteEnabled( boolean fhirDeleteEnabled )
+    {
+        this.fhirDeleteEnabled = fhirDeleteEnabled;
+    }
+
     @Transient
     @JsonIgnore
     public boolean isEffectiveExpEnables()
@@ -337,5 +351,12 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     public boolean isEffectiveFhirUpdateEnabled()
     {
         return isExpEnabled() && isFhirUpdateEnabled() && getProgram().isExpEnabled() && getProgram().isFhirUpdateEnabled();
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirDeleteEnabled()
+    {
+        return isExpEnabled() && isFhirDeleteEnabled() && getProgram().isExpEnabled() && getProgram().isFhirDeleteEnabled();
     }
 }

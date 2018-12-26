@@ -189,7 +189,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             resource = createResource( remoteSubscription, context, ruleInfo, scriptVariables, sync );
             if ( (resource != null) && !sync )
             {
-                lockResourceCreation( remoteSubscription, context, ruleInfo, scriptVariables );
+                lockResource( remoteSubscription, context, ruleInfo, scriptVariables );
                 resource = getResource( remoteSubscription, context, ruleInfo, scriptVariables, true ).orElse( null );
             }
         }
@@ -315,7 +315,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         return resource;
     }
 
-    protected abstract void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> rule,
+    protected abstract void lockResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> rule,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nullable

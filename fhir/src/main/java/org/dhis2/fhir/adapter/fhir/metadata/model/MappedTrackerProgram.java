@@ -85,6 +85,8 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
 
     private boolean fhirUpdateEnabled;
 
+    private boolean fhirDeleteEnabled;
+
     private FhirResourceType trackedEntityFhirResourceType;
 
     @Basic
@@ -253,6 +255,18 @@ public class MappedTrackerProgram extends VersionedBaseMetadata implements Seria
     public void setFhirUpdateEnabled( boolean fhirUpdateEnabled )
     {
         this.fhirUpdateEnabled = fhirUpdateEnabled;
+    }
+
+    @Basic
+    @Column( name = "fhir_delete_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirDeleteEnabled()
+    {
+        return fhirDeleteEnabled;
+    }
+
+    public void setFhirDeleteEnabled( boolean fhirDeleteEnabled )
+    {
+        this.fhirDeleteEnabled = fhirDeleteEnabled;
     }
 
     @Basic

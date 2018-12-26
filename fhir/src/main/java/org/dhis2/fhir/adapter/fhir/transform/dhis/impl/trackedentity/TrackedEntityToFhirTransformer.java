@@ -160,7 +160,7 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     }
 
     @Override
-    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+    protected void lockResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =

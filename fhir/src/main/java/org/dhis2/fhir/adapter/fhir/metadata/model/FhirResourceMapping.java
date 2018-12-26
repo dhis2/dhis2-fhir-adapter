@@ -82,6 +82,8 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript expStatusTransformScript;
 
+    private boolean deleteWhenAbsent;
+
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
     @Enumerated( EnumType.STRING )
@@ -261,5 +263,17 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setExpStatusTransformScript( ExecutableScript expStatusTransformScript )
     {
         this.expStatusTransformScript = expStatusTransformScript;
+    }
+
+    @Basic
+    @Column( name = "exp_delete_when_absent", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isDeleteWhenAbsent()
+    {
+        return deleteWhenAbsent;
+    }
+
+    public void setDeleteWhenAbsent( boolean deleteWhenAbsent )
+    {
+        this.deleteWhenAbsent = deleteWhenAbsent;
     }
 }

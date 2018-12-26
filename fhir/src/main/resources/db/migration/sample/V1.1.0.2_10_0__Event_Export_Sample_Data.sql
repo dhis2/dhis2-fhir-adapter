@@ -34,10 +34,14 @@ UPDATE fhir_system SET fhir_display_name='National Patient ID' WHERE system_uri=
 
 UPDATE fhir_tracker_program_stage SET exp_enabled = true;
 UPDATE fhir_tracker_program_stage SET fhir_update_enabled = true;
+UPDATE fhir_tracker_program_stage SET fhir_delete_enabled = true;
 UPDATE fhir_tracker_program SET exp_enabled = true;
 UPDATE fhir_tracker_program SET fhir_update_enabled = true;
+UPDATE fhir_tracker_program SET fhir_delete_enabled = true;
 
 UPDATE fhir_rule SET exp_enabled = true, fhir_update_enabled = true WHERE id = 'b9546b02-4adc-4868-a4cd-d5d7789f0df0';
+UPDATE fhir_rule SET fhir_delete_enabled = true;
+UPDATE fhir_resource_mapping SET exp_delete_when_absent = true;
 
 -- virtual subscription for FHIR locations
 INSERT INTO fhir_remote_subscription_resource (id, version, remote_subscription_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)

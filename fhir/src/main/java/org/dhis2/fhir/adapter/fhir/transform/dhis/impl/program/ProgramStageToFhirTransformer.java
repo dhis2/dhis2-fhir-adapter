@@ -121,7 +121,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
         if ( isDataAbsent( context, input, ruleInfo ) )
         {
-            return handleDataAbsent( remoteSubscription, context, ruleInfo, variables, resourceMapping );
+            return handleDataAbsent( remoteSubscription, context, ruleInfo, resourceMapping, variables );
         }
 
         final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( remoteSubscription, context,
@@ -137,6 +137,11 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         }
         final IBaseResource modifiedResource = clone( context, resource );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
+
+        if ( isDataDelete( context, ruleInfo, resourceMapping, variables ) )
+        {
+            return handleDataDelete( remoteSubscription, context, ruleInfo, resourceMapping, modifiedResource, variables );
+        }
 
         if ( (resourceMapping.getExpStatusTransformScript() != null) &&
             !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpStatusTransformScript(), variables, Boolean.class ) ) )
@@ -183,28 +188,56 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         return createResult( context, variables, resource, modifiedResource );
     }
 
+    private boolean isDataDelete( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, FhirResourceMapping resourceMapping, Map<String, Object> variables )
+    {
+        return ruleInfo.getRule().isFhirDeleteEnabled() && (ruleInfo.getRule().getExpDeleteEvaluateScript() != null) &&
+            Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpDeleteEvaluateScript(), variables, Boolean.class ) );
+    }
+
     @Nullable
     private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataAbsent( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
-        @Nonnull Map<String, Object> variables, @Nonnull FhirResourceMapping resourceMapping )
+        @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
     {
-        if ( resourceMapping.getExpAbsentTransformScript() == null )
+        final boolean delete = ruleInfo.getRule().isEffectiveFhirDeleteEnable() &&
+            resourceMapping.isDeleteWhenAbsent();
+        if ( !delete && (resourceMapping.getExpAbsentTransformScript() == null) )
         {
             return null;
         }
 
+        if ( delete )
+        {
+            lockResource( remoteSubscription, context, ruleInfo, variables );
+        }
         final IBaseResource resource = getExistingResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
         }
         final IBaseResource modifiedResource = clone( context, resource );
-        variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
+        if ( delete )
+        {
+            return new DhisToFhirTransformOutcome<>( modifiedResource, true );
+        }
 
+        variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
         if ( !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpAbsentTransformScript(), variables, Boolean.class ) ) )
         {
             return null;
         }
         return createResult( context, variables, resource, modifiedResource );
+    }
+
+    @Nullable
+    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataDelete( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
+        @Nonnull FhirResourceMapping resourceMapping, @Nonnull IBaseResource resource, @Nonnull Map<String, Object> variables )
+    {
+        if ( resource.getIdElement().isEmpty() )
+        {
+            return null;
+        }
+        lockResource( remoteSubscription, context, ruleInfo, variables );
+        return new DhisToFhirTransformOutcome<>( resource, true );
     }
 
     @Nonnull
@@ -248,7 +281,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     }
 
     @Override
-    protected void lockResourceCreation( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void lockResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedEvent scriptedEvent =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedEvent.class );
