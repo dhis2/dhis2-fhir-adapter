@@ -93,11 +93,11 @@ public abstract class AbstractGeoDhisToFhirTransformerUtils extends AbstractDhis
         if ( StringToLocationConverter.isLocation( coordinates ) )
         {
             final Location location = stringToLocationConverter.convert( coordinates );
-            updateAddress( element, location );
+            updateAddressLocation( element, location );
         }
         else
         {
-            updateAddress( element, (Location) null );
+            updateAddressLocation( element, null );
         }
     }
 
@@ -118,5 +118,5 @@ public abstract class AbstractGeoDhisToFhirTransformerUtils extends AbstractDhis
     @Nullable
     public abstract IBaseBackboneElement createPosition( @Nullable Location location );
 
-    public abstract void updateAddress( @Nonnull IElement element, @Nullable Location location );
+    public abstract void updateAddressLocation( @Nonnull IElement element, @Nullable Location location );
 }

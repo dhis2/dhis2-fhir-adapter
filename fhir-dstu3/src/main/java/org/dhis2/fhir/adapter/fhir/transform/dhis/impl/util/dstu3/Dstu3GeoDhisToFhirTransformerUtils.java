@@ -69,7 +69,7 @@ public class Dstu3GeoDhisToFhirTransformerUtils extends AbstractGeoDhisToFhirTra
     }
 
     @Override
-    public void updateAddress( @Nonnull IElement element, @Nullable Location location ) throws TransformerException
+    public void updateAddressLocation( @Nonnull IElement element, @Nullable Location location ) throws TransformerException
     {
         final Element e = (Element) element;
         e.getExtension().removeIf( i -> i.hasExtension( GEO_LOCATION_URI ) );
