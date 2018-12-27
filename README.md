@@ -4,7 +4,9 @@ This repository contains the source code of the DHIS2 FHIR Adapter. The current 
 [first integration workshop between DHIS2 and HL7-FHIR](http://sil-asia.org/sil-asia-dhis2-fhir-integration-meeting/). Even if the adapter may support more FHIR Resource types at the moment, the initial official support is for FHIR Patient resources that are
  transformed to DHIS2 Tracked Entity instances. The adapter may be extended by export of the corresponding resource to a FHIR server. Also an import and export of medical and survey data may be available in the future.
 
-The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). 
+The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). It is optimized for national FHIR 
+profiles that are based on standard coding systems like LOINC, SNOMED CT, CVX and others or even on national coding systems (e.g. national coding system for immunization). A specific DHIS 2 FHIR profile that allows the mapping of all Tracker Program items 
+is not yet available.
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
 
