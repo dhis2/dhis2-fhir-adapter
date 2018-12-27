@@ -249,7 +249,7 @@ public class BeforeCreateSaveExecutableScriptValidatorTest extends AbstractJpaRe
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "script", "scripts", script.getId().toString() ),
                 JsonEntityValue.create( "overrideArguments/argument", "scriptArgs", ids ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "overrideArguments" ) ) );
+            .andExpect( status().isCreated() );
     }
 
     @Test
