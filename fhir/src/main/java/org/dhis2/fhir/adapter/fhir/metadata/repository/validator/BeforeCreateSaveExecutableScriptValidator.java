@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -41,7 +40,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Spring Data REST validator for {@link ExecutableScript}.
@@ -113,27 +111,6 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
                     errors.popNestedPath();
                     index++;
                 }
-            }
-
-            final Set<String> mandatoryArgNames = executableScript.getScript().getArguments()
-                .stream().filter( a -> a.isMandatory() && (a.getDefaultValue() == null) )
-                .map( ScriptArg::getName ).collect( Collectors.toSet() );
-            if ( executableScript.getOverrideArguments() != null )
-            {
-                executableScript.getOverrideArguments().stream().filter( oa -> oa.getArgument().isMandatory() && oa.isEnabled() ).forEach( oa -> {
-                    if ( oa.getOverrideValue() == null )
-                    {
-                        mandatoryArgNames.add( oa.getArgument().getName() );
-                    }
-                    else
-                    {
-                        mandatoryArgNames.remove( oa.getArgument().getName() );
-                    }
-                } );
-            }
-            if ( !mandatoryArgNames.isEmpty() )
-            {
-                errors.rejectValue( "overrideArguments", "ExecutableScript.overrideArguments.mandatory", new Object[]{ mandatoryArgNames.toString() }, "No value for mandatory arguments have been provided: {0}" );
             }
         }
     }

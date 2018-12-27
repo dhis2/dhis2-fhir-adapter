@@ -136,7 +136,11 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         {
             return null;
         }
-        final IBaseResource modifiedResource = clone( context, resource );
+        final IBaseResource modifiedResource = cloneToModified( context, ruleInfo, resource, variables );
+        if ( modifiedResource == null )
+        {
+            return null;
+        }
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
         if ( isDataDelete( context, ruleInfo, resourceMapping, variables ) )
@@ -222,7 +226,11 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         {
             return null;
         }
-        final IBaseResource modifiedResource = clone( context, resource );
+        final IBaseResource modifiedResource = cloneToModified( context, ruleInfo, resource, variables );
+        if ( modifiedResource == null )
+        {
+            return null;
+        }
         if ( delete )
         {
             return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource, true );
