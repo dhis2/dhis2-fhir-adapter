@@ -50,7 +50,7 @@ import java.util.UUID;
  * @author volsch
  */
 @MappedSuperclass
-public class VersionedBaseMetadata implements Serializable, Metadata<UUID>
+public class VersionedBaseMetadata implements Serializable, UuidIdentifiable, Metadata<UUID>
 {
     private static final long serialVersionUID = 7500268787032387101L;
 

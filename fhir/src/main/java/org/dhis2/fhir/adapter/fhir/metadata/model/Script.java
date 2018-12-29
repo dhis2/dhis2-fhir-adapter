@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
-import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -65,7 +66,7 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script" )
-@JsonFilter( ToAnyPropertyFilter.FILTER_NAME )
+@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
 public class Script extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
@@ -181,6 +182,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.inputType = inputType;
     }
 
+    @JsonCacheIgnore
     @Basic
     @Column( name = "output_type", length = 30 )
     @Enumerated( EnumType.STRING )
@@ -194,6 +196,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.outputType = outputType;
     }
 
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "script" )
     @OrderBy( "id" )
     @JsonIgnore
@@ -224,6 +227,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.variables = variables;
     }
 
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL )
     @OrderBy( "id" )
     @JsonIgnore
@@ -237,6 +241,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.sources = sources;
     }
 
+    @JsonCacheIgnore
     @ManyToOne
     @JoinColumn( name = "base_script_id" )
     public Script getBaseScript()

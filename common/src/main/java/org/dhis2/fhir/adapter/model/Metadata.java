@@ -36,7 +36,7 @@ import java.io.Serializable;
  * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Serializable
+public interface Metadata<I> extends Identifiable<I>, Serializable
 {
     I getId();
 }

@@ -31,7 +31,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
@@ -54,7 +55,7 @@ import javax.validation.constraints.NotNull;
 @NamedQuery( name = TrackedEntityRule.FIND_ALL_BY_TYPE_NAMED_QUERY, query = "SELECT ter FROM TrackedEntityRule ter JOIN ter.trackedEntity te " +
     "WHERE ter.enabled=true AND ter.expEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) " +
     "AND te.enabled=true AND te.expEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
-@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
 public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
@@ -91,6 +92,7 @@ public class TrackedEntityRule extends AbstractRule
         this.trackedEntity = trackedEntity;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "org_lookup_script_id" )
     public ExecutableScript getOrgUnitLookupScript()
@@ -103,6 +105,7 @@ public class TrackedEntityRule extends AbstractRule
         this.orgUnitLookupScript = orgUnitLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "loc_lookup_script_id" )
     public ExecutableScript getLocationLookupScript()
@@ -115,6 +118,7 @@ public class TrackedEntityRule extends AbstractRule
         this.locationLookupScript = locationLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "tei_lookup_script_id" )
     public ExecutableScript getTeiLookupScript()
@@ -127,6 +131,7 @@ public class TrackedEntityRule extends AbstractRule
         this.teiLookupScript = teiLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_geo_transform_script_id" )
     public ExecutableScript getExpGeoTransformScript()
@@ -139,6 +144,7 @@ public class TrackedEntityRule extends AbstractRule
         this.expGeoTransformScript = expGeoTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_ou_transform_script_id" )
     public ExecutableScript getExpOuTransformScript()

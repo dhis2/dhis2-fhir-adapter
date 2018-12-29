@@ -35,8 +35,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.JsonIgnoreCache;
-import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -86,7 +87,7 @@ import java.util.List;
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
 } )
-@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
@@ -219,6 +220,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         return dhisResourceType;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "applicable_imp_script_id", referencedColumnName = "id" )
     public ExecutableScript getApplicableImpScript()
@@ -244,6 +246,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.applicableCodeSet = applicableCodeSet;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "applicable_exp_script_id", referencedColumnName = "id" )
     public ExecutableScript getApplicableExpScript()
@@ -328,6 +331,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.stop = stop;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "transform_imp_script_id", referencedColumnName = "id" )
     public ExecutableScript getTransformImpScript()
@@ -340,6 +344,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.transformImpScript = transformImpScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "transform_exp_script_id", referencedColumnName = "id" )
     public ExecutableScript getTransformExpScript()
@@ -363,7 +368,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.containedAllowed = containedAllowed;
     }
 
-    @JsonIgnoreCache
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "rule" )
     public List<RuleDhisDataReference> getDhisDataReferences()
     {

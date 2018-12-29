@@ -31,7 +31,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
-import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -51,7 +52,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_rule_dhis_data_ref" )
-@JsonFilter( ToAnyPropertyFilter.FILTER_NAME )
+@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
 public class RuleDhisDataReference extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2784006479143123933L;
@@ -66,6 +67,7 @@ public class RuleDhisDataReference extends VersionedBaseMetadata implements Seri
 
     private boolean required;
 
+    @JsonCacheIgnore
     @ManyToOne( optional = false )
     @JoinColumn( name = "rule_id", referencedColumnName = "id", nullable = false )
     public AbstractRule getRule()

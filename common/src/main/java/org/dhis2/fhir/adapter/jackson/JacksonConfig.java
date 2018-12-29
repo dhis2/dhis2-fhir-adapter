@@ -66,16 +66,7 @@ public class JacksonConfig
                     new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
             jacksonObjectMapperBuilder.filters( new SimpleFilterProvider()
                 .addFilter( SecuredPropertyFilter.FILTER_NAME, new SecuredPropertyFilter() )
-                .addFilter( ToManyPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
-                {
-                } )
-                .addFilter( ToOnePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
-                {
-                } )
-                .addFilter( ToAnyPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
-                {
-                } )
-                .addFilter( JsonIgnoreCachePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
+                .addFilter( JsonCachePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
                 {
                 } ) );
             jacksonObjectMapperBuilder.featuresToDisable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );

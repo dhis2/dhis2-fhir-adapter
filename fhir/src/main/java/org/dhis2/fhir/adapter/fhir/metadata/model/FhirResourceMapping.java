@@ -28,6 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -47,7 +50,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_resource_mapping" )
-
+@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
 public class FhirResourceMapping extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7669881610498151697L;
@@ -99,6 +102,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.fhirResourceType = fhirResourceType;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_tei_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpTeiLookupScript()
@@ -111,6 +115,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impTeiLookupScript = teiLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_enrollment_org_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEnrollmentOrgLookupScript()
@@ -123,6 +128,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEnrollmentOrgLookupScript = enrollmentOrgLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_enrollment_date_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEnrollmentDateLookupScript()
@@ -135,6 +141,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEnrollmentDateLookupScript = enrollmentDateLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_event_org_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEventOrgLookupScript()
@@ -147,6 +154,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEventOrgLookupScript = eventOrgLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_event_date_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEventDateLookupScript()
@@ -159,6 +167,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEventDateLookupScript = eventDateLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_enrollment_geo_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEnrollmentGeoLookupScript()
@@ -171,6 +180,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEnrollmentGeoLookupScript = enrollmentLocationLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_event_geo_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEventGeoLookupScript()
@@ -183,6 +193,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEventGeoLookupScript = eventLocationLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "imp_effective_date_lookup_script_id", referencedColumnName = "id" )
     public ExecutableScript getImpEffectiveDateLookupScript()
@@ -195,6 +206,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.impEffectiveDateLookupScript = effectiveDateLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_ou_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpOrgUnitTransformScript()
@@ -207,6 +219,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expOrgUnitTransformScript = expOrgUnitTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_geo_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpGeoTransformScript()
@@ -219,6 +232,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expGeoTransformScript = expLocationTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_tei_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpTeiTransformScript()
@@ -231,6 +245,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expTeiTransformScript = expTeiTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_date_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpDateTransformScript()
@@ -243,6 +258,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expDateTransformScript = expDateTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_absent_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpAbsentTransformScript()
@@ -255,6 +271,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expAbsentTransformScript = expAbsentTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_status_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpStatusTransformScript()
@@ -267,6 +284,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
         this.expStatusTransformScript = expStatusTransformScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "exp_group_transform_script_id", referencedColumnName = "id" )
     public ExecutableScript getExpGroupTransformScript()

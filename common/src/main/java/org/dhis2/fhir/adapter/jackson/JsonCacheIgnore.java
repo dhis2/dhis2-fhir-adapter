@@ -28,33 +28,21 @@ package org.dhis2.fhir.adapter.jackson;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Filters properties that are annotated by {@link JsonIgnoreCache}.
+ * Used to specify that a property should be ignored when serializing
+ * for caching purpose.
  *
  * @author volsch
  */
-public class JsonIgnoreCachePropertyFilter extends SimpleBeanPropertyFilter
+@Target( { ElementType.FIELD, ElementType.METHOD } )
+@Retention( RetentionPolicy.RUNTIME )
+@Documented
+public @interface JsonCacheIgnore
 {
-    public static final String FILTER_NAME = "ignoreCachePropertyFilter";
-
-    @Override
-    public void serializeAsField( Object pojo, JsonGenerator generator, SerializerProvider provider, PropertyWriter writer ) throws Exception
-    {
-        if ( include( writer ) )
-        {
-            if ( writer.getAnnotation( JsonIgnoreCache.class ) == null )
-            {
-                writer.serializeAsField( pojo, generator, provider );
-            }
-        }
-        else if ( !generator.canOmitFields() )
-        {
-            writer.serializeAsOmittedField( pojo, generator, provider );
-        }
-    }
 }

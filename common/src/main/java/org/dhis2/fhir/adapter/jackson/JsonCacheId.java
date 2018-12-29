@@ -28,36 +28,21 @@ package org.dhis2.fhir.adapter.jackson;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Filters JPA to many properties when serializing.
+ * Used to specify that only the ID of the annotated object should be serialized
+ * for caching purpose.
  *
  * @author volsch
  */
-public class ToManyPropertyFilter extends SimpleBeanPropertyFilter
+@Target( { ElementType.FIELD, ElementType.METHOD } )
+@Retention( RetentionPolicy.RUNTIME )
+@Documented
+public @interface JsonCacheId
 {
-    public static final String FILTER_NAME = "toManyPropertyFilter";
-
-    @Override
-    public void serializeAsField( Object pojo, JsonGenerator generator, SerializerProvider provider, PropertyWriter writer ) throws Exception
-    {
-        if ( include( writer ) )
-        {
-            if ( (writer.getAnnotation( OneToMany.class ) == null) && (writer.getAnnotation( ManyToMany.class ) == null) )
-            {
-                writer.serializeAsField( pojo, generator, provider );
-            }
-        }
-        else if ( !generator.canOmitFields() )
-        {
-            writer.serializeAsOmittedField( pojo, generator, provider );
-        }
-    }
 }

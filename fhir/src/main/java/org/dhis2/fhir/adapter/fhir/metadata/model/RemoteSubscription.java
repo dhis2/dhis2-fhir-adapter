@@ -35,7 +35,8 @@ import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.DataGroupId;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.jackson.ToManyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -67,7 +68,7 @@ import java.util.Set;
  */
 @Entity
 @Table( name = "fhir_remote_subscription" )
-@JsonFilter( ToManyPropertyFilter.FILTER_NAME )
+@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
 @NamedQuery( name = RemoteSubscription.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM RemoteSubscription rs" )
 public class RemoteSubscription extends VersionedBaseMetadata implements DataGroup, Serializable
 {
@@ -232,6 +233,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements DataGro
         this.fhirVersion = fhirVersion;
     }
 
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "remoteSubscription", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
     public List<RemoteSubscriptionResource> getResources()
@@ -244,6 +246,7 @@ public class RemoteSubscription extends VersionedBaseMetadata implements DataGro
         this.resources = resources;
     }
 
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "remoteSubscription", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
     public List<RemoteSubscriptionSystem> getSystems()

@@ -29,7 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.jackson.ToOnePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -56,7 +57,7 @@ import java.util.regex.Pattern;
  */
 @Entity
 @Table( name = "fhir_script_argument" )
-@JsonFilter( ToOnePropertyFilter.FILTER_NAME )
+@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
 public class ScriptArg extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -5052962742547037363L;
@@ -161,6 +162,7 @@ public class ScriptArg extends VersionedBaseMetadata implements Serializable
         this.description = description;
     }
 
+    @JsonCacheIgnore
     @ManyToOne( optional = false )
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
     public Script getScript()

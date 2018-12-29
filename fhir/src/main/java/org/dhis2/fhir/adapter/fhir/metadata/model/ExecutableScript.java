@@ -29,7 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.jackson.ToAnyPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -56,7 +57,7 @@ import java.util.List;
  */
 @Entity
 @Table( name = "fhir_executable_script" )
-@JsonFilter( ToAnyPropertyFilter.FILTER_NAME )
+@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
 public class ExecutableScript extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2006842064596779970L;
@@ -82,6 +83,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
 
     private ExecutableScript baseExecutableScript;
 
+    @JsonCacheIgnore
     @ManyToOne
     @JoinColumn( name = "script_id", referencedColumnName = "id", nullable = false )
     public Script getScript()
@@ -130,6 +132,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
         this.description = description;
     }
 
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
     public List<ExecutableScriptArg> getOverrideArguments()
@@ -142,6 +145,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
         this.overrideArguments = overrideArguments;
     }
 
+    @JsonCacheIgnore
     @ManyToOne
     @JoinColumn( name = "base_executable_script_id" )
     public ExecutableScript getBaseExecutableScript()

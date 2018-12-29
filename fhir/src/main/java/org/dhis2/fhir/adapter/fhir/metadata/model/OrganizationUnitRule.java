@@ -31,7 +31,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.JsonIgnoreCachePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
@@ -51,7 +52,7 @@ import javax.persistence.Transient;
 @Table( name = "fhir_organization_unit_rule" )
 @DiscriminatorValue( "ORGANIZATION_UNIT" )
 @NamedQuery( name = OrganizationUnitRule.FIND_ALL_EXP_NAMED_QUERY, query = "SELECT our FROM OrganizationUnitRule our WHERE our.enabled=true AND our.expEnabled=true AND (our.fhirCreateEnabled=true OR our.fhirUpdateEnabled=true)" )
-@JsonFilter( value = JsonIgnoreCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
 public class OrganizationUnitRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
@@ -67,6 +68,7 @@ public class OrganizationUnitRule extends AbstractRule
         super( DhisResourceType.ORGANIZATION_UNIT );
     }
 
+    @JsonCacheId
     @ManyToOne( optional = false )
     @JoinColumn( name = "identifier_lookup_script_id", nullable = false )
     public ExecutableScript getIdentifierLookupScript()
@@ -79,6 +81,7 @@ public class OrganizationUnitRule extends AbstractRule
         this.identifierLookupScript = identifierLookupScript;
     }
 
+    @JsonCacheId
     @ManyToOne
     @JoinColumn( name = "mo_identifier_lookup_script_id" )
     public ExecutableScript getManagingOrgIdentifierLookupScript()
