@@ -30,9 +30,10 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
@@ -107,6 +108,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final LockManager lockManager;
 
+    private final RequestCacheService requestCacheService;
+
     private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
 
     private final RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository;
@@ -125,7 +128,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
-    public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext, @Nonnull LockManager lockManager,
+    public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext,
+        @Nonnull LockManager lockManager, @Nonnull RequestCacheService requestCacheService,
         @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
         @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
@@ -135,6 +139,7 @@ public class FhirRepositoryImpl implements FhirRepository
     {
         this.authorizationContext = authorizationContext;
         this.lockManager = lockManager;
+        this.requestCacheService = requestCacheService;
         this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
         this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
@@ -406,14 +411,9 @@ public class FhirRepositoryImpl implements FhirRepository
             FhirToDhisTransformOutcome<? extends DhisResource> outcome;
             try ( final LockContext lockContext = lockManager.begin() )
             {
-                final HystrixRequestContext context = HystrixRequestContext.initializeContext();
-                try
+                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
                 {
                     outcome = fhirToDhisTransformerService.transform( transformerRequest );
-                }
-                finally
-                {
-                    context.shutdown();
                 }
                 if ( outcome == null )
                 {

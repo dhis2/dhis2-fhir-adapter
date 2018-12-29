@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository.impl;
+package org.dhis2.fhir.adapter.cache.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,43 +28,49 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Cache configuration for FHIR Resources.
+ * Default implementation of {@link RequestCacheService}.
  *
  * @author volsch
  */
-@Configuration
-@Component
-@ConfigurationProperties( "dhis2.fhir-adapter.cache.fhir" )
-@Validated
-public class FhirResourceCacheConfig extends AbstractSimpleCacheConfig
+@Service
+public class RequestCacheServiceImpl implements RequestCacheService
 {
-    private static final long serialVersionUID = 3060542002074294407L;
+    private final ThreadLocal<RequestCacheContext> threadLocal = new ThreadLocal<>();
 
     @Nonnull
     @Override
-    protected String getCacheManagerName()
+    public RequestCacheContext createRequestCacheContext()
     {
-        return "fhirCacheManager";
+        if ( threadLocal.get() != null )
+        {
+            throw new IllegalStateException( "There is already a request cache context bound to the current thread." );
+        }
+        final RequestCacheContextImpl context = new RequestCacheContextImpl( this );
+        threadLocal.set( context );
+        return context;
     }
 
-    @Bean
-    @Nonnull
-    protected CacheManager fhirCacheManager( @Nonnull RequestCacheService requestCacheService, @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull FhirResourceRedisSerializer redisSerializer )
+    @Nullable
+    @Override
+    public RequestCacheContext getCurrentRequestCacheContext()
     {
-        return createCacheManager( requestCacheService, redisConnectionFactoryProvider, redisSerializer );
+        return threadLocal.get();
+    }
+
+    void remove( @Nonnull RequestCacheContextImpl context )
+    {
+        if ( threadLocal.get() != context )
+        {
+            throw new IllegalStateException( "A different request cache context has been bound to the thread." );
+        }
+        threadLocal.remove();
     }
 }

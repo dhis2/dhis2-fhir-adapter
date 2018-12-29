@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.config;
  */
 
 import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
@@ -55,11 +56,18 @@ public class DhisMetadataCacheConfig extends AbstractSimpleCacheConfig
 {
     private static final long serialVersionUID = 3060542002074294407L;
 
+    @Nonnull
+    @Override
+    protected String getCacheManagerName()
+    {
+        return "dhisCacheManager";
+    }
+
     @Primary
     @Bean
     @Nonnull
-    protected CacheManager dhisCacheManager( @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull GenericJackson2JsonRedisSerializer redisSerializer )
+    protected CacheManager dhisCacheManager( @Nonnull RequestCacheService requestCacheService, @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull GenericJackson2JsonRedisSerializer redisSerializer )
     {
-        return createCacheManager( redisConnectionFactoryProvider, redisSerializer );
+        return createCacheManager( requestCacheService, redisConnectionFactoryProvider, redisSerializer );
     }
 }

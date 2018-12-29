@@ -29,9 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
-import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
@@ -88,19 +86,11 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return Objects.requireNonNull( result.getBody() ).getEnrollments().stream().findFirst();
     }
 
-    @CacheResult( cacheKeyMethod = "getLatestActiveCacheKey" )
-    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
     @Nonnull
     @Override
     public Optional<Enrollment> findLatestActive( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
     {
         return findLatestActiveRefreshed( programId, trackedEntityInstanceId );
-    }
-
-    @Nonnull
-    public String getLatestActiveCacheKey( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
-    {
-        return "EnrollmentService.findLatestActive|" + programId + "|" + trackedEntityInstanceId;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )

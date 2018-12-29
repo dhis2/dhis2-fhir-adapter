@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository.impl;
+package org.dhis2.fhir.adapter.cache.impl;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,43 +28,63 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
-import org.dhis2.fhir.adapter.cache.RequestCacheService;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Cache configuration for FHIR Resources.
+ * Implementation of {@link RequestCacheContext}.
  *
  * @author volsch
  */
-@Configuration
-@Component
-@ConfigurationProperties( "dhis2.fhir-adapter.cache.fhir" )
-@Validated
-public class FhirResourceCacheConfig extends AbstractSimpleCacheConfig
+public class RequestCacheContextImpl implements RequestCacheContext
 {
-    private static final long serialVersionUID = 3060542002074294407L;
+    private final RequestCacheServiceImpl service;
+
+    private volatile Map<String, CacheManager> cacheManagers;
+
+    public RequestCacheContextImpl( RequestCacheServiceImpl service )
+    {
+        this.service = service;
+    }
 
     @Nonnull
     @Override
-    protected String getCacheManagerName()
+    public CacheManager getCacheManager( @Nonnull String name )
     {
-        return "fhirCacheManager";
+        if ( cacheManagers == null )
+        {
+            synchronized ( this )
+            {
+                if ( cacheManagers == null )
+                {
+                    cacheManagers = new ConcurrentHashMap<>();
+                }
+            }
+        }
+        CacheManager cacheManager = cacheManagers.get( name );
+        if ( cacheManager == null )
+        {
+            synchronized ( this )
+            {
+                cacheManager = cacheManagers.get( name );
+                if ( cacheManager == null )
+                {
+                    cacheManager = new ConcurrentMapCacheManager();
+                    cacheManagers.put( name, cacheManager );
+                }
+            }
+        }
+        return cacheManager;
     }
 
-    @Bean
-    @Nonnull
-    protected CacheManager fhirCacheManager( @Nonnull RequestCacheService requestCacheService, @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull FhirResourceRedisSerializer redisSerializer )
+    @Override
+    public void close()
     {
-        return createCacheManager( requestCacheService, redisConnectionFactoryProvider, redisSerializer );
+        service.remove( this );
     }
 }

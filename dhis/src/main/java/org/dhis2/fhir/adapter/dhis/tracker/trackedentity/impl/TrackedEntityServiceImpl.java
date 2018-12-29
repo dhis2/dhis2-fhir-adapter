@@ -29,9 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
-import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheResult;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
@@ -190,19 +188,11 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             .getBody() ).getTrackedEntityInstances();
     }
 
-    @CacheResult( cacheKeyMethod = "getFindByAttrValueCacheKey" )
-    @HystrixCommand( commandProperties = @HystrixProperty( name = "requestCache.enabled", value = "true" ) )
     @Nonnull
     @Override
     public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
     {
         return findByAttrValueRefreshed( typeId, attributeId, value, maxResult );
-    }
-
-    @Nonnull
-    public String getFindByAttrValueCacheKey( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
-    {
-        return "TrackedEntityService.findByAttrValue|" + typeId + "|" + attributeId + "|" + value + "|" + maxResult;
     }
 
     @Nonnull

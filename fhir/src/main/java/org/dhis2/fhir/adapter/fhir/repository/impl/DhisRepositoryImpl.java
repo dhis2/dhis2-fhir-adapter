@@ -29,9 +29,10 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResourceId;
@@ -92,6 +93,8 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final LockManager lockManager;
 
+    private final RequestCacheService requestCacheService;
+
     private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
 
     private final DhisSyncGroupRepository dhisSyncGroupRepository;
@@ -112,6 +115,7 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull AuthorizationContext authorizationContext,
         @Nonnull Authorization systemDhis2Authorization,
         @Nonnull LockManager lockManager,
+        @Nonnull RequestCacheService requestCacheService,
         @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
         @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull QueuedDhisResourceRepository queuedDhisResourceRepository,
@@ -124,6 +128,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.authorizationContext = authorizationContext;
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.lockManager = lockManager;
+        this.requestCacheService = requestCacheService;
         this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.queuedDhisResourceRepository = queuedDhisResourceRepository;
@@ -315,14 +320,9 @@ public class DhisRepositoryImpl implements DhisRepository
             DhisToFhirTransformOutcome<? extends IBaseResource> outcome;
             try ( final LockContext lockContext = lockManager.begin() )
             {
-                final HystrixRequestContext context = HystrixRequestContext.initializeContext();
-                try
+                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
                 {
                     outcome = dhisToFhirTransformerService.transform( transformerRequest );
-                }
-                finally
-                {
-                    context.shutdown();
                 }
                 if ( outcome == null )
                 {

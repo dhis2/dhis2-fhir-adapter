@@ -32,6 +32,8 @@ import java.util.UUID;
 
 /**
  * Defines the method to retrieve the unique identifier of an object.
+ *
+ * @author volsch
  */
 public interface UuidIdentifiable extends Identifiable<UUID>
 {

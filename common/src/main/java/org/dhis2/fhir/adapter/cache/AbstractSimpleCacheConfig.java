@@ -49,6 +49,8 @@ import java.io.Serializable;
 
 /**
  * Abstract simple cache configuration that can be extended multiple times for specific use cases.
+ *
+ * @author volsch
  */
 @Validated
 public abstract class AbstractSimpleCacheConfig implements Serializable
@@ -92,21 +94,30 @@ public abstract class AbstractSimpleCacheConfig implements Serializable
     }
 
     @Nonnull
-    protected <R> CacheManager createCacheManager( @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull RedisSerializer<R> redisSerializer )
+    protected abstract String getCacheManagerName();
+
+    @Nonnull
+    protected <R> CacheManager createCacheManager( @Nonnull RequestCacheService requestCacheService,
+        @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull RedisSerializer<R> redisSerializer )
     {
+        final CacheManager defaultCacheManager;
         switch ( getType() )
         {
             case NONE:
-                return new NoOpCacheManager();
+                defaultCacheManager = new NoOpCacheManager();
+                break;
             case CAFFEINE:
                 final CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
                 caffeineCacheManager.setCacheSpecification( caffeine.getSpec() );
-                return caffeineCacheManager;
+                defaultCacheManager = caffeineCacheManager;
+                break;
             case REDIS:
-                return RedisCacheManager.builder( redisConnectionFactoryProvider.getObject() ).cacheDefaults( createRedisCacheConfiguration( redisSerializer ) ).build();
+                defaultCacheManager = RedisCacheManager.builder( redisConnectionFactoryProvider.getObject() ).cacheDefaults( createRedisCacheConfiguration( redisSerializer ) ).build();
+                break;
             default:
                 throw new AssertionError( "Unhandled cache type: " + getType() );
         }
+        return new RequestCacheManager( getCacheManagerName(), requestCacheService, defaultCacheManager );
     }
 
     @Nonnull

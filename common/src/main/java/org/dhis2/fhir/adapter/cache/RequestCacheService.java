@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository.impl;
+package org.dhis2.fhir.adapter.cache;
 
 /*
  * Copyright (c) 2004-2018, University of Oslo
@@ -28,43 +28,19 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
-import org.dhis2.fhir.adapter.cache.RequestCacheService;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
-
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Cache configuration for FHIR Resources.
+ * Provides access to one or more request scope cache managers.
  *
  * @author volsch
  */
-@Configuration
-@Component
-@ConfigurationProperties( "dhis2.fhir-adapter.cache.fhir" )
-@Validated
-public class FhirResourceCacheConfig extends AbstractSimpleCacheConfig
+public interface RequestCacheService
 {
-    private static final long serialVersionUID = 3060542002074294407L;
-
     @Nonnull
-    @Override
-    protected String getCacheManagerName()
-    {
-        return "fhirCacheManager";
-    }
+    RequestCacheContext createRequestCacheContext();
 
-    @Bean
-    @Nonnull
-    protected CacheManager fhirCacheManager( @Nonnull RequestCacheService requestCacheService, @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull FhirResourceRedisSerializer redisSerializer )
-    {
-        return createCacheManager( requestCacheService, redisConnectionFactoryProvider, redisSerializer );
-    }
+    @Nullable
+    RequestCacheContext getCurrentRequestCacheContext();
 }
