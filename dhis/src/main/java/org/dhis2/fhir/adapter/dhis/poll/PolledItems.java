@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.poll;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.Pager;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
@@ -47,7 +48,19 @@ public class PolledItems<I extends PolledItem> implements Serializable
 {
     private static final long serialVersionUID = 5667688634960766862L;
 
+    private Pager pager;
+
     private List<I> items;
+
+    public Pager getPager()
+    {
+        return pager;
+    }
+
+    public void setPager( Pager pager )
+    {
+        this.pager = pager;
+    }
 
     @JsonProperty
     public List<I> getItems()

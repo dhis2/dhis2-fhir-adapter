@@ -32,12 +32,12 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -72,10 +72,10 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     private final OrganizationUnitService organizationUnitService;
 
-    public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+    public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService )
     {
-        super( scriptExecutor, lockManager, systemRepository, remoteFhirResourceRepository, fhirDhisAssignmentRepository );
+        super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
         this.organizationUnitService = organizationUnitService;
     }
 
@@ -102,15 +102,15 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Nullable
     @Override
-    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
+    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
-            organizationUnitService, getRemoteFhirResourceRepository(), remoteSubscription, context, ruleInfo, variables,
+            organizationUnitService, getFhirResourceRepository(), fhirServer, context, ruleInfo, variables,
             new DefaultIdentifierValueProvider() ) );
 
-        final IBaseResource resource = getResource( remoteSubscription, context, ruleInfo, variables ).orElse( null );
+        final IBaseResource resource = getResource( fhirServer, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -136,7 +136,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         // not supported
@@ -144,7 +144,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     }
 
     @Override
-    protected void lockResource( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+    protected void lockResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedOrganizationUnit scriptedOrganizationUnit =

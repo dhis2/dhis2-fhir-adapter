@@ -99,21 +99,21 @@ public class TestConfiguration
 
     private WireMockServer fhirMockServer;
 
-    private UUID remoteSubscriptionId;
+    private UUID fhirServerId;
 
-    private Map<FhirResourceType, UUID> remoteSubscriptionResourceIds;
+    private Map<FhirResourceType, UUID> fhirServerResourceIds;
 
     @Nonnull
-    public UUID getRemoteSubscriptionId()
+    public UUID getFhirServerId()
     {
-        return remoteSubscriptionId;
+        return fhirServerId;
     }
 
     @Nonnull
-    public UUID getRemoteSubscriptionResourceId( @Nonnull FhirResourceType resourceType )
+    public UUID getFhirServerResourceId( @Nonnull FhirResourceType resourceType )
     {
-        final UUID resourceId = remoteSubscriptionResourceIds.get( resourceType );
-        Assert.assertNotNull( "Remote subscription resource for " + resourceType + " could not be found.", resourceId );
+        final UUID resourceId = fhirServerResourceIds.get( resourceType );
+        Assert.assertNotNull( "FHIR server resource for " + resourceType + " could not be found.", resourceId );
         return resourceId;
     }
 
@@ -170,22 +170,22 @@ public class TestConfiguration
 
         final Setup setup = new Setup();
 
-        setup.getRemoteSubscriptionSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
-        setup.getRemoteSubscriptionSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
+        setup.getFhirServerSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
+        setup.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
 
-        setup.getRemoteSubscriptionSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
-        setup.getRemoteSubscriptionSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
+        setup.getFhirServerSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
+        setup.getFhirServerSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
 
-        setup.getRemoteSubscriptionSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_DSTU3_CONTEXT );
-        setup.getRemoteSubscriptionSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
-        setup.getRemoteSubscriptionSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
-        setup.getRemoteSubscriptionSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
-        setup.getRemoteSubscriptionSetup().getFhirSetup().setSupportsRelatedPerson( true );
+        setup.getFhirServerSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_DSTU3_CONTEXT );
+        setup.getFhirServerSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
+        setup.getFhirServerSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
+        setup.getFhirServerSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
+        setup.getFhirServerSetup().getFhirSetup().setSupportsRelatedPerson( true );
 
-        setup.getRemoteSubscriptionSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
-        setup.getRemoteSubscriptionSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
-        setup.getRemoteSubscriptionSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
-        setup.getRemoteSubscriptionSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
+        setup.getFhirServerSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
+        setup.getFhirServerSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
+        setup.getFhirServerSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
+        setup.getFhirServerSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
 
         setup.getOrganizationCodeSetup().setFallback( true );
         setup.getOrganizationCodeSetup().setDefaultDhisCode( "OU_4567" );
@@ -209,8 +209,8 @@ public class TestConfiguration
             SecurityContextHolder.clearContext();
         }
 
-        this.remoteSubscriptionId = setupResult.getRemoteSubscriptionId();
-        this.remoteSubscriptionResourceIds = setupResult.getRemoteSubscriptionResourceIds();
+        this.fhirServerId = setupResult.getFhirServerId();
+        this.fhirServerResourceIds = setupResult.getFhirServerResourceIds();
     }
 
     @PreDestroy

@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.auth;
 import javax.annotation.Nonnull;
 
 /**
- * Thrown in case the remote system reported a forbidden error.
+ * Thrown in case the server system reported a forbidden error.
  *
  * @author volsch
  */

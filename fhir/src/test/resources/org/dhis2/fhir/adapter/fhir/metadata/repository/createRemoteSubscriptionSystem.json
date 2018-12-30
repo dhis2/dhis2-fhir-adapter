@@ -1,6 +1,0 @@
-{
-  "remoteSubscription": "$remoteSubscriptionId",
-  "fhirResourceType": "LOCATION",
-  "system": "$systemId",
-  "codePrefix": "LOC_"
-}

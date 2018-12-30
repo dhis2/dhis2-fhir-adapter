@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.security;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import org.dhis2.fhir.adapter.auth.ThreadLocalAuthorizationContext;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -120,6 +121,12 @@ public class AdapterSecurityConfig implements SecurityConfig
     protected SystemAuthenticationToken systemAuthenticationToken()
     {
         return new AdapterSystemAuthenticationToken();
+    }
+
+    @Bean
+    protected ThreadLocalAuthorizationContext requestedAuthenticationContext()
+    {
+        return new ThreadLocalAuthorizationContext();
     }
 
     @PostConstruct

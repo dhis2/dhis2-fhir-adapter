@@ -44,8 +44,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
@@ -81,14 +81,14 @@ public class DhisToFhirProgramStageRequestResolver extends AbstractDhisToFhirReq
     private final ValueConverter valueConverter;
 
     public DhisToFhirProgramStageRequestResolver(
-        @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository,
+        @Nonnull FhirServerRepository fhirServerRepository,
         @Nonnull ProgramMetadataService programMetadataService,
         @Nonnull ProgramStageRuleRepository ruleRepository,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull ValueConverter valueConverter )
     {
-        super( remoteSubscriptionRepository );
+        super( fhirServerRepository );
         this.programMetadataService = programMetadataService;
         this.ruleRepository = ruleRepository;
         this.trackedEntityService = trackedEntityService;

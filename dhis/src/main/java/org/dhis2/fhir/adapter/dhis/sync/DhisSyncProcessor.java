@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 /**
- * Processes the sync between DHIS2 and the remote FHIR services.
+ * Processes the sync between DHIS2 and the FHIR services.
  *
  * @author volsch
  */

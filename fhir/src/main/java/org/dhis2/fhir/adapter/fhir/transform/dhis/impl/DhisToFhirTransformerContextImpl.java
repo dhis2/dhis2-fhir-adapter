@@ -29,9 +29,9 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -61,21 +61,21 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
 
     private final DhisRequest dhisRequest;
 
-    private final RemoteSubscription remoteSubscription;
+    private final FhirServer fhirServer;
 
-    private final Map<FhirResourceType, AvailableRemoteSubscriptionResource> availableResourcesByType;
+    private final Map<FhirResourceType, AvailableFhirServerResource> availableResourcesByType;
 
     private final Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
 
     private final Map<String, Object> attributes = new HashMap<>();
 
-    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull RemoteSubscription remoteSubscription,
-        @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType, @Nonnull Collection<AvailableRemoteSubscriptionResource> availableResources )
+    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull FhirServer fhirServer,
+        @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType, @Nonnull Collection<AvailableFhirServerResource> availableResources )
     {
         this.dhisRequest = dhisRequest;
-        this.remoteSubscription = remoteSubscription;
+        this.fhirServer = fhirServer;
         this.resourceSystemsByType = resourceSystemsByType;
-        this.availableResourcesByType = availableResources.stream().collect( Collectors.toMap( AvailableRemoteSubscriptionResource::getResourceType, a -> a ) );
+        this.availableResourcesByType = availableResources.stream().collect( Collectors.toMap( AvailableFhirServerResource::getResourceType, a -> a ) );
     }
 
     @Nonnull
@@ -89,21 +89,21 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     @Override
     public FhirVersion getVersion()
     {
-        return remoteSubscription.getFhirVersion();
+        return fhirServer.getFhirVersion();
     }
 
     @Nonnull
     @Override
-    public UUID getRemoteSubscriptionId()
+    public UUID getFhirServerId()
     {
-        return remoteSubscription.getId();
+        return fhirServer.getId();
     }
 
     @Nonnull
     @Override
-    public String getRemoteSubscriptionCode()
+    public String getFhirServerCode()
     {
-        return remoteSubscription.getCode();
+        return fhirServer.getCode();
     }
 
     @Nonnull
@@ -117,7 +117,7 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     @Override
     public FhirVersion getFhirVersion()
     {
-        return remoteSubscription.getFhirVersion();
+        return fhirServer.getFhirVersion();
     }
 
     @Nullable
@@ -136,14 +136,14 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
 
     @Nullable
     @Override
-    public AvailableRemoteSubscriptionResource getAvailableResource( @Nonnull FhirResourceType resourceType )
+    public AvailableFhirServerResource getAvailableResource( @Nonnull FhirResourceType resourceType )
     {
         return availableResourcesByType.get( resourceType );
     }
 
     @Nonnull
     @Override
-    public Optional<AvailableRemoteSubscriptionResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType )
+    public Optional<AvailableFhirServerResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType )
     {
         return Optional.ofNullable( getAvailableResource( resourceType ) );
     }
@@ -151,7 +151,7 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     @Override
     public boolean isUseAdapterIdentifier()
     {
-        return remoteSubscription.isUseAdapterIdentifier();
+        return fhirServer.isUseAdapterIdentifier();
     }
 
     @Override
@@ -170,7 +170,7 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     @Override
     public String getDhisUsername()
     {
-        return remoteSubscription.getDhisEndpoint().getUsername();
+        return fhirServer.getDhisEndpoint().getUsername();
     }
 
     @Override

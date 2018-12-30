@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.cache.CacheBasePackage;
 import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
 import org.dhis2.fhir.adapter.fhir.data.DataBasePackage;
 import org.dhis2.fhir.adapter.fhir.metadata.MetadataBasePackage;
@@ -68,7 +69,7 @@ import java.util.Date;
  */
 @Configuration
 @EnableAutoConfiguration( exclude = { RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class, ArtemisAutoConfiguration.class, HystrixAutoConfiguration.class } )
-@ComponentScan( basePackageClasses = { RestBasePackage.class, DataBasePackage.class, MetadataBasePackage.class } )
+@ComponentScan( basePackageClasses = { CacheBasePackage.class, RestBasePackage.class, DataBasePackage.class, MetadataBasePackage.class } )
 public class MockMvcTestConfig
 {
     @Nonnull

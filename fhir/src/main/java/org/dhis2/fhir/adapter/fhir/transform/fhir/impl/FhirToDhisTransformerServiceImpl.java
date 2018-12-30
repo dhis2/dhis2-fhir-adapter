@@ -32,13 +32,13 @@ import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -80,7 +80,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     private final LockManager lockManager;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
     private final RuleRepository ruleRepository;
 
@@ -91,13 +91,13 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public FhirToDhisTransformerServiceImpl( @Nonnull LockManager lockManager,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull RuleRepository ruleRepository,
+        @Nonnull FhirResourceRepository fhirResourceRepository, @Nonnull RuleRepository ruleRepository,
         @Nonnull ObjectProvider<List<FhirToDhisTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<FhirToDhisTransformerUtils>> transformUtilsProvider,
         @Nonnull ScriptExecutor scriptExecutor )
     {
         this.lockManager = lockManager;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirResourceRepository = fhirResourceRepository;
         this.ruleRepository = ruleRepository;
         this.scriptExecutor = scriptExecutor;
 
@@ -125,7 +125,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nonnull
     @Override
-    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull IBaseResource originalInput, boolean contained )
+    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource originalInput, boolean contained )
     {
         final Map<String, FhirToDhisTransformerUtils> transformerUtils = this.transformerUtils.get( fhirRequest.getVersion() );
         if ( transformerUtils == null )
@@ -138,13 +138,13 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             throw new TransformerMappingException( "Code transformer utils can be found for FHIR version " + fhirRequest.getVersion() );
         }
 
-        final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
+        final FhirContext fhirContext = fhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
         final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
         final List<RuleInfo<? extends AbstractRule>> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
             .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
 
-        return new FhirToDhisTransformerRequestImpl( remoteSubscriptionResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
+        return new FhirToDhisTransformerRequestImpl( fhirServerResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }
 
     @Nullable
@@ -179,7 +179,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getRemoteSubscriptionResource(),
+                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getFhirServerResource(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {

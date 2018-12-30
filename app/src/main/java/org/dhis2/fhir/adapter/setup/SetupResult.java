@@ -43,25 +43,25 @@ public class SetupResult implements Serializable
 {
     private static final long serialVersionUID = -5493649240520618453L;
 
-    private final UUID remoteSubscriptionId;
+    private final UUID fhirServerId;
 
-    private final Map<FhirResourceType, UUID> remoteSubscriptionResourceIds;
+    private final Map<FhirResourceType, UUID> fhirServerResourceIds;
 
-    public SetupResult( @Nonnull UUID remoteSubscriptionId, @Nonnull Map<FhirResourceType, UUID> remoteSubscriptionResourceIds )
+    public SetupResult( @Nonnull UUID fhirServerId, @Nonnull Map<FhirResourceType, UUID> fhirServerResourceIds )
     {
-        this.remoteSubscriptionId = remoteSubscriptionId;
-        this.remoteSubscriptionResourceIds = Collections.unmodifiableMap( remoteSubscriptionResourceIds );
+        this.fhirServerId = fhirServerId;
+        this.fhirServerResourceIds = Collections.unmodifiableMap( fhirServerResourceIds );
     }
 
     @Nonnull
-    public UUID getRemoteSubscriptionId()
+    public UUID getFhirServerId()
     {
-        return remoteSubscriptionId;
+        return fhirServerId;
     }
 
     @Nonnull
-    public Map<FhirResourceType, UUID> getRemoteSubscriptionResourceIds()
+    public Map<FhirResourceType, UUID> getFhirServerResourceIds()
     {
-        return remoteSubscriptionResourceIds;
+        return fhirServerResourceIds;
     }
 }

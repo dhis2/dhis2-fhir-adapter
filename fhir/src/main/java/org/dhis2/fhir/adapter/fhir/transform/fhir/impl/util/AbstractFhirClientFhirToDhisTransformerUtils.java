@@ -31,11 +31,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
@@ -63,29 +63,29 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * FHIR to DHIS2 transformer utility methods for retrieving data from a remote FHIR service.
+ * FHIR to DHIS2 transformer utility methods for retrieving data from a server FHIR service.
  *
  * @author volsch
  */
 @Scriptable
 @ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.IMP, var = AbstractFhirClientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities for retrieving data from a remote FHIR service." )
+    description = "Utilities for retrieving data from a server FHIR service." )
 public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
 
     private final FhirContext fhirContext;
 
-    private final RemoteSubscriptionResourceRepository subscriptionResourceRepository;
+    private final FhirServerResourceRepository fhirServerResourceRepository;
 
     private final SystemCodeRepository systemCodeRepository;
 
     protected AbstractFhirClientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
         this.fhirContext = fhirContext;
-        this.subscriptionResourceRepository = subscriptionResourceRepository;
+        this.fhirServerResourceRepository = fhirServerResourceRepository;
         this.systemCodeRepository = systemCodeRepository;
     }
 
@@ -211,13 +211,13 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
     protected IGenericClient createFhirClient()
     {
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final UUID resourceId = context.getFhirRequest().getRemoteSubscriptionResourceId();
+        final UUID resourceId = context.getFhirRequest().getFhirServerResourceId();
         if ( resourceId == null )
         {
-            throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
+            throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findOneByIdCached( resourceId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
-        return FhirClientUtils.createClient( fhirContext, subscriptionResource.getRemoteSubscription().getFhirEndpoint() );
+        final FhirServerResource fhirServerResource = fhirServerResourceRepository.findOneByIdCached( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server resource with ID " + resourceId ) );
+        return FhirClientUtils.createClient( fhirContext, fhirServerResource.getFhirServer().getFhirEndpoint() );
     }
 }

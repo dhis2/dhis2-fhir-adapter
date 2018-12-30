@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -40,5 +40,5 @@ import javax.annotation.Nonnull;
  */
 public interface FhirRepository
 {
-    void save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource );
+    void save( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource );
 }

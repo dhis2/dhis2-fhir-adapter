@@ -82,21 +82,21 @@ public class MetadataRepositoryAuthoritiesAppTest extends AbstractAppTest
     }
 
     @Test
-    public void remoteSubscriptionScriptAuthorities() throws Exception
+    public void fhirServerScriptAuthorities() throws Exception
     {
-        testAuthorities( "/remoteSubscriptions", "administration", "data_mapping" );
+        testAuthorities( "/fhirServers", "administration", "data_mapping" );
     }
 
     @Test
-    public void remoteSubscriptionResourceScriptAuthorities() throws Exception
+    public void fhirServerResourceScriptAuthorities() throws Exception
     {
-        testAuthorities( "/remoteSubscriptionResources", "administration", "data_mapping" );
+        testAuthorities( "/fhirServerResources", "administration", "data_mapping" );
     }
 
     @Test
-    public void remoteSubscriptionSystemScriptAuthorities() throws Exception
+    public void fhirServerSystemScriptAuthorities() throws Exception
     {
-        testAuthorities( "/remoteSubscriptionSystems", "administration", "data_mapping" );
+        testAuthorities( "/fhirServerSystems", "administration", "data_mapping" );
     }
 
     @Test

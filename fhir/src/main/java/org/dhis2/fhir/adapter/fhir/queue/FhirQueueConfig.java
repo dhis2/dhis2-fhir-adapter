@@ -32,10 +32,10 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.dhis2.fhir.adapter.dhis.queue.JmsJsonTypeIdMapping;
-import org.dhis2.fhir.adapter.fhir.remote.impl.RemoteConfig;
-import org.dhis2.fhir.adapter.fhir.remote.impl.RemoteRestHookRequest;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
 import org.dhis2.fhir.adapter.fhir.repository.impl.RepositoryConfig;
+import org.dhis2.fhir.adapter.fhir.server.impl.FhirServerConfig;
+import org.dhis2.fhir.adapter.fhir.server.impl.FhirServerRestHookRequest;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,13 +56,13 @@ import java.util.Map;
 @Validated
 public class FhirQueueConfig
 {
-    private final RemoteConfig remoteConfig;
+    private final FhirServerConfig fhirServerConfig;
 
     private final RepositoryConfig repositoryConfig;
 
-    public FhirQueueConfig( @Nonnull RemoteConfig remoteConfig, @Nonnull RepositoryConfig repositoryConfig )
+    public FhirQueueConfig( @Nonnull FhirServerConfig fhirServerConfig, @Nonnull RepositoryConfig repositoryConfig )
     {
-        this.remoteConfig = remoteConfig;
+        this.fhirServerConfig = fhirServerConfig;
         this.repositoryConfig = repositoryConfig;
     }
 
@@ -71,7 +71,7 @@ public class FhirQueueConfig
     protected ArtemisConfigurationCustomizer artemisConfigurationCustomizer()
     {
         return configuration -> {
-            configuration.addAddressesSetting( remoteConfig.getWebHookRequestQueue().getQueueName(), remoteConfig.getWebHookRequestQueue().getEmbeddedAddressSettings() );
+            configuration.addAddressesSetting( fhirServerConfig.getRestHookRequestQueue().getQueueName(), fhirServerConfig.getRestHookRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceQueue().getQueueName(), repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceDlQueue().getQueueName(), repositoryConfig.getFhirResourceDlQueue().getEmbeddedAddressSettings() );
         };
@@ -82,7 +82,7 @@ public class FhirQueueConfig
     protected JMSQueueConfiguration webHookRequestQueueConfiguration()
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
-        queueConfiguration.setName( remoteConfig.getWebHookRequestQueue().getQueueName() );
+        queueConfiguration.setName( fhirServerConfig.getRestHookRequestQueue().getQueueName() );
         queueConfiguration.setDurable( true );
         return queueConfiguration;
     }
@@ -112,7 +112,7 @@ public class FhirQueueConfig
     protected JmsTemplate fhirRestHookRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
     {
         final JmsTemplate jmsTemplate = new JmsTemplate( connectionFactory );
-        jmsTemplate.setDefaultDestinationName( remoteConfig.getWebHookRequestQueue().getQueueName() );
+        jmsTemplate.setDefaultDestinationName( fhirServerConfig.getRestHookRequestQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
     }
@@ -138,8 +138,8 @@ public class FhirQueueConfig
             public Map<String, Class<?>> getTypeIdMappings()
             {
                 return ImmutableMap.of(
-                    "fhirRestHookRequest", RemoteRestHookRequest.class,
-                    "fhirResource", RemoteFhirResource.class );
+                    "fhirRestHookRequest", FhirServerRestHookRequest.class,
+                    "fhirResource", FhirResource.class );
             }
         };
     }

@@ -35,14 +35,14 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -91,9 +91,9 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final LockManager lockManager;
 
-    private final RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository;
+    private final FhirServerResourceRepository fhirServerResourceRepository;
 
-    private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
+    private final FhirServerSystemRepository fhirServerSystemRepository;
 
     private final OrganizationUnitService organizationUnitService;
 
@@ -106,8 +106,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
-        @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
-        @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
         @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
@@ -115,8 +115,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         @Nonnull ScriptExecutor scriptExecutor )
     {
         this.lockManager = lockManager;
-        this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
-        this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
+        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirServerSystemRepository = fhirServerSystemRepository;
         this.organizationUnitService = organizationUnitService;
         this.scriptExecutor = scriptExecutor;
 
@@ -164,40 +164,40 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             return null;
         }
 
-        final RemoteSubscription remoteSubscription = requestResolver.resolveRemoteSubscription( scriptedInput ).orElse( null );
-        if ( remoteSubscription == null )
+        final FhirServer fhirServer = requestResolver.resolveFhirServer( scriptedInput ).orElse( null );
+        if ( fhirServer == null )
         {
-            logger.info( "Could not determine remote subscription to process DHIS resource." );
+            logger.info( "Could not determine FHIR server to process DHIS resource." );
             return null;
         }
 
-        final Collection<AvailableRemoteSubscriptionResource> availableResources = remoteSubscriptionResourceRepository.findAllAvailable( remoteSubscription );
+        final Collection<AvailableFhirServerResource> availableResources = fhirServerResourceRepository.findAllAvailable( fhirServer );
         ruleInfos = filterAvailableResourceRules( ruleInfos, availableResources );
 
-        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( remoteSubscription );
+        final Collection<FhirServerSystem> systems = fhirServerSystemRepository.findByFhirServer( fhirServer );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
-        final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( remoteSubscription.getFhirVersion() );
+        final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( fhirServer.getFhirVersion() );
         if ( transformerUtils == null )
         {
-            throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + remoteSubscription.getFhirVersion() );
+            throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + fhirServer.getFhirVersion() );
         }
 
         return new DhisToFhirTransformerRequestImpl(
-            new DhisToFhirTransformerContextImpl( dhisRequest, remoteSubscription, resourceSystemsByType, availableResources ),
-            scriptedInput, remoteSubscription, ruleInfos, transformerUtils );
+            new DhisToFhirTransformerContextImpl( dhisRequest, fhirServer, resourceSystemsByType, availableResources ),
+            scriptedInput, fhirServer, ruleInfos, transformerUtils );
     }
 
     @Nonnull
-    private List<RuleInfo<? extends AbstractRule>> filterAvailableResourceRules( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Collection<AvailableRemoteSubscriptionResource> availableResources )
+    private List<RuleInfo<? extends AbstractRule>> filterAvailableResourceRules( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Collection<AvailableFhirServerResource> availableResources )
     {
-        final Map<FhirResourceType, AvailableRemoteSubscriptionResource> availableResourcesByType = availableResources.stream()
-            .collect( Collectors.toMap( AvailableRemoteSubscriptionResource::getResourceType, a -> a ) );
+        final Map<FhirResourceType, AvailableFhirServerResource> availableResourcesByType = availableResources.stream()
+            .collect( Collectors.toMap( AvailableFhirServerResource::getResourceType, a -> a ) );
         // not all resources may be available on FHIR server
         return ruleInfos.stream().filter( r -> {
-            final AvailableRemoteSubscriptionResource availableResource = availableResourcesByType.get( r.getRule().getFhirResourceType() );
+            final AvailableFhirServerResource availableResource = availableResourcesByType.get( r.getRule().getFhirResourceType() );
             if ( availableResource == null )
             {
                 return false;
@@ -232,7 +232,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             scriptVariables.put( ScriptVariable.ORGANIZATION_UNIT.getVariableName(), getScriptedOrganizationUnit( transformerRequestImpl.getInput() ) );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getRemoteSubscription(),
+                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getFhirServer(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {

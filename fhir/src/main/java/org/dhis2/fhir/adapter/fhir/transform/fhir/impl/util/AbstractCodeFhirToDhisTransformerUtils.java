@@ -134,7 +134,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
             @ScriptMethodArg( value = "code", description = "The code that must be included in combination with the specified system URI." ),
         },
         returnDescription = "Returns if the code is included." )
-    public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code );
+    public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nullable String system, @Nonnull String code );
 
     @ScriptMethod( description = "Returns if the specified codeable concept contains any combination of the specified list of system code values (type SystemCodeValue).",
         args = {
@@ -211,7 +211,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
 
     @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the mapped code (field code or if available field mappedCode of adapter resource code) for the specified FHIR resource type dependent code. " +
-        "As system URI the value associated with the FHIR resource type of the remote subscription system (adapter resource remoteSubscriptionSystems) of the current transformation context is used.",
+        "As system URI the value associated with the FHIR resource type of the FHIR server system (adapter resource fhirServerSystems) of the current transformation context is used.",
         args = {
             @ScriptMethodArg( value = "code", description = "The code in context of the system URI for the specified FHIR resource type." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case letters, separated by underscores) from which the associated system URI should be taken." ),

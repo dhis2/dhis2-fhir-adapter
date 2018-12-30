@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -75,17 +75,17 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final RemoteSubscriptionResourceRepository subscriptionResourceRepository;
+    private final FhirServerResourceRepository fhirServerResourceRepository;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
     public ReferenceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirResourceRepository fhirResourceRepository )
     {
         super( scriptExecutionContext );
-        this.subscriptionResourceRepository = subscriptionResourceRepository;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirResourceRepository = fhirResourceRepository;
     }
 
     @Nonnull
@@ -201,24 +201,24 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         }
 
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final UUID resourceId = context.getFhirRequest().getRemoteSubscriptionResourceId();
+        final UUID resourceId = context.getFhirRequest().getFhirServerResourceId();
         if ( resourceId == null )
         {
-            throw new TransformerMappingException( "FHIR client cannot be created without having a remote request." );
+            throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
         }
-        final RemoteSubscriptionResource subscriptionResource = subscriptionResourceRepository.findOneByIdCached( resourceId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription resource with ID " + resourceId ) );
+        final FhirServerResource fhirServerResource = fhirServerResourceRepository.findOneByIdCached( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server resource with ID " + resourceId ) );
 
-        final FhirContext fhirContext = remoteFhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )
+        final FhirContext fhirContext = fhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
-        final RemoteSubscription remoteSubscription = subscriptionResource.getRemoteSubscription();
+        final FhirServer fhirServer = fhirServerResource.getFhirServer();
         final Optional<IBaseResource> optionalResource = refreshed ?
-            remoteFhirResourceRepository.findRefreshed( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
+            fhirResourceRepository.findRefreshed( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
                 finalResourceType, reference.getReferenceElement().getIdPart() ) :
-            remoteFhirResourceRepository.find( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
+            fhirResourceRepository.find( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
                 finalResourceType, reference.getReferenceElement().getIdPart() );
         final IBaseResource resource = optionalResource.map( r -> FhirBeanTransformerUtils.clone( fhirContext, r ) )
-            .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for remote subscription resource " + resourceId ) );
+            .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for FHIR server resource " + resourceId ) );
         reference.setResource( resource );
         return resource;
     }

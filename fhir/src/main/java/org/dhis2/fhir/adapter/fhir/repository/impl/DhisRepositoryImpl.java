@@ -45,11 +45,11 @@ import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.repository.OptimisticFhirResourceLockException;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -95,7 +95,7 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final RequestCacheService requestCacheService;
 
-    private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
+    private final FhirServerSystemRepository fhirServerSystemRepository;
 
     private final DhisSyncGroupRepository dhisSyncGroupRepository;
 
@@ -107,7 +107,7 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final DhisToFhirTransformerService dhisToFhirTransformerService;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
     private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
 
@@ -116,26 +116,26 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull Authorization systemDhis2Authorization,
         @Nonnull LockManager lockManager,
         @Nonnull RequestCacheService requestCacheService,
-        @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
+        @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
         @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull QueuedDhisResourceRepository queuedDhisResourceRepository,
         @Nonnull StoredDhisResourceService storedItemService,
         @Nonnull DhisResourceRepository dhisResourceRepository,
         @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
+        @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.authorizationContext = authorizationContext;
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.lockManager = lockManager;
         this.requestCacheService = requestCacheService;
-        this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
+        this.fhirServerSystemRepository = fhirServerSystemRepository;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.queuedDhisResourceRepository = queuedDhisResourceRepository;
         this.storedItemService = storedItemService;
         this.dhisResourceRepository = dhisResourceRepository;
         this.dhisToFhirTransformerService = dhisToFhirTransformerService;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirResourceRepository = fhirResourceRepository;
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
@@ -334,21 +334,21 @@ public class DhisRepositoryImpl implements DhisRepository
                     {
                         if ( outcome.isDelete() )
                         {
-                            final boolean deleted = remoteFhirResourceRepository.delete( transformerRequest.getRemoteSubscription(), outcome.getResource() );
-                            fhirDhisAssignmentRepository.deleteFhirResourceId( outcome.getRule(), transformerRequest.getRemoteSubscription(),
+                            final boolean deleted = fhirResourceRepository.delete( transformerRequest.getFhirServer(), outcome.getResource() );
+                            fhirDhisAssignmentRepository.deleteFhirResourceId( outcome.getRule(), transformerRequest.getFhirServer(),
                                 outcome.getResource().getIdElement() );
-                            logger.info( "Deleted (found={}) resource {} for remote subscription {}.", deleted,
-                                outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getRemoteSubscription().getId() );
+                            logger.info( "Deleted (found={}) resource {} for FHIR server {}.", deleted,
+                                outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getFhirServer().getId() );
                         }
                         else
                         {
-                            final IBaseResource resultingResource = remoteFhirResourceRepository.save( transformerRequest.getRemoteSubscription(), outcome.getResource() );
+                            final IBaseResource resultingResource = fhirResourceRepository.save( transformerRequest.getFhirServer(), outcome.getResource() );
                             // resource may have been set as attribute in transformer context (e.g. shared encounter)
                             outcome.getResource().setId( resultingResource.getIdElement() );
-                            fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getRemoteSubscription(),
+                            fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getFhirServer(),
                                 resource.getResourceId(), resultingResource.getIdElement() );
-                            logger.info( "Saved FHIR resource {} for remote subscription {}.",
-                                resultingResource.getIdElement().toUnqualified(), transformerRequest.getRemoteSubscription().getId() );
+                            logger.info( "Saved FHIR resource {} for FHIR server {}.",
+                                resultingResource.getIdElement().toUnqualified(), transformerRequest.getFhirServer().getId() );
                         }
                     }
                     saved = true;

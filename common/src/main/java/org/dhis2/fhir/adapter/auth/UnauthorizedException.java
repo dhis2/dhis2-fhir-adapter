@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Thrown in case the remote server reported an unauthorized exception. A list of WWW authenticates
+ * Thrown in case the server server reported an unauthorized exception. A list of WWW authenticates
  * can be specified that should be returned to the requesting client.
  *
  * @author volsch
@@ -51,7 +51,7 @@ public class UnauthorizedException extends RuntimeException
 
     /**
      * @return WWW authenticate headers that should be returned to the client
-     * (in case the same authorization was passed to the remote server).
+     * (in case the same authorization was passed to the server server).
      */
     @Nonnull
     public List<String> getWwwAuthenticates()

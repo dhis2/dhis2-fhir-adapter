@@ -31,12 +31,12 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -51,30 +51,30 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * DHIS2 to FHIR transformer utility methods for retrieving data from a remote FHIR service.
+ * DHIS2 to FHIR transformer utility methods for retrieving data from a server FHIR service.
  *
  * @author volsch
  */
 @Scriptable
 @ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.EXP, var = AbstractFhirClientDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities for retrieving data from a remote FHIR service." )
+    description = "Utilities for retrieving data from a server FHIR service." )
 public abstract class AbstractFhirClientDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
 
     private final FhirContext fhirContext;
 
-    private final RemoteSubscriptionRepository subscriptionRepository;
+    private final FhirServerRepository subscriptionRepository;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
     protected AbstractFhirClientDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
-        @Nonnull RemoteSubscriptionRepository subscriptionRepository, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository )
+        @Nonnull FhirServerRepository subscriptionRepository, @Nonnull FhirResourceRepository fhirResourceRepository )
     {
         super( scriptExecutionContext );
         this.fhirContext = fhirContext;
         this.subscriptionRepository = subscriptionRepository;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirResourceRepository = fhirResourceRepository;
     }
 
     @Nonnull
@@ -90,22 +90,22 @@ public abstract class AbstractFhirClientDhisToFhirTransformerUtils extends Abstr
         final FhirResourceType resourceType = convertFhirResourceType( fhirResourceType );
         final ResourceSystem resourceSystem = getMandatoryResourceSystem( resourceType );
 
-        final RemoteSubscription subscription = getRemoteSubscription();
-        return remoteFhirResourceRepository.findByIdentifier( subscription.getId(), subscription.getFhirVersion(), subscription.getFhirEndpoint(),
+        final FhirServer subscription = getFhirServer();
+        return fhirResourceRepository.findByIdentifier( subscription.getId(), subscription.getFhirVersion(), subscription.getFhirEndpoint(),
             resourceType.getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
     }
 
     @Nonnull
-    protected RemoteSubscription getRemoteSubscription()
+    protected FhirServer getFhirServer()
     {
         final DhisToFhirTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), DhisToFhirTransformerContext.class );
-        final UUID subId = context.getRemoteSubscriptionId();
+        final UUID subId = context.getFhirServerId();
         return subscriptionRepository.findOneByIdCached( subId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find remote subscription with ID " + subId ) );
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server with ID " + subId ) );
     }
 
     @Nonnull
-    protected IGenericClient createFhirClient( @Nonnull RemoteSubscription subscription )
+    protected IGenericClient createFhirClient( @Nonnull FhirServer subscription )
     {
         return FhirClientUtils.createClient( fhirContext, subscription.getFhirEndpoint() );
     }

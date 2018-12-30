@@ -33,8 +33,8 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
@@ -56,9 +56,9 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
 {
     private final OrganizationUnitRuleRepository ruleRepository;
 
-    public DhisToFhirOrganizationUnitRequestResolver( @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository, OrganizationUnitRuleRepository ruleRepository )
+    public DhisToFhirOrganizationUnitRequestResolver( @Nonnull FhirServerRepository fhirServerRepository, OrganizationUnitRuleRepository ruleRepository )
     {
-        super( remoteSubscriptionRepository );
+        super( fhirServerRepository );
         this.ruleRepository = ruleRepository;
     }
 

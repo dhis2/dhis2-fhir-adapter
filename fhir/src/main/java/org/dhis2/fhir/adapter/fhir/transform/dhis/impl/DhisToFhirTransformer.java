@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -62,10 +62,10 @@ public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends
     Class<U> getRuleClass();
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,
+    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transformCasted( @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context,
+    DhisToFhirTransformOutcome<? extends IBaseResource> transformCasted( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull ScriptedDhisResource input, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 }

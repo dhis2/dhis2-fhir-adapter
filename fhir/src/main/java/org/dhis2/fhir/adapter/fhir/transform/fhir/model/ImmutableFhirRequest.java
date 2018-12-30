@@ -107,23 +107,23 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     }
 
     @Override
-    public boolean isRemoteSubscription()
+    public boolean isFhirServer()
     {
-        return delegate.isRemoteSubscription();
+        return delegate.isFhirServer();
     }
 
     @Nullable
     @Override
-    public String getRemoteSubscriptionCode()
+    public String getFhirServerCode()
     {
-        return delegate.getRemoteSubscriptionCode();
+        return delegate.getFhirServerCode();
     }
 
     @Override
     @Nullable
-    public UUID getRemoteSubscriptionResourceId()
+    public UUID getFhirServerResourceId()
     {
-        return delegate.getRemoteSubscriptionResourceId();
+        return delegate.getFhirServerResourceId();
     }
 
     @Nullable

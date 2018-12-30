@@ -56,6 +56,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -158,14 +159,14 @@ public class Dstu3CodeFhirToDhisTransformerUtils extends AbstractCodeFhirToDhisT
     }
 
     @Override
-    public boolean containsCode( @Nullable ICompositeType codeableConcept, @Nonnull String system, @Nonnull String code )
+    public boolean containsCode( @Nullable ICompositeType codeableConcept, @Nullable String system, @Nonnull String code )
     {
         if ( codeableConcept == null )
         {
             return false;
         }
         return ((CodeableConcept) codeableConcept).getCoding().stream().anyMatch(
-            coding -> system.equals( coding.getSystem() ) && code.equals( coding.getCode() ) );
+            coding -> Objects.equals( system, coding.getSystem() ) && code.equals( coding.getCode() ) );
     }
 
     @Nullable

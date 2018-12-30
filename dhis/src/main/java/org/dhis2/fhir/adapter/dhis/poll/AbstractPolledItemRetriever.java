@@ -209,7 +209,13 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
         queryVariables.add( page );
 
         final ResponseEntity<P> entity = restTemplate.getForEntity( queryUri + queryParams, polledItemsClass, queryVariables.toArray() );
-        return Objects.requireNonNull( entity.getBody() );
+        final P response = Objects.requireNonNull( entity.getBody() );
+        // DHIS metadata may return the next available page
+        if ((response.getPager() != null) && (response.getPager().getPage() < page))
+        {
+            response.setItems( Collections.emptyList() );
+        }
+        return response;
     }
 
     @Nonnull

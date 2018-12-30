@@ -69,7 +69,7 @@ public class AuthorizedRestTemplate extends RestTemplate
 
     /**
      * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
-     * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a remote failure.
+     * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a server failure.
      */
     public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates )
     {

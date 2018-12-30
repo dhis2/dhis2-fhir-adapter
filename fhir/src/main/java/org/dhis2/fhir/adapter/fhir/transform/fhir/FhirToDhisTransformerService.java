@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
 public interface FhirToDhisTransformerService
 {
     @Nonnull
-    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull IBaseResource originalInput, boolean contained );
+    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource originalInput, boolean contained );
 
     @Nullable
     FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerRequest transformerRequest ) throws TransformerException;

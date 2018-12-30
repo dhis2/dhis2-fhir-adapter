@@ -279,6 +279,13 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
         return getValue( attribute );
     }
 
+    @Nullable
+    @Override
+    public String getStringValue( @Nonnull Reference attributeReference )
+    {
+        return valueConverter.convert( getValue( attributeReference ), String.class );
+    }
+
     protected boolean setValue( @Nonnull TrackedEntityAttribute attribute, @Nullable TrackedEntityTypeAttribute typeAttribute, @Nullable Object value, @Nullable ZonedDateTime lastUpdated ) throws TransformerException
     {
         if ( (value == null) && (typeAttribute != null) && typeAttribute.isMandatory() )

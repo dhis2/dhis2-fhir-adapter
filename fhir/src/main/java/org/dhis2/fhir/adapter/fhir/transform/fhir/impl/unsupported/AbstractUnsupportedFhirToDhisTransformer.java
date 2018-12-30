@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -65,7 +65,7 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nullable
     @Override
-    public FhirToDhisTransformOutcome<R> transform( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo,
+    public FhirToDhisTransformOutcome<R> transform( @Nonnull FhirServerResource fhirServerResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( ruleInfo.getRule().isImpEnabled() )

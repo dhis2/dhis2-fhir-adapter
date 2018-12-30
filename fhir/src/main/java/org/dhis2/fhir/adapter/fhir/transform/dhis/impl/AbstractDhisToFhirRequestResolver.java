@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ import java.util.Optional;
 
 /**
  * Abstract implementation of {@link DhisToFhirRequestResolver} that provides
- * support for resolving the remote subscription that is stored to store this
+ * support for resolving the FHIR server that is stored to store this
  * resource.
  *
  * @author volsch
@@ -48,20 +48,20 @@ public abstract class AbstractDhisToFhirRequestResolver implements DhisToFhirReq
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final RemoteSubscriptionRepository remoteSubscriptionRepository;
+    private final FhirServerRepository fhirServerRepository;
 
-    public AbstractDhisToFhirRequestResolver( @Nonnull RemoteSubscriptionRepository remoteSubscriptionRepository )
+    public AbstractDhisToFhirRequestResolver( @Nonnull FhirServerRepository fhirServerRepository )
     {
-        this.remoteSubscriptionRepository = remoteSubscriptionRepository;
+        this.fhirServerRepository = fhirServerRepository;
     }
 
     @Nonnull
-    public Optional<RemoteSubscription> resolveRemoteSubscription( @Nonnull ScriptedDhisResource scriptedDhisResource )
+    public Optional<FhirServer> resolveFhirServer( @Nonnull ScriptedDhisResource scriptedDhisResource )
     {
-        Optional<RemoteSubscription> remoteSubscription = remoteSubscriptionRepository.findOnly();
-        if ( remoteSubscription.isPresent() && remoteSubscription.get().isEnabled() && remoteSubscription.get().isExpEnabled() )
+        Optional<FhirServer> fhirServer = fhirServerRepository.findOnly();
+        if ( fhirServer.isPresent() && fhirServer.get().isEnabled() && fhirServer.get().isExpEnabled() )
         {
-            return remoteSubscription;
+            return fhirServer;
         }
         return Optional.empty();
     }

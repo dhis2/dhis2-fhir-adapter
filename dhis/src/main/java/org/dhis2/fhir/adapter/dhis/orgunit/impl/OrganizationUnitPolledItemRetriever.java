@@ -77,6 +77,6 @@ public class OrganizationUnitPolledItemRetriever extends AbstractPolledItemRetri
     @Nonnull
     protected String getEndDateExclFilter()
     {
-        return "filter=lastUpdatedEndDate:lt:{lastUpdatedEndDate}";
+        return "filter=lastUpdated:lt:{lastUpdatedEndDate}";
     }
 }

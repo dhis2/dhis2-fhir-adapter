@@ -82,6 +82,13 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
         return delegate.getValue( attributeReference );
     }
 
+    @Nullable
+    @Override
+    public String getStringValue( @Nonnull Reference attributeReference )
+    {
+        return delegate.getStringValue( attributeReference );
+    }
+
     @Override
     @Nullable
     public String getId()

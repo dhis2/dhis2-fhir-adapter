@@ -181,11 +181,11 @@ dhis2.fhir-adapter:
       redis:
         time-to-live: 500s
         key-prefix: fhir-adapter:fhir
-  # Settings for FHIR subscriptions on remote FHIR servers and the related
+  # Settings for FHIR subscriptions on server FHIR servers and the related
   # data processing.
-  remote:
+  fhir-server:
     # Settings of the processor that retrieves the FHIR resources by last update
-    # timestamp from the FHIR remote FHIR server.
+    # timestamp from the FHIR server FHIR server.
     processor:
       # The maximum number of FHIR resources that should be returned by the FHIR
       # server at once. The last updated timestamp that is used by the FHIR server
@@ -206,7 +206,7 @@ dhis2.fhir-adapter:
     # Also processing will be grouped. It must absolutely avoided that the data
     # retrieval of the same FHIR resource type of one FHIR server is done more than
     # one time.
-    web-hook-request-queue:
+    rest-hook-request-queue:
       # The name of the queue.
       queue-name: jms.queue.remoteWebHookRequestQueue
       # Settings of the listener that processes the messages in the queue.
@@ -266,7 +266,7 @@ dhis2.fhir-adapter:
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
   # Settings for the retrieval of the synchronization data from DHIS2. The retrieved data
-  # can be stored on connected remote FHIR services.
+  # can be stored on connected server FHIR services.
   sync:
     # Retrieves new and updated DHIS2 resources periodically.
     # IMPORTANT NOTE: This feature is still under development and beta.
@@ -296,6 +296,11 @@ dhis2.fhir-adapter:
       # or updated DHIS2 resources. Increasing this value may also require more database
       # connections (double amount of the parallel count).
       parallel-count: 5
+      # DHIS 2 resource types that will be synchronized.
+      resource-types:
+      - ORGANIZATION_UNIT
+      - TRACKED_ENTITY
+      - PROGRAM_STAGE_EVENT
     # The queue that is used to store distributed requests to synchronize the data from
     # DHIS2 with connected FHIR servers. There should be maximum one item in the queue.
     sync-request-queue:
@@ -334,7 +339,7 @@ dhis2.fhir-adapter:
         # is regarded as expired.
         expiry-delay: 2419200000
     # Queue that contains references of DHIS2 resources that should be processed and
-    # should be synchronized with remote FHIR servers.
+    # should be synchronized with server FHIR servers.
     dhis-resource-queue:
       # The name of the queue.
       queue-name: jms.queue.dhisResourceQueue

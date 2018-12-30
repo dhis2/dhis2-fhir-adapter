@@ -28,13 +28,18 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import javax.annotation.Nonnull;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 @Component
@@ -60,6 +65,9 @@ public class DhisSyncProcessorConfig implements Serializable
 
     @Min( value = 1 )
     private int parallelCount = 1;
+
+    @NotNull
+    private Set<DhisResourceType> resourceTypes = new HashSet<>();
 
     public boolean isEnabled()
     {
@@ -119,5 +127,16 @@ public class DhisSyncProcessorConfig implements Serializable
     public void setParallelCount( int parallelCount )
     {
         this.parallelCount = parallelCount;
+    }
+
+    @Nonnull
+    public Set<DhisResourceType> getResourceTypes()
+    {
+        return resourceTypes;
+    }
+
+    public void setResourceTypes( @Nonnull Set<DhisResourceType> resourceTypes )
+    {
+        this.resourceTypes = resourceTypes;
     }
 }

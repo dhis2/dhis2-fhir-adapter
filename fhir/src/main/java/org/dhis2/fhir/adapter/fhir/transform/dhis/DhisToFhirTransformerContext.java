@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableRemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
@@ -67,11 +67,11 @@ public interface DhisToFhirTransformerContext extends TransformerContext
     FhirVersion getVersion();
 
     @Nonnull
-    UUID getRemoteSubscriptionId();
+    UUID getFhirServerId();
 
     @Nonnull
-    @ScriptMethod( description = "Returns the code of the remote subscription that is associated with the execution of the current transformation." )
-    String getRemoteSubscriptionCode();
+    @ScriptMethod( description = "Returns the code of the FHIR server that is associated with the execution of the current transformation." )
+    String getFhirServerCode();
 
     @ScriptMethod( description = "Returns if the adapter should add an adapter specific identifier when creating or updating resources." )
     boolean isUseAdapterIdentifier();
@@ -83,10 +83,10 @@ public interface DhisToFhirTransformerContext extends TransformerContext
     Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
 
     @Nullable
-    AvailableRemoteSubscriptionResource getAvailableResource( @Nonnull FhirResourceType resourceType );
+    AvailableFhirServerResource getAvailableResource( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
-    Optional<AvailableRemoteSubscriptionResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
+    Optional<AvailableFhirServerResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )

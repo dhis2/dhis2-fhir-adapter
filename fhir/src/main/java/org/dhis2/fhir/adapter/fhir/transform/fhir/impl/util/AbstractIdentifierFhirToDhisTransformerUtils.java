@@ -89,7 +89,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     @Nullable
     @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the business identifier from the specified referenced FHIR resource with the specified FHIR resource type. If the resource type does not match null is returned. " +
-        "The system URI of the corresponding remote subscription system of the current transformation context is used (e.g. the system URI of a Patient of the remote subscription from which the resource has been retrieved).",
+        "The system URI of the corresponding FHIR server system of the current transformation context is used (e.g. the system URI of a Patient of the FHIR server from which the resource has been retrieved).",
         args = {
             @ScriptMethodArg( value = "reference", description = "The FHIR reference of a domain resource from which the identifier should be extracted." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." )
@@ -134,7 +134,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
     @Nullable
     @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the business identifier  from the specified domain resource with the specified FHIR resource type. If the resource type does not match null is returned. " +
-        "The system URI of the corresponding remote subscription system of the current transformation context is used (e.g. the system URI of a Patient of the remote subscription from which the resource has been retrieved).",
+        "The system URI of the corresponding FHIR server system of the current transformation context is used (e.g. the system URI of a Patient of the FHIR server from which the resource has been retrieved).",
         args = {
             @ScriptMethodArg( value = "resource", description = "The FHIR domain resource from which the identifier should be extracted." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case with underscores, e.g. RELATED_PERSON) of the specified domain resource." )

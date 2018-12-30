@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteHierarchicallyFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractOrganizationFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -61,11 +61,11 @@ public class Dstu3OrganizationFhirToDhisTransformerUtils extends AbstractOrganiz
 {
     public Dstu3OrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
-        @Nonnull RemoteHierarchicallyFhirResourceRepository remoteHierarchicallyFhirResourceRepository )
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull HierarchicallyFhirResourceRepository hierarchicallyFhirResourceRepository )
     {
-        super( scriptExecutionContext, organizationUnitService, subscriptionResourceRepository, remoteFhirResourceRepository, remoteHierarchicallyFhirResourceRepository );
+        super( scriptExecutionContext, organizationUnitService, fhirServerResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
     }
 
     @Nonnull

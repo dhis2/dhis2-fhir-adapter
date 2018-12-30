@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
@@ -54,7 +54,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private final ScriptedDhisResource input;
 
-    private final RemoteSubscription remoteSubscription;
+    private final FhirServer fhirServer;
 
     private final List<RuleInfo<? extends AbstractRule>> rules;
 
@@ -62,12 +62,12 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private int ruleIndex;
 
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull RemoteSubscription remoteSubscription, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
+    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull FhirServer fhirServer, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
         @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
     {
         this.context = context;
         this.input = input;
-        this.remoteSubscription = remoteSubscription;
+        this.fhirServer = fhirServer;
         this.rules = rules;
         this.transformerUtils = transformerUtils;
     }
@@ -88,9 +88,9 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     @Nonnull
     @Override
-    public RemoteSubscription getRemoteSubscription()
+    public FhirServer getFhirServer()
     {
-        return remoteSubscription;
+        return fhirServer;
     }
 
     @Nonnull

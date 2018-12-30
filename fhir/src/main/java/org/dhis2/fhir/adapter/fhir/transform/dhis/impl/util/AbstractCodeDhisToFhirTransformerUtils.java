@@ -103,7 +103,7 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
 
     @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the mapped code (field code or if available field mappedCode of adapter resource code) for the specified FHIR resource type dependent code. " +
-        "As system URI the value associated with the FHIR resource type of the remote subscription system (adapter resource remoteSubscriptionSystems) of the current transformation context is used.",
+        "As system URI the value associated with the FHIR resource type of the FHIR server system (adapter resource fhirServerSystems) of the current transformation context is used.",
         args = {
             @ScriptMethodArg( value = "mappedCode", description = "The code in context of mapped code for the system URI for the specified FHIR resource type." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case letters, separated by underscores) from which the associated system URI should be taken." ),
@@ -127,7 +127,7 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
     }
 
     @ScriptExecutionRequired
-    @ScriptMethod( description = "Returns the specified code without the code prefix that has been defined for the specified resource type of the currently used remote subscription.",
+    @ScriptMethod( description = "Returns the specified code without the code prefix that has been defined for the specified resource type of the currently used FHIR server.",
         args = {
             @ScriptMethodArg( value = "code", description = "The code with our without a prefix that should be returned without a code prefix." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case letters, separated by underscores) from which the associated system URI should be taken." ),

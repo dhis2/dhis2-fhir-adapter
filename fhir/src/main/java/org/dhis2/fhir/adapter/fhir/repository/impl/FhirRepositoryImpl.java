@@ -39,22 +39,22 @@ import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
-import org.dhis2.fhir.adapter.fhir.data.model.QueuedRemoteFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.data.repository.QueuedRemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionSystem;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionSystemRepository;
-import org.dhis2.fhir.adapter.fhir.remote.ProcessedFhirItemInfoUtils;
-import org.dhis2.fhir.adapter.fhir.remote.StoredRemoteFhirResourceService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResource;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
+import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
+import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -110,15 +110,15 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final RequestCacheService requestCacheService;
 
-    private final RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository;
+    private final FhirServerSystemRepository fhirServerSystemRepository;
 
-    private final RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository;
+    private final FhirServerResourceRepository fhirServerResourceRepository;
 
-    private final QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository;
+    private final QueuedFhirResourceRepository queuedFhirResourceRepository;
 
-    private final StoredRemoteFhirResourceService storedItemService;
+    private final StoredFhirResourceService storedItemService;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
     private final FhirToDhisTransformerService fhirToDhisTransformerService;
 
@@ -130,33 +130,33 @@ public class FhirRepositoryImpl implements FhirRepository
 
     public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext,
         @Nonnull LockManager lockManager, @Nonnull RequestCacheService requestCacheService,
-        @Nonnull RemoteSubscriptionSystemRepository remoteSubscriptionSystemRepository,
-        @Nonnull RemoteSubscriptionResourceRepository remoteSubscriptionResourceRepository,
-        @Nonnull QueuedRemoteFhirResourceRepository queuedRemoteFhirResourceRepository,
-        @Nonnull StoredRemoteFhirResourceService storedItemService,
-        @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
+        @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull QueuedFhirResourceRepository queuedFhirResourceRepository,
+        @Nonnull StoredFhirResourceService storedItemService,
+        @Nonnull FhirResourceRepository fhirResourceRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
         @Nonnull DhisResourceRepository dhisResourceRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.authorizationContext = authorizationContext;
         this.lockManager = lockManager;
         this.requestCacheService = requestCacheService;
-        this.remoteSubscriptionSystemRepository = remoteSubscriptionSystemRepository;
-        this.remoteSubscriptionResourceRepository = remoteSubscriptionResourceRepository;
-        this.queuedRemoteFhirResourceRepository = queuedRemoteFhirResourceRepository;
+        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.queuedFhirResourceRepository = queuedFhirResourceRepository;
         this.storedItemService = storedItemService;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
+        this.fhirResourceRepository = fhirResourceRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.dhisResourceRepository = dhisResourceRepository;
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
     @Override
-    public void save( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    public void save( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource )
     {
-        authorizationContext.setAuthorization( createAuthorization( subscriptionResource.getRemoteSubscription() ) );
+        authorizationContext.setAuthorization( createAuthorization( fhirServerResource.getFhirServer() ) );
         try
         {
-            saveRetriedWithoutTrackedEntityInstance( subscriptionResource, resource );
+            saveRetriedWithoutTrackedEntityInstance( fhirServerResource, resource );
         }
         finally
         {
@@ -165,26 +165,26 @@ public class FhirRepositoryImpl implements FhirRepository
     }
 
     @Nonnull
-    protected Authorization createAuthorization( @Nonnull RemoteSubscription remoteSubscription )
+    protected Authorization createAuthorization( @Nonnull FhirServer fhirServer )
     {
-        if ( remoteSubscription.getDhisEndpoint().getAuthenticationMethod() != AuthenticationMethod.BASIC )
+        if ( fhirServer.getDhisEndpoint().getAuthenticationMethod() != AuthenticationMethod.BASIC )
         {
-            throw new FatalTransformerException( "Unhandled DHIS2 authentication method: " + remoteSubscription.getDhisEndpoint().getAuthenticationMethod() );
+            throw new FatalTransformerException( "Unhandled DHIS2 authentication method: " + fhirServer.getDhisEndpoint().getAuthenticationMethod() );
         }
         return new Authorization( "Basic " + Base64.getEncoder().encodeToString(
-            (remoteSubscription.getDhisEndpoint().getUsername() + ":" + remoteSubscription.getDhisEndpoint().getPassword()).getBytes( StandardCharsets.UTF_8 ) ) );
+            (fhirServer.getDhisEndpoint().getUsername() + ":" + fhirServer.getDhisEndpoint().getPassword()).getBytes( StandardCharsets.UTF_8 ) ) );
     }
 
     @HystrixCommand( ignoreExceptions = RetryQueueDeliveryException.class )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     @JmsListener( destination = "#{@fhirRepositoryConfig.fhirResourceQueue.queueName}",
         concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
-    public void receive( @Nonnull RemoteFhirResource remoteFhirResource )
+    public void receive( @Nonnull FhirResource fhirResource )
     {
         SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
-            receiveAuthenticated( remoteFhirResource );
+            receiveAuthenticated( fhirResource );
         }
         finally
         {
@@ -192,22 +192,22 @@ public class FhirRepositoryImpl implements FhirRepository
         }
     }
 
-    protected void receiveAuthenticated( @Nonnull RemoteFhirResource remoteFhirResource )
+    protected void receiveAuthenticated( @Nonnull FhirResource fhirResource )
     {
-        logger.info( "Processing FHIR resource {} for remote subscription resource {}.",
-            remoteFhirResource.getId(), remoteFhirResource.getRemoteSubscriptionResourceId() );
-        final RemoteSubscriptionResource remoteSubscriptionResource =
-            remoteSubscriptionResourceRepository.findOneByIdCached( remoteFhirResource.getRemoteSubscriptionResourceId() ).orElse( null );
-        if ( remoteSubscriptionResource == null )
+        logger.info( "Processing FHIR resource {} for FHIR server resource {}.",
+            fhirResource.getId(), fhirResource.getFhirServerResourceId() );
+        final FhirServerResource fhirServerResource =
+            fhirServerResourceRepository.findOneByIdCached( fhirResource.getFhirServerResourceId() ).orElse( null );
+        if ( fhirServerResource == null )
         {
-            logger.warn( "Remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
-                remoteFhirResource.getRemoteSubscriptionResourceId(), remoteFhirResource.getId() );
+            logger.warn( "FHIR server resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
+                fhirResource.getFhirServerResourceId(), fhirResource.getId() );
             return;
         }
 
         try
         {
-            queuedRemoteFhirResourceRepository.dequeued( new QueuedRemoteFhirResourceId( remoteSubscriptionResource, remoteFhirResource.getId() ) );
+            queuedFhirResourceRepository.dequeued( new QueuedFhirResourceId( fhirServerResource, fhirResource.getId() ) );
         }
         catch ( IgnoredQueuedItemException e )
         {
@@ -215,27 +215,27 @@ public class FhirRepositoryImpl implements FhirRepository
             return;
         }
 
-        final RemoteSubscription remoteSubscription = remoteSubscriptionResource.getRemoteSubscription();
-        final Optional<IBaseResource> resource = remoteFhirResourceRepository.findRefreshed(
-            remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
-            remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId() );
+        final FhirServer fhirServer = fhirServerResource.getFhirServer();
+        final Optional<IBaseResource> resource = fhirResourceRepository.findRefreshed(
+            fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+            fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId() );
         if ( resource.isPresent() )
         {
             final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource.get() );
-            if ( storedItemService.contains( remoteSubscription, processedItemInfo.toIdString( Instant.now() ) ) )
+            if ( storedItemService.contains( fhirServer, processedItemInfo.toIdString( Instant.now() ) ) )
             {
-                logger.info( "FHIR resource {} of remote subscription resource {} has already been stored.",
-                    resource.get().getIdElement().toUnqualified(), remoteSubscriptionResource.getId() );
+                logger.info( "FHIR resource {} of FHIR server resource {} has already been stored.",
+                    resource.get().getIdElement().toUnqualified(), fhirServerResource.getId() );
             }
             else
             {
-                try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", remoteSubscriptionResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
+                try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", fhirServerResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
                 {
-                    logger.info( "Processing FHIR resource {} of remote subscription resource {}.",
-                        resource.get().getIdElement().toUnqualified(), remoteSubscriptionResource.getId() );
+                    logger.info( "Processing FHIR resource {} of FHIR server resource {}.",
+                        resource.get().getIdElement().toUnqualified(), fhirServerResource.getId() );
                     try
                     {
-                        save( remoteSubscriptionResource, resource.get() );
+                        save( fhirServerResource, resource.get() );
                     }
                     catch ( DhisConflictException e )
                     {
@@ -246,24 +246,24 @@ public class FhirRepositoryImpl implements FhirRepository
                         logger.warn( "Processing of data of FHIR resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
                         throw new RetryQueueDeliveryException( e );
                     }
-                    logger.info( "Processed FHIR resource {} for remote subscription resource {}.",
-                        resource.get().getIdElement().toUnqualifiedVersionless(), remoteSubscriptionResource.getId() );
+                    logger.info( "Processed FHIR resource {} for FHIR server resource {}.",
+                        resource.get().getIdElement().toUnqualifiedVersionless(), fhirServerResource.getId() );
                 }
-                storedItemService.stored( remoteSubscription, processedItemInfo.toIdString( Instant.now() ) );
+                storedItemService.stored( fhirServer, processedItemInfo.toIdString( Instant.now() ) );
             }
         }
         else
         {
-            logger.info( "FHIR resource {}/{} for remote subscription resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                remoteSubscriptionResource.getFhirResourceType().getResourceTypeName(), remoteFhirResource.getId(), remoteSubscriptionResource.getId() );
+            logger.info( "FHIR resource {}/{} for FHIR server resource {} is no longer available. Skipping processing of updated FHIR resource.",
+                fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirServerResource.getId() );
         }
     }
 
-    protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource )
     {
         try
         {
-            if ( !saveRetried( subscriptionResource, resource, false ) )
+            if ( !saveRetried( fhirServerResource, resource, false ) )
             {
                 return false;
             }
@@ -272,7 +272,7 @@ public class FhirRepositoryImpl implements FhirRepository
         {
             logger.info( "Tracked entity instance {} could not be found for {}. Trying to create tracked entity instance.",
                 e.getResource().getIdElement().toUnqualifiedVersionless(), resource.getIdElement().toUnqualifiedVersionless() );
-            if ( !createTrackedEntityInstance( subscriptionResource, e.getResource() ) )
+            if ( !createTrackedEntityInstance( fhirServerResource, e.getResource() ) )
             {
                 logger.info( "Tracked entity instance {} could not be created for {}. Ignoring FHIR resource.",
                     e.getResource().getIdElement().toUnqualifiedVersionless(), resource.getIdElement().toUnqualifiedVersionless() );
@@ -281,7 +281,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
             try
             {
-                if ( !saveRetried( subscriptionResource, resource, false ) )
+                if ( !saveRetried( fhirServerResource, resource, false ) )
                 {
                     return false;
                 }
@@ -300,7 +300,7 @@ public class FhirRepositoryImpl implements FhirRepository
                 containedResource.getClass().getSimpleName(), containedResource.getIdElement().toUnqualifiedVersionless() );
             try
             {
-                saveContainedResource( subscriptionResource, containedResource );
+                saveContainedResource( fhirServerResource, containedResource );
             }
             catch ( TrackedEntityInstanceNotFoundException e )
             {
@@ -312,7 +312,7 @@ public class FhirRepositoryImpl implements FhirRepository
         return true;
     }
 
-    protected boolean saveContainedResource( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    protected boolean saveContainedResource( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource )
     {
         final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
         if ( fhirResourceType == null )
@@ -321,19 +321,19 @@ public class FhirRepositoryImpl implements FhirRepository
             return false;
         }
 
-        final RemoteSubscriptionResource containedRemoteSubscriptionResource =
-            remoteSubscriptionResourceRepository.findFirstCached( subscriptionResource.getRemoteSubscription(), fhirResourceType ).orElse( null );
-        if ( containedRemoteSubscriptionResource == null )
+        final FhirServerResource containedFhirServerResource =
+            fhirServerResourceRepository.findFirstCached( fhirServerResource.getFhirServer(), fhirResourceType ).orElse( null );
+        if ( containedFhirServerResource == null )
         {
-            logger.info( "Remote subscription {} does not define a resource {}. Contained FHIR Resource cannot be processed.",
-                subscriptionResource.getRemoteSubscription().getId(), fhirResourceType );
+            logger.info( "FHIR server {} does not define a resource {}. Contained FHIR Resource cannot be processed.",
+                fhirServerResource.getFhirServer().getId(), fhirResourceType );
             return false;
         }
 
-        return saveRetried( containedRemoteSubscriptionResource, resource, true );
+        return saveRetried( containedFhirServerResource, resource, true );
     }
 
-    protected boolean createTrackedEntityInstance( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource )
+    protected boolean createTrackedEntityInstance( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource )
     {
         final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
         if ( fhirResourceType == null )
@@ -343,38 +343,38 @@ public class FhirRepositoryImpl implements FhirRepository
             return false;
         }
 
-        final RemoteSubscriptionResource trackedEntityRemoteSubscriptionResource =
-            remoteSubscriptionResourceRepository.findFirstCached( subscriptionResource.getRemoteSubscription(), fhirResourceType ).orElse( null );
-        if ( trackedEntityRemoteSubscriptionResource == null )
+        final FhirServerResource trackedEntityFhirServerResource =
+            fhirServerResourceRepository.findFirstCached( fhirServerResource.getFhirServer(), fhirResourceType ).orElse( null );
+        if ( trackedEntityFhirServerResource == null )
         {
-            logger.info( "Remote subscription {} does not define a resource {}. Tracked entity instance for FHIR Resource {} cannot be created.",
-                subscriptionResource.getRemoteSubscription().getId(), fhirResourceType, resource.getIdElement() );
+            logger.info( "FHIR server {} does not define a resource {}. Tracked entity instance for FHIR Resource {} cannot be created.",
+                fhirServerResource.getFhirServer().getId(), fhirResourceType, resource.getIdElement() );
             return false;
         }
 
-        final RemoteSubscription remoteSubscription = trackedEntityRemoteSubscriptionResource.getRemoteSubscription();
-        final Optional<IBaseResource> optionalRefreshedResource = remoteFhirResourceRepository.findRefreshed(
-            remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
+        final FhirServer fhirServer = trackedEntityFhirServerResource.getFhirServer();
+        final Optional<IBaseResource> optionalRefreshedResource = fhirResourceRepository.findRefreshed(
+            fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
             fhirResourceType.getResourceTypeName(), resource.getIdElement().getIdPart() );
         if ( !optionalRefreshedResource.isPresent() )
         {
-            logger.info( "Resource {} that should be used as tracked entity resource does no longer exist for remote subscription {}.",
-                resource.getIdElement(), trackedEntityRemoteSubscriptionResource.getRemoteSubscription().getId() );
+            logger.info( "Resource {} that should be used as tracked entity resource does no longer exist for FHIR server {}.",
+                resource.getIdElement(), trackedEntityFhirServerResource.getFhirServer().getId() );
             return false;
         }
 
-        saveRetried( trackedEntityRemoteSubscriptionResource, optionalRefreshedResource.get(), false );
+        saveRetried( trackedEntityFhirServerResource, optionalRefreshedResource.get(), false );
         return true;
     }
 
-    protected boolean saveRetried( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource, boolean contained )
+    protected boolean saveRetried( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource, boolean contained )
     {
         DhisConflictException lastException = null;
         for ( int i = 0; i < MAX_CONFLICT_RETRIES + 1; i++ )
         {
             try
             {
-                return saveInternally( subscriptionResource, resource, contained );
+                return saveInternally( fhirServerResource, resource, contained );
             }
             catch ( DhisConflictException e )
             {
@@ -385,27 +385,27 @@ public class FhirRepositoryImpl implements FhirRepository
         throw lastException;
     }
 
-    protected boolean saveInternally( @Nonnull RemoteSubscriptionResource subscriptionResource, @Nonnull IBaseResource resource, boolean contained )
+    protected boolean saveInternally( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource, boolean contained )
     {
-        final Collection<RemoteSubscriptionSystem> systems = remoteSubscriptionSystemRepository.findByRemoteSubscription( subscriptionResource.getRemoteSubscription() );
+        final Collection<FhirServerSystem> systems = fhirServerSystemRepository.findByFhirServer( fhirServerResource.getFhirServer() );
 
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
-        fhirRequest.setDhisUsername( subscriptionResource.getRemoteSubscription().getDhisEndpoint().getUsername() );
+        fhirRequest.setDhisUsername( fhirServerResource.getFhirServer().getDhisEndpoint().getUsername() );
         fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setLastUpdated( getLastUpdated( resource ) );
         fhirRequest.setResourceVersionId( (resource.getMeta() == null) ? null : resource.getMeta().getVersionId() );
-        fhirRequest.setRemoteSubscriptionResourceId( subscriptionResource.getId() );
-        fhirRequest.setVersion( subscriptionResource.getRemoteSubscription().getFhirVersion() );
+        fhirRequest.setFhirServerResourceId( fhirServerResource.getId() );
+        fhirRequest.setVersion( fhirServerResource.getFhirServer().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
-        fhirRequest.setRemoteSubscriptionCode( subscriptionResource.getRemoteSubscription().getCode() );
+        fhirRequest.setFhirServerCode( fhirServerResource.getFhirServer().getCode() );
         fhirRequest.setResourceSystemsByType( systems.stream()
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );
         boolean saved = false;
-        FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, subscriptionResource, resource, contained );
+        FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, fhirServerResource, resource, contained );
         do
         {
             FhirToDhisTransformOutcome<? extends DhisResource> outcome;
@@ -423,7 +423,7 @@ public class FhirRepositoryImpl implements FhirRepository
                 {
                     dhisResourceRepository.save( outcome.getResource() );
                     fhirDhisAssignmentRepository.saveDhisResourceId(
-                        outcome.getRule(), subscriptionResource.getRemoteSubscription(),
+                        outcome.getRule(), fhirServerResource.getFhirServer(),
                         resource.getIdElement(), outcome.getResource().getResourceId() );
                     saved = true;
                     transformerRequest = outcome.getNextTransformerRequest();

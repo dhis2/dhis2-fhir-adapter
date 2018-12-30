@@ -1,0 +1,6 @@
+{
+  "fhirServer": "$fhirServerId",
+  "fhirResourceType": "IMMUNIZATION",
+  "description": "Subscription for all immunizations.",
+  "fhirCriteriaParameters": null
+}

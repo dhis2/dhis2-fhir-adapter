@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
@@ -57,5 +57,5 @@ public interface DhisToFhirRequestResolver
     List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
 
     @Nonnull
-    Optional<RemoteSubscription> resolveRemoteSubscription( @Nonnull ScriptedDhisResource scriptedDhisResource );
+    Optional<FhirServer> resolveFhirServer( @Nonnull ScriptedDhisResource scriptedDhisResource );
 }

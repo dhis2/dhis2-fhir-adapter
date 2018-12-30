@@ -43,7 +43,7 @@ public class Setup implements Serializable
 
     @Valid
     @NotNull
-    private RemoteSubscriptionSetup remoteSubscriptionSetup = new RemoteSubscriptionSetup();
+    private FhirServerSetup fhirServerSetup = new FhirServerSetup();
 
     @Valid
     @NotNull
@@ -53,14 +53,14 @@ public class Setup implements Serializable
     @NotNull
     private TrackedEntitySetup trackedEntitySetup = new TrackedEntitySetup();
 
-    public RemoteSubscriptionSetup getRemoteSubscriptionSetup()
+    public FhirServerSetup getFhirServerSetup()
     {
-        return remoteSubscriptionSetup;
+        return fhirServerSetup;
     }
 
-    public void setRemoteSubscriptionSetup( RemoteSubscriptionSetup remoteSubscriptionSetup )
+    public void setFhirServerSetup( FhirServerSetup fhirServerSetup )
     {
-        this.remoteSubscriptionSetup = remoteSubscriptionSetup;
+        this.fhirServerSetup = fhirServerSetup;
     }
 
     public OrganizationCodeSetup getOrganizationCodeSetup()

@@ -427,45 +427,45 @@ include::{snippets}/read-tracked-entity-rule/response-fields.adoc[]
 [[api-resources-administration]]
 === Adapter Administration Resources
 
-[[api-resources-adm-remote-subscription]]
-==== Remote Subscription
-The remote subscription resource defines a single remote FHIR server and its
+[[api-resources-adm-fhir-server]]
+==== FHIR Server
+The FHIR Server resource defines a single remote FHIR server and its
 subscriptions for FHIR resources.
 
 .Create resource curl snippet
-include::{snippets}/create-remote-subscription/curl-request.adoc[]
+include::{snippets}/create-fhir-server/curl-request.adoc[]
 
-include::{snippets}/create-remote-subscription/request-fields.adoc[]
+include::{snippets}/create-fhir-server/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-remote-subscription/curl-request.adoc[]
+include::{snippets}/read-fhir-server/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-remote-subscription/response-body.adoc[]
+include::{snippets}/read-fhir-server/response-body.adoc[]
 
-include::{snippets}/read-remote-subscription/response-fields.adoc[]
+include::{snippets}/read-fhir-server/response-fields.adoc[]
 
-[[api-resources-adm-remote-subscription-resource]]
-==== Remote Subscription Resource
-The resource for remote subscription resources defines a single subscription
+[[api-resources-adm-fhir-server-resource]]
+==== FHIR Server Resource
+The resource for FHIR Server resources defines a single subscription
 for a single specific FHIR resource on a single FHIR server.
 
 .Create resource curl snippet
-include::{snippets}/create-remote-subscription-resource/curl-request.adoc[]
+include::{snippets}/create-fhir-server-resource/curl-request.adoc[]
 
-include::{snippets}/create-remote-subscription-resource/request-fields.adoc[]
+include::{snippets}/create-fhir-server-resource/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-remote-subscription-resource/curl-request.adoc[]
+include::{snippets}/read-fhir-server-resource/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-remote-subscription-resource/response-body.adoc[]
+include::{snippets}/read-fhir-server-resource/response-body.adoc[]
 
-include::{snippets}/read-remote-subscription-resource/response-fields.adoc[]
+include::{snippets}/read-fhir-server-resource/response-fields.adoc[]
 
-[[api-resources-adm-remote-subscription-system]]
-==== Remote Subscription System
-The remote subscription system resource defines a specific coding system that is
+[[api-resources-adm-fhir-server-system]]
+==== FHIR Server System
+The FHIR Server system resource defines a specific coding system that is
 used for a FHIR resource. E.g. a FHIR system may use system specific codes for
 patients and organizations. The codes that are provided by several FHIR systems
 may overlap and are only unique in combination with a FHIR system specific
@@ -476,14 +476,14 @@ made unique by adding a specific code prefix (e.g. two letter abbreviation of th
 regions). This results in a unique national identifier.
 
 .Create resource curl snippet
-include::{snippets}/create-remote-subscription-system/curl-request.adoc[]
+include::{snippets}/create-fhir-server-system/curl-request.adoc[]
 
-include::{snippets}/create-remote-subscription-system/request-fields.adoc[]
+include::{snippets}/create-fhir-server-system/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-remote-subscription-system/curl-request.adoc[]
+include::{snippets}/read-fhir-server-system/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-remote-subscription-system/response-body.adoc[]
+include::{snippets}/read-fhir-server-system/response-body.adoc[]
 
-include::{snippets}/read-remote-subscription-system/response-fields.adoc[]
+include::{snippets}/read-fhir-server-system/response-fields.adoc[]

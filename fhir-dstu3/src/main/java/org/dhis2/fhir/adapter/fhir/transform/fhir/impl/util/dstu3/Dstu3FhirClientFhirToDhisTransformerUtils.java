@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.RemoteSubscriptionResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -55,9 +55,9 @@ import java.util.Set;
 public class Dstu3FhirClientFhirToDhisTransformerUtils extends AbstractFhirClientFhirToDhisTransformerUtils
 {
     public Dstu3FhirClientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
-        @Nonnull RemoteSubscriptionResourceRepository subscriptionResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
+        @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext, fhirContext, subscriptionResourceRepository, systemCodeRepository );
+        super( scriptExecutionContext, fhirContext, fhirServerResourceRepository, systemCodeRepository );
     }
 
     @Nonnull

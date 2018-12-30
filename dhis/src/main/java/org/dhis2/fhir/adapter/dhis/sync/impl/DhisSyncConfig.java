@@ -41,7 +41,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * Configuration for accepting and processing remote web hook requests.
+ * Configuration for accepting and processing server web hook requests.
  *
  * @author volsch
  */

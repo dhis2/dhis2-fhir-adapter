@@ -70,8 +70,8 @@ public class SetupController
         if ( !completedSetup )
         {
             final Setup setup = new Setup();
-            setup.getRemoteSubscriptionSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
-            setup.getRemoteSubscriptionSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
+            setup.getFhirServerSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
+            setup.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
 
             model.addAttribute( "setup", setup );
         }

@@ -71,14 +71,14 @@ public interface FhirRequest
     @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
     FhirVersion getVersion();
 
-    boolean isRemoteSubscription();
+    boolean isFhirServer();
 
     @Nullable
-    @ScriptMethod( description = "Returns the code of the remote subscription that caused the execution of the current transformation." )
-    String getRemoteSubscriptionCode();
+    @ScriptMethod( description = "Returns the code of the FHIR server that caused the execution of the current transformation." )
+    String getFhirServerCode();
 
     @Nullable
-    UUID getRemoteSubscriptionResourceId();
+    UUID getFhirServerResourceId();
 
     @Nullable
     String getDhisUsername();

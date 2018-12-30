@@ -1,6 +1,0 @@
-{
-  "remoteSubscription": "$remoteSubscriptionId",
-  "fhirResourceType": "IMMUNIZATION",
-  "description": "Subscription for all immunizations.",
-  "fhirCriteriaParameters": null
-}

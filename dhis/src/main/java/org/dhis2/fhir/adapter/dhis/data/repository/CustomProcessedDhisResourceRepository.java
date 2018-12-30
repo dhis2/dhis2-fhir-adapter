@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 /**
- * Custom repository for processed remote DHIS2 resources {@link ProcessedDhisResource}.
+ * Custom repository for processed server DHIS2 resources {@link ProcessedDhisResource}.
  *
  * @author volsch
  */

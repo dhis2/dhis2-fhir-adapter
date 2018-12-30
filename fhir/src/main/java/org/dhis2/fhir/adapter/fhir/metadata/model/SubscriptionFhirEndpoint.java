@@ -82,7 +82,7 @@ public class SubscriptionFhirEndpoint implements Serializable
     }
 
     @ElementCollection
-    @CollectionTable( name = "fhir_remote_subscription_header", joinColumns = @JoinColumn( name = "remote_subscription_id" ) )
+    @CollectionTable( name = "fhir_server_header", joinColumns = @JoinColumn( name = "fhir_server_id" ) )
     @OrderBy( "name,value" )
     @JsonSerialize( converter = PersistentBagConverter.class )
     public List<RequestHeader> getHeaders()

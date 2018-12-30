@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
@@ -96,20 +97,31 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
     public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
         final int toleranceMillis = processorConfig.getToleranceMillis();
+        final Set<DhisResourceType> resourceTypes = processorConfig.getResourceTypes();
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
             final Set<String> excludedDhisUsernames = excludedDhisUsernameRetriever.findAllDhisUsernames();
-            Instant result;
+            Instant result = Instant.now();
 
-            result = organizationUnitService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                excludedDhisUsernames, consumer );
-            Instant currentResult = trackedEntityService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                excludedDhisUsernames, consumer );
-            result = ObjectUtils.min( result, currentResult );
-            currentResult = eventService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                excludedDhisUsernames, consumer );
-            result = ObjectUtils.min( result, currentResult );
+            if ( resourceTypes.contains( DhisResourceType.ORGANIZATION_UNIT ) )
+            {
+                final Instant currentResult = organizationUnitService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                    excludedDhisUsernames, consumer );
+                result = ObjectUtils.min( result, currentResult );
+            }
+            if ( resourceTypes.contains( DhisResourceType.TRACKED_ENTITY ) )
+            {
+                final Instant currentResult = trackedEntityService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                    excludedDhisUsernames, consumer );
+                result = ObjectUtils.min( result, currentResult );
+            }
+            if ( resourceTypes.contains( DhisResourceType.PROGRAM_STAGE_EVENT ) )
+            {
+                final Instant currentResult = eventService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                    excludedDhisUsernames, consumer );
+                result = ObjectUtils.min( result, currentResult );
+            }
 
             return result;
         }

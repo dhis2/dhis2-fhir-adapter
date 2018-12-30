@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomFhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.util.SqlExceptionUtils;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -77,7 +77,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Nullable
     @Override
-    public String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId )
+    public String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId )
     {
         return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, String.class )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
@@ -86,7 +86,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Nullable
     @Override
-    public String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull DhisResourceId dhisResourceId )
+    public String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull DhisResourceId dhisResourceId )
     {
         return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, String.class )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
@@ -95,7 +95,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    public boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
+    public boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
     {
         boolean updated = false;
         final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
@@ -124,7 +124,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    public boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId )
+    public boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId )
     {
         boolean updated = false;
         final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
@@ -153,7 +153,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Override
     @Transactional
-    public boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId )
+    public boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId )
     {
         final FhirDhisAssignment assignment = entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, FhirDhisAssignment.class )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
@@ -166,12 +166,12 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
         return false;
     }
 
-    private boolean persist( @Nonnull AbstractRule rule, @Nonnull RemoteSubscription subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
+    private boolean persist( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
     {
         final FhirDhisAssignment assignment = new FhirDhisAssignment();
         assignment.setCreatedAt( Instant.now() );
         assignment.setRule( entityManager.getReference( AbstractRule.class, rule.getId() ) );
-        assignment.setRemoteSubscription( entityManager.getReference( RemoteSubscription.class, subscription.getId() ) );
+        assignment.setFhirServer( entityManager.getReference( FhirServer.class, subscription.getId() ) );
         assignment.setFhirResourceId( fhirResourceId.getIdPart() );
         assignment.setDhisResourceId( dhisResourceId.getId() );
         try

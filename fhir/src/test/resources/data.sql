@@ -102,17 +102,17 @@ VALUES ('c4e9ac6acc8f4c73aab60fa6775c0ca3', 0, CURRENT_TIMESTAMP(), CURRENT_TIME
 INSERT INTO fhir_system_code(id, version, created_at, last_updated_at, last_updated_by, code_id, system_id, system_code, system_code_value, display_name)
 VALUES ('c513935c9cd24357a67960f0c79bfacb', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '348d9391c77048538cdff3c5c6830485', 'c4e9ac6acc8f4c73aab60fa6775c0ca3', '982737', 'http://example.sl/organizations|982737', 'Organization 982737');
 
-INSERT INTO fhir_remote_subscription(id, version, created_at, last_updated_at, last_updated_by, name, code, description, fhir_version, web_hook_authorization_header,
-dhis_authentication_method, dhis_username, dhis_password, remote_base_url, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
+INSERT INTO fhir_server(id, version, created_at, last_updated_at, last_updated_by, name, code, description, fhir_version, web_hook_authorization_header,
+                        dhis_authentication_method, dhis_username, dhis_password, remote_base_url, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
 VALUES ('73cd99c50ca842ada53b1891fccce08f', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'HAPI FHIR JPA Server', 'DEFAULT_SUBSCRIPTION', 'HAPI FHIR JPA Server.', 'DSTU3',
 'Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs', 'BASIC', 'admin', 'district', 'http://localhost:8082/hapifhirjpaserverexample/baseDstu3', 60000, FALSE, FALSE,
 'http://localhost:8081', 'REST_HOOK_WITH_JSON_PAYLOAD', TRUE, FALSE);
-INSERT INTO fhir_remote_subscription_header (remote_subscription_id, name, value, secure)
+INSERT INTO fhir_server_header (fhir_server_id, name, value, secure)
 VALUES ('73cd99c50ca842ada53b1891fccce08f', 'Authorization', 'Bearer jshru38jsHdsdfy38sh38H3d', TRUE);
 
-INSERT INTO fhir_remote_subscription_resource (id, version, created_at, last_updated_at, last_updated_by, remote_subscription_id, fhir_resource_type, fhir_criteria_parameters, description, virtual)
+INSERT INTO fhir_server_resource (id, version, created_at, last_updated_at, last_updated_by, fhir_server_id, fhir_resource_type, fhir_criteria_parameters, description, virtual)
 VALUES ('667bfa41867c479686b6eb9f9ed4dc94', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '73cd99c50ca842ada53b1891fccce08f', 'PATIENT', '_format=json', 'Subscription for all Patients.', false);
-INSERT INTO fhir_remote_subscription_system (id, version, created_at, last_updated_at, last_updated_by, remote_subscription_id, fhir_resource_type, system_id)
+INSERT INTO fhir_server_system (id, version, created_at, last_updated_at, last_updated_by, fhir_server_id, fhir_resource_type, system_id)
 VALUES ('ea9804a39e824d0d9cd2e417b32b1c0c', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', '73cd99c50ca842ada53b1891fccce08f', 'ORGANIZATION', 'c4e9ac6acc8f4c73aab60fa6775c0ca3');
 
 INSERT INTO fhir_code_category (id, version, created_at, last_updated_at, last_updated_by, name, code, description)

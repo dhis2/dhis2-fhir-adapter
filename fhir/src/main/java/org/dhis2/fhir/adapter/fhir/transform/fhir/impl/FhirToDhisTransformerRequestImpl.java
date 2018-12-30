@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscriptionResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
@@ -50,7 +50,7 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 {
     private static final long serialVersionUID = 4181923310602004074L;
 
-    private final RemoteSubscriptionResource remoteSubscriptionResource;
+    private final FhirServerResource fhirServerResource;
 
     private final FhirToDhisTransformerContext context;
 
@@ -62,10 +62,10 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     private int ruleIndex;
 
-    public FhirToDhisTransformerRequestImpl( @Nonnull RemoteSubscriptionResource remoteSubscriptionResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils,
+    public FhirToDhisTransformerRequestImpl( @Nonnull FhirServerResource fhirServerResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils,
         @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
-        this.remoteSubscriptionResource = remoteSubscriptionResource;
+        this.fhirServerResource = fhirServerResource;
         this.context = context;
         this.input = input;
         this.transformerUtils = transformerUtils;
@@ -74,9 +74,9 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     @Nonnull
     @Override
-    public RemoteSubscriptionResource getRemoteSubscriptionResource()
+    public FhirServerResource getFhirServerResource()
     {
-        return remoteSubscriptionResource;
+        return fhirServerResource;
     }
 
     @Nonnull

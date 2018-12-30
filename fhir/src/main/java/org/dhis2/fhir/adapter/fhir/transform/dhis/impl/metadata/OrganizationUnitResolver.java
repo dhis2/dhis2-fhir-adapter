@@ -34,12 +34,12 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RemoteSubscription;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
-import org.dhis2.fhir.adapter.fhir.repository.RemoteFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -67,9 +67,9 @@ public class OrganizationUnitResolver
 {
     private final OrganizationUnitService organizationUnitService;
 
-    private final RemoteFhirResourceRepository remoteFhirResourceRepository;
+    private final FhirResourceRepository fhirResourceRepository;
 
-    private final RemoteSubscription remoteSubscription;
+    private final FhirServer fhirServer;
 
     private final IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider;
 
@@ -80,13 +80,13 @@ public class OrganizationUnitResolver
     private final Map<String, Object> scriptVariables;
 
     public OrganizationUnitResolver(
-        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull RemoteFhirResourceRepository remoteFhirResourceRepository,
-        @Nonnull RemoteSubscription remoteSubscription, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
         @Nonnull IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider )
     {
         this.organizationUnitService = organizationUnitService;
-        this.remoteFhirResourceRepository = remoteFhirResourceRepository;
-        this.remoteSubscription = remoteSubscription;
+        this.fhirResourceRepository = fhirResourceRepository;
+        this.fhirServer = fhirServer;
         this.context = context;
         this.ruleInfo = ruleInfo;
         this.scriptVariables = scriptVariables;
@@ -152,7 +152,7 @@ public class OrganizationUnitResolver
 
         final ResourceSystem resourceSystem = context.getOptionalResourceSystem( resourceType )
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + ruleInfo.getRule().getFhirResourceType() + "." ) );
-        return remoteFhirResourceRepository.findByIdentifier( remoteSubscription.getId(), remoteSubscription.getFhirVersion(), remoteSubscription.getFhirEndpoint(),
+        return fhirResourceRepository.findByIdentifier( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
             resourceType.getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
     }
 }
