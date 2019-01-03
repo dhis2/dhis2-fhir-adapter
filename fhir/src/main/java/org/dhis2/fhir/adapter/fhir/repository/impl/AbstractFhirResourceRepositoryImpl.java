@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -294,7 +294,7 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
         {
             url.append( '/' );
         }
-        url.append( "server-fhir-rest-hook/" );
+        url.append( "remote-fhir-rest-hook/" );
         url.append( fhirServerResource.getFhirServer().getId() );
         url.append( '/' );
         url.append( fhirServerResource.getId() );

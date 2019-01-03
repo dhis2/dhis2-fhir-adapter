@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (c) 2004-2018, University of Oslo
+  ~ Copyright (c) 2004-2019, University of Oslo
   ~ All rights reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
@@ -183,7 +183,9 @@
     <h2>Tracked Entity</h2>
     <p>This section contains the setup for the transformation from FHIR Patient to a tracked entity type that has been configured on your DHIS2 installation. At least the patient ID (contains national ID that has been extracted from FHIR identifier), first
       name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value.The reference to DHIS2 can be made by ID, unique name or unique code (if any). The default configuration below uses the tracked
-      entity attributes that have been configured in the metadata package (does not contain share information) that can be obtained from this <a th:href="@{/dhis/metadata/person-metadata.json}" target="_blank">link</a>.</p>
+      entity attributes that have been configured in the metadata package that can be obtained from this <a th:href="@{/dhis/metadata/person-attribute-metadata.json}" target="_blank">person attribute metadata link</a> and this
+      <a th:href="@{/dhis/metadata/person-metadata.json}" target="_blank">person metadata link</a>. First the attribute metadata must be imported. Afterwards the person metadata must be imported or you can create your own tracked entity type based on the
+      attributes.</p>
     <div class="value">
       <p><label for="trackedEntityTypeRefValue" style="width: 180px">Tracked entity type:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.type.enabled}" disabled="disabled" title="Enabled"/>

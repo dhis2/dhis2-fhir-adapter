@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,5 +50,11 @@ public class StaticResourcesAppTest extends AbstractAppTest
     public void dhisMetadataPerson() throws Exception
     {
         mockMvc.perform( get( "/dhis/metadata/person-metadata.json" ) ).andExpect( status().isOk() );
+    }
+
+    @Test
+    public void dhisMetadataPersonAttribute() throws Exception
+    {
+        mockMvc.perform( get( "/dhis/metadata/person-attribute-metadata.json" ) ).andExpect( status().isOk() );
     }
 }

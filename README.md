@@ -30,8 +30,10 @@ Depending on the country specific use of FHIR organization and location resource
 #### DHIS2
 DHIS 2.30 or newer must be installed.  
 
-The application includes a suggested tracked entity type person. The corresponding metadata for DHIS 2.30 is located at [Person Metadata](fhir/src/main/resources/static/dhis/metadata/person-metadata.json). It can also be accessed from the setup application
- that is described below. This allows also to customize the mapping to the tracked entity type for the FHIR resource patient. Currently, the adapter supports text based, number based and date/time based tracked entity attributes.
+The application includes a suggested tracked entity type person. The corresponding metadata for DHIS 2.31 is located at [Person Attribute Metadata](fhir/src/main/resources/static/dhis/metadata/person-attribute-metadata.json) and 
+[Person Metadata](fhir/src/main/resources/static/dhis/metadata/person-metadata.json). First the attribute metadata must be imported. If you want to create your own tracked entity type based on the imported attributes then the second file does not need to be
+ imported. Not all created tracked entity attributes are included in the created tracked entity type person. Additional attributes can be added as needed. The files can also be accessed from the setup application that is described below. This allows also to 
+ customize the mapping to the tracked entity type for the FHIR resource patient. Currently, the adapter supports text based, number based and date/time based tracked entity attributes.
 
 #### FHIR Service
 A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.5.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
