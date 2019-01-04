@@ -42,6 +42,9 @@ spring:
     password: @db.password@
     # Settings of the database connection pool.
     hikari:
+      # The minimum number of idle connections in the database connection
+      # pool.
+      minimum-idle: 2
       # The maximum size of the connection pool with database connections.
       # The size should be at least double the size of the defined maximum
       # of message queue listener concurrency that is defined below. The
