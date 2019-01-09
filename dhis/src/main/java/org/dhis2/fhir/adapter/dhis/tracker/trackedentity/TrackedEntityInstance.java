@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
 
     @JsonIgnore
     private boolean newResource;
+
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
+    private boolean deleted;
 
     @JsonProperty( "trackedEntityInstance" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -133,6 +136,16 @@ public class TrackedEntityInstance implements DhisResource, Serializable
 
         this.newResource = newResource;
         this.modified = true;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted( boolean deleted )
+    {
+        this.deleted = deleted;
     }
 
     public String getId()

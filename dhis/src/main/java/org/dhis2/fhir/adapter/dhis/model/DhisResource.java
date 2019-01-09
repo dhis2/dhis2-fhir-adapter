@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,11 @@ public interface DhisResource extends Identifiable<String>, Serializable
      * @return the unique ID of the resource (including the type of the resource).
      */
     DhisResourceId getResourceId();
+
+    /**
+     * @return if the resource has been marked as deleted.
+     */
+    boolean isDeleted();
 
     /**
      * @return the timestamp when the resource has been updated the last time.

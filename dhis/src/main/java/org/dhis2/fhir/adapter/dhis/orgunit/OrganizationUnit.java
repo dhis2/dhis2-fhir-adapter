@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.orgunit;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,13 @@ public class OrganizationUnit implements DhisResource, Serializable
     @JsonIgnore
     @Override
     public boolean isNewResource()
+    {
+        return false;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
     {
         return false;
     }

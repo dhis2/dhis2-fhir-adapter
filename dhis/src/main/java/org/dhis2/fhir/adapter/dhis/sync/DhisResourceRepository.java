@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,9 @@ public interface DhisResourceRepository
 {
     @Nonnull
     Optional<? extends DhisResource> findRefreshed( @Nonnull DhisResourceId dhisResourceId );
+
+    @Nonnull
+    Optional<? extends DhisResource> findRefreshedDeleted( @Nonnull DhisResourceId dhisResourceId );
 
     @Nonnull
     Optional<? extends DhisResource> find( @Nonnull DhisResourceId dhisResourceId );

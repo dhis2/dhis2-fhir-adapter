@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,12 @@ public class ImmutableScriptedTrackedEntityInstance implements ScriptedTrackedEn
     public boolean isNewResource()
     {
         return delegate.isNewResource();
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return delegate.isDeleted();
     }
 
     @Override

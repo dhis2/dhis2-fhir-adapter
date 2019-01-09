@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ public abstract class ProcessedFhirItemInfoUtils
         final String typeName = (resourceType == null) ? resource.getClass().getSimpleName() : resourceType.getResourceTypeName();
         return new ProcessedItemInfo( typeName + "/" + resource.getIdElement().getIdPart(),
             (resource.getMeta().getLastUpdated() == null) ? null : resource.getMeta().getLastUpdated().toInstant(),
-            StringUtils.defaultString( alternateVersionId, resource.getMeta().getVersionId() ) );
+            StringUtils.defaultString( alternateVersionId, resource.getMeta().getVersionId() ), false );
     }
 
     @Nonnull
@@ -65,7 +65,7 @@ public abstract class ProcessedFhirItemInfoUtils
     {
         final FhirResourceType resourceType = FhirResourceType.getByResource( resource );
         final String typeName = (resourceType == null) ? resource.getClass().getSimpleName() : resourceType.getResourceTypeName();
-        return new ProcessedItemInfo( typeName + "/" + id.getIdPart(), null, id.getVersionIdPart() );
+        return new ProcessedItemInfo( typeName + "/" + id.getIdPart(), null, id.getVersionIdPart(), false );
     }
 
     private ProcessedFhirItemInfoUtils()

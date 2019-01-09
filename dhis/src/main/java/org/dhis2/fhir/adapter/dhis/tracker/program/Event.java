@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,9 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
 
     @JsonIgnore
     private boolean newResource;
+
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
+    private boolean deleted;
 
     @JsonProperty( "event" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
@@ -132,6 +135,16 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public boolean isNewResource()
     {
         return newResource;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted( boolean deleted )
+    {
+        this.deleted = deleted;
     }
 
     public String getId()

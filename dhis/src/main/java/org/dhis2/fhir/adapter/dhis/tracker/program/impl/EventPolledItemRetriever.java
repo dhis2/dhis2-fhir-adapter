@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  */
 public class EventPolledItemRetriever extends AbstractPolledItemRetriever<EventPolledItems, EventPolledItem>
 {
-    protected static final String POLL_URI = "/events.json?ouMode=ACCESSIBLE&fields=event,lastUpdated,storedBy&program={programId}";
+    protected static final String POLL_URI = "/events.json?ouMode=ACCESSIBLE&fields=event,lastUpdated,deleted,storedBy&program={programId}&includeDeleted=true";
 
     public EventPolledItemRetriever( @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount, @Nonnull ZoneId zoneId )
     {

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     protected static final String TEI_FIELDS =
-        "trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
+        "deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated," +
             "attributes[attribute,value,lastUpdated,storedBy]";
 
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
@@ -295,7 +295,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             }
             throw e;
         }
-        return Optional.of( new ProcessedItemInfo( DhisResourceId.toString( DhisResourceType.TRACKED_ENTITY, id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant() ) );
+        return Optional.of( new ProcessedItemInfo( DhisResourceId.toString( DhisResourceType.TRACKED_ENTITY, id ), Objects.requireNonNull( lastUpdated.getLastUpdated() ).toInstant(), false ) );
     }
 
     @Nonnull

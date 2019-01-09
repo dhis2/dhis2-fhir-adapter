@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,9 @@ public interface EventService
 
     @Nonnull
     Optional<Event> findOneById( @Nonnull String eventId );
+
+    @Nonnull
+    Optional<Event> findOneDeletedById( @Nonnull String eventId );
 
     @Nonnull
     Event createOrMinimalUpdate( @Nonnull Event event );

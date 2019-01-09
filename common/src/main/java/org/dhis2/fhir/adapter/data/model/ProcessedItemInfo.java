@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,16 +52,19 @@ public class ProcessedItemInfo implements Serializable
 
     private final String version;
 
-    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated )
+    private final boolean deleted;
+
+    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated, boolean deleted )
     {
-        this( id, lastUpdated, null );
+        this( id, lastUpdated, null, deleted );
     }
 
-    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version )
+    public ProcessedItemInfo( @Nonnull String id, @Nullable Instant lastUpdated, @Nullable String version, boolean deleted )
     {
         this.id = id;
         this.lastUpdated = (lastUpdated == null) ? 0 : lastUpdated.toEpochMilli();
         this.version = version;
+        this.deleted = deleted;
     }
 
     @Nonnull
@@ -80,6 +83,11 @@ public class ProcessedItemInfo implements Serializable
     public String getVersion()
     {
         return version;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
     }
 
     @Override
@@ -102,13 +110,19 @@ public class ProcessedItemInfo implements Serializable
     @Nonnull
     public String toIdString( @Nonnull Instant defaultLastUpdated )
     {
+        final StringBuilder stringId = new StringBuilder();
         if ( StringUtils.isBlank( getVersion() ) )
         {
-            return getId() + "|?|" + ((lastUpdated == 0) ? defaultLastUpdated.toEpochMilli() : lastUpdated);
+            stringId.append( getId() ).append( "|?|" ).append( (lastUpdated == 0) ? defaultLastUpdated.toEpochMilli() : lastUpdated );
         }
         else
         {
-            return getId() + "|" + getVersion();
+            stringId.append( getId() ).append( '|' ).append( getVersion() );
         }
+        if ( deleted )
+        {
+            stringId.append( "|X" );
+        }
+        return stringId.toString();
     }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -196,7 +196,15 @@ public class DhisRepositoryImpl implements DhisRepository
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
-            resource = dhisResourceRepository.findRefreshed( Objects.requireNonNull( DhisResourceId.parse( queueItem.getId() ) ) );
+            final DhisResourceId resourceId = Objects.requireNonNull( DhisResourceId.parse( queueItem.getId() ) );
+            if ( queueItem.isDeleted() )
+            {
+                resource = dhisResourceRepository.findRefreshedDeleted( resourceId );
+            }
+            else
+            {
+                resource = dhisResourceRepository.findRefreshed( resourceId );
+            }
         }
         finally
         {
@@ -252,7 +260,7 @@ public class DhisRepositoryImpl implements DhisRepository
     private ProcessedItemInfo getProcessedItemInfo( @Nonnull DhisResource resource )
     {
         return new ProcessedItemInfo( resource.getResourceId().toString(),
-            Objects.requireNonNull( resource.getLastUpdated() ).toInstant() );
+            Objects.requireNonNull( resource.getLastUpdated() ).toInstant(), resource.isDeleted() );
     }
 
     protected boolean saveInternallyWithMissingDhisResources( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource, @Nonnull Set<DhisResourceId> missingDhisResourceIds, boolean initial )

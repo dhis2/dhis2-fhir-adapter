@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.poll;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,7 @@ public abstract class AbstractPolledItemRetriever<P extends PolledItems<I>, I ex
             final P polledItems = getPolledItems( fromLastUpdated, currentToLastUpdated, variables );
             final List<ProcessedItemInfo> resources =
                 polledItems.getItems().stream().filter( pi -> !excludedStoredBy.contains( pi.getStoredBy() ) )
-                    .map( pi -> new ProcessedItemInfo( DhisResourceId.toString( resourceType, pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant() ) )
+                    .map( pi -> new ProcessedItemInfo( DhisResourceId.toString( resourceType, pi.getId() ), pi.getLastUpdated().atZone( zoneId ).toInstant(), pi.isDeleted() ) )
                     .collect( Collectors.toList() );
             resources.forEach( r -> {
                 if ( allResources.add( r ) )

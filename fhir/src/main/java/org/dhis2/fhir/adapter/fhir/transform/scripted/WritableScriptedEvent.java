@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,6 +101,12 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public boolean isNewResource()
     {
         return event.isNewResource();
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return event.isDeleted();
     }
 
     @Nullable
@@ -251,7 +257,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public boolean isProvidedElsewhere( @Nonnull Reference dataElementReference )
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
-        final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+        final WritableDataValue dataValue = getDataValue( dataElement );
         return dataValue.isProvidedElsewhere();
     }
 
@@ -260,7 +266,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public Object getValue( @Nonnull Reference dataElementReference )
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
-        final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+        final WritableDataValue dataValue = getDataValue( dataElement );
         return dataValue.getValue();
     }
 
@@ -311,7 +317,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
     {
         final ProgramStageDataElement dataElement = getOptionDataElement( dataElementReference );
-        final String selectedCode = valueConverter.convert( event.getDataValue( dataElement.getElementId() ).getValue(), String.class );
+        final String selectedCode = valueConverter.convert( getDataValue( dataElement ).getValue(), String.class );
         if ( StringUtils.isBlank( selectedCode ) )
         {
             return null;
@@ -352,7 +358,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         final String newCode = codes.get( newIndex );
         if ( !decrementAllowed && (newIndex > 0) )
         {
-            final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+            final WritableDataValue dataValue = getDataValue( dataElement );
             if ( dataValue.getValue() != null )
             {
                 final String currentCode = valueConverter.convert( dataValue.getValue(), dataElement.getElement().getValueType(), String.class );
@@ -395,7 +401,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
                 dataElement.getElement().getOptionSet().getName() + "\" for data element \"" + dataElement.getElement().getName() + "\"." );
         }
 
-        final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+        final WritableDataValue dataValue = getDataValue( dataElement );
         if ( !override && (dataValue.getValue() != null) )
         {
             return false;
@@ -432,6 +438,16 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public boolean isAnyDataValueModified()
     {
         return event.isAnyDataValueModified();
+    }
+
+    @Nonnull
+    protected WritableDataValue getDataValue( @Nonnull ProgramStageDataElement dataElement )
+    {
+        if ( event.isDeleted() )
+        {
+            return new WritableDataValue( dataElement.getElementId(), true );
+        }
+        return event.getDataValue( dataElement.getElementId() );
     }
 
     @Override

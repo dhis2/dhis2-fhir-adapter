@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,6 @@ import java.time.ZonedDateTime;
 public class DhisSyncRequestQueueItem extends DataGroupQueueItem<UuidDataGroupId> implements Serializable
 {
     private static final long serialVersionUID = -7911324825049826913L;
-
-    private ZonedDateTime receivedAt;
 
     public DhisSyncRequestQueueItem()
     {

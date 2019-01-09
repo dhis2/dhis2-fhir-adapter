@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,23 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 return eventService.findOneById( dhisResourceId.getId() );
             case ENROLLMENT:
                 throw new UnsupportedOperationException( "Finding DHIS event resources is not supported currently." );
+            default:
+                throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
+        }
+    }
+
+    @Nonnull
+    @Override
+    public Optional<? extends DhisResource> findRefreshedDeleted( @Nonnull DhisResourceId dhisResourceId )
+    {
+        switch ( dhisResourceId.getType() )
+        {
+            case PROGRAM_STAGE_EVENT:
+                return eventService.findOneDeletedById( dhisResourceId.getId() );
+            case ORGANIZATION_UNIT:
+            case TRACKED_ENTITY:
+            case ENROLLMENT:
+                throw new UnsupportedOperationException( "Retrieving deleted " + dhisResourceId.getType() + " DHIS resource items is not supported." );
             default:
                 throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
         }

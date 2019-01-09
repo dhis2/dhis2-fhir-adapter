@@ -38,5 +38,5 @@ output.setCategory(null);
 output.addCategory().addCoding().setSystem(''http://hl7.org/fhir/observation-category'').setCode(''vital-signs'').setDisplay(''Vital Signs'');
 var weight = input.getIntegerValue(args[''dataElement'']);
 var weightUnit = vitalSignUtils.getWeightUnit(args[''weightUnit'']);
-output.addChild(''valueQuantity'').setValue(args[''round''] ? Math.round(weight) : weight).setUnit(weightUnit.getUcumCode()).setSystem(''http://unitsofmeasure.org'');
+output.addChild(''valueQuantity'').setValue(args[''round''] ? Math.round(weight) : weight).setCode(weightUnit.getUcumCode()).setSystem(''http://unitsofmeasure.org'');
 true' WHERE id = 'cd274a35-6f1c-495a-94ed-f935572fcac3';

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,9 +70,15 @@ import java.util.stream.Collectors;
 @Service
 public class EventServiceImpl implements EventService
 {
+    protected static final String FIELDS =
+        "deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated," +
+            "dataValues[dataElement,value,providedElsewhere,lastUpdated,storedBy]";
+
     protected static final String CREATE_URI = "/events.json?strategy=CREATE";
 
     protected static final String ID_URI = "/events/{id}.json";
+
+    protected static final String FIND_ID_URI = "/events/{id}.json?fields=" + FIELDS;
 
     protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
 
@@ -80,8 +86,10 @@ public class EventServiceImpl implements EventService
 
     protected static final String FIND_URI = "/events.json?" +
         "program={programId}&trackedEntityInstance={trackedEntityInstanceId}&ouMode=ACCESSIBLE&" +
-        "fields=event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated," +
-        "dataValues[dataElement,value,providedElsewhere,lastUpdated,storedBy]&skipPaging=true";
+        "fields=" + FIELDS + "&skipPaging=true";
+
+    protected static final String FIND_DELETED_ID_URI = "/events.json?" +
+        "event={eventId}&includeDeleted=true&fields=" + FIELDS + "&skipPaging=true";
 
     private final RestTemplate restTemplate;
 
@@ -123,7 +131,7 @@ public class EventServiceImpl implements EventService
         Event instance;
         try
         {
-            instance = Objects.requireNonNull( restTemplate.getForObject( ID_URI, Event.class, eventId ) );
+            instance = Objects.requireNonNull( restTemplate.getForObject( FIND_ID_URI, Event.class, eventId ) );
         }
         catch ( HttpClientErrorException e )
         {
@@ -134,6 +142,14 @@ public class EventServiceImpl implements EventService
             throw e;
         }
         return Optional.of( instance );
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Event> findOneDeletedById( @Nonnull String eventId )
+    {
+        final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_DELETED_ID_URI, DhisEvents.class, eventId );
+        return Objects.requireNonNull( result.getBody() ).getEvents().stream().findFirst();
     }
 
     @Nonnull

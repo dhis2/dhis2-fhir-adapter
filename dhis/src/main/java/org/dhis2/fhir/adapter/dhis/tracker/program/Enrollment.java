@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -141,6 +141,13 @@ public class Enrollment implements DhisResource, Serializable
     public void setId( String id )
     {
         this.id = id;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return false;
     }
 
     public String getOrgUnitId()

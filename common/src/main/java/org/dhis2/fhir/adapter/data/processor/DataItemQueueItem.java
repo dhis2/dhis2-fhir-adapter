@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.processor;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@ public class DataItemQueueItem<I extends DataGroupId> implements Serializable
 
     private Instant lastUpdated;
 
+    private boolean deleted;
+
     public DataItemQueueItem()
     {
         super();
@@ -66,6 +68,7 @@ public class DataItemQueueItem<I extends DataGroupId> implements Serializable
         this.id = processedItemInfo.getId();
         this.version = processedItemInfo.getVersion();
         this.lastUpdated = processedItemInfo.getLastUpdated();
+        this.deleted = processedItemInfo.isDeleted();
     }
 
     @JsonProperty
@@ -112,5 +115,16 @@ public class DataItemQueueItem<I extends DataGroupId> implements Serializable
     public void setLastUpdated( Instant lastUpdated )
     {
         this.lastUpdated = lastUpdated;
+    }
+
+    @JsonProperty
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted( boolean deleted )
+    {
+        this.deleted = deleted;
     }
 }

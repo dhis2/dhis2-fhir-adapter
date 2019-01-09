@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -282,6 +282,10 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
     protected boolean isDataAbsent( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input, @Nonnull RuleInfo<ProgramStageRule> ruleInfo )
     {
+        if ( input.isDeleted() )
+        {
+            return true;
+        }
         for ( RuleDhisDataReference reference : ruleInfo.getDhisDataReferences() )
         {
             if ( reference.isRequired() && StringUtils.isBlank( input.getStringValue( reference.getDataReference() ) ) )
