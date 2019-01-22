@@ -1,0 +1,17 @@
+{
+  "name": "Baby Postnatal",
+  "description": null,
+  "programStageReference": {
+    "value": "Baby Postnatal",
+    "type": "NAME"
+  },
+  "enabled": true,
+  "creationEnabled": true,
+  "creationStatus": null,
+  "eventDateIsIncident": true,
+  "beforePeriodDayType": null,
+  "beforePeriodDays": 0,
+  "afterPeriodDayType": null,
+  "afterPeriodDays": 0,
+  "program": "$apiBaseUri/trackerPrograms/45e61665-754d-4861-891e-a2064fc0ae7d"
+}

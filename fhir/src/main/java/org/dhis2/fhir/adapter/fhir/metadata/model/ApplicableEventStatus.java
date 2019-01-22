@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ public class ApplicableEventStatus implements Serializable
     private boolean skipped;
 
     @Basic
-    @Column( name = "overdue_applicable", nullable = false )
+    @Column( name = "overdue_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isOverdue()
     {
         return overdue;
@@ -63,7 +63,7 @@ public class ApplicableEventStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "active_applicable", nullable = false )
+    @Column( name = "active_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isActive()
     {
         return active;
@@ -75,7 +75,7 @@ public class ApplicableEventStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "schedule_applicable", nullable = false )
+    @Column( name = "schedule_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isSchedule()
     {
         return schedule;
@@ -87,7 +87,7 @@ public class ApplicableEventStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "visited_applicable", nullable = false )
+    @Column( name = "visited_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isVisited()
     {
         return visited;
@@ -99,7 +99,7 @@ public class ApplicableEventStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "completed_applicable", nullable = false )
+    @Column( name = "completed_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isCompleted()
     {
         return completed;
@@ -111,7 +111,7 @@ public class ApplicableEventStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "skipped_applicable", nullable = false )
+    @Column( name = "skipped_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isSkipped()
     {
         return skipped;

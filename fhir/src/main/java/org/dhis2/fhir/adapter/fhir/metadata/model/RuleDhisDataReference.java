@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,8 @@ import java.io.Serializable;
 public class RuleDhisDataReference extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2784006479143123933L;
+
+    public static final int MAX_SCRIPT_ARG_NAME_LENGTH = 230;
 
     private AbstractRule rule;
 

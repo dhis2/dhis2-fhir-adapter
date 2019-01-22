@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@ import java.io.Serializable;
 public class MappedTrackerProgramStage extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7561285892767275117L;
+
+    public static final int MAX_NAME_LENGTH = 230;
 
     private String name;
 
@@ -258,7 +260,7 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     }
 
     @Basic
-    @Column( name = "before_period_days", nullable = false )
+    @Column( name = "before_period_days", nullable = false, columnDefinition = "INTEGER DEFAULT 0 NOT NULL" )
     public int getBeforePeriodDays()
     {
         return beforePeriodDays;
@@ -282,7 +284,7 @@ public class MappedTrackerProgramStage extends VersionedBaseMetadata implements 
     }
 
     @Basic
-    @Column( name = "after_period_days", nullable = false )
+    @Column( name = "after_period_days", nullable = false, columnDefinition = "INTEGER DEFAULT 0 NOT NULL" )
     public int getAfterPeriodDays()
     {
         return afterPeriodDays;

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleDhisDataReference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
 import org.springframework.validation.Errors;
@@ -71,9 +72,35 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         }
         else
         {
-
             checkValidApplicableInScript( errors, "applicableImpScript", rule.getFhirResourceType(), rule.getApplicableImpScript() );
             checkValidTransformInScript( errors, "transformImpScript", rule.getFhirResourceType(), transformDataType, rule.getTransformImpScript() );
+        }
+
+        if ( rule.getDhisDataReferences() != null )
+        {
+            int index = 0;
+            for ( RuleDhisDataReference dataReference : rule.getDhisDataReferences() )
+            {
+                errors.pushNestedPath( "dataReferences[" + index + "]" );
+                if ( (dataReference.getRule() != null) && (dataReference.getRule() != rule) )
+                {
+                    errors.rejectValue( "rule", "AbstractRule.dataReference.rule.invalid", "Data element must reference rule that includes the data reference." );
+                }
+                if ( StringUtils.length( dataReference.getScriptArgName() ) > RuleDhisDataReference.MAX_SCRIPT_ARG_NAME_LENGTH )
+                {
+                    errors.rejectValue( "scriptArgName", "AbstractRule.dataReference.scriptArgName.length", new Object[]{ RuleDhisDataReference.MAX_SCRIPT_ARG_NAME_LENGTH }, "Script argument name length must not be longer than {} characters." );
+                }
+                if ( dataReference.getDataReference() == null )
+                {
+                    errors.rejectValue( "dataReference", "AbstractRule.dataReference.dataReference.null", "Data reference is mandatory." );
+                }
+                else if ( !dataReference.getDataReference().isValid() )
+                {
+                    errors.rejectValue( "rule", "AbstractRule.dataReference.dataReference.invalid", "Data reference is invalid." );
+                }
+                errors.popNestedPath();
+                index++;
+            }
         }
     }
 

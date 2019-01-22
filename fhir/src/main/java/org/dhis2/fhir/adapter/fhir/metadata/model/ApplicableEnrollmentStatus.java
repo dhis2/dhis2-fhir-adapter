@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ public class ApplicableEnrollmentStatus implements Serializable
     private boolean cancelled;
 
     @Basic
-    @Column( name = "enrollment_active_applicable", nullable = false )
+    @Column( name = "enrollment_active_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
     public boolean isActive()
     {
         return active;
@@ -60,7 +60,7 @@ public class ApplicableEnrollmentStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "enrollment_completed_applicable", nullable = false )
+    @Column( name = "enrollment_completed_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isCompleted()
     {
         return completed;
@@ -72,7 +72,7 @@ public class ApplicableEnrollmentStatus implements Serializable
     }
 
     @Basic
-    @Column( name = "enrollment_cancelled_applicable", nullable = false )
+    @Column( name = "enrollment_cancelled_applicable", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isCancelled()
     {
         return cancelled;

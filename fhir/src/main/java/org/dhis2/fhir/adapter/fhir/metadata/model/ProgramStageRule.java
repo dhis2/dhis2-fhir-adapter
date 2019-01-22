@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,7 +119,7 @@ public class ProgramStageRule extends AbstractRule
     }
 
     @Basic
-    @Column( name = "enrollment_creation_enabled", nullable = false )
+    @Column( name = "enrollment_creation_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isEnrollmentCreationEnabled()
     {
         return enrollmentCreationEnabled;
@@ -131,7 +131,7 @@ public class ProgramStageRule extends AbstractRule
     }
 
     @Basic
-    @Column( name = "event_creation_enabled", nullable = false )
+    @Column( name = "event_creation_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isEventCreationEnabled()
     {
         return eventCreationEnabled;
@@ -143,7 +143,7 @@ public class ProgramStageRule extends AbstractRule
     }
 
     @Basic
-    @Column( name = "update_event_date", nullable = false )
+    @Column( name = "update_event_date", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isUpdateEventDate()
     {
         return updateEventDate;
@@ -180,7 +180,7 @@ public class ProgramStageRule extends AbstractRule
     }
 
     @Basic
-    @Column( name = "before_period_days", nullable = false )
+    @Column( name = "before_period_days", nullable = false, columnDefinition = "INTEGER DEFAULT 0 NOT NULL" )
     public Integer getBeforePeriodDays()
     {
         return beforePeriodDays;
@@ -204,7 +204,7 @@ public class ProgramStageRule extends AbstractRule
     }
 
     @Basic
-    @Column( name = "after_period_days" )
+    @Column( name = "after_period_days", columnDefinition = "INTEGER DEFAULT 0 NOT NULL" )
     public Integer getAfterPeriodDays()
     {
         return afterPeriodDays;

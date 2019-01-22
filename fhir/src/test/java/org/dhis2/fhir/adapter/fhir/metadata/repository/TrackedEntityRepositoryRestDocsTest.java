@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryRestDocsTest;
 import org.dhis2.fhir.adapter.fhir.ConstrainedFields;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
-import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -67,7 +66,7 @@ public class TrackedEntityRepositoryRestDocsTest extends AbstractJpaRepositoryRe
     @Test
     public void createTrackedEntity() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( TrackedEntityRule.class, constraintDescriptionResolver );
+        final ConstrainedFields fields = new ConstrainedFields( MappedTrackedEntity.class, constraintDescriptionResolver );
         final String request = IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/metadata/repository/createTrackedEntity.json", StandardCharsets.UTF_8 );
         final String location = docMockMvc.perform( post( "/api/trackedEntities" ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( request ) )
@@ -110,7 +109,7 @@ public class TrackedEntityRepositoryRestDocsTest extends AbstractJpaRepositoryRe
     @Test
     public void readTrackedEntity() throws Exception
     {
-        final ConstrainedFields fields = new ConstrainedFields( TrackedEntityRule.class, constraintDescriptionResolver );
+        final ConstrainedFields fields = new ConstrainedFields( MappedTrackedEntity.class, constraintDescriptionResolver );
         final String trackedEntityId = loadTrackedEntity( "Person" ).getId().toString();
         docMockMvc.perform( get( "/api/trackedEntities/{trackedEntityId}", trackedEntityId ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )

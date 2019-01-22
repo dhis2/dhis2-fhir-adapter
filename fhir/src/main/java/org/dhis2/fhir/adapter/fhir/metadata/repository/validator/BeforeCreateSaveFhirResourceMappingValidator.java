@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,14 +66,14 @@ public class BeforeCreateSaveFhirResourceMappingValidator implements Validator
         }
         if ( fhirResourceMapping.getFhirResourceType() != null )
         {
-            checkValidTeiLookupScript( errors, "teiLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpTeiLookupScript() );
-            checkValidOrgLookupScript( errors, "FhirResourceMapping.", "enrollmentOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentOrgLookupScript() );
-            checkValidOrgLookupScript( errors, "FhirResourceMapping.", "eventOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventOrgLookupScript() );
-            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "enrollmentLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentGeoLookupScript() );
-            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "eventLocationLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventGeoLookupScript() );
-            checkValidDateLookupScript( errors, "enrollmentDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentDateLookupScript() );
-            checkValidDateLookupScript( errors, "eventDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventDateLookupScript() );
-            checkValidDateLookupScript( errors, "effectiveDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEffectiveDateLookupScript() );
+            checkValidTeiLookupScript( errors, "impTeiLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpTeiLookupScript() );
+            checkValidOrgLookupScript( errors, "FhirResourceMapping.", "impEnrollmentOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentOrgLookupScript() );
+            checkValidOrgLookupScript( errors, "FhirResourceMapping.", "impEventOrgLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventOrgLookupScript() );
+            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "impEnrollmentGeoLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentGeoLookupScript() );
+            checkValidLocationLookupScript( errors, "FhirResourceMapping.", "impEventGeoLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventGeoLookupScript() );
+            checkValidDateLookupScript( errors, "impEnrollmentDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentDateLookupScript() );
+            checkValidDateLookupScript( errors, "impEventDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventDateLookupScript() );
+            checkValidDateLookupScript( errors, "impEffectiveDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEffectiveDateLookupScript() );
         }
     }
 

@@ -1,7 +1,7 @@
 {
   "script": "$scriptId",
-  "name": "CP: Birth Weight",
-  "code": "CP_BIRTH_WEIGHT",
+  "name": "CP: Baby Birth Weight",
+  "code": "CP_BABY_BIRTH_WEIGHT",
   "overrideArguments": [
     {
       "argument": "$dataElementArgId",

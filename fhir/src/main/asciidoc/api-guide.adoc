@@ -424,6 +424,78 @@ include::{snippets}/read-tracked-entity-rule/response-body.adoc[]
 
 include::{snippets}/read-tracked-entity-rule/response-fields.adoc[]
 
+[[api-resources-data-fhir-resource-mapping]]
+==== FHIR Resource Mapping
+Configures how DHIS 2 organization units, DHIS 2 GEO locations, DHIS 2
+timestamps and other values can be retrieved from specific FHIR resources.
+For all FHIR resource types that must be transformed from and to DHIS 2
+events a mapping item must exist.
+
+.Create resource curl snippet
+include::{snippets}/create-fhir-resource-mapping/curl-request.adoc[]
+
+include::{snippets}/create-fhir-resource-mapping/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-fhir-resource-mapping/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-fhir-resource-mapping/response-body.adoc[]
+
+include::{snippets}/read-fhir-resource-mapping/response-fields.adoc[]
+
+==== Tracker Program
+Configures a DHIS 2 Tracker Program for transformations.
+
+.Create resource curl snippet
+include::{snippets}/create-program/curl-request.adoc[]
+
+include::{snippets}/create-program/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-program/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-program/response-body.adoc[]
+
+include::{snippets}/read-program/response-fields.adoc[]
+
+==== Tracker Program Stage
+Configures a DHIS 2 Tracker Program Stages for transformations.
+The Tracker Program Stages belong to a Tracker Program that must
+have been configured before.
+
+.Create resource curl snippet
+include::{snippets}/create-program-stage/curl-request.adoc[]
+
+include::{snippets}/create-program-stage/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-program-stage/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-program-stage/response-body.adoc[]
+
+include::{snippets}/read-program-stage/response-fields.adoc[]
+
+[[api-resources-data-program-stage-rule]]
+==== Program Stage Rule
+The program stage rule resource defines a rule that is able to transform
+a FHIR resource to a DHIS 2 event.
+
+.Create resource curl snippet
+include::{snippets}/create-program-stage-rule/curl-request.adoc[]
+
+include::{snippets}/create-program-stage-rule/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-program-stage-rule/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-program-stage-rule/response-body.adoc[]
+
+include::{snippets}/read-program-stage-rule/response-fields.adoc[]
+
 [[api-resources-administration]]
 === Adapter Administration Resources
 

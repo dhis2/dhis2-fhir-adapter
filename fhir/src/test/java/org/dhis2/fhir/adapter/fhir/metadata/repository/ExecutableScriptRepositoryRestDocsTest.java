@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,8 +106,8 @@ public class ExecutableScriptRepositoryRestDocsTest extends AbstractJpaRepositor
             .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
-            .andExpect( jsonPath( "name", is( "CP: Birth Weight" ) ) )
-            .andExpect( jsonPath( "code", is( "CP_BIRTH_WEIGHT" ) ) )
+            .andExpect( jsonPath( "name", is( "CP: Baby Birth Weight" ) ) )
+            .andExpect( jsonPath( "code", is( "CP_BABY_BIRTH_WEIGHT" ) ) )
             .andExpect( jsonPath( "overrideArguments.length()", is( 2 ) ) )
             .andExpect( jsonPath( "_links.self.href", is( location ) ) );
     }

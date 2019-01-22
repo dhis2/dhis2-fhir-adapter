@@ -1,0 +1,17 @@
+{
+  "name": "Mother Programme",
+  "description": null,
+  "programReference": {
+    "value": "Mother Programme",
+    "type": "NAME"
+  },
+  "enabled": true,
+  "creationEnabled": true,
+  "enrollmentDateIsIncident": true,
+  "expEnabled": false,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "trackedEntityFhirResourceType": "PATIENT",
+  "trackedEntityRule": "$apiBaseUri/trackedEntityRules/5f9ebdc9-852e-4c83-87ca-795946aabc35"
+}

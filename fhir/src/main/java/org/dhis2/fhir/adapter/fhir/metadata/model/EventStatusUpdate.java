@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ public class EventStatusUpdate implements Serializable
     private boolean completedToActive;
 
     @Basic
-    @Column( name = "overdue_to_active_update" )
+    @Column( name = "overdue_to_active_update", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isOverdueToActive()
     {
         return overdueToActive;
@@ -59,7 +59,7 @@ public class EventStatusUpdate implements Serializable
     }
 
     @Basic
-    @Column( name = "schedule_to_active_update" )
+    @Column( name = "schedule_to_active_update", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isScheduleToActive()
     {
         return scheduleToActive;
@@ -71,7 +71,7 @@ public class EventStatusUpdate implements Serializable
     }
 
     @Basic
-    @Column( name = "completed_to_active_update" )
+    @Column( name = "completed_to_active_update", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isCompletedToActive()
     {
         return completedToActive;

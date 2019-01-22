@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -51,6 +52,7 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "resourceMapping" )
+@RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>
 {

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,19 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,6 +52,7 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "mappedProgram" )
+@RepositoryRestResource( path = "trackerPrograms", collectionResourceRel = "trackerPrograms", itemResourceRel = "trackerProgram" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
 public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>
 {
@@ -56,4 +61,45 @@ public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrac
     @Cacheable( key = "{#root.methodName}" )
     @Nonnull
     Collection<Reference> findAllPolledProgramReferences();
+
+    @Override
+    @Nonnull
+    @CacheEvict( allEntries = true )
+    <S extends MappedTrackerProgram> List<S> saveAll( @Nonnull Iterable<S> entities );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends MappedTrackerProgram> S saveAndFlush( @Nonnull S entity );
+
+    @Override
+    @Nonnull
+    @CachePut( key = "#a0.id" )
+    @CacheEvict( allEntries = true )
+    <S extends MappedTrackerProgram> S save( @Nonnull S entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteInBatch( @Nonnull Iterable<MappedTrackerProgram> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAllInBatch();
+
+    @Override
+    @CacheEvict( key = "#a0" )
+    void deleteById( @Nonnull UUID id );
+
+    @Override
+    @CacheEvict( key = "#a0.id" )
+    void delete( @Nonnull MappedTrackerProgram entity );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll( @Nonnull Iterable<? extends MappedTrackerProgram> entities );
+
+    @Override
+    @CacheEvict( allEntries = true )
+    void deleteAll();
 }

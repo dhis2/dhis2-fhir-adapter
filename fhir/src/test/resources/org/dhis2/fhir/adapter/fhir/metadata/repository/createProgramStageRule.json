@@ -1,0 +1,54 @@
+{
+  "name": "Child Programme: Estimated Infant Weight",
+  "description": null,
+  "enabled": true,
+  "evaluationOrder": 10,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "OBSERVATION",
+  "impEnabled": true,
+  "expEnabled": false,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "stop": false,
+  "containedAllowed": false,
+  "dhisDataReferences": [
+    {
+      "dataReference": {
+        "value": "DE_2006099",
+        "type": "CODE"
+      },
+      "scriptArgName": "dataElement",
+      "description": "The data element that receives the value.",
+      "required": true
+    }
+  ],
+  "enrollmentCreationEnabled": true,
+  "eventCreationEnabled": true,
+  "updateEventDate": false,
+  "beforePeriodDayType": "ORIG_DUE_DATE",
+  "beforePeriodDays": 0,
+  "afterPeriodDayType": "ORIG_DUE_DATE",
+  "afterPeriodDays": 1,
+  "applicableEnrollmentStatus": {
+    "active": true,
+    "completed": true,
+    "cancelled": false
+  },
+  "applicableEventStatus": {
+    "overdue": true,
+    "active": true,
+    "schedule": true,
+    "visited": true,
+    "completed": true,
+    "skipped": false
+  },
+  "eventStatusUpdate": {
+    "overdueToActive": false,
+    "scheduleToActive": true,
+    "completedToActive": false
+  },
+  "transformImpScript": "$apiBaseUri/executableScripts/0104ad19-ba82-48dc-bbd1-38dd5f0d8a2c",
+  "programStage": "$apiBaseUri/executableScripts/526b4e01-7747-47ef-a25d-f32ccd739e87",
+  "applicableCodeSet": "$apiBaseUri/codeSets/d37dfecb-ce88-4fa4-9a78-44ffe874c140"
+}
