@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,18 +28,63 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * The enumeration containing all possible status of an event on DHIS2. The reverse
- * order defines the event that are most appropriate to be selected for adding data.
+ * The units of height and their conversion.
  *
  * @author volsch
  */
-public enum EventStatus
+public enum HeightUnit
 {
-    SKIPPED,
-    VISITED,
-    COMPLETED,
-    SCHEDULE,
-    OVERDUE,
-    ACTIVE
+    CENTI_METER( 1.0, "cm", "cm" ), METER( 100, "m", "m" ), INCH( 2.54, "[in_i]", "in" ), FEET( 30.48, "[ft_i]", "ft" );
+
+    private final double centimeterFactor;
+
+    private final String ucumCode;
+
+    private final String unit;
+
+    private static final Map<String, HeightUnit> heightUnitByUcumCode = Arrays.stream( HeightUnit.values() ).collect( Collectors.toMap( HeightUnit::getUcumCode, v -> v ) );
+
+    @Nullable
+    public static HeightUnit getByUcumCode( @Nullable String ucumCode )
+    {
+        return heightUnitByUcumCode.get( ucumCode );
+    }
+
+    HeightUnit( double centimeterFactor, String ucumCode, String unit )
+    {
+        this.centimeterFactor = centimeterFactor;
+        this.ucumCode = ucumCode;
+        this.unit = unit;
+    }
+
+    public double getCentimeterFactor()
+    {
+        return centimeterFactor;
+    }
+
+    public String getUcumCode()
+    {
+        return ucumCode;
+    }
+
+    public String getUnit()
+    {
+        return unit;
+    }
+
+    public double convertTo( double value, @Nonnull HeightUnit unit )
+    {
+        if ( unit == this )
+        {
+            return value;
+        }
+        return (value * centimeterFactor) / unit.centimeterFactor;
+    }
 }

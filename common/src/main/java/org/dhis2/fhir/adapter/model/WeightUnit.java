@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,11 +41,13 @@ import java.util.stream.Collectors;
  */
 public enum WeightUnit
 {
-    GRAM( 1.0, "g" ), KILO_GRAM( 1_000.0, "kg" ), OUNCE( 28.349523125, "[oz_av]" ), POUND( 453.59237, "[lb_av]" );
+    GRAM( 1.0, "g", "g" ), KILO_GRAM( 1_000.0, "kg", "kg" ), OUNCE( 28.349523125, "[oz_av]", "oz" ), POUND( 453.59237, "[lb_av]", "lb" );
 
     private final double gramFactor;
 
     private final String ucumCode;
+
+    private final String unit;
 
     private static final Map<String, WeightUnit> weightUnitByUcumCode = Arrays.stream( WeightUnit.values() ).collect( Collectors.toMap( WeightUnit::getUcumCode, v -> v ) );
 
@@ -55,10 +57,11 @@ public enum WeightUnit
         return weightUnitByUcumCode.get( ucumCode );
     }
 
-    WeightUnit( double gramFactor, String ucumCode )
+    WeightUnit( double gramFactor, String ucumCode, String unit )
     {
         this.gramFactor = gramFactor;
         this.ucumCode = ucumCode;
+        this.unit = unit;
     }
 
     public double getGramFactor()
@@ -69,6 +72,11 @@ public enum WeightUnit
     public String getUcumCode()
     {
         return ucumCode;
+    }
+
+    public String getUnit()
+    {
+        return unit;
     }
 
     public double convertTo( double value, @Nonnull WeightUnit unit )

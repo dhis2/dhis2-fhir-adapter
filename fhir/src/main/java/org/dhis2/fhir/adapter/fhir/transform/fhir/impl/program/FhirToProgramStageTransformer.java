@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,7 @@ import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
+import org.dhis2.fhir.adapter.util.LazyObject;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.stereotype.Component;
@@ -89,6 +90,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -312,20 +314,21 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return Optional.empty();
         }
 
-        final Event event = eventInfo.getEvents().stream().findFirst().orElseThrow( () -> new IllegalStateException( "Events have not been populated." ) );
+        final Enrollment enrollment = eventInfo.getEnrollment().orElseThrow(
+            () -> new TransformerMappingException( "Enrolled events do not have an enrollment." ) );
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
+
+        final LazyObject<FhirResourceMapping> resourceMapping = new LazyObject<>( () -> getResourceMapping( ruleInfo ) );
+        final LazyObject<Map<String, Object>> variables = new LazyObject<>( () -> createResourceVariables( context, scriptVariables, eventInfo, enrollment ) );
+        final LazyObject<ZonedDateTime> effectiveDate = new LazyObject<>( () -> getEffectiveDate( context, ruleInfo, resourceMapping.get(), scriptVariables ) );
+        final Event event = getMostAppropriateEvent( eventInfo.getEvents(), effectiveDate );
         if ( ruleInfo.getRule().getProgramStage().getBeforeScript() != null )
         {
-            final Enrollment enrollment = eventInfo.getEnrollment().orElseThrow(
-                () -> new TransformerMappingException( "Enrolled events do not have an enrollment." ) );
+            variables.get().put( ScriptVariable.DATE_TIME.getVariableName(), getEffectiveDate( context, ruleInfo, resourceMapping.get(), variables.get() ) );
+            final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping.get(), enrollment, variables.get() );
+            variables.get().put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
 
-            final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
-            final Map<String, Object> variables = createResourceVariables( context, scriptVariables, eventInfo, enrollment );
-
-            final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
-            final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping, enrollment, variables );
-            variables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
-
-            final EventDecisionType eventDecisionType = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getBeforeScript(), variables, EventDecisionType.class );
+            final EventDecisionType eventDecisionType = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getBeforeScript(), variables.get(), EventDecisionType.class );
             if ( (eventDecisionType == null) || (eventDecisionType == EventDecisionType.BREAK) )
             {
                 logger.info( "Processing of event for program stage \"{}\" has been cancelled by event script after execution. " +
@@ -344,6 +347,24 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             }
         }
         return Optional.of( event );
+    }
+
+    @Nonnull
+    private Event getMostAppropriateEvent( @Nonnull Collection<Event> events, @Nonnull LazyObject<ZonedDateTime> lazyEffectiveDate )
+    {
+        if ( events.size() == 1 )
+        {
+            return events.stream().findFirst().orElseThrow( () -> new IllegalStateException( "Events have not been populated." ) );
+        }
+
+        final LocalDate effectiveDate = lazyEffectiveDate.get().toLocalDate();
+        final Event event = events.stream().filter( e -> e.getStatus() != EventStatus.SKIPPED ).max( new ClosestEventComparator( effectiveDate ) ).orElse( null );
+        if ( event != null )
+        {
+            return event;
+        }
+
+        return events.stream().findFirst().orElseThrow( () -> new IllegalStateException( "Events have not been populated." ) );
     }
 
     @Nonnull

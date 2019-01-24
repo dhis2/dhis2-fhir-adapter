@@ -418,3 +418,18 @@ INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_n
 SELECT '9589bff180b94f9dbafb8e679a219bf1', 0, id, 'CODE:DE_2006099', 'dataElement', true
 FROM fhir_rule
 WHERE id = 'a6636c83f23648cdbb2b592147db9a34';
+
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 0, 'Vital Signs New Program Stage', 'VITAL_SIGN_NEW_PS', 'Decides about creation of a new program stage for vital signs.', 'EVALUATE', 'EVENT_DECISION_TYPE', NULL, 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'PROGRAM_STAGE_EVENTS');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'DATE_TIME');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('09db6430cfb24861befbaf7408e35c2e', 0, '20e1ac3ff49c4fa893e2b5e18c5f9665',
+        'programStageUtils.containsEventDay(programStageEvents, dateTime) ? ''CONTINUE'' : ''NEW_EVENT''', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('09db6430cfb24861befbaf7408e35c2e', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('5f1b7d9848ad4df4bdb223e7de8f0fc1', 0, '20e1ac3ff49c4fa893e2b5e18c5f9665',
+'Vital Signs New Program Stage', 'VITAL_SIGN_NEW_PS', 'Decides about creation of a new program stage for vital signs.');
+

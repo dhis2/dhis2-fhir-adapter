@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractVitalSignFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.model.HeightUnit;
 import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.Quantity;
@@ -107,6 +108,54 @@ public class Dstu3VitalSignFhirToDhisTransformerUtils extends AbstractVitalSignF
             return null;
         }
         final double convertedValue = actualWeightUnit.convertTo( actualValue.doubleValue(), resultingWeightUnit );
+        return round ? Math.round( convertedValue ) : convertedValue;
+    }
+
+    @Nullable
+    @Override
+    public Double getHeight( @Nullable ICompositeType value, @Nullable Object heightUnit, boolean round ) throws TransformerDataException
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+
+        if ( heightUnit == null )
+        {
+            throw new TransformerMappingException( "Height unit has not been specified." );
+        }
+        final HeightUnit resultingHeightUnit;
+        try
+        {
+            resultingHeightUnit = HeightUnit.valueOf( heightUnit.toString() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerMappingException( "Specified height unit is invalid: " + heightUnit );
+        }
+
+        if ( !(value instanceof Quantity) )
+        {
+            throw new TransformerDataException( "Height must be included as quantity, but element is " + value.getClass().getSimpleName() + "." );
+        }
+        final Quantity quantity = (Quantity) value;
+
+        if ( !UNIT_SYSTEM.equals( quantity.getSystem() ) )
+        {
+            throw new TransformerDataException( UNIT_SYSTEM + " is expected as unit system: " + quantity.getSystem() );
+        }
+        final HeightUnit actualHeightUnit = HeightUnit.getByUcumCode( quantity.getCode() );
+        if ( actualHeightUnit == null )
+        {
+            throw new TransformerDataException( "Unknown UCUM height unit code: " + quantity.getCode() );
+        }
+
+        final BigDecimal actualValue = quantity.getValue();
+        if ( actualValue == null )
+        {
+            return null;
+        }
+        final double convertedValue = actualHeightUnit.convertTo( actualValue.doubleValue(), resultingHeightUnit );
         return round ? Math.round( convertedValue ) : convertedValue;
     }
 }

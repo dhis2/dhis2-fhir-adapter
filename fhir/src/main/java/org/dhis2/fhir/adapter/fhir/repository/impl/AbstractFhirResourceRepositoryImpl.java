@@ -36,6 +36,7 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import ca.uhn.fhir.rest.server.exceptions.BaseServerResponseException;
 import ca.uhn.fhir.rest.server.exceptions.PreconditionFailedException;
+import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
@@ -120,7 +121,7 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
         {
             resource = client.read().resource( resourceType ).withId( resourceId ).cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
         }
-        catch ( ResourceNotFoundException e )
+        catch ( ResourceNotFoundException | ResourceGoneException e )
         {
             resource = null;
         }
@@ -191,7 +192,7 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
             throw new OptimisticFhirResourceLockException( "Could not delete FHIR resource " +
                 resource.getIdElement() + " because of an optimistic locking failure.", e );
         }
-        catch ( ResourceNotFoundException e )
+        catch ( ResourceNotFoundException | ResourceGoneException e )
         {
             logger.debug( "Resource {} to be deleted could not be found.", resource.getIdElement() );
             return false;

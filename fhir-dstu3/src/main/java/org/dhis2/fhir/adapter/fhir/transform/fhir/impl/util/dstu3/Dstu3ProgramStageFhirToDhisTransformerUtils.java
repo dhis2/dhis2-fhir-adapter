@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,34 +28,59 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractProgramStageFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.dhis2.fhir.adapter.util.CastUtils;
+import org.hl7.fhir.dstu3.model.BaseDateTimeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.Temporal;
+import java.util.Date;
+import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractProgramStageFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
+@Component
 @Scriptable
-public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public class Dstu3ProgramStageFhirToDhisTransformerUtils extends AbstractProgramStageFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    protected AbstractVitalSignFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
+    public Dstu3ProgramStageFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
 
     @Nonnull
     @Override
-    public final String getScriptAttrName()
+    public Set<FhirVersion> getFhirVersions()
     {
-        return SCRIPT_ATTR_NAME;
+        return FhirVersion.DSTU3_ONLY;
     }
 
+    @Override
     @Nullable
-    public abstract Double getWeight( @Nullable ICompositeType value, @Nullable Object weightUnit, boolean round ) throws TransformerDataException;
-
-    @Nullable
-    public abstract Double getHeight( @Nullable ICompositeType value, @Nullable Object heightUnit, boolean round ) throws TransformerDataException;
+    protected LocalDate castDate( @Nonnull Object date )
+    {
+        return CastUtils.cast( date,
+            BaseDateTimeType.class, d -> {
+                final Date result = d.getValue();
+                return LocalDate.from( result.toInstant().atZone( zoneId ) );
+            },
+            Date.class, d -> LocalDate.from( d.toInstant().atZone( zoneId ) ),
+            Temporal.class, LocalDate::from );
+    }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,18 +28,36 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
+import java.util.function.Supplier;
+
 /**
- * The enumeration containing all possible status of an event on DHIS2. The reverse
- * order defines the event that are most appropriate to be selected for adding data.
+ * Initializes a value lazily. An instance must not be used by several
+ * threads at the same time.
  *
+ * @param <T> the concrete type of the lazily initialized object.
  * @author volsch
  */
-public enum EventStatus
+public class LazyObject<T>
 {
-    SKIPPED,
-    VISITED,
-    COMPLETED,
-    SCHEDULE,
-    OVERDUE,
-    ACTIVE
+    private final Supplier<T> supplier;
+
+    private boolean initialized;
+
+    private T object;
+
+    public LazyObject( @Nonnull Supplier<T> supplier )
+    {
+        this.supplier = supplier;
+    }
+
+    public final T get()
+    {
+        if ( !initialized )
+        {
+            object = supplier.get();
+            initialized = true;
+        }
+        return object;
+    }
 }

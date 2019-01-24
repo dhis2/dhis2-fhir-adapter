@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -259,7 +259,7 @@ public class DemoClient
         bw2.getSubject().setReference( child.getId() );
         bw2.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( 1 ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY ) );
-        bw2.setValue( new Quantity().setValue( 20 ).setSystem( "http://unitsofmeasure.org" ).setCode( "kg" ) );
+        bw2.setValue( new Quantity().setValue( 3.38 ).setSystem( "http://unitsofmeasure.org" ).setCode( "kg" ) );
 
         Observation bw3 = new Observation();
         bw3.setId( IdType.newRandomUuid() );
@@ -270,6 +270,16 @@ public class DemoClient
         bw3.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( BABY_POSTNATAL_STAGE_DAYS ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY ) );
         bw3.setValue( new Quantity().setValue( 3100 ).setSystem( "http://unitsofmeasure.org" ).setCode( "g" ) );
+
+        Observation bw4 = new Observation();
+        bw4.setId( IdType.newRandomUuid() );
+        bw4.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw4.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8302-2" ) ) );
+        bw4.getSubject().setReference( child.getId() );
+        bw4.setEffective( new DateTimeType( Date.from( childBirthDate.plusDays( BABY_POSTNATAL_STAGE_DAYS ).atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw4.setValue( new Quantity().setValue( 50 ).setSystem( "http://unitsofmeasure.org" ).setCode( "cm" ) );
 
         //////////////
         // Apgar Score
@@ -376,6 +386,12 @@ public class DemoClient
         bundle.addEntry()
             .setResource( bw3 )
             .setFullUrl( bw3.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        bundle.addEntry()
+            .setResource( bw4 )
+            .setFullUrl( bw4.getId() )
             .getRequest()
             .setMethod( Bundle.HTTPVerb.POST )
             .setUrl( "Observation" );

@@ -60,6 +60,8 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
 
     private ExecutableScript impBooleanScript;
 
+    private ExecutableScript impDecisionScript;
+
     private ExecutableScript impOtherDateLookupScript;
 
     @Before
@@ -69,6 +71,8 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
             .setParameter( "name", "Child Programme" ).getSingleResult();
         impBooleanScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "TRUE" ).getSingleResult();
+        impDecisionScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
+            .setParameter( "code", "VITAL_SIGN_NEW_PS" ).getSingleResult();
         impOtherDateLookupScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "OTHER_DATE_LOOKUP" ).getSingleResult();
 
@@ -133,7 +137,7 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
                 JsonEntityValue.create( "program", "trackerPrograms", trackerProgram.getId().toString() ),
                 JsonEntityValue.create( "creationApplicableScript", "executableScripts", impBooleanScript.getId().toString() ),
                 JsonEntityValue.create( "creationScript", "executableScripts", impBooleanScript.getId().toString() ),
-                JsonEntityValue.create( "beforeScript", "executableScripts", impBooleanScript.getId().toString() ),
+                JsonEntityValue.create( "beforeScript", "executableScripts", impDecisionScript.getId().toString() ),
                 JsonEntityValue.create( "afterScript", "executableScripts", impBooleanScript.getId().toString() ) ) ) )
             .andExpect( status().isCreated() );
     }
@@ -146,7 +150,7 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
                 JsonEntityValue.create( "program", "trackerPrograms", trackerProgram.getId().toString() ),
                 JsonEntityValue.create( "creationApplicableScript", "executableScripts", impOtherDateLookupScript.getId().toString() ),
                 JsonEntityValue.create( "creationScript", "executableScripts", impBooleanScript.getId().toString() ),
-                JsonEntityValue.create( "beforeScript", "executableScripts", impBooleanScript.getId().toString() ),
+                JsonEntityValue.create( "beforeScript", "executableScripts", impDecisionScript.getId().toString() ),
                 JsonEntityValue.create( "afterScript", "executableScripts", impBooleanScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "creationApplicableScript" ) ) );
     }
@@ -159,7 +163,7 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
                 JsonEntityValue.create( "program", "trackerPrograms", trackerProgram.getId().toString() ),
                 JsonEntityValue.create( "creationApplicableScript", "executableScripts", impBooleanScript.getId().toString() ),
                 JsonEntityValue.create( "creationScript", "executableScripts", impOtherDateLookupScript.getId().toString() ),
-                JsonEntityValue.create( "beforeScript", "executableScripts", impBooleanScript.getId().toString() ),
+                JsonEntityValue.create( "beforeScript", "executableScripts", impDecisionScript.getId().toString() ),
                 JsonEntityValue.create( "afterScript", "executableScripts", impBooleanScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "creationScript" ) ) );
     }
@@ -185,7 +189,7 @@ public class BeforeCreateSaveTrackerProgramStageValidatorTest extends AbstractJp
                 JsonEntityValue.create( "program", "trackerPrograms", trackerProgram.getId().toString() ),
                 JsonEntityValue.create( "creationApplicableScript", "executableScripts", impBooleanScript.getId().toString() ),
                 JsonEntityValue.create( "creationScript", "executableScripts", impBooleanScript.getId().toString() ),
-                JsonEntityValue.create( "beforeScript", "executableScripts", impBooleanScript.getId().toString() ),
+                JsonEntityValue.create( "beforeScript", "executableScripts", impDecisionScript.getId().toString() ),
                 JsonEntityValue.create( "afterScript", "executableScripts", impOtherDateLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "afterScript" ) ) );
     }

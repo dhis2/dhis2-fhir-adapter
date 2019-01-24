@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.script.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.script.impl;
  */
 
 import org.dhis2.fhir.adapter.converter.ConversionException;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
@@ -130,7 +131,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
         try
         {
             result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource(
-                executableScriptInfo.getScriptSource().getSourceText() ), scriptVariables ) );
+                    executableScriptInfo.getScriptSource().getSourceText() ), scriptVariables ),
+                executableScriptInfo.getScript().getReturnType() );
         }
         catch ( ScriptExecutionException e )
         {
@@ -144,17 +146,29 @@ public class ScriptExecutorImpl implements ScriptExecutor
         if ( (result != null) && !executableScriptInfo.getScript().getReturnType().getJavaType().isInstance( result ) )
         {
             throw new ScriptExecutionException( "Script \"" + executableScriptInfo.getScript().getName() + "\" (" + executableScriptInfo.getExecutableScript().getId() +
-                ") is expected to return " + executableScriptInfo.getScript().getReturnType() + ", but returned " + result.getClass().getSimpleName() + "." );
+                ") is expected to return valid " + executableScriptInfo.getScript().getReturnType() + ", but returned " + result.getClass().getSimpleName() + "." );
         }
         return resultClass.cast( result );
     }
 
+    @SuppressWarnings( "unchecked" )
     @Nullable
-    protected Object convertSimpleReturnValue( @Nullable Object value )
+    protected Object convertSimpleReturnValue( @Nullable Object value, @Nonnull DataType dataType )
     {
         if ( value instanceof Date )
         {
             return ((Date) value).toInstant().atZone( zoneId );
+        }
+        else if ( (value != null) && dataType.getJavaType().isEnum() && String.class.equals( value.getClass() ) )
+        {
+            try
+            {
+                return Enum.valueOf( (Class<Enum>) dataType.getJavaType(), (String) value );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                return value;
+            }
         }
         return value;
     }

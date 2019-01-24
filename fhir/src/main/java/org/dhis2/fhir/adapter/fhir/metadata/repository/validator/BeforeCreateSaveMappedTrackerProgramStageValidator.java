@@ -88,7 +88,7 @@ public class BeforeCreateSaveMappedTrackerProgramStageValidator implements Valid
 
         checkValidApplicableScript( errors, "creationApplicableScript", trackerProgramStage.getCreationApplicableScript() );
         checkValidLifecycleScript( errors, "creationScript", trackerProgramStage.getCreationScript() );
-        checkValidLifecycleScript( errors, "beforeScript", trackerProgramStage.getBeforeScript() );
+        checkValidBeforeScript( errors, "beforeScript", trackerProgramStage.getBeforeScript() );
         checkValidLifecycleScript( errors, "afterScript", trackerProgramStage.getAfterScript() );
     }
 
@@ -121,6 +121,26 @@ public class BeforeCreateSaveMappedTrackerProgramStageValidator implements Valid
         if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
         {
             errors.rejectValue( field, "MappedTrackerProgramStage." + field + ".returnType", "Assigned return type for lifecycle script must be BOOLEAN." );
+        }
+        if ( (executableScript.getScript().getScriptType() == ScriptType.TRANSFORM_TO_DHIS) && (executableScript.getScript().getOutputType() != TransformDataType.DHIS_EVENT) )
+        {
+            errors.rejectValue( field, "MappedTrackerProgramStage." + field + ".outputType", "Assigned output type of lifecycle script must be DHIS_EVENT." );
+        }
+    }
+
+    protected static void checkValidBeforeScript( @NonNull Errors errors, @Nonnull String field, @Nullable ExecutableScript executableScript )
+    {
+        if ( executableScript == null )
+        {
+            return;
+        }
+        if ( (executableScript.getScript().getScriptType() != ScriptType.EVALUATE) && (executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_TO_DHIS) )
+        {
+            errors.rejectValue( field, "MappedTrackerProgramStage." + field + ".scriptType", "Assigned script type for applicable script must be EVALUATE or TRANSFORM_TO_DHIS." );
+        }
+        if ( executableScript.getScript().getReturnType() != DataType.EVENT_DECISION_TYPE )
+        {
+            errors.rejectValue( field, "MappedTrackerProgramStage." + field + ".returnType", "Assigned return type for lifecycle script must be EVENT_DECISION_TYPE." );
         }
         if ( (executableScript.getScript().getScriptType() == ScriptType.TRANSFORM_TO_DHIS) && (executableScript.getScript().getOutputType() != TransformDataType.DHIS_EVENT) )
         {

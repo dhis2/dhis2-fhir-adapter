@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.geo.StringToLocationConverter;
 import org.dhis2.fhir.adapter.model.DateUnit;
 import org.dhis2.fhir.adapter.model.Gender;
+import org.dhis2.fhir.adapter.model.HeightUnit;
 import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.core.convert.converter.Converter;
@@ -66,6 +67,7 @@ public enum DataType
     DATE_TIME( ZonedDateTime.class, new StringToZonedDateTimeConverter() ),
     DATE_UNIT( DateUnit.class, new StringToEnumConverter<>( DateUnit.class ) ),
     WEIGHT_UNIT( WeightUnit.class, new StringToEnumConverter<>( WeightUnit.class ) ),
+    HEIGHT_UNIT( HeightUnit.class, new StringToEnumConverter<>( HeightUnit.class ) ),
     GENDER( Gender.class, new StringToEnumConverter<>( Gender.class ) ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),

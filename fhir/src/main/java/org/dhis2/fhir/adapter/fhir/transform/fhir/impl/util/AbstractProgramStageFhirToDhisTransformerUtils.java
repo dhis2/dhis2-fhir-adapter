@@ -29,19 +29,31 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Collection;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for program stage handling.
+ *
+ * @author volsch
+ */
 @Scriptable
-public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+@ScriptType( value = "ProgramStageUtils", transformType = ScriptTransformType.IMP, var = AbstractProgramStageFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities for program stage handling." )
+public abstract class AbstractProgramStageFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
+    public static final String SCRIPT_ATTR_NAME = "programStageUtils";
 
-    protected AbstractVitalSignFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected AbstractProgramStageFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
@@ -53,9 +65,22 @@ public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends Abstra
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable
-    public abstract Double getWeight( @Nullable ICompositeType value, @Nullable Object weightUnit, boolean round ) throws TransformerDataException;
+    @ScriptMethod( description = "Returns if the specified events contain an event with the specified event date (day precision is used).",
+        args = {
+            @ScriptMethodArg( value = "events", description = "The events that should be checked." ),
+            @ScriptMethodArg( value = "date", description = "The date that should be checked." ),
+        },
+        returnDescription = "Returns if the specified events contain an event with the specified event date." )
+    public boolean containsEventDay( @Nonnull Collection<? extends ScriptedEvent> events, @Nonnull Object date )
+    {
+        final LocalDate d = castDate( date );
+        if ( d == null )
+        {
+            return false;
+        }
+        return events.stream().anyMatch( e -> (e.getEventDate() != null) && e.getEventDate().toLocalDate().equals( d ) );
+    }
 
     @Nullable
-    public abstract Double getHeight( @Nullable ICompositeType value, @Nullable Object heightUnit, boolean round ) throws TransformerDataException;
+    protected abstract LocalDate castDate( @Nonnull Object date );
 }

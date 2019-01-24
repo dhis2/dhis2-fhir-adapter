@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,18 +28,50 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+
+import javax.annotation.Nonnull;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.Comparator;
+
 /**
- * The enumeration containing all possible status of an event on DHIS2. The reverse
- * order defines the event that are most appropriate to be selected for adding data.
+ * Compares events for sorting them according to the event that is closest to the
+ * effective date.
  *
  * @author volsch
  */
-public enum EventStatus
+public class ClosestEventComparator implements Comparator<Event>
 {
-    SKIPPED,
-    VISITED,
-    COMPLETED,
-    SCHEDULE,
-    OVERDUE,
-    ACTIVE
+    private final LocalDate effectiveDate;
+
+    public ClosestEventComparator( @Nonnull LocalDate effectiveDate )
+    {
+        this.effectiveDate = effectiveDate;
+    }
+
+    @Override
+    public int compare( Event o1, Event o2 )
+    {
+        int value =
+            Math.abs( Period.between( o2.getEventDate().toLocalDate(), effectiveDate ).getDays() ) -
+                Math.abs( Period.between( o1.getEventDate().toLocalDate(), effectiveDate ).getDays() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+
+        value = o1.getStatus().compareTo( o2.getStatus() );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        value = ObjectUtils.compare( o1.getLastUpdated(), o2.getLastUpdated(), true );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return o1.getId().compareTo( o2.getId() );
+    }
 }

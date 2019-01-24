@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 
 import java.util.Comparator;
@@ -58,7 +59,7 @@ public class EventComparator implements Comparator<Event>
         {
             return value;
         }
-        value = o1.getLastUpdated().compareTo( o2.getLastUpdated() );
+        value = ObjectUtils.compare( o1.getLastUpdated(), o2.getLastUpdated(), true );
         if ( value != 0 )
         {
             return value;
