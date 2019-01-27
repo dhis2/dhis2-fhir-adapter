@@ -249,7 +249,7 @@ public class EventServiceImpl implements EventService
             return update( event );
         }
         event.getDataValues().stream().filter( DataValue::isModified ).forEach( dv ->
-            update( new MinimalEvent( event.getId(), dv ) ) );
+            update( new MinimalEvent( event, dv ) ) );
         return event;
     }
 }

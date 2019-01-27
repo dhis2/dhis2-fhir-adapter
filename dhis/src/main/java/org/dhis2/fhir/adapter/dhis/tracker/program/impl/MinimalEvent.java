@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,11 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -45,19 +49,97 @@ public class MinimalEvent implements Serializable
 {
     private static final long serialVersionUID = 1560261589980305347L;
 
-    private final String id;
+    @JsonProperty( "event" )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private String id;
+
+    @JsonProperty( "orgUnit" )
+    private String orgUnitId;
+
+    @JsonProperty( "program" )
+    private String programId;
+
+    @JsonProperty( "trackedEntityInstance" )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private String trackedEntityInstanceId;
+
+    @JsonProperty( "programStage" )
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private String programStageId;
+
+    private EventStatus status;
 
     private final List<DataValue> dataValues;
 
-    public MinimalEvent( @Nonnull String id, @Nonnull DataValue dataValue )
+    public MinimalEvent( @Nonnull Event event, @Nonnull DataValue dataValue )
     {
-        this.id = id;
+        this.id = event.getId();
+        this.orgUnitId = event.getOrgUnitId();
+        this.programId = event.getProgramId();
+        this.trackedEntityInstanceId = event.getTrackedEntityInstanceId();
+        this.programStageId = event.getProgramStageId();
+        this.status = event.getStatus();
         this.dataValues = Collections.singletonList( dataValue );
     }
 
     public String getId()
     {
         return id;
+    }
+
+    public void setId( String id )
+    {
+        this.id = id;
+    }
+
+    public String getOrgUnitId()
+    {
+        return orgUnitId;
+    }
+
+    public void setOrgUnitId( String orgUnitId )
+    {
+        this.orgUnitId = orgUnitId;
+    }
+
+    public String getProgramId()
+    {
+        return programId;
+    }
+
+    public void setProgramId( String programId )
+    {
+        this.programId = programId;
+    }
+
+    public String getTrackedEntityInstanceId()
+    {
+        return trackedEntityInstanceId;
+    }
+
+    public void setTrackedEntityInstanceId( String trackedEntityInstanceId )
+    {
+        this.trackedEntityInstanceId = trackedEntityInstanceId;
+    }
+
+    public String getProgramStageId()
+    {
+        return programStageId;
+    }
+
+    public void setProgramStageId( String programStageId )
+    {
+        this.programStageId = programStageId;
+    }
+
+    public EventStatus getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus( EventStatus status )
+    {
+        this.status = status;
     }
 
     public List<DataValue> getDataValues()
