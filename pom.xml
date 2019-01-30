@@ -275,6 +275,12 @@
       </properties>
     </profile>
     <profile>
+      <id>openmrs</id>
+      <properties>
+        <db.flyway.locations>classpath:db/migration/production,classpath:db/migration/programs,classpath:db/migration/sample,classpath:db/migration/openmrs</db.flyway.locations>
+      </properties>
+    </profile>
+    <profile>
       <id>executable-war</id>
       <activation>
         <activeByDefault>true</activeByDefault>

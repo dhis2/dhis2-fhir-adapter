@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,11 @@ public class FhirServerResourceRepositoryRestDocsTest extends AbstractJpaReposit
                 fields.withPath( "description" ).description( "The detailed description of the purpose of the subscribed FHIR resource." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "fhirCriteriaParameters" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "expOnly" ).description( "Specifies that this is only used for exporting FHIR resources. Subscription requests are not accepted." )
-                    .type( JsonFieldType.BOOLEAN ).optional()
+                    .type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "preferred" ).description( "Specifies if this resource definition is the preferred resource definition for the resource type when no resource definition can be determined otherwise." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "impTransformScript" ).description( "Link to the executable transformation script that transform incoming FHIR resources." )
+                    .type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -114,7 +118,8 @@ public class FhirServerResourceRepositoryRestDocsTest extends AbstractJpaReposit
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "fhirServerResource" ).description( "Link to this resource itself." ),
-                linkWithRel( "fhirServer" ).description( "The reference to the FHIR server to which this resource belongs to." ) ), responseFields(
+                linkWithRel( "fhirServer" ).description( "The reference to the FHIR server to which this resource belongs to." ),
+                linkWithRel( "impTransformScript" ).description( "Link to the executable transformation script that transform incoming FHIR resources." ).optional() ), responseFields(
                 attributes( key( "title" ).value( "Fields for FHIR server resource reading" ) ),
                 fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
                 fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
@@ -125,6 +130,8 @@ public class FhirServerResourceRepositoryRestDocsTest extends AbstractJpaReposit
                 fields.withPath( "expOnly" ).description( "Specifies that this is only used for exporting FHIR resources. Subscription requests are not accepted." )
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "virtual" ).description( "Specifies that there is no subscription for this FHIR resource since the FHIR service may not accept subscription for this resource type (just available as contained resources)." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "preferred" ).description( "Specifies if this resource definition is the preferred resource definition for the resource type when no resource definition can be determined otherwise." )
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "hirSubscriptionId" ).description( "The ID of the automatically created FHIR subscription on the FHIR service." ).type( JsonFieldType.STRING ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )

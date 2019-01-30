@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
 import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirResourceRepositoryImpl;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.hl7.fhir.dstu3.model.Bundle;
@@ -53,9 +54,9 @@ import java.util.List;
 @Component
 public class Dstu3FhirResourceRepositoryImpl extends AbstractFhirResourceRepositoryImpl
 {
-    public Dstu3FhirResourceRepositoryImpl( @Nonnull StoredFhirResourceService storedItemService, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
+    public Dstu3FhirResourceRepositoryImpl( @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
     {
-        super( storedItemService, fhirContexts );
+        super( storedItemService, fhirServerResourceRepository, fhirContexts );
     }
 
     @Nonnull

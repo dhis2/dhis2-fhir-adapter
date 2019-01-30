@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
 import org.springframework.cache.annotation.CacheConfig;
@@ -45,6 +46,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -59,9 +61,15 @@ public interface FhirServerSystemRepository extends JpaRepository<FhirServerSyst
 {
     @RestResource( exported = false )
     @Nonnull
-    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirServer=:subscription" )
+    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirServer=:fhirServer" )
     @Cacheable( key = "{#root.methodName, #a0.id}" )
-    Collection<FhirServerSystem> findByFhirServer( @Param( "subscription" ) @Nonnull FhirServer subscription );
+    Collection<FhirServerSystem> findByFhirServer( @Param( "fhirServer" ) @Nonnull FhirServer fhirServer );
+
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirServer=:fhirServer AND rss.fhirResourceType=:fhirResourceType" )
+    @Cacheable( key = "{#root.methodName, #a0.id, #a1}" )
+    Optional<FhirServerSystem> findOneByFhirServerResourceType( @Param( "fhirServer" ) @Nonnull FhirServer fhirServer, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 
     @Override
     @Nonnull

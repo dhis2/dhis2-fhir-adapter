@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,10 @@ public class FhirServerResource extends VersionedBaseMetadata implements DataGro
     private boolean expOnly;
 
     private String fhirSubscriptionId;
+
+    private ExecutableScript impTransformScript;
+
+    private boolean preferred;
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -186,6 +190,30 @@ public class FhirServerResource extends VersionedBaseMetadata implements DataGro
     public void setFhirSubscriptionId( String fhirSubscriptionId )
     {
         this.fhirSubscriptionId = fhirSubscriptionId;
+    }
+
+    @ManyToOne
+    @JoinColumn( name = "imp_transform_script_id" )
+    public ExecutableScript getImpTransformScript()
+    {
+        return impTransformScript;
+    }
+
+    public void setImpTransformScript( ExecutableScript impTransformScript )
+    {
+        this.impTransformScript = impTransformScript;
+    }
+
+    @Basic
+    @Column( name = "preferred", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isPreferred()
+    {
+        return preferred;
+    }
+
+    public void setPreferred( boolean preferred )
+    {
+        this.preferred = preferred;
     }
 
     @JsonIgnore

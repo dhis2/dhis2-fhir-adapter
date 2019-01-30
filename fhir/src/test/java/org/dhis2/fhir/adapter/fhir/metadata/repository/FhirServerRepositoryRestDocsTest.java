@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,8 @@ public class FhirServerRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +
                     "be used when creating and updating the entity." ).type( JsonFieldType.ARRAY ).optional(),
+                fields.withPath( "remoteSyncEnabled" ).description( "Specifies if a FHIR notification can be simulated by a remote FHIR server by invoking a read request on a FHIR resource." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "adapterEndpoint" ).description( "Specifies FHIR server settings that are relevant for the adapter." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "adapterEndpoint.baseUrl" ).description( "The base URL of the adapter that is used to register the subscription on the FHIR service. " +
                     "If the FHIR service runs on a different server, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),
@@ -166,6 +168,8 @@ public class FhirServerRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +
                     "be used when creating and updating the entity." ).type( JsonFieldType.ARRAY ).optional(),
+                fields.withPath( "remoteSyncEnabled" ).description( "Specifies if a FHIR notification can be simulated by a remote FHIR server by invoking a read request on a FHIR resource." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "adapterEndpoint" ).description( "Specifies FHIR server settings that are relevant for the adapter." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "adapterEndpoint.baseUrl" ).description( "The base URL of the adapter that is used to register the subscription on the FHIR service. " +
                     "If the FHIR service runs on a different server, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,12 +29,18 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Spring Data REST validator for {@link FhirServerResource}.
@@ -63,10 +69,38 @@ public class BeforeCreateSaveFhirServerResourceValidator implements Validator
         {
             errors.rejectValue( "fhirResourceType", "FhirServerResource.fhirResourceType.null", "FHIR resource type is mandatory." );
         }
+        else
+        {
+            checkValidTransformInScript( errors, "impTransformScript", fhirServerResource.getFhirResourceType(), fhirServerResource.getImpTransformScript() );
+        }
         if ( StringUtils.length( fhirServerResource.getFhirCriteriaParameters() ) > FhirServerResource.MAX_CRITERIA_PARAMETERS_LENGTH )
         {
             errors.rejectValue( "fhirCriteriaParameters", "FhirServerResource.fhirCriteriaParameters.length", new Object[]{ FhirServerResource.MAX_CRITERIA_PARAMETERS_LENGTH },
                 "FHIR criteria parameters must not be longer than {0} characters." );
+        }
+    }
+
+    protected static void checkValidTransformInScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
+    {
+        if ( executableScript == null )
+        {
+            return;
+        }
+        if ( executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_TO_DHIS )
+        {
+            errors.rejectValue( field, "FhirServerResource." + field + ".scriptType", "Assigned script type for incoming transformation must be TRANSFORM_TO_DHIS." );
+        }
+        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
+        {
+            errors.rejectValue( field, "FhirServerResource." + field + ".returnType", "Assigned return type for incoming transformation script must be BOOLEAN." );
+        }
+        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
+        {
+            errors.rejectValue( field, "FhirServerResource." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for incoming transformation script must be the same as for the resource {0}." );
+        }
+        if ( (executableScript.getScript().getOutputType() != null) && (executableScript.getScript().getOutputType().getFhirResourceType() != fhirResourceType) )
+        {
+            errors.rejectValue( field, "FhirServerResource." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for outgoing transformation script must be the same as for the resource {0}." );
         }
     }
 }

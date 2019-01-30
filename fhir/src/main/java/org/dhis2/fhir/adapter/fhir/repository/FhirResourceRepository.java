@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,9 @@ public interface FhirResourceRepository
 
     @Nonnull
     Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
+
+    @Nonnull
+    Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform );
 
     @Nonnull
     Optional<IBaseResource> find( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );

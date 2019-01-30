@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,6 +104,8 @@ public class FhirServer extends VersionedBaseMetadata implements DataGroup, Seri
 
     @Min( 0 )
     private int toleranceMillis;
+
+    private boolean remoteSyncEnabled;
 
     @NotNull
     @Valid
@@ -218,6 +220,18 @@ public class FhirServer extends VersionedBaseMetadata implements DataGroup, Seri
     public void setToleranceMillis( int toleranceMillis )
     {
         this.toleranceMillis = toleranceMillis;
+    }
+
+    @Basic
+    @Column( name = "remote_sync_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isRemoteSyncEnabled()
+    {
+        return remoteSyncEnabled;
+    }
+
+    public void setRemoteSyncEnabled( boolean remoteSyncEnabled )
+    {
+        this.remoteSyncEnabled = remoteSyncEnabled;
     }
 
     @Basic

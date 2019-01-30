@@ -28,17 +28,12 @@ package org.dhis2.fhir.adapter.fhir.server;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
 import org.dhis2.fhir.adapter.rest.RestResourceNotFoundException;
-import org.dhis2.fhir.adapter.rest.RestUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,9 +43,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -64,18 +56,13 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping( "/remote-fhir-rest-hook" )
-public class FhirServerRestHookController
+public class FhirServerRestHookController extends AbstractFhirServerController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final FhirServerResourceRepository resourceRepository;
-
-    private final FhirServerRestHookProcessor processor;
-
     public FhirServerRestHookController( @Nonnull FhirServerResourceRepository resourceRepository, @Nonnull FhirServerRestHookProcessor processor )
     {
-        this.resourceRepository = resourceRepository;
-        this.processor = processor;
+        super( resourceRepository, processor );
     }
 
     @RequestMapping( path = "/{fhirServerId}/{fhirServerResourceId}/{resourceType}/{resourceId}/**", method = { RequestMethod.POST, RequestMethod.PUT } )
@@ -95,18 +82,8 @@ public class FhirServerRestHookController
         @RequestHeader( value = "Authorization", required = false ) String authorization,
         @Nonnull HttpEntity<byte[]> requestEntity )
     {
-        if ( (requestEntity.getBody() == null) || (requestEntity.getBody().length == 0) )
-        {
-            return createBadRequestResponse( "Payload expected." );
-        }
-
-        final FhirServerResource fhirServerResource = lookupFhirServerResource( fhirServerId, fhirServerResourceId, authorization );
-        final MediaType mediaType = requestEntity.getHeaders().getContentType();
-        final String fhirResource = new String( requestEntity.getBody(), getCharset( mediaType ) );
-        processor.process( fhirServerResource, (mediaType == null) ? null : mediaType.toString(),
-            resourceType, resourceId, fhirResource );
-
-        return new ResponseEntity<>( HttpStatus.OK );
+        return processPayload( lookupFhirServerResource( fhirServerId, fhirServerResourceId, authorization ),
+            resourceType, resourceId, requestEntity );
     }
 
     @PostMapping( path = "/{fhirServerId}/{fhirServerResourceId}" )
@@ -114,57 +91,15 @@ public class FhirServerRestHookController
         @RequestHeader( value = "Authorization", required = false ) String authorization )
     {
         final FhirServerResource fhirServerResource = lookupFhirServerResource( fhirServerId, fhirServerResourceId, authorization );
-        processor.process( fhirServerResource );
+        getProcessor().process( fhirServerResource );
     }
 
     @Nonnull
     protected FhirServerResource lookupFhirServerResource( @Nonnull UUID fhirServerId, @Nonnull UUID fhirServerResourceId, String authorization )
     {
-        final FhirServerResource fhirServerResource = resourceRepository.findOneByIdCached( fhirServerResourceId )
+        final FhirServerResource fhirServerResource = getResourceRepository().findOneByIdCached( fhirServerResourceId )
             .orElseThrow( () -> new RestResourceNotFoundException( "FHIR server data for resource cannot be found: " + fhirServerResourceId ) );
-        if ( !fhirServerResource.getFhirServer().getId().equals( fhirServerId ) )
-        {
-            // do not give detail if the resource or the subscription cannot be found
-            throw new RestResourceNotFoundException( "FHIR server data for resource cannot be found: " + fhirServerResourceId );
-        }
-        if ( fhirServerResource.isExpOnly() )
-        {
-            throw new RestResourceNotFoundException( "FHIR server resource is intended for export only: " + fhirServerResourceId );
-        }
-
-        if ( StringUtils.isNotBlank( fhirServerResource.getFhirServer().getAdapterEndpoint().getAuthorizationHeader() ) &&
-            !fhirServerResource.getFhirServer().getAdapterEndpoint().getAuthorizationHeader().equals( authorization ) )
-        {
-            throw new RestUnauthorizedException( "Authentication has failed." );
-        }
+        validateRequest( fhirServerId, fhirServerResource, authorization );
         return fhirServerResource;
-    }
-
-    @Nonnull
-    private Charset getCharset( @Nullable MediaType contentType )
-    {
-        Charset charset;
-        if ( contentType == null )
-        {
-            charset = StandardCharsets.UTF_8;
-        }
-        else
-        {
-            charset = contentType.getCharset();
-            if ( charset == null )
-            {
-                charset = StandardCharsets.UTF_8;
-            }
-        }
-        return charset;
-    }
-
-    @Nonnull
-    private ResponseEntity<byte[]> createBadRequestResponse( @Nonnull String message )
-    {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add( HttpHeaders.CONTENT_TYPE, "text/plain; charset=UTF-8" );
-        return new ResponseEntity<>(
-            message.getBytes( StandardCharsets.UTF_8 ), headers, HttpStatus.BAD_REQUEST );
     }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,11 +59,17 @@ import java.util.UUID;
 public interface FhirServerResourceRepository extends JpaRepository<FhirServerResource, UUID>, QuerydslPredicateExecutor<FhirServerResource>, CustomFhirServerResourceRepository
 {
     @RestResource( exported = false )
-    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.fhirServer s WHERE s=:subscription AND r.fhirResourceType=:fhirResourceType ORDER BY r.id" )
+    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.fhirServer s WHERE s=:fhirServer AND r.fhirResourceType=:fhirResourceType ORDER BY r.id" )
     @Nonnull
-    @Cacheable( key = "{#root.methodName, #a0.id,  #a1}" )
+    @Cacheable( key = "{#root.methodName, #a0.id, #a1}" )
     Optional<FhirServerResource> findFirstCached(
-        @Param( "subscription" ) @Nonnull FhirServer fhirServer, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
+        @Param( "fhirServer" ) @Nonnull FhirServer fhirServer, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
+
+    @RestResource( exported = false )
+    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.fhirServer s WHERE s=:fhirServerId AND r.fhirResourceType=:fhirResourceType ORDER BY r.preferred DESC, r.id" )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
+    Optional<FhirServerResource> findFirstCached( @Param( "fhirServerId" ) @Nonnull UUID fhirServerId, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 
     @Override
     @Nonnull

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
             .authorizeRequests()
             .antMatchers( HttpMethod.PUT, "/remote-fhir-rest-hook/**" ).permitAll()
             .antMatchers( HttpMethod.POST, "/remote-fhir-rest-hook/**" ).permitAll()
+            .antMatchers( HttpMethod.PUT, "/remote-fhir-sync/**" ).permitAll()
+            .antMatchers( HttpMethod.POST, "/remote-fhir-sync/**" ).permitAll()
+            .antMatchers( HttpMethod.DELETE, "/remote-fhir-sync/**" ).permitAll()
+            .antMatchers( HttpMethod.GET, "/remote-fhir-sync/**" ).permitAll()
             .antMatchers( HttpMethod.GET, "/favicon.ico" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/health" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/info" ).permitAll()
