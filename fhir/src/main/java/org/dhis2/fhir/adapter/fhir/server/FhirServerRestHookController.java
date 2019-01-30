@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,14 +35,22 @@ import org.dhis2.fhir.adapter.rest.RestResourceNotFoundException;
 import org.dhis2.fhir.adapter.rest.RestUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -70,27 +78,58 @@ public class FhirServerRestHookController
         this.processor = processor;
     }
 
-    @PutMapping( path = "/{subscriptionId}/{fhirServerResourceId}/**" )
-    public void receiveWithPayload( @PathVariable UUID subscriptionId, @PathVariable UUID fhirServerResourceId,
-        @RequestHeader( value = "Authorization", required = false ) String authorization )
+    @RequestMapping( path = "/{fhirServerId}/{fhirServerResourceId}/{resourceType}/{resourceId}/**", method = { RequestMethod.POST, RequestMethod.PUT } )
+    public ResponseEntity<byte[]> receiveWithPayloadAndHistory(
+        @PathVariable( "fhirServerId" ) UUID fhirServerId, @PathVariable( "fhirServerResourceId" ) UUID fhirServerResourceId,
+        @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
+        @RequestHeader( value = "Authorization", required = false ) String authorization,
+        @Nonnull HttpEntity<byte[]> requestEntity )
     {
-        receive( subscriptionId, fhirServerResourceId, authorization );
+        return receiveWithPayload( fhirServerId, fhirServerResourceId, resourceType, resourceId, authorization, requestEntity );
     }
 
-    @PostMapping( path = "/{subscriptionId}/{fhirServerResourceId}" )
-    public void receive( @PathVariable UUID subscriptionId, @PathVariable UUID fhirServerResourceId,
+    @RequestMapping( path = "/{fhirServerId}/{fhirServerResourceId}/{resourceType}/{resourceId}", method = { RequestMethod.POST, RequestMethod.PUT } )
+    public ResponseEntity<byte[]> receiveWithPayload(
+        @PathVariable( "fhirServerId" ) UUID fhirServerId, @PathVariable( "fhirServerResourceId" ) UUID fhirServerResourceId,
+        @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
+        @RequestHeader( value = "Authorization", required = false ) String authorization,
+        @Nonnull HttpEntity<byte[]> requestEntity )
+    {
+        if ( (requestEntity.getBody() == null) || (requestEntity.getBody().length == 0) )
+        {
+            return createBadRequestResponse( "Payload expected." );
+        }
+
+        final FhirServerResource fhirServerResource = lookupFhirServerResource( fhirServerId, fhirServerResourceId, authorization );
+        final MediaType mediaType = requestEntity.getHeaders().getContentType();
+        final String fhirResource = new String( requestEntity.getBody(), getCharset( mediaType ) );
+        processor.process( fhirServerResource, (mediaType == null) ? null : mediaType.toString(),
+            resourceType, resourceId, fhirResource );
+
+        return new ResponseEntity<>( HttpStatus.OK );
+    }
+
+    @PostMapping( path = "/{fhirServerId}/{fhirServerResourceId}" )
+    public void receive( @PathVariable UUID fhirServerId, @PathVariable UUID fhirServerResourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
+    {
+        final FhirServerResource fhirServerResource = lookupFhirServerResource( fhirServerId, fhirServerResourceId, authorization );
+        processor.process( fhirServerResource );
+    }
+
+    @Nonnull
+    protected FhirServerResource lookupFhirServerResource( @Nonnull UUID fhirServerId, @Nonnull UUID fhirServerResourceId, String authorization )
     {
         final FhirServerResource fhirServerResource = resourceRepository.findOneByIdCached( fhirServerResourceId )
             .orElseThrow( () -> new RestResourceNotFoundException( "FHIR server data for resource cannot be found: " + fhirServerResourceId ) );
-        if ( !fhirServerResource.getFhirServer().getId().equals( subscriptionId ) )
+        if ( !fhirServerResource.getFhirServer().getId().equals( fhirServerId ) )
         {
             // do not give detail if the resource or the subscription cannot be found
             throw new RestResourceNotFoundException( "FHIR server data for resource cannot be found: " + fhirServerResourceId );
         }
         if ( fhirServerResource.isExpOnly() )
         {
-            throw new RestResourceNotFoundException( "Subscription resource is intended for export only: " + fhirServerResourceId );
+            throw new RestResourceNotFoundException( "FHIR server resource is intended for export only: " + fhirServerResourceId );
         }
 
         if ( StringUtils.isNotBlank( fhirServerResource.getFhirServer().getAdapterEndpoint().getAuthorizationHeader() ) &&
@@ -98,7 +137,34 @@ public class FhirServerRestHookController
         {
             throw new RestUnauthorizedException( "Authentication has failed." );
         }
+        return fhirServerResource;
+    }
 
-        processor.process( fhirServerResource );
+    @Nonnull
+    private Charset getCharset( @Nullable MediaType contentType )
+    {
+        Charset charset;
+        if ( contentType == null )
+        {
+            charset = StandardCharsets.UTF_8;
+        }
+        else
+        {
+            charset = contentType.getCharset();
+            if ( charset == null )
+            {
+                charset = StandardCharsets.UTF_8;
+            }
+        }
+        return charset;
+    }
+
+    @Nonnull
+    private ResponseEntity<byte[]> createBadRequestResponse( @Nonnull String message )
+    {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add( HttpHeaders.CONTENT_TYPE, "text/plain; charset=UTF-8" );
+        return new ResponseEntity<>(
+            message.getBytes( StandardCharsets.UTF_8 ), headers, HttpStatus.BAD_REQUEST );
     }
 }

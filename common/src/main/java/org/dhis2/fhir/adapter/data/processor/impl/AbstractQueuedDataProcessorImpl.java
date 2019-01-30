@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.processor.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -177,7 +177,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             }
             catch ( IgnoredQueuedItemException e )
             {
-                // has already been logger with sufficient details
+                // has already been logged with sufficient details
                 return;
             }
 
@@ -260,26 +260,9 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                 {
                     // persist processed item
                     processedItemRepository.process( createProcessedItem( group, processedId, processedAt ), p -> {
-                        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction(
-                            new DefaultTransactionDefinition( TransactionDefinition.PROPAGATION_NOT_SUPPORTED ) );
-                        try
+                        if ( enqueueDataItem( group, item, false, true ) )
                         {
-                            queuedItemRepository.enqueue( createQueuedItemId( group, item ) );
-                            itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item ) );
-                            logger.debug( "Item {} of group {} has been enqueued.", item.getId(), group.getGroupId() );
                             count.incrementAndGet();
-                        }
-                        catch ( AlreadyQueuedException e )
-                        {
-                            logger.debug( "Item {} of group {} is still queued.", item.getId(), group.getGroupId() );
-                        }
-                        catch ( IgnoredQueuedItemException e )
-                        {
-                            // has already been logged with sufficient details
-                        }
-                        finally
-                        {
-                            finalizeTransaction( transactionStatus );
                         }
                     } );
                 }
@@ -306,6 +289,43 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         {
             logger.debug( "Processed queued group {} with no enqueued items.", dataGroupQueueItem.getDataGroupId() );
         }
+    }
+
+    protected boolean enqueueDataItem( @Nonnull G group, @Nonnull ProcessedItemInfo item, boolean persistedDataItem, boolean autonomousTransaction )
+    {
+        final TransactionStatus transactionStatus;
+        if ( autonomousTransaction )
+        {
+            transactionStatus = platformTransactionManager.getTransaction(
+                new DefaultTransactionDefinition( TransactionDefinition.PROPAGATION_NOT_SUPPORTED ) );
+        }
+        else
+        {
+            transactionStatus = null;
+        }
+        try
+        {
+            queuedItemRepository.enqueue( createQueuedItemId( group, item ) );
+            itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item, persistedDataItem ) );
+            logger.debug( "Item {} of group {} has been enqueued.", item.getId(), group.getGroupId() );
+            return true;
+        }
+        catch ( AlreadyQueuedException e )
+        {
+            logger.debug( "Item {} of group {} is still queued.", item.getId(), group.getGroupId() );
+        }
+        catch ( IgnoredQueuedItemException e )
+        {
+            // has already been logged with sufficient details
+        }
+        finally
+        {
+            if ( transactionStatus != null )
+            {
+                finalizeTransaction( transactionStatus );
+            }
+        }
+        return false;
     }
 
     private void awaitTaskTermination( @Nonnull ForkJoinTask<?> task )
@@ -384,7 +404,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
     protected abstract QI createQueuedItemId( @Nonnull G group, @Nonnull ProcessedItemInfo processedItemInfo );
 
     @Nonnull
-    protected abstract DataItemQueueItem<GI> createDataItemQueueItem( @Nonnull G group, @Nonnull ProcessedItemInfo processedItemInfo );
+    protected abstract DataItemQueueItem<GI> createDataItemQueueItem( @Nonnull G group, @Nonnull ProcessedItemInfo processedItemInfo, boolean persistedDataItem );
 
     @Nonnull
     protected abstract SG getStoredItemGroup( @Nonnull G group );

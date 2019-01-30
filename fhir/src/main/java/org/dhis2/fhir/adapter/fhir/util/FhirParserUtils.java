@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.server;
+package org.dhis2.fhir.adapter.fhir.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,21 +28,62 @@ package org.dhis2.fhir.adapter.fhir.server;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.DataFormatException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Processes incoming web hook requests in two steps. First the web hook request
- * is added to a queue (if there are not yet any web hook requests). Then the web
- * hook request is consumed, the relevant data is collected and put into another
- * queue for rule and transformation processing.
+ * FHIR parser utilities for parsing JSON and XML.
  *
  * @author volsch
  */
-public interface FhirServerRestHookProcessor extends QueuedDataProcessor<FhirServerResource>
+public abstract class FhirParserUtils
 {
-    void process( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull String fhirResourceType, @Nonnull String fhirResourceId, @Nonnull String fhirResource );
+    @Nonnull
+    public static IBaseResource parse( @Nonnull FhirContext fhirContext, @Nonnull String resource, @Nullable String contentType ) throws FhirParserException
+    {
+        boolean xml;
+        if ( contentType == null )
+        {
+            int xmlIndex = resource.indexOf( '<' );
+            if ( xmlIndex < 0 )
+            {
+                xmlIndex = Integer.MAX_VALUE;
+            }
+            int jsonIndex = resource.indexOf( '{' );
+            if ( jsonIndex < 0 )
+            {
+                jsonIndex = Integer.MAX_VALUE;
+            }
+            xml = xmlIndex < jsonIndex;
+        }
+        else
+        {
+            xml = contentType.toLowerCase().contains( "xml" );
+        }
+
+        try
+        {
+            if ( xml )
+            {
+                return fhirContext.newXmlParser().parseResource( resource );
+            }
+            else
+            {
+                return fhirContext.newJsonParser().parseResource( resource );
+            }
+        }
+        catch ( DataFormatException e )
+        {
+            throw new FhirParserException( "Could not parse FHIR resource: " + e.getMessage(), e );
+        }
+    }
+
+    private FhirParserUtils()
+    {
+        super();
+    }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.server;
+package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,21 +28,16 @@ package org.dhis2.fhir.adapter.fhir.server;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.UUID;
 
 /**
- * Processes incoming web hook requests in two steps. First the web hook request
- * is added to a queue (if there are not yet any web hook requests). Then the web
- * hook request is consumed, the relevant data is collected and put into another
- * queue for rule and transformation processing.
+ * Repository that contains {@link SubscriptionFhirResource}s.
  *
  * @author volsch
  */
-public interface FhirServerRestHookProcessor extends QueuedDataProcessor<FhirServerResource>
+public interface SubscriptionFhirResourceRepository extends JpaRepository<SubscriptionFhirResource, UUID>, CustomSubscriptionFhirResourceRepository
 {
-    void process( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull String fhirResourceType, @Nonnull String fhirResourceId, @Nonnull String fhirResource );
 }

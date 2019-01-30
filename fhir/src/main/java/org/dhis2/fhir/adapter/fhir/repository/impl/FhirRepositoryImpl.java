@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
 import com.google.common.collect.ArrayListMultimap;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
@@ -40,8 +41,10 @@ import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
@@ -65,6 +68,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundE
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.WritableFhirRequest;
+import org.dhis2.fhir.adapter.fhir.util.FhirParserUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.queue.RetryQueueDeliveryException;
@@ -116,6 +120,8 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final QueuedFhirResourceRepository queuedFhirResourceRepository;
 
+    private final SubscriptionFhirResourceRepository subscriptionFhirResourceRepository;
+
     private final StoredFhirResourceService storedItemService;
 
     private final FhirResourceRepository fhirResourceRepository;
@@ -133,9 +139,12 @@ public class FhirRepositoryImpl implements FhirRepository
         @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
         @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
         @Nonnull QueuedFhirResourceRepository queuedFhirResourceRepository,
+        @Nonnull SubscriptionFhirResourceRepository subscriptionFhirResourceRepository,
         @Nonnull StoredFhirResourceService storedItemService,
-        @Nonnull FhirResourceRepository fhirResourceRepository, @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
-        @Nonnull DhisResourceRepository dhisResourceRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+        @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull FhirToDhisTransformerService fhirToDhisTransformerService,
+        @Nonnull DhisResourceRepository dhisResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         this.authorizationContext = authorizationContext;
         this.lockManager = lockManager;
@@ -143,6 +152,7 @@ public class FhirRepositoryImpl implements FhirRepository
         this.fhirServerSystemRepository = fhirServerSystemRepository;
         this.fhirServerResourceRepository = fhirServerResourceRepository;
         this.queuedFhirResourceRepository = queuedFhirResourceRepository;
+        this.subscriptionFhirResourceRepository = subscriptionFhirResourceRepository;
         this.storedItemService = storedItemService;
         this.fhirResourceRepository = fhirResourceRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
@@ -216,9 +226,19 @@ public class FhirRepositoryImpl implements FhirRepository
         }
 
         final FhirServer fhirServer = fhirServerResource.getFhirServer();
-        final Optional<IBaseResource> resource = fhirResourceRepository.findRefreshed(
-            fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
-            fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId() );
+        final SubscriptionFhirResource subscriptionFhirResource = subscriptionFhirResourceRepository.findResource( fhirServerResource, fhirResource.getIdPart() ).orElse( null );
+        final Optional<IBaseResource> resource;
+        if ( fhirResource.isPersistedDataItem() )
+        {
+            resource = getParsedFhirResource( fhirResource, fhirServerResource, subscriptionFhirResource );
+        }
+        else
+        {
+            resource = fhirResourceRepository.findRefreshed(
+                fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+                fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId() );
+        }
+
         if ( resource.isPresent() )
         {
             final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource.get() );
@@ -231,8 +251,8 @@ public class FhirRepositoryImpl implements FhirRepository
             {
                 try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", fhirServerResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
                 {
-                    logger.info( "Processing FHIR resource {} of FHIR server resource {}.",
-                        resource.get().getIdElement().toUnqualified(), fhirServerResource.getId() );
+                    logger.info( "Processing FHIR resource {} of FHIR server resource {} (persisted={}).",
+                        resource.get().getIdElement().toUnqualified(), fhirServerResource.getId(), fhirResource.isPersistedDataItem() );
                     try
                     {
                         save( fhirServerResource, resource.get() );
@@ -254,9 +274,33 @@ public class FhirRepositoryImpl implements FhirRepository
         }
         else
         {
-            logger.info( "FHIR resource {}/{} for FHIR server resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirServerResource.getId() );
+            logger.info( "FHIR resource {}/{} for FHIR server resource {} is no longer available (persisted={}). Skipping processing of updated FHIR resource.",
+                fhirServerResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirServerResource.getId(), fhirResource.isPersistedDataItem() );
         }
+
+        // must not be deleted before since it is still required when a retry must be performed
+        if ( subscriptionFhirResource != null )
+        {
+            subscriptionFhirResourceRepository.deleteEnqueued( subscriptionFhirResource );
+        }
+    }
+
+    @Nonnull
+    private Optional<IBaseResource> getParsedFhirResource( @Nonnull FhirResource fhirResource, @Nonnull FhirServerResource fhirServerResource, @Nullable SubscriptionFhirResource subscriptionFhirResource )
+    {
+        final Optional<IBaseResource> resource;
+        if ( subscriptionFhirResource == null )
+        {
+            resource = Optional.empty();
+        }
+        else
+        {
+            final FhirContext fhirContext = fhirResourceRepository.findFhirContext( subscriptionFhirResource.getFhirVersion() )
+                .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + subscriptionFhirResource.getFhirVersion() + " has not been configured." ) );
+            resource = Optional.of( FhirParserUtils.parse( fhirContext,
+                subscriptionFhirResource.getFhirResource(), subscriptionFhirResource.getContentType() ) );
+        }
+        return resource;
     }
 
     protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource resource )

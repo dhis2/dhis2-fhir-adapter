@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -191,7 +191,7 @@ public class DhisSyncProcessorImpl extends
 
     @Nonnull
     @Override
-    protected DhisResourceQueueItem createDataItemQueueItem( @Nonnull DhisSyncGroup group, @Nonnull ProcessedItemInfo processedItemInfo )
+    protected DhisResourceQueueItem createDataItemQueueItem( @Nonnull DhisSyncGroup group, @Nonnull ProcessedItemInfo processedItemInfo, boolean persistedDataItem )
     {
         return new DhisResourceQueueItem( group.getGroupId(), processedItemInfo );
     }

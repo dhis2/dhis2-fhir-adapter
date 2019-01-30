@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.script;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,8 +53,8 @@ public interface ScriptExecutionContext
      *
      * @param scriptExecution the script execution that should be used.
      * @return the script execution context that has been replaced by the specified
-     *         script execution context or <code>null</code> if there was no
-     *         script execution context in the current scope.
+     * script execution context or <code>null</code> if there was no
+     * script execution context in the current scope.
      */
     @Nullable
     ScriptExecution setScriptExecution( @Nonnull ScriptExecution scriptExecution );

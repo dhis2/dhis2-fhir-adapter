@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.server.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
@@ -45,6 +46,8 @@ import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirServerRequestRepository;
+import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
@@ -52,8 +55,12 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceUpdateR
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
 import org.dhis2.fhir.adapter.fhir.server.FhirServerRestHookProcessor;
+import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
+import org.dhis2.fhir.adapter.fhir.util.FhirParserException;
+import org.dhis2.fhir.adapter.fhir.util.FhirParserUtils;
 import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -73,7 +80,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link FhirServerRestHookProcessor}.
@@ -88,9 +97,13 @@ public class FhirServerRestHookProcessorImpl extends
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final Map<FhirVersion, FhirContext> fhirContexts;
+
     private final FhirServerProcessorConfig processorConfig;
 
     private final FhirServerResourceRepository fhirServerResourceRepository;
+
+    private final SubscriptionFhirResourceRepository subscriptionFhirResourceRepository;
 
     private final Map<FhirVersion, AbstractSubscriptionResourceItemRetriever> itemRetrievers = new HashMap<>();
 
@@ -106,19 +119,56 @@ public class FhirServerRestHookProcessorImpl extends
         @Nonnull FhirServerProcessorConfig processorConfig,
         @Nonnull SystemAuthenticationToken systemAuthenticationToken,
         @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
-        @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers )
+        @Nonnull SubscriptionFhirResourceRepository subscriptionFhirResourceRepository,
+        @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers,
+        @Nonnull Set<FhirContext> fhirContexts )
     {
         super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate,
             platformTransactionManager, systemAuthenticationToken, new ForkJoinPool( processorConfig.getParallelCount() ) );
         this.processorConfig = processorConfig;
         this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.subscriptionFhirResourceRepository = subscriptionFhirResourceRepository;
 
+        this.fhirContexts = fhirContexts.stream().filter( fc -> (FhirVersion.get( fc.getVersion().getVersion() ) != null) )
+            .collect( Collectors.toMap( fc -> FhirVersion.get( fc.getVersion().getVersion() ), fc -> fc ) );
         itemRetrievers.getIfAvailable( Collections::emptyList ).forEach( br -> {
             for ( final FhirVersion version : br.getFhirVersions() )
             {
                 FhirServerRestHookProcessorImpl.this.itemRetrievers.put( version, br );
             }
         } );
+    }
+
+    @HystrixCommand
+    @Transactional( propagation = Propagation.REQUIRES_NEW )
+    @Override
+    public void process( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull String fhirResourceType, @Nonnull String fhirResourceId, @Nonnull String fhirResource )
+    {
+        final FhirVersion fhirVersion = fhirServerResource.getFhirServer().getFhirVersion();
+        final FhirContext fhirContext = fhirContexts.get( fhirVersion );
+        if ( fhirContext == null )
+        {
+            throw new IllegalStateException( "No FHIR Context for FHIR version " + fhirVersion + " has been configured." );
+        }
+
+        final IBaseResource parsedFhirResource = FhirParserUtils.parse( fhirContext, fhirResource, contentType );
+        final FhirResourceType parsedFhirResourceType = FhirResourceType.getByResource( parsedFhirResource );
+        if ( !fhirServerResource.getFhirResourceType().equals( parsedFhirResourceType ) )
+        {
+            throw new FhirParserException( "Received FHIR resource " + parsedFhirResourceType + " does not match FHIR resource type " + fhirServerResource.getFhirResourceType() + " of FHIR server resource." );
+        }
+        if ( !fhirResourceType.equals( parsedFhirResourceType.getResourceTypeName() ) )
+        {
+            throw new FhirParserException( "Received FHIR resource type " + parsedFhirResourceType + " does not match FHIR resource ID " + fhirResourceType + " of FHIR subscription notification." );
+        }
+        if ( !fhirResourceId.equals( parsedFhirResource.getIdElement().getIdPart() ) )
+        {
+            throw new FhirParserException( "Received FHIR resource type " + parsedFhirResource.getIdElement().getIdPart() + " does not match FHIR resource ID " + fhirResourceId + " of FHIR subscription notification." );
+        }
+
+        final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( parsedFhirResource );
+        subscriptionFhirResourceRepository.enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource );
+        super.enqueueDataItem( fhirServerResource, processedItemInfo, true, false );
     }
 
     @HystrixCommand
@@ -199,8 +249,8 @@ public class FhirServerRestHookProcessorImpl extends
 
     @Nonnull
     @Override
-    protected DataItemQueueItem<UuidDataGroupId> createDataItemQueueItem( @Nonnull FhirServerResource group, @Nonnull ProcessedItemInfo processedItemInfo )
+    protected DataItemQueueItem<UuidDataGroupId> createDataItemQueueItem( @Nonnull FhirServerResource group, @Nonnull ProcessedItemInfo processedItemInfo, boolean persistedDataItem )
     {
-        return new FhirResource( group.getGroupId(), processedItemInfo );
+        return new FhirResource( group.getGroupId(), processedItemInfo, persistedDataItem );
     }
 }

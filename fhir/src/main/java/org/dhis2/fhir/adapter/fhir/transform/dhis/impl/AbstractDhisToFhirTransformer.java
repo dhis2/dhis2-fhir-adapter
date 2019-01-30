@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -474,8 +474,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         @Nullable
         @Override
         public String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedTrackedEntityInstance scriptedDhisResource,
-            @Nonnull Map<String,
-            Object> scriptVariables )
+            @Nonnull Map<String, Object> scriptVariables )
         {
             if ( identifierLookupScript != null )
             {

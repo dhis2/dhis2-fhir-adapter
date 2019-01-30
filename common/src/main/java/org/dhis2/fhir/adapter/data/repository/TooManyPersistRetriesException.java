@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.server;
+package org.dhis2.fhir.adapter.data.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,21 +28,19 @@ package org.dhis2.fhir.adapter.fhir.server;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
- * Processes incoming web hook requests in two steps. First the web hook request
- * is added to a queue (if there are not yet any web hook requests). Then the web
- * hook request is consumed, the relevant data is collected and put into another
- * queue for rule and transformation processing.
+ * Thrown if it has been tried too many times to persist an entity that may be
+ * tried to insert multiple times at the same time and need to be updated in case
+ * it does exist.
  *
  * @author volsch
  */
-public interface FhirServerRestHookProcessor extends QueuedDataProcessor<FhirServerResource>
+public class TooManyPersistRetriesException extends RuntimeException
 {
-    void process( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull String fhirResourceType, @Nonnull String fhirResourceId, @Nonnull String fhirResource );
+    private static final long serialVersionUID = -6868353655551006879L;
+
+    public TooManyPersistRetriesException( String message )
+    {
+        super( message );
+    }
 }
