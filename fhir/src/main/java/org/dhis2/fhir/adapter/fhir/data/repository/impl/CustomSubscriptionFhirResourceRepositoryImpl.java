@@ -126,6 +126,7 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
             completeTransaction( transactionStatus );
         }
 
+        boolean retry = false;
         transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
@@ -141,16 +142,21 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
         catch ( NoResultException e )
         {
             // may have been deleted again in the meantime (dequeued)
-            if ( tryCount + 1 > MAX_TRY_COUNT )
-            {
-                throw new TooManyPersistRetriesException( "Storing subscription FHIR resource has been retried too many times." );
-            }
-            logger.debug( "FHIR Server Resource " + fhirServerResource.getId() + " does no longer contain FHIR Resource " + fhirResourceId, e );
-            enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource, tryCount + 1 );
+            retry = true;
         }
         finally
         {
             completeTransaction( transactionStatus );
+        }
+
+        if ( retry )
+        {
+            if ( tryCount + 1 > MAX_TRY_COUNT )
+            {
+                throw new TooManyPersistRetriesException( "Storing subscription FHIR resource has been retried too many times." );
+            }
+            logger.debug( "FHIR Server Resource " + fhirServerResource.getId() + " does no longer contain FHIR Resource " + fhirResourceId );
+            enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource, tryCount + 1 );
         }
     }
 

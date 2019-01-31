@@ -140,7 +140,6 @@ public class FhirServerRestHookProcessorImpl extends
     }
 
     @HystrixCommand
-    @Transactional( propagation = Propagation.REQUIRES_NEW )
     @Override
     public void process( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull String fhirResourceType, @Nonnull String fhirResourceId, @Nonnull String fhirResource )
     {
@@ -168,7 +167,7 @@ public class FhirServerRestHookProcessorImpl extends
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( parsedFhirResource );
         subscriptionFhirResourceRepository.enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource );
-        super.enqueueDataItem( fhirServerResource, processedItemInfo, true, false );
+        super.enqueueDataItem( fhirServerResource, processedItemInfo, true, true );
     }
 
     @HystrixCommand

@@ -40,7 +40,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -152,8 +151,7 @@ public class SubscriptionFhirResource implements Serializable
     }
 
     @Basic
-    @Column( name = "fhir_resource" )
-    @Lob
+    @Column( name = "fhir_resource", columnDefinition = "TEXT" )
     public String getFhirResource()
     {
         return fhirResource;
