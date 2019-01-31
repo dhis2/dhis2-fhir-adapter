@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@ package org.dhis2.fhir.adapter.dhis.model;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -61,6 +63,6 @@ public class ReferenceAttributeConverter implements AttributeConverter<Reference
         {
             throw new IllegalArgumentException( "Reference does not include required separator: " + dbData );
         }
-        return new Reference( dbData.substring( index + 1 ), ReferenceType.valueOf( dbData.substring( 0, index ) ) );
+        return new Reference( dbData.substring( index + 1 ), NameUtils.toEnumValue( ReferenceType.class, dbData.substring( 0, index ) ) );
     }
 }

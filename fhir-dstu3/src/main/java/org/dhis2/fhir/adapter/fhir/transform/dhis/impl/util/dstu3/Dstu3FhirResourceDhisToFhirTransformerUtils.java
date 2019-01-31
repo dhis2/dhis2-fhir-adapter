@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.dstu3.model.Base;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Reference;
@@ -79,7 +80,7 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
     {
         try
         {
-            return ResourceFactory.createResource( resourceType );
+            return ResourceFactory.createResource( NameUtils.toClassName( resourceType ) );
         }
         catch ( FHIRException e )
         {

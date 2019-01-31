@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,6 +62,6 @@ public class StringToReferenceConverter extends TypedConverter<String, Reference
         {
             throw new ConversionException( "Reference does not include required separator: " + source );
         }
-        return new Reference( source.substring( index + 1 ), ReferenceType.valueOf( source.substring( 0, index ) ) );
+        return new Reference( source.substring( index + 1 ), NameUtils.toEnumValue( ReferenceType.class, source.substring( 0, index ) ) );
     }
 }

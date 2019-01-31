@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -113,7 +114,7 @@ public class OrganizationUnitResolver
         final FhirResourceType resourceType;
         try
         {
-            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
+            resourceType = NameUtils.toEnumValue( FhirResourceType.class, fhirResourceType );
         }
         catch ( IllegalArgumentException e )
         {

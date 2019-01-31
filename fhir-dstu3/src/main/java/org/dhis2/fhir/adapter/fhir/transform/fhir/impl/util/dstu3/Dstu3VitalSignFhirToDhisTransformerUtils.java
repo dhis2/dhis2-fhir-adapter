@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractVitalSignFhi
 import org.dhis2.fhir.adapter.model.HeightUnit;
 import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.springframework.stereotype.Component;
@@ -79,7 +80,7 @@ public class Dstu3VitalSignFhirToDhisTransformerUtils extends AbstractVitalSignF
         final WeightUnit resultingWeightUnit;
         try
         {
-            resultingWeightUnit = WeightUnit.valueOf( weightUnit.toString() );
+            resultingWeightUnit = NameUtils.toEnumValue( WeightUnit.class, weightUnit );
         }
         catch ( IllegalArgumentException e )
         {
@@ -127,7 +128,7 @@ public class Dstu3VitalSignFhirToDhisTransformerUtils extends AbstractVitalSignF
         final HeightUnit resultingHeightUnit;
         try
         {
-            resultingHeightUnit = HeightUnit.valueOf( heightUnit.toString() );
+            resultingHeightUnit = NameUtils.toEnumValue( HeightUnit.class, heightUnit );
         }
         catch ( IllegalArgumentException e )
         {

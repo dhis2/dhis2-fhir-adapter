@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -221,7 +222,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         final EventStatus convertedStatus;
         try
         {
-            convertedStatus = (status == null) ? null : EventStatus.valueOf( status.toString() );
+            convertedStatus = NameUtils.toEnumValue( EventStatus.class, status );
         }
         catch ( IllegalArgumentException e )
         {

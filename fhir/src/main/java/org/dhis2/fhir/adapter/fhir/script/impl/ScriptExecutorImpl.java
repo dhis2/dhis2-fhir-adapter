@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.script.ScriptPreparationException;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
@@ -163,7 +164,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         {
             try
             {
-                return Enum.valueOf( (Class<Enum>) dataType.getJavaType(), (String) value );
+                return NameUtils.toEnumValue( (Class<Enum>) dataType.getJavaType(), (String) value );
             }
             catch ( IllegalArgumentException e )
             {

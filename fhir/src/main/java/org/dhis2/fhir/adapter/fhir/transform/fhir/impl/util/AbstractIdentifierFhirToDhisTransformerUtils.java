@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
@@ -149,7 +150,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         final FhirResourceType resourceType;
         try
         {
-            resourceType = FhirResourceType.valueOf( fhirResourceType.toString() );
+            resourceType = NameUtils.toEnumValue( FhirResourceType.class, fhirResourceType );
         }
         catch ( IllegalArgumentException e )
         {
@@ -176,7 +177,7 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
             throw new TransformerMappingException( "Cannot get identifier of undefined domain resource." );
         }
 
-        if ( !Objects.equals( String.valueOf( FhirResourceType.getByResource( resource ) ), String.valueOf( fhirResourceType ) ) )
+        if ( !Objects.equals( String.valueOf( FhirResourceType.getByResource( resource ) ), NameUtils.toEnumName( fhirResourceType ) ) )
         {
             return null;
         }

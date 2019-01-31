@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.util.NameUtils;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -49,7 +51,7 @@ public class StringToEnumConverter<T extends Enum<T>> extends TypedConverter<Str
     {
         try
         {
-            return Enum.valueOf( getToClass(), source );
+            return NameUtils.toEnumValue( getToClass(), source );
         }
         catch ( IllegalArgumentException e )
         {

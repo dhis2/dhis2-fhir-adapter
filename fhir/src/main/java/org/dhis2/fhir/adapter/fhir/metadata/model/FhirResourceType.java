@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
@@ -91,7 +92,7 @@ public enum FhirResourceType
     @Nullable
     public static FhirResourceType getByResourceTypeName( @Nullable String resourceTypeName )
     {
-        return resourcesBySimpleClassName.get( resourceTypeName );
+        return resourcesBySimpleClassName.get( NameUtils.toClassName( resourceTypeName ) );
     }
 
     private final String resourceTypeName;

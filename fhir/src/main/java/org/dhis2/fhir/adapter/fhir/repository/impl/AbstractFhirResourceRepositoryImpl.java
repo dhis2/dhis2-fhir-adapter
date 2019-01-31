@@ -55,6 +55,7 @@ import org.dhis2.fhir.adapter.fhir.repository.OptimisticFhirResourceLockExceptio
 import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.rest.RestBadRequestException;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -126,7 +127,7 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
         IBaseResource resource;
         try
         {
-            resource = client.read().resource( resourceType ).withId( resourceId ).cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
+            resource = client.read().resource( NameUtils.toClassName( resourceType ) ).withId( resourceId ).cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
         }
         catch ( ResourceNotFoundException | ResourceGoneException e )
         {

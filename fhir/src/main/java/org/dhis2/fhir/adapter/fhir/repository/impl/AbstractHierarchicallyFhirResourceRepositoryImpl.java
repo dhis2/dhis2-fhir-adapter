@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -83,7 +85,7 @@ public abstract class AbstractHierarchicallyFhirResourceRepositoryImpl implement
 
         final Set<IBaseResource> processedResources = new HashSet<>();
         final Set<String> processedResourceIds = new HashSet<>();
-        processedResourceIds.add( resourceType + "/" + resourceId );
+        processedResourceIds.add( NameUtils.toClassName( resourceType ) + "/" + resourceId );
         final List<IBaseResource> result = new ArrayList<>();
         result.add( child );
 
@@ -93,7 +95,7 @@ public abstract class AbstractHierarchicallyFhirResourceRepositoryImpl implement
             if ( parentReference.getResource() == null )
             {
                 final String childResourceType = parentReference.getReferenceElement().hasResourceType() ?
-                    parentReference.getReferenceElement().getResourceType() : resourceType;
+                    parentReference.getReferenceElement().getResourceType() : Objects.requireNonNull( NameUtils.toClassName( resourceType ) );
                 if ( !processedResourceIds.add( childResourceType + "/" + parentReference.getReferenceElement().getIdPart() ) )
                 {
                     // there is a dependency loop and search must be interrupted

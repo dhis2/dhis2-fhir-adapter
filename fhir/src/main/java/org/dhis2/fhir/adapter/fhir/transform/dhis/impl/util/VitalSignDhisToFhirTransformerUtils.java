@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.model.WeightUnit;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -78,7 +79,7 @@ public class VitalSignDhisToFhirTransformerUtils extends AbstractDhisToFhirTrans
         final WeightUnit weightUnit;
         try
         {
-            weightUnit = WeightUnit.valueOf( String.valueOf( unit ) );
+            weightUnit = NameUtils.toEnumValue( WeightUnit.class, unit );
         }
         catch ( IllegalArgumentException e )
         {

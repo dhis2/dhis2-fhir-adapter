@@ -33,6 +33,9 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Name utilities for converting to enum constants and class names.
@@ -51,7 +54,7 @@ public abstract class NameUtils
     }
 
     @Nonnull
-    public static <T extends Enum<T>> Enum<T> getEnumValue( @Nonnull Class<T> enumClass, @Nullable Object value ) throws IllegalArgumentException
+    public static <T extends Enum<T>> T toEnumValue( @Nonnull Class<T> enumClass, @Nullable Object value ) throws IllegalArgumentException
     {
         final String stringValue = toEnumName( value );
         if ( stringValue == null )
@@ -59,6 +62,16 @@ public abstract class NameUtils
             throw new IllegalArgumentException( "Null enum values are not allowed" );
         }
         return Enum.valueOf( enumClass, stringValue );
+    }
+
+    @Nullable
+    public static <T extends Enum<T>> T toEnumValue( @Nonnull Class<T> enumClass, @Nullable String value ) throws IllegalArgumentException
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+        return Enum.valueOf( enumClass, Objects.requireNonNull( toEnumName( value ) ) );
     }
 
     @Nullable
@@ -77,8 +90,12 @@ public abstract class NameUtils
         {
             return stringValue;
         }
+        if ( StringUtils.isAllUpperCase( stringValue ) )
+        {
+            return stringValue.replace( '-', '_' );
+        }
 
-        return StringUtils.join( StringUtils.splitByCharacterTypeCamelCase( stringValue ), '_' )
-            .replace( '-', '_' ).toUpperCase();
+        return Arrays.stream( StringUtils.splitByCharacterTypeCamelCase( stringValue.replace( '-', '_' ) ) )
+            .filter( v -> !v.equals( "_" ) ).collect( Collectors.joining( "_" ) ).toUpperCase();
     }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
@@ -123,7 +124,7 @@ public abstract class AbstractDateTimeFhirToDhisTransformerUtils extends Abstrac
         final DateUnit convertedDateUnit;
         try
         {
-            convertedDateUnit = DateUnit.valueOf( dateUnit.toString() );
+            convertedDateUnit = NameUtils.toEnumValue( DateUnit.class, dateUnit );
         }
         catch ( IllegalArgumentException e )
         {
