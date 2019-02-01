@@ -98,4 +98,9 @@ public abstract class NameUtils
         return Arrays.stream( StringUtils.splitByCharacterTypeCamelCase( stringValue.replace( '-', '_' ) ) )
             .filter( v -> !v.equals( "_" ) ).collect( Collectors.joining( "_" ) ).toUpperCase();
     }
+
+    private NameUtils()
+    {
+        super();
+    }
 }
