@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -176,7 +176,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
         final Collection<FhirServerSystem> systems = fhirServerSystemRepository.findByFhirServer( fhirServer );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
         final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( fhirServer.getFhirVersion() );

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,22 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.security.access.prepost.PreAuthorize;
-
-import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
- * Custom repository for {@link FhirServerResource}.
+ * Thrown if the read FHIR resource cannot be transformed due to an error.
  *
  * @author volsch
  */
-public interface CustomFhirServerResourceRepository
+public class FhirResourceTransformationException extends RuntimeException
 {
-    @RestResource( exported = false )
-    @Nonnull
-    @PreAuthorize( "permitAll()" )
-    Optional<FhirServerResource> findOneByIdCached( @Nonnull UUID id );
+    private static final long serialVersionUID = -5481999553519536303L;
 
-    @RestResource( exported = false )
-    @Nonnull
-    @PreAuthorize( "permitAll()" )
-    Optional<FhirServerResource> findFirstCached( @Nonnull UUID fhirServerId, @Nonnull FhirResourceType fhirResourceType );
+    public FhirResourceTransformationException( String message )
+    {
+        super( message );
+    }
 
-    @RestResource( exported = false )
-    @Nonnull
-    Collection<AvailableFhirServerResource> findAllAvailable( @Param( "subscription" ) @Nonnull FhirServer fhirServer );
+    public FhirResourceTransformationException( String message, Throwable cause )
+    {
+        super( message, cause );
+    }
 }

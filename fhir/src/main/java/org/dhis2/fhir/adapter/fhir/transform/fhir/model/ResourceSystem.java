@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,13 +48,16 @@ public class ResourceSystem implements Serializable
 
     private final String codePrefix;
 
+    private final String defaultValue;
+
     private final String fhirDisplayName;
 
-    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix, @Nullable String fhirDisplayName )
+    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix, @Nullable String defaultValue, @Nullable String fhirDisplayName )
     {
         this.fhirResourceType = fhirResourceType;
         this.system = system;
         this.codePrefix = codePrefix;
+        this.defaultValue = defaultValue;
         this.fhirDisplayName = fhirDisplayName;
     }
 
@@ -74,6 +77,12 @@ public class ResourceSystem implements Serializable
     public String getCodePrefix()
     {
         return codePrefix;
+    }
+
+    @Nullable
+    public String getDefaultValue()
+    {
+        return defaultValue;
     }
 
     @Nullable

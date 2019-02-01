@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,8 @@ public enum ScriptVariable
     CONTEXT( "context" ),
     INPUT( "input" ),
     OUTPUT( "output" ),
+    UTILS( "utils" ),
+    RESOURCE( "resource" ),
     TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
     TRACKED_ENTITY_TYPE( "trackedEntityType" ),
     TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),

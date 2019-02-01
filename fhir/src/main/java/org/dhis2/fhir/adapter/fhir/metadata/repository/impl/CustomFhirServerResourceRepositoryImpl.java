@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,25 @@ public class CustomFhirServerResourceRepositoryImpl implements CustomFhirServerR
     public Optional<FhirServerResource> findOneByIdCached( @Nonnull UUID id )
     {
         final FhirServerResource rsr = entityManager.find( FhirServerResource.class, id );
+        if ( rsr == null )
+        {
+            return Optional.empty();
+        }
+
+        Hibernate.initialize( rsr.getFhirServer().getFhirEndpoint().getHeaders() );
+        return Optional.of( rsr );
+    }
+
+    @Nonnull
+    @Override
+    @Cacheable( key = "{#root.methodName, #a0, #a1}", cacheManager = "metadataCacheManager", cacheNames = "fhirServerResource" )
+    @Transactional( readOnly = true )
+    public Optional<FhirServerResource> findFirstCached( @Nonnull UUID fhirServerId, @Nonnull FhirResourceType fhirResourceType )
+    {
+        final FhirServerResource rsr = entityManager.createNamedQuery( FhirServerResource.FIND_FIRST_CACHED_NAMED_QUERY, FhirServerResource.class )
+            .setParameter( "fhirServerId", fhirServerId )
+            .setParameter( "fhirResourceType", fhirResourceType )
+            .setMaxResults( 1 ).getResultList().stream().findFirst().orElse( null );
         if ( rsr == null )
         {
             return Optional.empty();

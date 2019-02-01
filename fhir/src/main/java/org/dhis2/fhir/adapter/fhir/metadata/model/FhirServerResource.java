@@ -44,6 +44,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -59,13 +60,18 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_server_resource" )
-@NamedQuery( name = FhirServerResource.FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY, query = "SELECT NEW org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource(r.fhirResourceType,r.virtual) " +
-    "FROM FhirServerResource r WHERE r.fhirServer=:subscription" )
+@NamedQueries( {
+    @NamedQuery( name = FhirServerResource.FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY, query = "SELECT NEW org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource(r.fhirResourceType,r.virtual) FROM FhirServerResource r WHERE r" +
+        ".fhirServer=:subscription" ),
+    @NamedQuery( name = FhirServerResource.FIND_FIRST_CACHED_NAMED_QUERY, query = "SELECT r FROM FhirServerResource r JOIN FETCH r.fhirServer s WHERE s.id=:fhirServerId AND r.fhirResourceType=:fhirResourceType ORDER BY r.preferred DESC, r.id" )
+} )
 public class FhirServerResource extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;
 
     public static final String FIND_ALL_BY_SUBSCRIPTION_NAMED_QUERY = "FhirServerResource.findAllBySubscription";
+
+    public static final String FIND_FIRST_CACHED_NAMED_QUERY = "FhirServerResource.findFirstCached";
 
     public static final int MAX_CRITERIA_PARAMETERS_LENGTH = 200;
 

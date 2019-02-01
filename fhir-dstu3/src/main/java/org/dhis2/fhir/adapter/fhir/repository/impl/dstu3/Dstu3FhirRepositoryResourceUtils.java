@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository.impl;
+package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,55 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceTransformationException;
+import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirRepositoryResourceUtils;
+import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.dstu3.model.Identifier;
+import org.hl7.fhir.dstu3.model.ResourceFactory;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.UUID;
 
 /**
- * Abstract class with repository resource utils.
+ * DSTU3 specific implementation of {@link AbstractFhirRepositoryResourceUtils}.
  *
  * @author volsch
  */
-public abstract class AbstractRepositoryResourceUtils
+public class Dstu3FhirRepositoryResourceUtils extends AbstractFhirRepositoryResourceUtils
 {
-    private final FhirServer fhirServer;
-
-    private final FhirServerSystemRepository fhirServerSystemRepository;
-
-    public AbstractRepositoryResourceUtils( @Nonnull FhirServer fhirServer, @Nonnull FhirServerSystemRepository fhirServerSystemRepository )
+    public Dstu3FhirRepositoryResourceUtils( @Nonnull UUID fhirServerId, @Nonnull FhirServerSystemRepository fhirServerSystemRepository )
     {
-        this.fhirServer = fhirServer;
-        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        super( fhirServerId, fhirServerSystemRepository );
     }
 
     @Nonnull
-    public abstract IBaseResource createResource( @Nonnull Object resourceType );
+    @Override
+    public IBaseResource createResource( @Nonnull Object resourceType )
+    {
+        try
+        {
+            return ResourceFactory.createResource( NameUtils.toClassName( resourceType ) );
+        }
+        catch ( FHIRException e )
+        {
+            throw new FhirResourceTransformationException( "Unknown FHIR resource type: " + resourceType, e );
+        }
+    }
 
     @Nullable
-    public ResourceSystem getResourceSystem( @Nullable Object resourceType )
+    @Override
+    public String getIdentifierValue( @Nullable Collection<? extends ICompositeType> identifiers, @Nullable String system )
     {
-        return null;
+        if ( (identifiers == null) || (system == null) )
+        {
+            return null;
+        }
+        return identifiers.stream().map( i -> (Identifier) i ).filter( i -> system.equals( i.getSystem() ) ).findFirst().map( Identifier::getValue ).orElse( null );
     }
 }

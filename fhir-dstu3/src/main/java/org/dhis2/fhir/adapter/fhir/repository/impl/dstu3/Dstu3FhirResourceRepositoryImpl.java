@@ -32,7 +32,10 @@ import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirRepositoryResourceUtils;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirResourceRepositoryImpl;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Subscription;
@@ -45,6 +48,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Implementation of {@link AbstractFhirResourceRepositoryImpl} for DSTU3.
@@ -54,9 +58,20 @@ import java.util.List;
 @Component
 public class Dstu3FhirResourceRepositoryImpl extends AbstractFhirResourceRepositoryImpl
 {
-    public Dstu3FhirResourceRepositoryImpl( @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
+    private final FhirServerSystemRepository fhirServerSystemRepository;
+
+    public Dstu3FhirResourceRepositoryImpl( @Nonnull ScriptExecutor scriptExecutor, @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirServerSystemRepository fhirServerSystemRepository, @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
     {
-        super( storedItemService, fhirServerResourceRepository, fhirContexts );
+        super( scriptExecutor, storedItemService, fhirServerResourceRepository, fhirContexts );
+        this.fhirServerSystemRepository = fhirServerSystemRepository;
+    }
+
+    @Nonnull
+    @Override
+    protected AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirServerId )
+    {
+        return new Dstu3FhirRepositoryResourceUtils( fhirServerId, fhirServerSystemRepository );
     }
 
     @Nonnull

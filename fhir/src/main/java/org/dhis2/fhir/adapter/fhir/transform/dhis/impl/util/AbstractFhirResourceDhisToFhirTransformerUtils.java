@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.EnumValueUtils;
 import org.hl7.fhir.instance.model.api.IBase;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -73,6 +74,18 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
     @ScriptMethod( description = "Creates the FHIR resource (HAPI FHIR) with the specified resource type name.", returnDescription = "The created FHIR resource.",
         args = @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type name of the resource to be created (e.g. Patient)." ) )
     public abstract IBaseResource createResource( @Nonnull String resourceType );
+
+    @Nullable
+    @ScriptMethod( description = "Resolves the enumeration value for a specific property path of an object.", returnDescription = "The resolved enumeration value.",
+        args = {
+            @ScriptMethodArg( value = "object", description = "The object that has the enumeration property at the specified property path." ),
+            @ScriptMethodArg( value = "propertyPath", description = "The property path on the specified object that contains the enum property." ),
+            @ScriptMethodArg( value = "enumValueName", description = "The name of the enumeration value for which the enumeration value should be resolved." )
+        } )
+    public <T extends Enum<T>> T resolveEnumValue( @Nonnull Object object, @Nonnull String propertyPath, @Nullable Object enumValueName )
+    {
+        return EnumValueUtils.resolveEnumValue( object, propertyPath, enumValueName );
+    }
 
     @Nonnull
     @ScriptMethod( description = "Creates a FHIR codeable concept.", returnDescription = "The created FHIR codeable concept." )

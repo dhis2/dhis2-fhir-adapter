@@ -71,6 +71,12 @@ public interface FhirServerSystemRepository extends JpaRepository<FhirServerSyst
     @Cacheable( key = "{#root.methodName, #a0.id, #a1}" )
     Optional<FhirServerSystem> findOneByFhirServerResourceType( @Param( "fhirServer" ) @Nonnull FhirServer fhirServer, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirServer.id=:fhirServerId AND rss.fhirResourceType=:fhirResourceType" )
+    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
+    Optional<FhirServerSystem> findOneByFhirServerResourceType( @Param( "fhirServerId" ) @Nonnull UUID fhirServerId, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

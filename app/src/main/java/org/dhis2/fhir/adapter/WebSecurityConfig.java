@@ -34,7 +34,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -48,7 +47,6 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Configuration
-@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 {
     protected static final String DHIS_BASIC_REALM = "DHIS2";
@@ -67,12 +65,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
         http.csrf().disable();
         http
             .authorizeRequests()
-            .antMatchers( HttpMethod.PUT, "/remote-fhir-rest-hook/**" ).permitAll()
-            .antMatchers( HttpMethod.POST, "/remote-fhir-rest-hook/**" ).permitAll()
-            .antMatchers( HttpMethod.PUT, "/remote-fhir-sync/**" ).permitAll()
-            .antMatchers( HttpMethod.POST, "/remote-fhir-sync/**" ).permitAll()
-            .antMatchers( HttpMethod.DELETE, "/remote-fhir-sync/**" ).permitAll()
-            .antMatchers( HttpMethod.GET, "/remote-fhir-sync/**" ).permitAll()
             .antMatchers( HttpMethod.GET, "/favicon.ico" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/health" ).permitAll()
             .antMatchers( HttpMethod.GET, "/actuator/info" ).permitAll()

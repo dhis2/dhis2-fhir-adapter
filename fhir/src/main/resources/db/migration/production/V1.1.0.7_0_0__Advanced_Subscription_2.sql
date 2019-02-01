@@ -39,3 +39,7 @@ COMMENT ON COLUMN fhir_subscription_resource.fhir_resource IS 'The resource as a
 
 ALTER TABLE fhir_server_system ADD default_value VARCHAR(230);
 COMMENT ON COLUMN fhir_server_system.default_value IS 'The default value for the resource system if no value has been specified by the FHIR resource.';
+
+INSERT INTO fhir_script_variable_enum VALUES ('UTILS');
+INSERT INTO fhir_script_variable_enum VALUES ('RESOURCE');
+INSERT INTO fhir_script_type_enum VALUES('TRANSFORM_FHIR');

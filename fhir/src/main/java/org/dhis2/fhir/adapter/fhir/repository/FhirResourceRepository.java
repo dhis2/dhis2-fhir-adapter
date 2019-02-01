@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,6 +70,9 @@ public interface FhirResourceRepository
 
     @Nonnull
     Optional<IBaseResource> findByCode( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
+
+    @Nullable
+    IBaseResource transform( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nullable IBaseResource resource );
 
     @Nonnull
     IBaseResource save( @Nonnull FhirServer subscription, @Nonnull IBaseResource resource );

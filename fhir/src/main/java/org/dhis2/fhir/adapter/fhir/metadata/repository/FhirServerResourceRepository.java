@@ -65,12 +65,6 @@ public interface FhirServerResourceRepository extends JpaRepository<FhirServerRe
     Optional<FhirServerResource> findFirstCached(
         @Param( "fhirServer" ) @Nonnull FhirServer fhirServer, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 
-    @RestResource( exported = false )
-    @Query( "SELECT r FROM #{#entityName} r JOIN FETCH r.fhirServer s WHERE s=:fhirServerId AND r.fhirResourceType=:fhirResourceType ORDER BY r.preferred DESC, r.id" )
-    @Nonnull
-    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
-    Optional<FhirServerResource> findFirstCached( @Param( "fhirServerId" ) @Nonnull UUID fhirServerId, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
-
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

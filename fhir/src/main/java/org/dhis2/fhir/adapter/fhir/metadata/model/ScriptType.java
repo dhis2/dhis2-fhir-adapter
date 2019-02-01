@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,5 +48,10 @@ public enum ScriptType
     /**
      * The script performs an evaluation (e.g. ifa rule can be applied).
      */
-    EVALUATE
+    EVALUATE,
+
+    /**
+     * Transforms a FHIR resource to a FHIR resource.
+     */
+    TRANSFORM_FHIR
 }

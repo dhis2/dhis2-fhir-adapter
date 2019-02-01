@@ -86,9 +86,9 @@ public class BeforeCreateSaveFhirServerResourceValidator implements Validator
         {
             return;
         }
-        if ( executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_TO_DHIS )
+        if ( executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_FHIR )
         {
-            errors.rejectValue( field, "FhirServerResource." + field + ".scriptType", "Assigned script type for incoming transformation must be TRANSFORM_TO_DHIS." );
+            errors.rejectValue( field, "FhirServerResource." + field + ".scriptType", "Assigned script type for incoming transformation must be TRANSFORM_FHIR." );
         }
         if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
         {

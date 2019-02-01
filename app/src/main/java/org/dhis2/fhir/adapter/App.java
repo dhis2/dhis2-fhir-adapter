@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import java.io.File;
 
@@ -53,6 +54,7 @@ import java.io.File;
 @EnableCaching
 @EnableJms
 @EnableScheduling
+@EnableWebSecurity
 @PropertySource( value = { "classpath:default-application.yml", "file:///${dhis2.home}/services/fhir-adapter/application.yml" }, factory = YamlPropertySourceFactory.class )
 public class App extends SpringBootServletInitializer
 {

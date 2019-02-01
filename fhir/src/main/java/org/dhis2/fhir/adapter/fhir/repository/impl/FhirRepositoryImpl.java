@@ -93,6 +93,7 @@ import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -297,8 +298,8 @@ public class FhirRepositoryImpl implements FhirRepository
         {
             final FhirContext fhirContext = fhirResourceRepository.findFhirContext( subscriptionFhirResource.getFhirVersion() )
                 .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + subscriptionFhirResource.getFhirVersion() + " has not been configured." ) );
-            resource = Optional.of( FhirParserUtils.parse( fhirContext,
-                subscriptionFhirResource.getFhirResource(), subscriptionFhirResource.getContentType() ) );
+            resource = Optional.of( Objects.requireNonNull( fhirResourceRepository.transform( fhirServerResource.getFhirServer().getId(), subscriptionFhirResource.getFhirVersion(),
+                FhirParserUtils.parse( fhirContext, subscriptionFhirResource.getFhirResource(), subscriptionFhirResource.getContentType() ) ) ) );
         }
         return resource;
     }
@@ -444,7 +445,7 @@ public class FhirRepositoryImpl implements FhirRepository
         fhirRequest.setParameters( ArrayListMultimap.create() );
         fhirRequest.setFhirServerCode( fhirServerResource.getFhirServer().getCode() );
         fhirRequest.setResourceSystemsByType( systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getSystem().getFhirDisplayName() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );

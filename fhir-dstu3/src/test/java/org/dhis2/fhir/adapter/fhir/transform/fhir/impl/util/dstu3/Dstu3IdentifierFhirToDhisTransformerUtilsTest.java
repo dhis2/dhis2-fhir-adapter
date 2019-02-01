@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         final Patient patient = new Patient();
         patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
 
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -151,7 +151,7 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         final Patient patient = new Patient();
         patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
 
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );

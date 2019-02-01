@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,32 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
- * Custom repository for {@link FhirServerResource}.
+ * Security configuration of complete application.
  *
  * @author volsch
  */
-public interface CustomFhirServerResourceRepository
+@Configuration
+@Order( 1 )
+public class RemoteFhirRestHookWebSecurityConfig extends WebSecurityConfigurerAdapter
 {
-    @RestResource( exported = false )
-    @Nonnull
-    @PreAuthorize( "permitAll()" )
-    Optional<FhirServerResource> findOneByIdCached( @Nonnull UUID id );
-
-    @RestResource( exported = false )
-    @Nonnull
-    @PreAuthorize( "permitAll()" )
-    Optional<FhirServerResource> findFirstCached( @Nonnull UUID fhirServerId, @Nonnull FhirResourceType fhirResourceType );
-
-    @RestResource( exported = false )
-    @Nonnull
-    Collection<AvailableFhirServerResource> findAllAvailable( @Param( "subscription" ) @Nonnull FhirServer fhirServer );
+    @Override
+    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    {
+        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
+        http.csrf().disable();
+        http.antMatcher( "/remote-fhir-rest-hook/**" )
+            .authorizeRequests()
+            .antMatchers( HttpMethod.PUT, "/remote-fhir-rest-hook/**" ).permitAll()
+            .antMatchers( HttpMethod.POST, "/remote-fhir-rest-hook/**" ).permitAll();
+    }
 }

@@ -79,7 +79,7 @@ public class FhirServerSyncController extends AbstractFhirServerController
         this.fhirResourceRepository = fhirResourceRepository;
     }
 
-    @RequestMapping( path = "/{fhirServerId}/{resourceType}/{resourceId}", method = RequestMethod.DELETE )
+    @RequestMapping( path = "/{fhirServerId}/ws/fhir/{resourceType}/{resourceId}", method = RequestMethod.DELETE )
     public ResponseEntity<byte[]> delete(
         @PathVariable( "fhirServerId" ) UUID fhirServerId, @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
@@ -95,7 +95,7 @@ public class FhirServerSyncController extends AbstractFhirServerController
         return new ResponseEntity<>( HttpStatus.NO_CONTENT );
     }
 
-    @RequestMapping( path = "/{fhirServerId}/{resourceType}/{resourceId}", method = RequestMethod.GET )
+    @RequestMapping( path = "/{fhirServerId}/ws/fhir/{resourceType}/{resourceId}", method = RequestMethod.GET )
     public ResponseEntity<byte[]> getRemoteResource( @PathVariable( "fhirServerId" ) UUID fhirServerId,
         @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
@@ -115,7 +115,7 @@ public class FhirServerSyncController extends AbstractFhirServerController
         // read resource from remote server, process payload as notification, return resource again
         final FhirVersion fhirVersion = fhirServerResource.getFhirServer().getFhirVersion();
         final Optional<IBaseResource> resource = fhirResourceRepository.findRefreshed( fhirServerResource.getFhirServer().getId(),
-            fhirVersion, fhirServerResource.getFhirServer().getFhirEndpoint(), resourceType, resourceId );
+            fhirVersion, fhirServerResource.getFhirServer().getFhirEndpoint(), resourceType, resourceId, false );
         if ( !resource.isPresent() )
         {
             return new ResponseEntity<>( HttpStatus.NOT_FOUND );
@@ -132,7 +132,7 @@ public class FhirServerSyncController extends AbstractFhirServerController
         return new ResponseEntity<>( fhirResource.getBytes( Objects.requireNonNull( FHIR_JSON_MEDIA_TYPE.getCharset() ) ), headers, HttpStatus.OK );
     }
 
-    @RequestMapping( path = "/{fhirServerId}/{resourceType}/{resourceId}", method = { RequestMethod.POST, RequestMethod.PUT } )
+    @RequestMapping( path = "/{fhirServerId}/ws/fhir/{resourceType}/{resourceId}", method = { RequestMethod.POST, RequestMethod.PUT } )
     public ResponseEntity<byte[]> receiveWithPayload(
         @PathVariable( "fhirServerId" ) UUID fhirServerId, @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization, @Nonnull HttpEntity<byte[]> requestEntity )
