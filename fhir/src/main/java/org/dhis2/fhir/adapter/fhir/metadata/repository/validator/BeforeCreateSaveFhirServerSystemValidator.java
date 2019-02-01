@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,10 @@ public class BeforeCreateSaveFhirServerSystemValidator implements Validator
         if ( StringUtils.length( fhirServerSystem.getCodePrefix() ) > FhirServerSystem.MAX_CODE_PREFIX_LENGTH )
         {
             errors.rejectValue( "codePrefix", "FhirServerSystem.codePrefix.length", new Object[]{ FhirServerSystem.MAX_CODE_PREFIX_LENGTH }, "Code prefix must not be longer than {0} characters." );
+        }
+        if ( StringUtils.length( fhirServerSystem.getDefaultValue() ) > FhirServerSystem.MAX_DEFAULT_VALUE_LENGTH )
+        {
+            errors.rejectValue( "defaultValue", "FhirServerSystem.defaultValue.length", new Object[]{ FhirServerSystem.MAX_DEFAULT_VALUE_LENGTH }, "Default value must not be longer than {0} characters." );
         }
     }
 }

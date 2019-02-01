@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,8 @@ public class FhirServerSystem extends VersionedBaseMetadata implements Serializa
 
     public static final int MAX_CODE_PREFIX_LENGTH = 20;
 
+    public static final int MAX_DEFAULT_VALUE_LENGTH = 230;
+
     @NotNull
     private FhirServer fhirServer;
 
@@ -68,6 +70,9 @@ public class FhirServerSystem extends VersionedBaseMetadata implements Serializa
 
     @Size( max = MAX_CODE_PREFIX_LENGTH )
     private String codePrefix;
+
+    @Size( max = MAX_DEFAULT_VALUE_LENGTH )
+    private String defaultValue;
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
@@ -116,5 +121,17 @@ public class FhirServerSystem extends VersionedBaseMetadata implements Serializa
     public void setCodePrefix( String codePrefix )
     {
         this.codePrefix = codePrefix;
+    }
+
+    @Basic
+    @Column( name = "default_value", length = MAX_DEFAULT_VALUE_LENGTH )
+    public String getDefaultValue()
+    {
+        return defaultValue;
+    }
+
+    public void setDefaultValue( String defaultValue )
+    {
+        this.defaultValue = defaultValue;
     }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -110,5 +110,16 @@ public class BeforeCreateSaveFhirServerSystemValidatorTest extends AbstractJpaRe
                 JsonEntityValue.create( "fhirServer", "fhirServers", fhirServer.getId().toString() ),
                 JsonEntityValue.create( "system", "systems", system.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "codePrefix" ) ) );
+    }
+
+    @Test
+    public void testDefaultValueLength() throws Exception
+    {
+        entity.setDefaultValue( StringUtils.repeat( 'a', FhirServerSystem.MAX_DEFAULT_VALUE_LENGTH + 1 ) );
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "fhirServer", "fhirServers", fhirServer.getId().toString() ),
+                JsonEntityValue.create( "system", "systems", system.getId().toString() ) ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "defaultValue" ) ) );
     }
 }

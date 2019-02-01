@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,8 @@ public class FhirServerSystemRepositoryRestDocsTest extends AbstractJpaRepositor
                 fields.withPath( "fhirServer" ).description( "The reference to the FHIR server to which this resource belongs to." ).type( JsonFieldType.STRING ),
                 fields.withPath( "system" ).description( "The reference to the system URI that should be mapped to the FHIR server." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirResourceType" ).description( "The FHIR resource type to which the system URI should be mapped." ).type( JsonFieldType.STRING ),
-                fields.withPath( "codePrefix" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional()
+                fields.withPath( "codePrefix" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "defaultValue" ).description( "The default value that may be used when FHIR resource does not contain the corresponding value." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -119,6 +120,7 @@ public class FhirServerSystemRepositoryRestDocsTest extends AbstractJpaRepositor
                 fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirResourceType" ).description( "The FHIR resource type to which the system URI should be mapped." ).type( JsonFieldType.STRING ),
                 fields.withPath( "codePrefix" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "defaultValue" ).description( "The default value that may be used when FHIR resource does not contain the corresponding value." ).type( JsonFieldType.STRING ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );
     }
