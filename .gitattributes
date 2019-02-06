@@ -25,6 +25,7 @@ LICENSE text
 *.pdf binary
 *.ico binary
 *.png binary
+*.pptx binary
 
 # Denote all files that must use UNIX style line endings.
 *.sh text eol=lf
