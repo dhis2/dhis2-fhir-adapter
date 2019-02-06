@@ -62,7 +62,7 @@ import java.util.Date;
  * This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the
  * LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use
  */
-public class DemoClient
+public class Dstu3DemoClient
 {
     private static final String SERVER_BASE = "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3";
 

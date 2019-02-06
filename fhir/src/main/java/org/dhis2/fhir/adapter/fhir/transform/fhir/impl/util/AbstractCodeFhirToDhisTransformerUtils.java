@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,19 +136,33 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
         returnDescription = "Returns if the code is included." )
     public abstract boolean containsCode( @Nullable ICompositeType codeableConcept, @Nullable String system, @Nonnull String code );
 
+    @SuppressWarnings( "unchecked" )
     @ScriptMethod( description = "Returns if the specified codeable concept contains any combination of the specified list of system code values (type SystemCodeValue).",
         args = {
             @ScriptMethodArg( value = "codeableConcept", description = "The codeable concept that should be checked." ),
             @ScriptMethodArg( value = "systemCodeValues", description = "List of system code values that should be used for the check (type SystemCodeValue)." ),
         },
         returnDescription = "Returns if any system code value is included." )
-    public boolean containsAnyCode( @Nullable ICompositeType codeableConcept, @Nullable Collection<SystemCodeValue> systemCodeValues )
+    public boolean containsAnyCode( @Nullable Object codeableConcept, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
         if ( (codeableConcept == null) || (systemCodeValues == null) )
         {
             return false;
         }
-        return systemCodeValues.stream().anyMatch( scv -> containsCode( codeableConcept, scv.getSystem(), scv.getCode() ) );
+        final Collection<? extends ICompositeType> codeableConcepts;
+        if ( codeableConcept instanceof ICompositeType )
+        {
+            codeableConcepts = Collections.singletonList( (ICompositeType) codeableConcept );
+        }
+        else if ( codeableConcept instanceof Collection )
+        {
+            codeableConcepts = (Collection<? extends ICompositeType>) codeableConcept;
+        }
+        else
+        {
+            throw new IllegalArgumentException( "Expected composite type: " + codeableConcept.getClass() );
+        }
+        return systemCodeValues.stream().anyMatch( scv -> codeableConcepts.stream().anyMatch( cc -> containsCode( cc, scv.getSystem(), scv.getCode() ) ) );
     }
 
     @ScriptMethod( description = "Returns a map where the key is each specified mapping code and the value is a list of system code values (type SystemCodeValue). " +

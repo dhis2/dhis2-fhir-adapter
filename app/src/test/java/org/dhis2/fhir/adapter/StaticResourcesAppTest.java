@@ -28,7 +28,10 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.junit.Test;
+
+import javax.annotation.Nonnull;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,6 +43,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class StaticResourcesAppTest extends AbstractAppTest
 {
+    @Nonnull
+    @Override
+    protected FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
+
     @Test
     public void apiGuide() throws Exception
     {

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -154,6 +155,37 @@ public abstract class AbstractAppTest
     private long resourceDlQueueCount;
 
     @Nonnull
+    protected abstract FhirVersion getFhirVersion();
+
+    @Nonnull
+    protected String getBaseFhirContext()
+    {
+        switch ( getFhirVersion() )
+        {
+            case DSTU3:
+                return TestConfiguration.BASE_DSTU3_CONTEXT;
+            case R4:
+                return TestConfiguration.BASE_R4_CONTEXT;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
+        }
+    }
+
+    @Nonnull
+    protected String getResourceDir()
+    {
+        switch ( getFhirVersion() )
+        {
+            case DSTU3:
+                return "dstu3";
+            case R4:
+                return "r4";
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
+        }
+    }
+
+    @Nonnull
     protected HttpHeaders createDefaultHeaders()
     {
         final HttpHeaders headers = new HttpHeaders();
@@ -171,7 +203,7 @@ public abstract class AbstractAppTest
         }
         if ( StringUtils.isNotBlank( resourceSearchResponse ) )
         {
-            final UrlPattern urlPattern = urlMatching( TestConfiguration.BASE_DSTU3_CONTEXT +
+            final UrlPattern urlPattern = urlMatching( getBaseFhirContext() +
                 "/" + resourceType.getResourceTypeName() +
                 "\\?_sort=_lastUpdated&_count=10000&_lastUpdated=ge[^&]+&_elements=meta\\%2[cC]id" );
             previousResourceSearchStubMapping = fhirMockServer.stubFor(
@@ -181,7 +213,7 @@ public abstract class AbstractAppTest
         }
         if ( StringUtils.isNotBlank( resourceId ) && StringUtils.isNotBlank( resourceResponse ) )
         {
-            fhirMockServer.stubFor( WireMock.get( urlEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT +
+            fhirMockServer.stubFor( WireMock.get( urlEqualTo( getBaseFhirContext() +
                 "/" + resourceType.getResourceTypeName() + "/" + resourceId ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
                 .withBody( resourceResponse ) ) );
@@ -192,7 +224,7 @@ public abstract class AbstractAppTest
             Assert.assertNotNull( resourceId );
             Assert.assertNotNull( resourceResponse );
             mockMvc.perform( MockMvcRequestBuilders.put( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}/{resourceType}/{resourceId}",
-                testConfiguration.getFhirServerId(), testConfiguration.getFhirServerResourceId( resourceType ),
+                testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), resourceType ),
                 resourceType.getResourceTypeName(), resourceId ).content( resourceResponse ).contentType( FHIR_JSON_MEDIA_TYPE )
                 .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
                 .andExpect( status().isOk() );
@@ -200,7 +232,7 @@ public abstract class AbstractAppTest
         else
         {
             mockMvc.perform( MockMvcRequestBuilders.post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}",
-                testConfiguration.getFhirServerId(), testConfiguration.getFhirServerResourceId( resourceType ) )
+                testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), resourceType ) )
                 .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
                 .andExpect( status().isOk() );
         }
@@ -267,9 +299,9 @@ public abstract class AbstractAppTest
         userDhis2Server = MockRestServiceServer.bindTo( userDhis2RestTemplate ).build();
 
         fhirMockServer.stubFor(
-            WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/metadata" ) ).willReturn( aResponse()
+            WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/metadata" ) ).willReturn( aResponse()
                 .withHeader( "Content-Type", "application/fhir+json" )
-                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/metadata.json", StandardCharsets.UTF_8 ) ) ) );
+                .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/metadata.json", StandardCharsets.UTF_8 ) ) ) );
 
         clearCache( metadataCacheManager );
         clearCache( dhisCacheManager );

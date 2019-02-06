@@ -1,0 +1,58 @@
+{
+  "resourceType": "Patient",
+  "id": "18",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+  },
+  "contained": [
+    {
+      "resourceType": "Organization",
+      "id": "1",
+      "name": "Birth Unit",
+      "partOf": {
+        "reference": "Organization/21"
+      }
+    }
+  ],
+  "identifier": [
+    {
+      "system": "http://example.sl/patients",
+      "value": "81586"
+    }
+  ],
+  "name": [
+    {
+      "family": "West",
+      "given": [
+        "Elizabeth"
+      ]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "2002-11-19",
+  "address": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+          "extension": [
+            {
+              "url": "latitude",
+              "valueDecimal": 8.4665341
+            },
+            {
+              "url": "longitude",
+              "valueDecimal": -13.262743
+            }
+          ]
+        }
+      ],
+      "city": "Freetown",
+      "country": "Sierra Leone"
+    }
+  ],
+  "managingOrganization": {
+    "reference": "#1"
+  }
+}

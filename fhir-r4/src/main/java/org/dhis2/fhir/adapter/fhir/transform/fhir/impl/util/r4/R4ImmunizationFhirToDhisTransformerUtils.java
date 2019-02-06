@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.fhir.server.impl.dstu3;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,40 +28,45 @@ package org.dhis2.fhir.adapter.fhir.server.impl.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractHierarchicallyFhirResourceRepositoryImpl;
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.Resource;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractImmunizationFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.hl7.fhir.r4.model.Immunization;
+import org.hl7.fhir.r4.model.PrimitiveType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Set;
 
-/**
- * Implementation of {@link AbstractHierarchicallyFhirResourceRepositoryImpl} for DSTU3.
- *
- * @author volsch
- */
 @Component
-public class Dstu3HierarchicallyFhirResourceRepositoryImpl extends AbstractHierarchicallyFhirResourceRepositoryImpl
+@Scriptable
+public class R4ImmunizationFhirToDhisTransformerUtils extends AbstractImmunizationFhirToDhisTransformerUtils
 {
-    public Dstu3HierarchicallyFhirResourceRepositoryImpl( @Nonnull FhirResourceRepository fhirResourceRepository )
+    public R4ImmunizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        super( fhirResourceRepository );
+        super( scriptExecutionContext );
     }
 
     @Nonnull
     @Override
-    protected IBaseBundle createBundle( @Nonnull List<? extends IBaseResource> resources )
+    public Set<FhirVersion> getFhirVersions()
     {
-        final Bundle bundle = new Bundle();
-        resources.stream().map( r -> {
-            final Bundle.BundleEntryComponent component = new Bundle.BundleEntryComponent();
-            component.setResource( (Resource) r );
-            return component;
-        } ).forEach( bundle::addEntry );
-        return bundle;
+        return FhirVersion.R4_ONLY;
+    }
+
+    @Override
+    public int getMaxDoseSequence( @Nullable IDomainResource immunization ) throws TransformerException
+    {
+        if ( immunization == null )
+        {
+            return 0;
+        }
+        return ((Immunization) immunization).getProtocolApplied().stream().map( Immunization.ImmunizationProtocolAppliedComponent::getDoseNumberPositiveIntType )
+            .map( PrimitiveType::getValue ).max( Comparator.naturalOrder() ).orElse( 0 );
     }
 }

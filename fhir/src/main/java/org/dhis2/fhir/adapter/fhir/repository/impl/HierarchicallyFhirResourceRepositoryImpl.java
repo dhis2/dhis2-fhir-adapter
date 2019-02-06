@@ -36,15 +36,19 @@ import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -55,14 +59,18 @@ import java.util.function.Function;
  *
  * @author volsch
  */
+@Component
 @CacheConfig( cacheNames = "hierarchicallyFhirResources", cacheManager = "fhirCacheManager" )
-public abstract class AbstractHierarchicallyFhirResourceRepositoryImpl implements HierarchicallyFhirResourceRepository
+public class HierarchicallyFhirResourceRepositoryImpl implements HierarchicallyFhirResourceRepository
 {
     private final FhirResourceRepository fhirResourceRepository;
 
-    public AbstractHierarchicallyFhirResourceRepositoryImpl( @Nonnull FhirResourceRepository fhirResourceRepository )
+    private final Map<FhirVersion, AbstractFhirResourceRepositorySupport> supports = new HashMap<>();
+
+    public HierarchicallyFhirResourceRepositoryImpl( @Nonnull FhirResourceRepository fhirResourceRepository, @Nonnull ObjectProvider<List<AbstractFhirResourceRepositorySupport>> supports )
     {
         this.fhirResourceRepository = fhirResourceRepository;
+        supports.getIfAvailable( Collections::emptyList ).forEach( s -> s.getFhirVersions().forEach( v -> HierarchicallyFhirResourceRepositoryImpl.this.supports.put( v, s ) ) );
     }
 
     @Nonnull
@@ -72,15 +80,16 @@ public abstract class AbstractHierarchicallyFhirResourceRepositoryImpl implement
         @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType,
         @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction )
     {
+        final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
         if ( resourceId == null )
         {
-            return createBundle( Collections.emptyList() );
+            return support.createBundle( Collections.emptyList() );
         }
 
         IBaseResource child = fhirResourceRepository.find( fhirServerId, fhirVersion, fhirEndpoint, resourceType, resourceId ).orElse( null );
         if ( child == null )
         {
-            return createBundle( Collections.emptyList() );
+            return support.createBundle( Collections.emptyList() );
         }
 
         final Set<IBaseResource> processedResources = new HashSet<>();
@@ -119,9 +128,6 @@ public abstract class AbstractHierarchicallyFhirResourceRepositoryImpl implement
             }
         }
 
-        return createBundle( result );
+        return support.createBundle( result );
     }
-
-    @Nonnull
-    protected abstract IBaseBundle createBundle( @Nonnull List<? extends IBaseResource> resources );
 }

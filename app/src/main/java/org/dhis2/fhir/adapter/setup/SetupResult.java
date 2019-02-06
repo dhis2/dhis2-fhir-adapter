@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.setup;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -38,6 +39,8 @@ import java.util.UUID;
 
 /**
  * The result of the setup of the FHIR adapter.
+ *
+ * @author volsch
  */
 public class SetupResult implements Serializable
 {
@@ -47,10 +50,16 @@ public class SetupResult implements Serializable
 
     private final Map<FhirResourceType, UUID> fhirServerResourceIds;
 
-    public SetupResult( @Nonnull UUID fhirServerId, @Nonnull Map<FhirResourceType, UUID> fhirServerResourceIds )
+    private final System organizationSystem;
+
+    private final System patientSystem;
+
+    public SetupResult( @Nonnull UUID fhirServerId, @Nonnull Map<FhirResourceType, UUID> fhirServerResourceIds, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
         this.fhirServerId = fhirServerId;
         this.fhirServerResourceIds = Collections.unmodifiableMap( fhirServerResourceIds );
+        this.organizationSystem = organizationSystem;
+        this.patientSystem = patientSystem;
     }
 
     @Nonnull
@@ -63,5 +72,15 @@ public class SetupResult implements Serializable
     public Map<FhirResourceType, UUID> getFhirServerResourceIds()
     {
         return fhirServerResourceIds;
+    }
+
+    public System getOrganizationSystem()
+    {
+        return organizationSystem;
+    }
+
+    public System getPatientSystem()
+    {
+        return patientSystem;
     }
 }

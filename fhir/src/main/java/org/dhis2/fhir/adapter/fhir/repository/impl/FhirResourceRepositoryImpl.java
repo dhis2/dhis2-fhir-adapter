@@ -59,7 +59,6 @@ import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.rest.RestBadRequestException;
 import org.dhis2.fhir.adapter.util.NameUtils;
-import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
@@ -69,6 +68,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -88,8 +88,9 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
+@Component
 @CacheConfig( cacheNames = "fhirResources", cacheManager = "fhirCacheManager" )
-public abstract class AbstractFhirResourceRepositoryImpl implements FhirResourceRepository
+public class FhirResourceRepositoryImpl implements FhirResourceRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -101,21 +102,18 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
 
     private final Map<FhirVersion, FhirContext> fhirContexts;
 
-    public AbstractFhirResourceRepositoryImpl( @Nonnull ScriptExecutor scriptExecutor, @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
-        @Nonnull ObjectProvider<List<FhirContext>> fhirContexts )
+    private final Map<FhirVersion, AbstractFhirResourceRepositorySupport> supports = new HashMap<>();
+
+    public FhirResourceRepositoryImpl( @Nonnull ScriptExecutor scriptExecutor, @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull ObjectProvider<List<FhirContext>> fhirContexts, @Nonnull ObjectProvider<List<AbstractFhirResourceRepositorySupport>> supports )
     {
         this.scriptExecutor = scriptExecutor;
         this.storedItemService = storedItemService;
         this.fhirServerResourceRepository = fhirServerResourceRepository;
         this.fhirContexts = fhirContexts.getIfAvailable( Collections::emptyList ).stream().filter( fc -> (FhirVersion.get( fc.getVersion().getVersion() ) != null) )
             .collect( Collectors.toMap( fc -> FhirVersion.get( fc.getVersion().getVersion() ), fc -> fc ) );
+        supports.getIfAvailable( Collections::emptyList ).forEach( s -> s.getFhirVersions().forEach( v -> FhirResourceRepositoryImpl.this.supports.put( v, s ) ) );
     }
-
-    @Nonnull
-    protected abstract AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirServerId );
-
-    @Nonnull
-    protected abstract IAnyResource createFhirSubscription( @Nonnull FhirServerResource fhirServerResource );
 
     @Nonnull
     @Override
@@ -214,9 +212,10 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
         final Optional<FhirServerResource> fhirServerResource = fhirServerResourceRepository.findFirstCached( fhirServerId, fhirResourceType );
         if ( fhirServerResource.isPresent() && (fhirServerResource.get().getImpTransformScript() != null) )
         {
+            final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
             final Map<String, Object> variables = new HashMap<>();
             variables.put( ScriptVariable.RESOURCE.getVariableName(), resource );
-            variables.put( ScriptVariable.UTILS.getVariableName(), createFhirRepositoryResourceUtils( fhirServerId ) );
+            variables.put( ScriptVariable.UTILS.getVariableName(), support.createFhirRepositoryResourceUtils( fhirServerId ) );
 
             try
             {
@@ -329,13 +328,15 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
     @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedFhirServerResourceEvent.class )
     public void autoCreatedSubscriptionResource( @Nonnull AutoCreatedFhirServerResourceEvent event )
     {
-        final FhirContext fhirContext = fhirContexts.get( event.getFhirServerResource().getFhirServer().getFhirVersion() );
+        final FhirVersion fhirVersion = event.getFhirServerResource().getFhirServer().getFhirVersion();
+        final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, event.getFhirServerResource().getFhirServer().getFhirEndpoint() );
 
+        final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
         final MethodOutcome methodOutcome;
         try
         {
-            methodOutcome = client.create().resource( createFhirSubscription( event.getFhirServerResource() ) ).execute();
+            methodOutcome = client.create().resource( support.createFhirSubscription( event.getFhirServerResource() ) ).execute();
         }
         catch ( BaseServerResponseException e )
         {
@@ -348,37 +349,17 @@ public abstract class AbstractFhirResourceRepositoryImpl implements FhirResource
     }
 
     @Nonnull
-    protected String createWebHookUrl( @Nonnull FhirServerResource fhirServerResource )
-    {
-        final StringBuilder url = new StringBuilder( fhirServerResource.getFhirServer().getAdapterEndpoint().getBaseUrl() );
-        if ( url.charAt( url.length() - 1 ) != '/' )
-        {
-            url.append( '/' );
-        }
-        url.append( "remote-fhir-rest-hook/" );
-        url.append( fhirServerResource.getFhirServer().getId() );
-        url.append( '/' );
-        url.append( fhirServerResource.getId() );
-        return url.toString();
-    }
-
-    @Nullable
-    protected abstract IBaseResource getFirstResource( @Nonnull IBaseBundle bundle );
-
-    @Nonnull
-    protected abstract Class<? extends IBaseBundle> getBundleClass();
-
-    @Nonnull
     protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
     {
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
+        final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
 
         logger.debug( "Reading {}?{}={} from FHIR endpoints {}.", resourceType, identifier, field, fhirEndpoint.getBaseUrl() );
-        final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( getBundleClass() )
+        final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( support.getBundleClass() )
             .where( new TokenClientParam( field ).exactly().systemAndIdentifier( identifier.getSystem(), identifier.getCode() ) )
             .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
-        final IBaseResource resource = getFirstResource( bundle );
+        final IBaseResource resource = support.getFirstResource( bundle );
         logger.debug( "Read {}?{}={} from FHIR endpoints {} (found={}).", resourceType, identifier, field, fhirEndpoint.getBaseUrl(), (resource != null) );
         return Optional.ofNullable( transform( fhirServerId, fhirVersion, resource ) );
     }

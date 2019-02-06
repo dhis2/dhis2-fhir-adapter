@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.trackedentity;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.commons.io.IOUtils;
-import org.dhis2.fhir.adapter.TestConfiguration;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
@@ -49,22 +48,22 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  *
  * @author volsch
  */
-public class PatientToTrackedEntityInstanceTransformationAppTest
+public abstract class AbstractPatientToTrackedEntityInstanceTransformationAppTest
     extends AbstractTrackedEntityInstanceTransformationAppTest
 {
     @Test
     public void createPatient() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/19" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/19" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_U_7777" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-empty.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/18" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/18" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -103,8 +102,8 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
-            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-15.json", StandardCharsets.UTF_8 ),
-            "15", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-15.json", StandardCharsets.UTF_8 ), false );
+            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/search-patient-15.json", StandardCharsets.UTF_8 ),
+            "15", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-15.json", StandardCharsets.UTF_8 ), false );
 
         waitForEmptyResourceQueue();
         userDhis2Server.verify();
@@ -115,15 +114,15 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
     public void createRelatedPersonFirst() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Patient/16" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Patient/16" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-16.json", StandardCharsets.UTF_8 ) ) ) );
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/19" ) ).willReturn( aResponse()
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-16.json", StandardCharsets.UTF_8 ) ) ) );
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/19" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) );
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/18" ) ).willReturn( aResponse()
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-19.json", StandardCharsets.UTF_8 ) ) ) );
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/18" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-18.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -162,8 +161,8 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-16-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ).headers( createDefaultHeaders() ) );
 
         notifyResource( FhirResourceType.RELATED_PERSON,
-            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-related-person-20.json", StandardCharsets.UTF_8 ),
-            "20", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-related-person-20.json", StandardCharsets.UTF_8 ), false );
+            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/search-related-person-20.json", StandardCharsets.UTF_8 ),
+            "20", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-related-person-20.json", StandardCharsets.UTF_8 ), false );
 
         waitForEmptyResourceQueue();
         userDhis2Server.verify();
@@ -174,12 +173,12 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
     public void updatePersonWithFallbackOrg() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Patient/17" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Patient/17" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-17.json", StandardCharsets.UTF_8 ) ) ) );
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/20" ) ).willReturn( aResponse()
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-17.json", StandardCharsets.UTF_8 ) ) ) );
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/20" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-20.json", StandardCharsets.UTF_8 ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-20.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1357" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1357.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -199,8 +198,8 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-17-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
-            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-17.json", StandardCharsets.UTF_8 ),
-            "17", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-17.json", StandardCharsets.UTF_8 ), true );
+            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/search-patient-17.json", StandardCharsets.UTF_8 ),
+            "17", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-17.json", StandardCharsets.UTF_8 ), true );
 
         waitForEmptyResourceQueue();
         userDhis2Server.verify();
@@ -211,12 +210,12 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
     public void updatePersonWithDefaultOrg() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Patient/18" ) ).willReturn( aResponse()
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Patient/18" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-18.json", StandardCharsets.UTF_8 ) ) ) );
-        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( TestConfiguration.BASE_DSTU3_CONTEXT + "/Organization/21" ) ).willReturn( aResponse()
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-18.json", StandardCharsets.UTF_8 ) ) ) );
+        fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Organization/21" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
-            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-organization-21.json", StandardCharsets.UTF_8 ) ) ) );
+            .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-21.json", StandardCharsets.UTF_8 ) ) ) );
         systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_2468" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-empty.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -239,8 +238,8 @@ public class PatientToTrackedEntityInstanceTransformationAppTest
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-18-update-last-updated.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         notifyResource( FhirResourceType.PATIENT,
-            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/search-patient-18.json", StandardCharsets.UTF_8 ),
-            "18", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/dstu3/get-patient-18.json", StandardCharsets.UTF_8 ), false );
+            IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/search-patient-18.json", StandardCharsets.UTF_8 ),
+            "18", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-patient-18.json", StandardCharsets.UTF_8 ), false );
 
         waitForEmptyResourceQueue();
         userDhis2Server.verify();

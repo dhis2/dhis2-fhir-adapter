@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,10 @@ package org.dhis2.fhir.adapter.fhir.server;
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -44,11 +46,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class FhirServerRestHookControllerAppTest extends AbstractAppTest
 {
+    @Nonnull
+    @Override
+    protected FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
+
     @Test
     public void authWithoutPayload() throws Exception
     {
         mockMvc.perform( post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}",
-            testConfiguration.getFhirServerId(), testConfiguration.getFhirServerResourceId( FhirResourceType.PATIENT ) ) )
+            testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), FhirResourceType.PATIENT ) ) )
             .andExpect( status().isUnauthorized() );
     }
 
@@ -56,7 +65,7 @@ public class FhirServerRestHookControllerAppTest extends AbstractAppTest
     public void notFoundSubscriptionWithoutPayload() throws Exception
     {
         mockMvc.perform( post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}",
-            UUID.randomUUID().toString(), testConfiguration.getFhirServerResourceId( FhirResourceType.PATIENT ) ) )
+            UUID.randomUUID().toString(), testConfiguration.getFhirServerResourceId( getFhirVersion(), FhirResourceType.PATIENT ) ) )
             .andExpect( status().isNotFound() );
     }
 
@@ -64,7 +73,7 @@ public class FhirServerRestHookControllerAppTest extends AbstractAppTest
     public void notFoundSubscriptionResourceWithoutPayload() throws Exception
     {
         mockMvc.perform( post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}",
-            testConfiguration.getFhirServerId(), UUID.randomUUID().toString() ) )
+            testConfiguration.getFhirServerId( getFhirVersion() ), UUID.randomUUID().toString() ) )
             .andExpect( status().isNotFound() );
     }
 
@@ -72,7 +81,7 @@ public class FhirServerRestHookControllerAppTest extends AbstractAppTest
     public void authWithPayload() throws Exception
     {
         mockMvc.perform( put( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}/Patient/1",
-            testConfiguration.getFhirServerId(), testConfiguration.getFhirServerResourceId( FhirResourceType.PATIENT ) )
+            testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), FhirResourceType.PATIENT ) )
             .contentType( FHIR_JSON_MEDIA_TYPE ).content( "{}" ) )
             .andExpect( status().isUnauthorized() );
     }

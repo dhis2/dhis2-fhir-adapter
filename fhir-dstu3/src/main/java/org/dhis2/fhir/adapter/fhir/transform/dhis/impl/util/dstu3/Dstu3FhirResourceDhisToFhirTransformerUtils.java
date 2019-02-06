@@ -42,6 +42,7 @@ import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseElement;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -85,6 +86,20 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
         catch ( FHIRException e )
         {
             throw new FhirRepositoryException( "Unknown FHIR resource type: " + resourceType, e );
+        }
+    }
+
+    @Nonnull
+    @Override
+    public IBaseElement createType( @Nonnull String fhirType )
+    {
+        try
+        {
+            return ResourceFactory.createType( fhirType );
+        }
+        catch ( FHIRException e )
+        {
+            throw new FhirRepositoryException( "Unknown FHIR type: " + fhirType, e );
         }
     }
 

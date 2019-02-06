@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseElement;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
@@ -108,6 +109,9 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
         final FhirResourceType resourceType = convertFhirResourceType( fhirResourceType );
         return createResource( resourceType.getResourceTypeName() );
     }
+
+    @Nonnull
+    public abstract IBaseElement createType( @Nonnull String fhirType );
 
     @Nonnull
     public IBaseResource createResource( @Nonnull FhirResourceType fhirResourceType )

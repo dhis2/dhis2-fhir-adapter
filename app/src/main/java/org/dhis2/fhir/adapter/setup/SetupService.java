@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ public class SetupService
     private final CodeCategoryRepository codeCategoryRepository;
 
     private final CodeRepository codeRepository;
-    
+
     private final SystemRepository systemRepository;
 
     private final SystemCodeRepository systemCodeRepository;
@@ -146,24 +146,25 @@ public class SetupService
             setup.getFhirServerSetup().getSystemUriSetup().getPatientSystemUri(),
             "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "National Patient ID", "Default DHIS2 patient system URI." );
 
-        final SetupResult setupResult = createFhirServer( setup.getFhirServerSetup(), organizationSystem, patientSystem );
+        final SetupResult setupResult = createFhirServer( setup.getFhirServerSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem );
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         updateTrackedEntity( setup.getTrackedEntitySetup() );
         return setupResult;
     }
 
     @Nonnull
-    private SetupResult createFhirServer( @Nonnull FhirServerSetup setup, @Nonnull System organizationSystem, @Nonnull System patientSystem )
+    @Transactional
+    public SetupResult createFhirServer( @Nonnull FhirServerSetup setup, @Nonnull FhirVersion fhirVersion, @Nonnull String suffix, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
         final Set<FhirResourceType> autoCreatedSubscriptionResources = new HashSet<>();
         autoCreatedSubscriptionResources.add( FhirResourceType.PATIENT );
 
         final FhirServer fhirServer = new FhirServer();
         fhirServer.setSystems( new ArrayList<>() );
-        fhirServer.setName( "Default Remote Subscription" );
-        fhirServer.setCode( "DEFAULT" );
+        fhirServer.setName( "Default Remote Subscription" + suffix );
+        fhirServer.setCode( "DEFAULT" + suffix );
         fhirServer.setDescription( "Default FHIR server." );
-        fhirServer.setFhirVersion( FhirVersion.DSTU3 );
+        fhirServer.setFhirVersion( fhirVersion );
         fhirServer.setEnabled( true );
         fhirServer.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
 
@@ -227,7 +228,8 @@ public class SetupService
 
         fhirServerRepository.saveAndFlush( fhirServer );
         return new SetupResult( fhirServer.getId(), fhirServer.getResources().stream()
-            .collect( Collectors.toMap( FhirServerResource::getFhirResourceType, VersionedBaseMetadata::getId ) ) );
+            .collect( Collectors.toMap( FhirServerResource::getFhirResourceType, VersionedBaseMetadata::getId ) ),
+            organizationSystem, patientSystem );
     }
 
     private void createSystemCodes( @Nonnull OrganizationCodeSetup setup, @Nonnull System organizationSystem )

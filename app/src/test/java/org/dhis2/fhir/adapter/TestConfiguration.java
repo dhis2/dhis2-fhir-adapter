@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.lock.impl.EmbeddedLockManagerImpl;
@@ -88,6 +89,8 @@ public class TestConfiguration
 
     public static final String BASE_DSTU3_CONTEXT = "/baseDstu3";
 
+    public static final String BASE_R4_CONTEXT = "/baseR4";
+
     @Value( "${dhis2.fhir-adapter.endpoint.system-authentication.username}" )
     private String dhis2SystemAuthenticationUsername;
 
@@ -103,16 +106,39 @@ public class TestConfiguration
 
     private Map<FhirResourceType, UUID> fhirServerResourceIds;
 
+    private UUID fhirServerIdR4;
+
+    private Map<FhirResourceType, UUID> fhirServerResourceIdsR4;
+
     @Nonnull
-    public UUID getFhirServerId()
+    public UUID getFhirServerId( @Nonnull FhirVersion fhirVersion )
     {
-        return fhirServerId;
+        switch ( fhirVersion )
+        {
+            case DSTU3:
+                return fhirServerId;
+            case R4:
+                return fhirServerIdR4;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + fhirVersion );
+        }
     }
 
     @Nonnull
-    public UUID getFhirServerResourceId( @Nonnull FhirResourceType resourceType )
+    public UUID getFhirServerResourceId( @Nonnull FhirVersion fhirVersion, @Nonnull FhirResourceType resourceType )
     {
-        final UUID resourceId = fhirServerResourceIds.get( resourceType );
+        final UUID resourceId;
+        switch ( fhirVersion )
+        {
+            case DSTU3:
+                resourceId = fhirServerResourceIds.get( resourceType );
+                break;
+            case R4:
+                resourceId = fhirServerResourceIdsR4.get( resourceType );
+                break;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + fhirVersion );
+        }
         Assert.assertNotNull( "FHIR server resource for " + resourceType + " could not be found.", resourceId );
         return resourceId;
     }
@@ -196,12 +222,34 @@ public class TestConfiguration
         setup.getTrackedEntitySetup().getLastName().setReferenceType( ReferenceType.NAME );
         setup.getTrackedEntitySetup().getLastName().setReferenceValue( "Last Name" );
 
+        final Setup setupR4 = new Setup();
+
+        setupR4.getFhirServerSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
+        setupR4.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
+
+        setupR4.getFhirServerSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
+        setupR4.getFhirServerSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
+
+        setupR4.getFhirServerSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_R4_CONTEXT );
+        setupR4.getFhirServerSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
+        setupR4.getFhirServerSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
+        setupR4.getFhirServerSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
+        setupR4.getFhirServerSetup().getFhirSetup().setSupportsRelatedPerson( true );
+
+        setupR4.getFhirServerSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
+        setupR4.getFhirServerSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
+        setupR4.getFhirServerSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
+        setupR4.getFhirServerSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
+
         final SetupResult setupResult;
+        final SetupResult setupResultR4;
         SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
             setupResult = setupService.apply( setup );
+            setupResultR4 = setupService.createFhirServer( setupR4.getFhirServerSetup(), FhirVersion.R4, "_R4",
+                setupResult.getOrganizationSystem(), setupResult.getPatientSystem() );
             Assert.assertTrue( setupService.hasCompletedSetup() );
         }
         finally
@@ -211,6 +259,8 @@ public class TestConfiguration
 
         this.fhirServerId = setupResult.getFhirServerId();
         this.fhirServerResourceIds = setupResult.getFhirServerResourceIds();
+        this.fhirServerIdR4 = setupResultR4.getFhirServerId();
+        this.fhirServerResourceIdsR4 = setupResultR4.getFhirServerResourceIds();
     }
 
     @PreDestroy

@@ -63,7 +63,9 @@ public enum FhirResourceType
     OBSERVATION( "Observation", 20, "Observation" ),
     ORGANIZATION( "Organization", 1, "Organization" ),
     PATIENT( "Patient", 10, "Patient" ),
-    RELATED_PERSON( "RelatedPerson", 11, "RelatedPerson" );
+    RELATED_PERSON( "RelatedPerson", 11, "RelatedPerson" ),
+    PRACTITIONER( "Practitioner", 9, "Practitioner" ),
+    ;
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );

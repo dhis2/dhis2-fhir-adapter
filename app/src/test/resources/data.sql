@@ -476,3 +476,6 @@ INSERT INTO fhir_dhis_sync_group(id, version)
 VALUES ('22204dd405d94cdd96a8ed742087d469', 0);
 INSERT INTO fhir_dhis_sync_group_update(id)
 VALUES ('22204dd405d94cdd96a8ed742087d469');
+
+INSERT INTO fhir_script_source_version(script_source_id, fhir_version)
+SELECT script_source_id, 'R4' FROM fhir_script_source_version WHERE fhir_version = 'DSTU3';

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,11 +44,14 @@ import java.util.Set;
  */
 public enum FhirVersion
 {
-    DSTU3( FhirVersionEnum.DSTU3 );
+    DSTU3( FhirVersionEnum.DSTU3 ),
+    R4( FhirVersionEnum.R4 );
 
     public static final Set<FhirVersion> ALL = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( FhirVersion.values() ) ) );
 
     public static final Set<FhirVersion> DSTU3_ONLY = Collections.singleton( DSTU3 );
+
+    public static final Set<FhirVersion> R4_ONLY = Collections.singleton( R4 );
 
     @Nullable
     public static FhirVersion get( @Nullable FhirVersionEnum fhirVersionEnum )

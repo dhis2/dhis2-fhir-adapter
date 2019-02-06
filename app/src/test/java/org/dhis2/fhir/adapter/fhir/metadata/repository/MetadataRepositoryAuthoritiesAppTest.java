@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.junit.Test;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -45,6 +46,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class MetadataRepositoryAuthoritiesAppTest extends AbstractAppTest
 {
+    @Nonnull
+    @Override
+    protected FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
+
     @Test
     public void codeCategoryAuthorities() throws Exception
     {
