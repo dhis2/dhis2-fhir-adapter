@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
@@ -54,10 +54,10 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_dhis_assignment" )
 @NamedQueries( {
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, query = "SELECT a.dhisResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirServer.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirServer.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, query = "SELECT a.fhirResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirServer.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_DHIS_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirServer.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, query = "SELECT a.dhisResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, query = "SELECT a.fhirResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_DHIS_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
 } )
 public class FhirDhisAssignment implements Serializable
 {
@@ -77,7 +77,7 @@ public class FhirDhisAssignment implements Serializable
 
     private AbstractRule rule;
 
-    private FhirServer fhirServer;
+    private FhirClient fhirClient;
 
     private String fhirResourceId;
 
@@ -122,15 +122,15 @@ public class FhirDhisAssignment implements Serializable
     }
 
     @ManyToOne( optional = false )
-    @JoinColumn( name = "fhir_server_id", referencedColumnName = "id", nullable = false )
-    public FhirServer getFhirServer()
+    @JoinColumn( name = "fhir_client_id", referencedColumnName = "id", nullable = false )
+    public FhirClient getFhirClient()
     {
-        return fhirServer;
+        return fhirClient;
     }
 
-    public void setFhirServer( FhirServer fhirServer )
+    public void setFhirClient( FhirClient fhirClient )
     {
-        this.fhirServer = fhirServer;
+        this.fhirClient = fhirClient;
     }
 
     @Basic

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ public class Setup implements Serializable
 
     @Valid
     @NotNull
-    private FhirServerSetup fhirServerSetup = new FhirServerSetup();
+    private FhirClientSetup fhirClientSetup = new FhirClientSetup();
 
     @Valid
     @NotNull
@@ -53,14 +53,14 @@ public class Setup implements Serializable
     @NotNull
     private TrackedEntitySetup trackedEntitySetup = new TrackedEntitySetup();
 
-    public FhirServerSetup getFhirServerSetup()
+    public FhirClientSetup getFhirClientSetup()
     {
-        return fhirServerSetup;
+        return fhirClientSetup;
     }
 
-    public void setFhirServerSetup( FhirServerSetup fhirServerSetup )
+    public void setFhirClientSetup( FhirClientSetup fhirClientSetup )
     {
-        this.fhirServerSetup = fhirServerSetup;
+        this.fhirClientSetup = fhirClientSetup;
     }
 
     public OrganizationCodeSetup getOrganizationCodeSetup()

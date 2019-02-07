@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.repository.impl.AbstractStoredItemRepositoryI
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomStoredFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +46,7 @@ import java.time.Instant;
  *
  * @author volsch
  */
-public class CustomStoredFhirResourceRepositoryImpl extends AbstractStoredItemRepositoryImpl<StoredFhirResource, StoredFhirResourceId, FhirServer> implements CustomStoredFhirResourceRepository
+public class CustomStoredFhirResourceRepositoryImpl extends AbstractStoredItemRepositoryImpl<StoredFhirResource, StoredFhirResourceId, FhirClient> implements CustomStoredFhirResourceRepository
 {
     public CustomStoredFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager, @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull @Qualifier( "&entityManagerFactory" ) PersistenceExceptionTranslator persistenceExceptionTranslator )
@@ -63,7 +63,7 @@ public class CustomStoredFhirResourceRepositoryImpl extends AbstractStoredItemRe
 
     @Nonnull
     @Override
-    protected StoredFhirResource createStoredItem( @Nonnull FhirServer prefix, @Nonnull String storedId )
+    protected StoredFhirResource createStoredItem( @Nonnull FhirClient prefix, @Nonnull String storedId )
     {
         return new StoredFhirResource( new StoredFhirResourceId( prefix, storedId ), Instant.now() );
     }

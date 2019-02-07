@@ -225,7 +225,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
 
     @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the mapped code (field code or if available field mappedCode of adapter resource code) for the specified FHIR resource type dependent code. " +
-        "As system URI the value associated with the FHIR resource type of the FHIR server system (adapter resource fhirServerSystems) of the current transformation context is used.",
+        "As system URI the value associated with the FHIR resource type of the FHIR client system (adapter resource fhirClientSystems) of the current transformation context is used.",
         args = {
             @ScriptMethodArg( value = "code", description = "The code in context of the system URI for the specified FHIR resource type." ),
             @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type (upper case letters, separated by underscores) from which the associated system URI should be taken." ),

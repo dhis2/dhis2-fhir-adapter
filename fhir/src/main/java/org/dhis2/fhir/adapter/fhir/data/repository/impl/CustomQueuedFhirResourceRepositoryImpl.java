@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.repository.impl.AbstractQueuedItemRepositoryI
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomQueuedFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,7 +46,7 @@ import java.time.Instant;
  *
  * @author volsch
  */
-public class CustomQueuedFhirResourceRepositoryImpl extends AbstractQueuedItemRepositoryImpl<QueuedFhirResource, QueuedFhirResourceId, FhirServerResource> implements CustomQueuedFhirResourceRepository
+public class CustomQueuedFhirResourceRepositoryImpl extends AbstractQueuedItemRepositoryImpl<QueuedFhirResource, QueuedFhirResourceId, FhirClientResource> implements CustomQueuedFhirResourceRepository
 {
     public CustomQueuedFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager,
         @Nonnull PlatformTransactionManager platformTransactionManager,

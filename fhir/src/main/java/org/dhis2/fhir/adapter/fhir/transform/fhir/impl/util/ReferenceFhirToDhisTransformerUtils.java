@@ -29,11 +29,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -76,16 +76,16 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final FhirServerResourceRepository fhirServerResourceRepository;
+    private final FhirClientResourceRepository fhirClientResourceRepository;
 
     private final FhirResourceRepository fhirResourceRepository;
 
     public ReferenceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirResourceRepository fhirResourceRepository )
     {
         super( scriptExecutionContext );
-        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirClientResourceRepository = fhirClientResourceRepository;
         this.fhirResourceRepository = fhirResourceRepository;
     }
 
@@ -202,24 +202,24 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         }
 
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final UUID resourceId = context.getFhirRequest().getFhirServerResourceId();
+        final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
         if ( resourceId == null )
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
         }
-        final FhirServerResource fhirServerResource = fhirServerResourceRepository.findOneByIdCached( resourceId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server resource with ID " + resourceId ) );
+        final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );
 
         final FhirContext fhirContext = fhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
-        final FhirServer fhirServer = fhirServerResource.getFhirServer();
+        final FhirClient fhirClient = fhirClientResource.getFhirClient();
         final Optional<IBaseResource> optionalResource = refreshed ?
-            fhirResourceRepository.findRefreshed( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+            fhirResourceRepository.findRefreshed( fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
                 finalResourceType, reference.getReferenceElement().getIdPart() ) :
-            fhirResourceRepository.find( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+            fhirResourceRepository.find( fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
                 finalResourceType, reference.getReferenceElement().getIdPart() );
         final IBaseResource resource = optionalResource.map( r -> FhirBeanTransformerUtils.clone( fhirContext, r ) )
-            .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for FHIR server resource " + resourceId ) );
+            .orElseThrow( () -> new TransformerDataException( "Referenced FHIR resource " + reference.getReferenceElement() + " does not exist for FHIR client resource " + resourceId ) );
         reference.setResource( resource );
         return resource;
     }

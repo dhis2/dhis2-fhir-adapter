@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
@@ -56,9 +56,9 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
 {
     private final OrganizationUnitRuleRepository ruleRepository;
 
-    public DhisToFhirOrganizationUnitRequestResolver( @Nonnull FhirServerRepository fhirServerRepository, OrganizationUnitRuleRepository ruleRepository )
+    public DhisToFhirOrganizationUnitRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, OrganizationUnitRuleRepository ruleRepository )
     {
-        super( fhirServerRepository );
+        super( fhirClientRepository );
         this.ruleRepository = ruleRepository;
     }
 

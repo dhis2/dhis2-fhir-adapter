@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceTransformationException;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirRepositoryResourceUtils;
 import org.dhis2.fhir.adapter.util.NameUtils;
@@ -50,9 +50,9 @@ import java.util.UUID;
  */
 public class Dstu3FhirRepositoryResourceUtils extends AbstractFhirRepositoryResourceUtils
 {
-    public Dstu3FhirRepositoryResourceUtils( @Nonnull UUID fhirServerId, @Nonnull FhirServerSystemRepository fhirServerSystemRepository )
+    public Dstu3FhirRepositoryResourceUtils( @Nonnull UUID fhirClientId, @Nonnull FhirClientSystemRepository fhirClientSystemRepository )
     {
-        super( fhirServerId, fhirServerSystemRepository );
+        super( fhirClientId, fhirClientSystemRepository );
     }
 
     @Nonnull

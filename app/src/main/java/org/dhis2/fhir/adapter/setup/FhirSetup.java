@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * The setup of the FHIR server for FHIR.
+ * The setup of the FHIR client for FHIR.
  *
  * @author volsch
  */

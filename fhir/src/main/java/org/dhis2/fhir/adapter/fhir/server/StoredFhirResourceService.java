@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,13 @@ package org.dhis2.fhir.adapter.fhir.server;
 import org.dhis2.fhir.adapter.data.processor.StoredItemService;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 
 /**
  * Stored item service for {@link StoredFhirResource}s.
  *
  * @author volsch
  */
-public interface StoredFhirResourceService extends StoredItemService<StoredFhirResource, StoredFhirResourceId, FhirServer>
+public interface StoredFhirResourceService extends StoredItemService<StoredFhirResource, StoredFhirResourceId, FhirClient>
 {
 }

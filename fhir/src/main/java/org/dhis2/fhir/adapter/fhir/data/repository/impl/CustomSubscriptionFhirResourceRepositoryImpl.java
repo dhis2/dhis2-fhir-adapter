@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.data.repository.impl;
 import org.dhis2.fhir.adapter.data.repository.TooManyPersistRetriesException;
 import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomSubscriptionFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.util.SqlExceptionUtils;
 import org.slf4j.Logger;
@@ -85,16 +85,16 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
 
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    public void enqueue( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource )
+    public void enqueue( @Nonnull FhirClientResource fhirClientResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource )
     {
-        enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource, 1 );
+        enqueue( fhirClientResource, contentType, fhirVersion, fhirResourceId, fhirResource, 1 );
     }
 
-    protected void enqueue( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource, int tryCount )
+    protected void enqueue( @Nonnull FhirClientResource fhirClientResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource, int tryCount )
     {
         SubscriptionFhirResource subscriptionFhirResource = new SubscriptionFhirResource();
         subscriptionFhirResource.setCreatedAt( Instant.now() );
-        subscriptionFhirResource.setFhirServerResource( fhirServerResource );
+        subscriptionFhirResource.setFhirClientResource( fhirClientResource );
         subscriptionFhirResource.setContentType( contentType );
         subscriptionFhirResource.setFhirVersion( fhirVersion );
         subscriptionFhirResource.setFhirResourceId( fhirResourceId );
@@ -103,8 +103,8 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
-            // FHIR server resource may be not a valid entity and must be reloaded (cached before)
-            subscriptionFhirResource.setFhirServerResource( entityManager.getReference( FhirServerResource.class, fhirServerResource.getId() ) );
+            // FHIR client resource may be not a valid entity and must be reloaded (cached before)
+            subscriptionFhirResource.setFhirClientResource( entityManager.getReference( FhirClientResource.class, fhirClientResource.getId() ) );
 
             entityManager.persist( subscriptionFhirResource );
             entityManager.flush();
@@ -119,7 +119,7 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
             {
                 throw runtimeException;
             }
-            logger.debug( "FHIR Server Resource " + fhirServerResource.getId() + " contains already FHIR Resource " + fhirResourceId, e );
+            logger.debug( "FHIR client Resource " + fhirClientResource.getId() + " contains already FHIR Resource " + fhirResourceId, e );
         }
         finally
         {
@@ -132,7 +132,7 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
         {
             subscriptionFhirResource = entityManager.createNamedQuery( SubscriptionFhirResource.RESOURCE_NAMED_QUERY, SubscriptionFhirResource.class )
                 .setLockMode( LockModeType.PESSIMISTIC_WRITE )
-                .setParameter( "fhirServerResource", fhirServerResource )
+                .setParameter( "fhirClientResource", fhirClientResource )
                 .setParameter( "fhirResourceId", fhirResourceId ).getSingleResult();
             subscriptionFhirResource.setCreatedAt( Instant.now() );
             subscriptionFhirResource.setContentType( contentType );
@@ -155,8 +155,8 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
             {
                 throw new TooManyPersistRetriesException( "Storing subscription FHIR resource has been retried too many times." );
             }
-            logger.debug( "FHIR Server Resource " + fhirServerResource.getId() + " does no longer contain FHIR Resource " + fhirResourceId );
-            enqueue( fhirServerResource, contentType, fhirVersion, fhirResourceId, fhirResource, tryCount + 1 );
+            logger.debug( "FHIR client Resource " + fhirClientResource.getId() + " does no longer contain FHIR Resource " + fhirResourceId );
+            enqueue( fhirClientResource, contentType, fhirVersion, fhirResourceId, fhirResource, tryCount + 1 );
         }
     }
 
@@ -180,12 +180,12 @@ public class CustomSubscriptionFhirResourceRepositoryImpl implements CustomSubsc
 
     @Nonnull
     @Override
-    public Optional<SubscriptionFhirResource> findResource( @Nonnull FhirServerResource fhirServerResource, @Nonnull String fhirResourceId )
+    public Optional<SubscriptionFhirResource> findResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull String fhirResourceId )
     {
         try
         {
             return Optional.of( entityManager.createNamedQuery( SubscriptionFhirResource.RESOURCE_NAMED_QUERY, SubscriptionFhirResource.class )
-                .setParameter( "fhirServerResource", fhirServerResource )
+                .setParameter( "fhirClientResource", fhirClientResource )
                 .setParameter( "fhirResourceId", fhirResourceId ).getSingleResult() );
         }
         catch ( NoResultException e )

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.processor.impl.AbstractStoredItemService;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.StoredFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +44,7 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Service
-public class StoredFhirResourceServiceImpl extends AbstractStoredItemService<StoredFhirResource, StoredFhirResourceId, FhirServer> implements StoredFhirResourceService
+public class StoredFhirResourceServiceImpl extends AbstractStoredItemService<StoredFhirResource, StoredFhirResourceId, FhirClient> implements StoredFhirResourceService
 {
     public StoredFhirResourceServiceImpl( @Nonnull StoredFhirResourceRepository repository )
     {

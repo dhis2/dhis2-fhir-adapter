@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.validator.Uri;
 
@@ -51,7 +51,7 @@ public class SystemUriSetup implements Serializable
     @Size( max = System.MAX_SYSTEM_URI_LENGTH, message = "Must not be longer than {max} characters." )
     private String organizationSystemUri;
 
-    @Size( max = FhirServerSystem.MAX_CODE_PREFIX_LENGTH, message = "Code prefix must not be longer than {max} characters." )
+    @Size( max = FhirClientSystem.MAX_CODE_PREFIX_LENGTH, message = "Code prefix must not be longer than {max} characters." )
     @Pattern( regexp = "[^:]*", message = "Code prefix must not contain colon characters." )
     private String organizationCodePrefix;
 
@@ -60,7 +60,7 @@ public class SystemUriSetup implements Serializable
     @Size( max = System.MAX_SYSTEM_URI_LENGTH, message = "Must not be longer than {max} characters." )
     private String patientSystemUri;
 
-    @Size( max = FhirServerSystem.MAX_CODE_PREFIX_LENGTH, message = "Code prefix must not be longer than {max} characters." )
+    @Size( max = FhirClientSystem.MAX_CODE_PREFIX_LENGTH, message = "Code prefix must not be longer than {max} characters." )
     @Pattern( regexp = "[^:]*", message = "Code prefix must not contain colon characters." )
     private String patientCodePrefix;
 

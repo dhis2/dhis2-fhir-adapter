@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.data.repository.impl.AbstractProcessedItemReposito
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.CustomProcessedFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
@@ -42,7 +42,7 @@ import javax.persistence.EntityManager;
  *
  * @author volsch
  */
-public class CustomProcessedFhirResourceRepositoryImpl extends AbstractProcessedItemRepositoryImpl<ProcessedFhirResource, ProcessedFhirResourceId, FhirServerResource> implements CustomProcessedFhirResourceRepository
+public class CustomProcessedFhirResourceRepositoryImpl extends AbstractProcessedItemRepositoryImpl<ProcessedFhirResource, ProcessedFhirResourceId, FhirClientResource> implements CustomProcessedFhirResourceRepository
 {
     public CustomProcessedFhirResourceRepositoryImpl( @Nonnull EntityManager entityManager )
     {

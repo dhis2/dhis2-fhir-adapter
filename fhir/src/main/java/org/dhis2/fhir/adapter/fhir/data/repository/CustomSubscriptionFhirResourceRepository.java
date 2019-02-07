@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 
 import javax.annotation.Nonnull;
@@ -43,10 +43,10 @@ import java.util.Optional;
  */
 public interface CustomSubscriptionFhirResourceRepository
 {
-    void enqueue( @Nonnull FhirServerResource fhirServerResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource );
+    void enqueue( @Nonnull FhirClientResource fhirClientResource, @Nullable String contentType, @Nonnull FhirVersion fhirVersion, @Nonnull String fhirResourceId, @Nonnull String fhirResource );
 
     boolean deleteEnqueued( @Nonnull SubscriptionFhirResource subscriptionFhirResource );
 
     @Nonnull
-    Optional<SubscriptionFhirResource> findResource( @Nonnull FhirServerResource fhirServerResource, @Nonnull String fhirResourceId );
+    Optional<SubscriptionFhirResource> findResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull String fhirResourceId );
 }

@@ -45,7 +45,7 @@ import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
@@ -95,7 +95,7 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final RequestCacheService requestCacheService;
 
-    private final FhirServerSystemRepository fhirServerSystemRepository;
+    private final FhirClientSystemRepository fhirClientSystemRepository;
 
     private final DhisSyncGroupRepository dhisSyncGroupRepository;
 
@@ -116,7 +116,7 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull Authorization systemDhis2Authorization,
         @Nonnull LockManager lockManager,
         @Nonnull RequestCacheService requestCacheService,
-        @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
+        @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull QueuedDhisResourceRepository queuedDhisResourceRepository,
         @Nonnull StoredDhisResourceService storedItemService,
@@ -129,7 +129,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.lockManager = lockManager;
         this.requestCacheService = requestCacheService;
-        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.queuedDhisResourceRepository = queuedDhisResourceRepository;
         this.storedItemService = storedItemService;
@@ -342,21 +342,21 @@ public class DhisRepositoryImpl implements DhisRepository
                     {
                         if ( outcome.isDelete() )
                         {
-                            final boolean deleted = fhirResourceRepository.delete( transformerRequest.getFhirServer(), outcome.getResource() );
-                            fhirDhisAssignmentRepository.deleteFhirResourceId( outcome.getRule(), transformerRequest.getFhirServer(),
+                            final boolean deleted = fhirResourceRepository.delete( transformerRequest.getFhirClient(), outcome.getResource() );
+                            fhirDhisAssignmentRepository.deleteFhirResourceId( outcome.getRule(), transformerRequest.getFhirClient(),
                                 outcome.getResource().getIdElement() );
-                            logger.info( "Deleted (found={}) resource {} for FHIR server {}.", deleted,
-                                outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getFhirServer().getId() );
+                            logger.info( "Deleted (found={}) resource {} for FHIR client {}.", deleted,
+                                outcome.getResource().getIdElement().toUnqualifiedVersionless(), transformerRequest.getFhirClient().getId() );
                         }
                         else
                         {
-                            final IBaseResource resultingResource = fhirResourceRepository.save( transformerRequest.getFhirServer(), outcome.getResource() );
+                            final IBaseResource resultingResource = fhirResourceRepository.save( transformerRequest.getFhirClient(), outcome.getResource() );
                             // resource may have been set as attribute in transformer context (e.g. shared encounter)
                             outcome.getResource().setId( resultingResource.getIdElement() );
-                            fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getFhirServer(),
+                            fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getFhirClient(),
                                 resource.getResourceId(), resultingResource.getIdElement() );
-                            logger.info( "Saved FHIR resource {} for FHIR server {}.",
-                                resultingResource.getIdElement().toUnqualified(), transformerRequest.getFhirServer().getId() );
+                            logger.info( "Saved FHIR resource {} for FHIR client {}.",
+                                resultingResource.getIdElement().toUnqualified(), transformerRequest.getFhirClient().getId() );
                         }
                     }
                     saved = true;

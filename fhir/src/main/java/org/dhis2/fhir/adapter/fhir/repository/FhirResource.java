@@ -77,14 +77,14 @@ public class FhirResource extends DataItemQueueItem<UuidDataGroupId> implements 
     }
 
     @JsonProperty
-    public UUID getFhirServerResourceId()
+    public UUID getFhirClientResourceId()
     {
         return (getDataGroupId() == null) ? null : getDataGroupId().getId();
     }
 
-    public void setFhirServerResourceId( UUID fhirServerResourceId )
+    public void setFhirClientResourceId( UUID fhirClientResourceId )
     {
-        super.setDataGroupId( (fhirServerResourceId == null) ? null : new UuidDataGroupId( fhirServerResourceId ) );
+        super.setDataGroupId( (fhirClientResourceId == null) ? null : new UuidDataGroupId( fhirClientResourceId ) );
     }
 
     @JsonProperty( "fhirResourceId" )

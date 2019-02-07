@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -63,10 +63,10 @@ public abstract class AbstractLocationFhirToDhisTransformerUtils extends Abstrac
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public AbstractLocationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+    public AbstractLocationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirResourceRepository fhirResourceRepository, @Nonnull HierarchicallyFhirResourceRepository hierarchicallyFhirResourceRepository )
     {
-        super( scriptExecutionContext, organizationUnitService, fhirServerResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
+        super( scriptExecutionContext, organizationUnitService, fhirClientResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
     }
 
     @Nonnull

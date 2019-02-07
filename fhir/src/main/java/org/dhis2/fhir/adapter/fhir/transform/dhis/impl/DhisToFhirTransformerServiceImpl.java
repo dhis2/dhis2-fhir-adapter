@@ -35,14 +35,14 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirClientResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -91,9 +91,9 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final LockManager lockManager;
 
-    private final FhirServerResourceRepository fhirServerResourceRepository;
+    private final FhirClientResourceRepository fhirClientResourceRepository;
 
-    private final FhirServerSystemRepository fhirServerSystemRepository;
+    private final FhirClientSystemRepository fhirClientSystemRepository;
 
     private final OrganizationUnitService organizationUnitService;
 
@@ -106,8 +106,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final ScriptExecutor scriptExecutor;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
-        @Nonnull FhirServerSystemRepository fhirServerSystemRepository,
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
+        @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
@@ -115,8 +115,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         @Nonnull ScriptExecutor scriptExecutor )
     {
         this.lockManager = lockManager;
-        this.fhirServerResourceRepository = fhirServerResourceRepository;
-        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        this.fhirClientResourceRepository = fhirClientResourceRepository;
+        this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.organizationUnitService = organizationUnitService;
         this.scriptExecutor = scriptExecutor;
 
@@ -164,40 +164,40 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             return null;
         }
 
-        final FhirServer fhirServer = requestResolver.resolveFhirServer( scriptedInput ).orElse( null );
-        if ( fhirServer == null )
+        final FhirClient fhirClient = requestResolver.resolveFhirClient( scriptedInput ).orElse( null );
+        if ( fhirClient == null )
         {
-            logger.info( "Could not determine FHIR server to process DHIS resource." );
+            logger.info( "Could not determine FHIR client to process DHIS resource." );
             return null;
         }
 
-        final Collection<AvailableFhirServerResource> availableResources = fhirServerResourceRepository.findAllAvailable( fhirServer );
+        final Collection<AvailableFhirClientResource> availableResources = fhirClientResourceRepository.findAllAvailable( fhirClient );
         ruleInfos = filterAvailableResourceRules( ruleInfos, availableResources );
 
-        final Collection<FhirServerSystem> systems = fhirServerSystemRepository.findByFhirServer( fhirServer );
+        final Collection<FhirClientSystem> systems = fhirClientSystemRepository.findByFhirClient( fhirClient );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
-        final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( fhirServer.getFhirVersion() );
+        final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( fhirClient.getFhirVersion() );
         if ( transformerUtils == null )
         {
-            throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + fhirServer.getFhirVersion() );
+            throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + fhirClient.getFhirVersion() );
         }
 
         return new DhisToFhirTransformerRequestImpl(
-            new DhisToFhirTransformerContextImpl( dhisRequest, fhirServer, resourceSystemsByType, availableResources ),
-            scriptedInput, fhirServer, ruleInfos, transformerUtils );
+            new DhisToFhirTransformerContextImpl( dhisRequest, fhirClient, resourceSystemsByType, availableResources ),
+            scriptedInput, fhirClient, ruleInfos, transformerUtils );
     }
 
     @Nonnull
-    private List<RuleInfo<? extends AbstractRule>> filterAvailableResourceRules( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Collection<AvailableFhirServerResource> availableResources )
+    private List<RuleInfo<? extends AbstractRule>> filterAvailableResourceRules( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Collection<AvailableFhirClientResource> availableResources )
     {
-        final Map<FhirResourceType, AvailableFhirServerResource> availableResourcesByType = availableResources.stream()
-            .collect( Collectors.toMap( AvailableFhirServerResource::getResourceType, a -> a ) );
-        // not all resources may be available on FHIR server
+        final Map<FhirResourceType, AvailableFhirClientResource> availableResourcesByType = availableResources.stream()
+            .collect( Collectors.toMap( AvailableFhirClientResource::getResourceType, a -> a ) );
+        // not all resources may be available on FHIR client
         return ruleInfos.stream().filter( r -> {
-            final AvailableFhirServerResource availableResource = availableResourcesByType.get( r.getRule().getFhirResourceType() );
+            final AvailableFhirClientResource availableResource = availableResourcesByType.get( r.getRule().getFhirResourceType() );
             if ( availableResource == null )
             {
                 return false;
@@ -232,7 +232,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
             scriptVariables.put( ScriptVariable.ORGANIZATION_UNIT.getVariableName(), getScriptedOrganizationUnit( transformerRequestImpl.getInput() ) );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getFhirServer(),
+                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transformer.transformCasted( transformerRequest.getFhirClient(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {

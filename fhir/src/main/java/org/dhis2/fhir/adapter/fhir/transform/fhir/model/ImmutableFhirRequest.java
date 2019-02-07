@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,23 +107,23 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     }
 
     @Override
-    public boolean isFhirServer()
+    public boolean isFhirClient()
     {
-        return delegate.isFhirServer();
+        return delegate.isFhirClient();
     }
 
     @Nullable
     @Override
-    public String getFhirServerCode()
+    public String getFhirClientCode()
     {
-        return delegate.getFhirServerCode();
+        return delegate.getFhirClientCode();
     }
 
     @Override
     @Nullable
-    public UUID getFhirServerResourceId()
+    public UUID getFhirClientResourceId()
     {
-        return delegate.getFhirServerResourceId();
+        return delegate.getFhirClientResourceId();
     }
 
     @Nullable

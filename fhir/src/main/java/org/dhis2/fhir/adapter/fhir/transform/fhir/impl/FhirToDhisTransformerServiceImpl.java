@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
@@ -125,7 +125,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     @Nonnull
     @Override
-    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource originalInput, boolean contained )
+    public FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource originalInput, boolean contained )
     {
         final Map<String, FhirToDhisTransformerUtils> transformerUtils = this.transformerUtils.get( fhirRequest.getVersion() );
         if ( transformerUtils == null )
@@ -144,7 +144,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         final List<RuleInfo<? extends AbstractRule>> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
             .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
 
-        return new FhirToDhisTransformerRequestImpl( fhirServerResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
+        return new FhirToDhisTransformerRequestImpl( fhirClientResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }
 
     @Nullable
@@ -179,7 +179,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getFhirServerResource(),
+                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getFhirClientResource(),
                     transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
                 if ( outcome != null )
                 {

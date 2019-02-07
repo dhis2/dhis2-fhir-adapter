@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ public class SubscriptionFhirEndpoint implements Serializable
     }
 
     @ElementCollection
-    @CollectionTable( name = "fhir_server_header", joinColumns = @JoinColumn( name = "fhir_server_id" ) )
+    @CollectionTable( name = "fhir_client_header", joinColumns = @JoinColumn( name = "fhir_client_id" ) )
     @OrderBy( "name,value" )
     @JsonSerialize( converter = PersistentBagConverter.class )
     public List<RequestHeader> getHeaders()

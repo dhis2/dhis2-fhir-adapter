@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.QueuedItem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EmbeddedId;
@@ -39,14 +39,14 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * Entity that contains if currently for {@linkplain FhirServerResource FHIR server resource}
+ * Entity that contains if currently for {@linkplain FhirClientResource FHIR client resource}
  * and a FHIR resource ID there is a pending queued processing request.
  *
  * @author volsch
  */
 @Entity
 @Table( name = "fhir_queued_resource" )
-public class QueuedFhirResource extends QueuedItem<QueuedFhirResourceId, FhirServerResource> implements Serializable
+public class QueuedFhirResource extends QueuedItem<QueuedFhirResourceId, FhirClientResource> implements Serializable
 {
     private static final long serialVersionUID = 3146612484665379623L;
 

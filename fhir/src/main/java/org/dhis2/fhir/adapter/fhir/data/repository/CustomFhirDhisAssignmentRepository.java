@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
@@ -45,14 +45,14 @@ import javax.annotation.Nullable;
 public interface CustomFhirDhisAssignmentRepository
 {
     @Nullable
-    String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId );
+    String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId );
 
     @Nullable
-    String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull DhisResourceId dhisResourceId );
+    String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull DhisResourceId dhisResourceId );
 
-    boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
+    boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
 
-    boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId );
+    boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId );
 
-    boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirServer subscription, @Nonnull IIdType fhirResourceId );
+    boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId );
 }

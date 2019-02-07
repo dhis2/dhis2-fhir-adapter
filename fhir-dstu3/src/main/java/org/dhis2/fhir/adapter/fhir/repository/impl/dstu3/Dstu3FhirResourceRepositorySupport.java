@@ -28,9 +28,9 @@ package org.dhis2.fhir.adapter.fhir.repository.impl.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirRepositoryResourceUtils;
 import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirResourceRepositorySupport;
@@ -56,11 +56,11 @@ import java.util.UUID;
 @Component
 public class Dstu3FhirResourceRepositorySupport extends AbstractFhirResourceRepositorySupport
 {
-    private final FhirServerSystemRepository fhirServerSystemRepository;
+    private final FhirClientSystemRepository fhirClientSystemRepository;
 
-    public Dstu3FhirResourceRepositorySupport( @Nonnull FhirServerSystemRepository fhirServerSystemRepository )
+    public Dstu3FhirResourceRepositorySupport( @Nonnull FhirClientSystemRepository fhirClientSystemRepository )
     {
-        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        this.fhirClientSystemRepository = fhirClientSystemRepository;
     }
 
     @Nonnull
@@ -72,27 +72,27 @@ public class Dstu3FhirResourceRepositorySupport extends AbstractFhirResourceRepo
 
     @Nonnull
     @Override
-    protected AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirServerId )
+    protected AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirClientId )
     {
-        return new Dstu3FhirRepositoryResourceUtils( fhirServerId, fhirServerSystemRepository );
+        return new Dstu3FhirRepositoryResourceUtils( fhirClientId, fhirClientSystemRepository );
     }
 
     @Nonnull
     @Override
-    protected IAnyResource createFhirSubscription( @Nonnull FhirServerResource fhirServerResource )
+    protected IAnyResource createFhirSubscription( @Nonnull FhirClientResource fhirClientResource )
     {
         final Subscription.SubscriptionChannelComponent channelComponent = new Subscription.SubscriptionChannelComponent();
         channelComponent.setType( Subscription.SubscriptionChannelType.RESTHOOK );
-        channelComponent.setEndpoint( createWebHookUrl( fhirServerResource ) );
-        channelComponent.addHeader( "Authorization: " + fhirServerResource.getFhirServer().getAdapterEndpoint().getAuthorizationHeader() );
-        if ( fhirServerResource.getFhirServer().getAdapterEndpoint().getSubscriptionType() == SubscriptionType.REST_HOOK_WITH_JSON_PAYLOAD )
+        channelComponent.setEndpoint( createWebHookUrl( fhirClientResource ) );
+        channelComponent.addHeader( "Authorization: " + fhirClientResource.getFhirClient().getAdapterEndpoint().getAuthorizationHeader() );
+        if ( fhirClientResource.getFhirClient().getAdapterEndpoint().getSubscriptionType() == SubscriptionType.REST_HOOK_WITH_JSON_PAYLOAD )
         {
             channelComponent.setPayload( "application/fhir+json" );
         }
 
         final Subscription subscription = new Subscription();
         subscription.setStatus( Subscription.SubscriptionStatus.REQUESTED );
-        subscription.setCriteria( fhirServerResource.getFhirResourceType().getResourceTypeName() + "?" );
+        subscription.setCriteria( fhirClientResource.getFhirResourceType().getResourceTypeName() + "?" );
         subscription.setChannel( channelComponent );
         return subscription;
     }

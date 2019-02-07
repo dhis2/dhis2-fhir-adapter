@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ import java.util.Optional;
 
 /**
  * Abstract implementation of {@link DhisToFhirRequestResolver} that provides
- * support for resolving the FHIR server that is stored to store this
+ * support for resolving the FHIR client that is stored to store this
  * resource.
  *
  * @author volsch
@@ -48,20 +48,20 @@ public abstract class AbstractDhisToFhirRequestResolver implements DhisToFhirReq
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final FhirServerRepository fhirServerRepository;
+    private final FhirClientRepository fhirClientRepository;
 
-    public AbstractDhisToFhirRequestResolver( @Nonnull FhirServerRepository fhirServerRepository )
+    public AbstractDhisToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository )
     {
-        this.fhirServerRepository = fhirServerRepository;
+        this.fhirClientRepository = fhirClientRepository;
     }
 
     @Nonnull
-    public Optional<FhirServer> resolveFhirServer( @Nonnull ScriptedDhisResource scriptedDhisResource )
+    public Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource )
     {
-        Optional<FhirServer> fhirServer = fhirServerRepository.findOnly();
-        if ( fhirServer.isPresent() && fhirServer.get().isEnabled() && fhirServer.get().isExpEnabled() )
+        Optional<FhirClient> fhirClient = fhirClientRepository.findOnly();
+        if ( fhirClient.isPresent() && fhirClient.get().isEnabled() && fhirClient.get().isExpEnabled() )
         {
-            return fhirServer;
+            return fhirClient;
         }
         return Optional.empty();
     }

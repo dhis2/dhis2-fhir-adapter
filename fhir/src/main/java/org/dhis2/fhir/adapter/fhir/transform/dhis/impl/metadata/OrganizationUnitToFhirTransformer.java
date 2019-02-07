@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -102,15 +102,15 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Nullable
     @Override
-    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
+    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
-            organizationUnitService, getFhirResourceRepository(), fhirServer, context, ruleInfo, variables,
+            organizationUnitService, getFhirResourceRepository(), fhirClient, context, ruleInfo, variables,
             new DefaultIdentifierValueProvider() ) );
 
-        final IBaseResource resource = getResource( fhirServer, context, ruleInfo, variables ).orElse( null );
+        final IBaseResource resource = getResource( fhirClient, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -136,7 +136,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         // not supported
@@ -144,7 +144,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     }
 
     @Override
-    protected void lockResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
+    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedOrganizationUnit scriptedOrganizationUnit =

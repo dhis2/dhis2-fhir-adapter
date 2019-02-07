@@ -33,11 +33,11 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
@@ -80,7 +80,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     private OrganizationUnitService organizationUnitService;
 
     @Mock
-    private FhirServerResourceRepository fhirServerResourceRepository;
+    private FhirClientResourceRepository fhirClientResourceRepository;
 
     @Mock
     private FhirResourceRepository fhirResourceRepository;
@@ -157,21 +157,21 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     public void findHierarchy()
     {
         final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
-        final FhirServer fhirServer = new FhirServer();
-        fhirServer.setFhirEndpoint( subscriptionFhirEndpoint );
+        final FhirClient fhirClient = new FhirClient();
+        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
-        final UUID fhirServerResourceId = UUID.randomUUID();
-        final FhirServerResource fhirServerResource = new FhirServerResource();
-        fhirServerResource.setFhirServer( fhirServer );
+        final UUID fhirClientResourceId = UUID.randomUUID();
+        final FhirClientResource fhirClientResource = new FhirClientResource();
+        fhirClientResource.setFhirClient( fhirClient );
         final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
         Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( fhirServerResourceId ).when( request ).getFhirServerResourceId();
+        Mockito.doReturn( fhirClientResourceId ).when( request ).getFhirClientResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( fhirServerResource ) ).when( fhirServerResourceRepository ).findOneByIdCached( Mockito.eq( fhirServerResourceId ) );
+        Mockito.doReturn( Optional.of( fhirClientResource ) ).when( fhirClientResourceRepository ).findOneByIdCached( Mockito.eq( fhirClientResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Organization org1 = (Organization) new Organization().setId( new IdType( "Organization", "1" ) );
@@ -188,7 +188,7 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
                 .addEntry( new Bundle.BundleEntryComponent().setResource( org4 ) );
         } )
             .when( hierarchicallyFhirResourceRepository )
-            .findWithParents( Mockito.eq( fhirServerResourceId ), Mockito.eq( FhirVersion.DSTU3 ), Mockito.same( subscriptionFhirEndpoint ),
+            .findWithParents( Mockito.eq( fhirClientResourceId ), Mockito.eq( FhirVersion.DSTU3 ), Mockito.same( subscriptionFhirEndpoint ),
                 Mockito.eq( "Organization" ), Mockito.eq( "3" ), Mockito.eq( "organizationPartOf" ), Mockito.any() );
 
         final org.hl7.fhir.dstu3.model.Reference org2Ref = new org.hl7.fhir.dstu3.model.Reference( org2.getIdElement() );

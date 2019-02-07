@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.StoredItemId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Embeddable;
@@ -45,33 +45,33 @@ import java.util.Objects;
  * @author volsch
  */
 @Embeddable
-public class StoredFhirResourceId extends StoredItemId<FhirServer> implements Serializable
+public class StoredFhirResourceId extends StoredItemId<FhirClient> implements Serializable
 {
     private static final long serialVersionUID = 143055103713986347L;
 
-    private FhirServer group;
+    private FhirClient group;
 
     public StoredFhirResourceId()
     {
         super();
     }
 
-    public StoredFhirResourceId( @Nonnull FhirServer fhirServer, @Nonnull String storedId )
+    public StoredFhirResourceId( @Nonnull FhirClient fhirClient, @Nonnull String storedId )
     {
         super( storedId );
-        this.group = fhirServer;
+        this.group = fhirClient;
     }
 
     @Override
     @ManyToOne( optional = false, fetch = FetchType.LAZY )
-    @JoinColumn( name = "fhir_server_id" )
-    public FhirServer getGroup()
+    @JoinColumn( name = "fhir_client_id" )
+    public FhirClient getGroup()
     {
         return group;
     }
 
     @Override
-    public void setGroup( FhirServer group )
+    public void setGroup( FhirClient group )
     {
         this.group = group;
     }

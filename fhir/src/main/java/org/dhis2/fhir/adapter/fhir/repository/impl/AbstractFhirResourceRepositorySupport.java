@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
@@ -47,10 +47,10 @@ import java.util.UUID;
 public abstract class AbstractFhirResourceRepositorySupport implements FhirVersionRestricted
 {
     @Nonnull
-    protected abstract AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirServerId );
+    protected abstract AbstractFhirRepositoryResourceUtils createFhirRepositoryResourceUtils( @Nonnull UUID fhirClientId );
 
     @Nonnull
-    protected abstract IAnyResource createFhirSubscription( @Nonnull FhirServerResource fhirServerResource );
+    protected abstract IAnyResource createFhirSubscription( @Nonnull FhirClientResource fhirClientResource );
 
     @Nullable
     protected abstract IBaseResource getFirstResource( @Nonnull IBaseBundle bundle );
@@ -62,17 +62,17 @@ public abstract class AbstractFhirResourceRepositorySupport implements FhirVersi
     protected abstract IBaseBundle createBundle( @Nonnull List<? extends IBaseResource> resources );
 
     @Nonnull
-    protected String createWebHookUrl( @Nonnull FhirServerResource fhirServerResource )
+    protected String createWebHookUrl( @Nonnull FhirClientResource fhirClientResource )
     {
-        final StringBuilder url = new StringBuilder( fhirServerResource.getFhirServer().getAdapterEndpoint().getBaseUrl() );
+        final StringBuilder url = new StringBuilder( fhirClientResource.getFhirClient().getAdapterEndpoint().getBaseUrl() );
         if ( url.charAt( url.length() - 1 ) != '/' )
         {
             url.append( '/' );
         }
         url.append( "remote-fhir-rest-hook/" );
-        url.append( fhirServerResource.getFhirServer().getId() );
+        url.append( fhirClientResource.getFhirClient().getId() );
         url.append( '/' );
-        url.append( fhirServerResource.getId() );
+        url.append( fhirClientResource.getId() );
         return url.toString();
     }
 }

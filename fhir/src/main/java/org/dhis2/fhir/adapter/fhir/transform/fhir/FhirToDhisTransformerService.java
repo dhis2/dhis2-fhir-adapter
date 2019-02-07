@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
 public interface FhirToDhisTransformerService
 {
     @Nonnull
-    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirServerResource fhirServerResource, @Nonnull IBaseResource originalInput, boolean contained );
+    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource originalInput, boolean contained );
 
     @Nullable
     FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerRequest transformerRequest ) throws TransformerException;

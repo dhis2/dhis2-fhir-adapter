@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,13 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
 import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.ProcessedFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 /**
  * Custom repository for processed server FHIR resources {@link ProcessedFhirResource}.
  *
  * @author volsch
  */
-public interface CustomProcessedFhirResourceRepository extends ProcessedItemRepository<ProcessedFhirResource, ProcessedFhirResourceId, FhirServerResource>
+public interface CustomProcessedFhirResourceRepository extends ProcessedItemRepository<ProcessedFhirResource, ProcessedFhirResourceId, FhirClientResource>
 {
 }

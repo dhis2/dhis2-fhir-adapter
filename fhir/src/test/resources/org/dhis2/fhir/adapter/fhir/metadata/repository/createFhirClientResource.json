@@ -1,0 +1,6 @@
+{
+  "fhirClient": "$fhirClientId",
+  "fhirResourceType": "IMMUNIZATION",
+  "description": "Subscription for all immunizations.",
+  "fhirCriteriaParameters": null
+}

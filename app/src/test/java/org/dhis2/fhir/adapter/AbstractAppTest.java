@@ -95,7 +95,7 @@ public abstract class AbstractAppTest
 
     /**
      * The DHIS2 server that is accessed to retrieve non-metadata
-     * as user that is assigned to the FHIR server service.
+     * as user that is assigned to the FHIR client service.
      */
     protected MockRestServiceServer userDhis2Server;
 
@@ -124,7 +124,7 @@ public abstract class AbstractAppTest
 
     /**
      * The REST template that is used to connect to the DHIS2 non-metadata services
-     * as user that is assigned to the FHIR server service.
+     * as user that is assigned to the FHIR client service.
      */
     @Autowired
     @Qualifier( "userDhis2RestTemplate" )
@@ -223,16 +223,16 @@ public abstract class AbstractAppTest
         {
             Assert.assertNotNull( resourceId );
             Assert.assertNotNull( resourceResponse );
-            mockMvc.perform( MockMvcRequestBuilders.put( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}/{resourceType}/{resourceId}",
-                testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), resourceType ),
+            mockMvc.perform( MockMvcRequestBuilders.put( "/remote-fhir-rest-hook/{subscriptionId}/{fhirClientResourceId}/{resourceType}/{resourceId}",
+                testConfiguration.getFhirClientId( getFhirVersion() ), testConfiguration.getFhirClientResourceId( getFhirVersion(), resourceType ),
                 resourceType.getResourceTypeName(), resourceId ).content( resourceResponse ).contentType( FHIR_JSON_MEDIA_TYPE )
                 .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
                 .andExpect( status().isOk() );
         }
         else
         {
-            mockMvc.perform( MockMvcRequestBuilders.post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirServerResourceId}",
-                testConfiguration.getFhirServerId( getFhirVersion() ), testConfiguration.getFhirServerResourceId( getFhirVersion(), resourceType ) )
+            mockMvc.perform( MockMvcRequestBuilders.post( "/remote-fhir-rest-hook/{subscriptionId}/{fhirClientResourceId}",
+                testConfiguration.getFhirClientId( getFhirVersion() ), testConfiguration.getFhirClientResourceId( getFhirVersion(), resourceType ) )
                 .header( "Authorization", TestConfiguration.ADAPTER_AUTHORIZATION ) )
                 .andExpect( status().isOk() );
         }

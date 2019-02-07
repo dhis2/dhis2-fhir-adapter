@@ -499,63 +499,63 @@ include::{snippets}/read-program-stage-rule/response-fields.adoc[]
 [[api-resources-administration]]
 === Adapter Administration Resources
 
-[[api-resources-adm-fhir-server]]
-==== FHIR Server
-The FHIR Server resource defines a single remote FHIR server and its
+[[api-resources-adm-fhir-client]]
+==== FHIR Client
+The FHIR Client resource defines a single remote FHIR Client and its
 subscriptions for FHIR resources.
 
 .Create resource curl snippet
-include::{snippets}/create-fhir-server/curl-request.adoc[]
+include::{snippets}/create-fhir-client/curl-request.adoc[]
 
-include::{snippets}/create-fhir-server/request-fields.adoc[]
+include::{snippets}/create-fhir-client/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-fhir-server/curl-request.adoc[]
+include::{snippets}/read-fhir-client/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-fhir-server/response-body.adoc[]
+include::{snippets}/read-fhir-client/response-body.adoc[]
 
-include::{snippets}/read-fhir-server/response-fields.adoc[]
+include::{snippets}/read-fhir-client/response-fields.adoc[]
 
-[[api-resources-adm-fhir-server-resource]]
-==== FHIR Server Resource
-The resource for FHIR Server resources defines a single subscription
-for a single specific FHIR resource on a single FHIR server.
+[[api-resources-adm-fhir-client-resource]]
+==== FHIR Client Resource
+The resource for FHIR Client resources defines a single subscription
+for a single specific FHIR resource on a single FHIR Client.
 
 .Create resource curl snippet
-include::{snippets}/create-fhir-server-resource/curl-request.adoc[]
+include::{snippets}/create-fhir-client-resource/curl-request.adoc[]
 
-include::{snippets}/create-fhir-server-resource/request-fields.adoc[]
+include::{snippets}/create-fhir-client-resource/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-fhir-server-resource/curl-request.adoc[]
+include::{snippets}/read-fhir-client-resource/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-fhir-server-resource/response-body.adoc[]
+include::{snippets}/read-fhir-client-resource/response-body.adoc[]
 
-include::{snippets}/read-fhir-server-resource/response-fields.adoc[]
+include::{snippets}/read-fhir-client-resource/response-fields.adoc[]
 
-[[api-resources-adm-fhir-server-system]]
-==== FHIR Server System
-The FHIR Server system resource defines a specific coding system that is
+[[api-resources-adm-fhir-client-system]]
+==== FHIR Client System
+The FHIR Client system resource defines a specific coding system that is
 used for a FHIR resource. E.g. a FHIR system may use system specific codes for
 patients and organizations. The codes that are provided by several FHIR systems
 may overlap and are only unique in combination with a FHIR system specific
 system URI. For each coding system a code prefix can be defined. E.g. if there
-are ten regions in a country and the ten regions use their own FHIR server than
+are ten regions in a country and the ten regions use their own FHIR Client than
 each region may use its own patient identifiers. These patient identifiers can be
 made unique by adding a specific code prefix (e.g. two letter abbreviation of the
 regions). This results in a unique national identifier.
 
 .Create resource curl snippet
-include::{snippets}/create-fhir-server-system/curl-request.adoc[]
+include::{snippets}/create-fhir-client-system/curl-request.adoc[]
 
-include::{snippets}/create-fhir-server-system/request-fields.adoc[]
+include::{snippets}/create-fhir-client-system/request-fields.adoc[]
 
 .Read resource curl snippet
-include::{snippets}/read-fhir-server-system/curl-request.adoc[]
+include::{snippets}/read-fhir-client-system/curl-request.adoc[]
 
 .Read resource response body
-include::{snippets}/read-fhir-server-system/response-body.adoc[]
+include::{snippets}/read-fhir-client-system/response-body.adoc[]
 
-include::{snippets}/read-fhir-server-system/response-fields.adoc[]
+include::{snippets}/read-fhir-client-system/response-fields.adoc[]

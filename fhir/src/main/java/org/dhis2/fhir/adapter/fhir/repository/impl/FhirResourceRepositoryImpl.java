@@ -40,13 +40,13 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedFhirServerResourceEvent;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedFhirClientResourceEvent;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
@@ -98,18 +98,18 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
 
     private final StoredFhirResourceService storedItemService;
 
-    private final FhirServerResourceRepository fhirServerResourceRepository;
+    private final FhirClientResourceRepository fhirClientResourceRepository;
 
     private final Map<FhirVersion, FhirContext> fhirContexts;
 
     private final Map<FhirVersion, AbstractFhirResourceRepositorySupport> supports = new HashMap<>();
 
-    public FhirResourceRepositoryImpl( @Nonnull ScriptExecutor scriptExecutor, @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+    public FhirResourceRepositoryImpl( @Nonnull ScriptExecutor scriptExecutor, @Nonnull StoredFhirResourceService storedItemService, @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull ObjectProvider<List<FhirContext>> fhirContexts, @Nonnull ObjectProvider<List<AbstractFhirResourceRepositorySupport>> supports )
     {
         this.scriptExecutor = scriptExecutor;
         this.storedItemService = storedItemService;
-        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirClientResourceRepository = fhirClientResourceRepository;
         this.fhirContexts = fhirContexts.getIfAvailable( Collections::emptyList ).stream().filter( fc -> (FhirVersion.get( fc.getVersion().getVersion() ) != null) )
             .collect( Collectors.toMap( fc -> FhirVersion.get( fc.getVersion().getVersion() ), fc -> fc ) );
         supports.getIfAvailable( Collections::emptyList ).forEach( s -> s.getFhirVersions().forEach( v -> FhirResourceRepositoryImpl.this.supports.put( v, s ) ) );
@@ -123,10 +123,10 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @CachePut( key = "{#fhirServerId, #fhirVersion, #resourceType, #resourceId, #transform}", unless = "#result==null" )
+    @CachePut( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, #transform}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform )
+    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform )
     {
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
@@ -142,66 +142,66 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
             resource = null;
         }
         logger.debug( "Read {}/{} from FHIR endpoints {} (found={}).", resourceType, resourceId, fhirEndpoint.getBaseUrl(), (resource != null) );
-        return Optional.ofNullable( transform ? transform( fhirServerId, fhirVersion, resource ) : resource );
+        return Optional.ofNullable( transform ? transform( fhirClientId, fhirVersion, resource ) : resource );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @CachePut( key = "{#fhirServerId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
+    @CachePut( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
+    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
     {
-        return findRefreshed( fhirServerId, fhirVersion, fhirEndpoint, resourceType, resourceId, true );
+        return findRefreshed( fhirClientId, fhirVersion, fhirEndpoint, resourceType, resourceId, true );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @Cacheable( key = "{#fhirServerId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
+    @Cacheable( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> find( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
+    public Optional<IBaseResource> find( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
     {
-        return findRefreshed( fhirServerId, fhirVersion, fhirEndpoint, resourceType, resourceId );
+        return findRefreshed( fhirClientId, fhirVersion, fhirEndpoint, resourceType, resourceId );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @CachePut( key = "{'findByIdentifier', #fhirServerId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
+    @CachePut( key = "{'findByIdentifier', #fhirClientId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
-        return findByToken( fhirServerId, fhirVersion, fhirEndpoint, resourceType, "identifier", identifier );
+        return findByToken( fhirClientId, fhirVersion, fhirEndpoint, resourceType, "identifier", identifier );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @Cacheable( key = "{'findByIdentifier', #fhirServerId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
+    @Cacheable( key = "{'findByIdentifier', #fhirClientId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    public Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
-        return findRefreshedByIdentifier( fhirServerId, fhirVersion, fhirEndpoint, resourceType, identifier );
+        return findRefreshedByIdentifier( fhirClientId, fhirVersion, fhirEndpoint, resourceType, identifier );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @CachePut( key = "{'findByCode', #fhirServerId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
+    @CachePut( key = "{'findByCode', #fhirClientId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    public Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
     {
-        return findByToken( fhirServerId, fhirVersion, fhirEndpoint, resourceType, "code", code );
+        return findByToken( fhirClientId, fhirVersion, fhirEndpoint, resourceType, "code", code );
     }
 
     @HystrixCommand( ignoreExceptions = FhirResourceTransformationException.class )
-    @Cacheable( key = "{'findByCode', #fhirServerId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
+    @Cacheable( key = "{'findByCode', #fhirClientId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findByCode( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    public Optional<IBaseResource> findByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
     {
-        return findRefreshedByCode( fhirServerId, fhirVersion, fhirEndpoint, resourceType, code );
+        return findRefreshedByCode( fhirClientId, fhirVersion, fhirEndpoint, resourceType, code );
     }
 
     @Nullable
     @Override
-    public IBaseResource transform( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nullable IBaseResource resource )
+    public IBaseResource transform( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nullable IBaseResource resource )
     {
         final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
         if ( fhirResourceType == null )
@@ -209,24 +209,24 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
             return resource;
         }
 
-        final Optional<FhirServerResource> fhirServerResource = fhirServerResourceRepository.findFirstCached( fhirServerId, fhirResourceType );
-        if ( fhirServerResource.isPresent() && (fhirServerResource.get().getImpTransformScript() != null) )
+        final Optional<FhirClientResource> fhirClientResource = fhirClientResourceRepository.findFirstCached( fhirClientId, fhirResourceType );
+        if ( fhirClientResource.isPresent() && (fhirClientResource.get().getImpTransformScript() != null) )
         {
             final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
             final Map<String, Object> variables = new HashMap<>();
             variables.put( ScriptVariable.RESOURCE.getVariableName(), resource );
-            variables.put( ScriptVariable.UTILS.getVariableName(), support.createFhirRepositoryResourceUtils( fhirServerId ) );
+            variables.put( ScriptVariable.UTILS.getVariableName(), support.createFhirRepositoryResourceUtils( fhirClientId ) );
 
             try
             {
-                if ( !Boolean.TRUE.equals( scriptExecutor.execute( fhirServerResource.get().getImpTransformScript(), fhirVersion, variables, Collections.emptyMap(), Boolean.class ) ) )
+                if ( !Boolean.TRUE.equals( scriptExecutor.execute( fhirClientResource.get().getImpTransformScript(), fhirVersion, variables, Collections.emptyMap(), Boolean.class ) ) )
                 {
-                    throw new FhirResourceTransformationException( "Transformation of resource " + resource.getClass().getSimpleName() + " of FHIR server " + fhirServerId + " has failed." );
+                    throw new FhirResourceTransformationException( "Transformation of resource " + resource.getClass().getSimpleName() + " of FHIR client " + fhirClientId + " has failed." );
                 }
             }
             catch ( ScriptExecutionException e )
             {
-                throw new FhirResourceTransformationException( "Transformation of resource " + resource.getClass().getSimpleName() + " of FHIR server " + fhirServerId + " has failed.", e );
+                throw new FhirResourceTransformationException( "Transformation of resource " + resource.getClass().getSimpleName() + " of FHIR client " + fhirClientId + " has failed.", e );
             }
         }
 
@@ -234,13 +234,13 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     }
 
     @HystrixCommand
-    @CacheEvict( key = "{#fhirServer.id, #fhirServer.fhirVersion, " +
+    @CacheEvict( key = "{#fhirClient.id, #fhirClient.fhirVersion, " +
         "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart(), true}" )
     @Override
-    public boolean delete( @Nonnull FhirServer fhirServer, @Nonnull IBaseResource resource )
+    public boolean delete( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource )
     {
-        final FhirContext fhirContext = fhirContexts.get( fhirServer.getFhirVersion() );
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirServer.getFhirEndpoint() );
+        final FhirContext fhirContext = fhirContexts.get( fhirClient.getFhirVersion() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirClient.getFhirEndpoint() );
 
         try
         {
@@ -260,14 +260,14 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     }
 
     @HystrixCommand
-    @CacheEvict( key = "{#fhirServer.id, #fhirServer.fhirVersion, " +
+    @CacheEvict( key = "{#fhirClient.id, #fhirClient.fhirVersion, " +
         "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart(), true}" )
     @Nonnull
     @Override
-    public IBaseResource save( @Nonnull FhirServer fhirServer, @Nonnull IBaseResource resource )
+    public IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource )
     {
-        final FhirContext fhirContext = fhirContexts.get( fhirServer.getFhirVersion() );
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirServer.getFhirEndpoint() );
+        final FhirContext fhirContext = fhirContexts.get( fhirClient.getFhirVersion() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirClient.getFhirEndpoint() );
 
         final MethodOutcome methodOutcome;
         if ( resource.getIdElement().hasIdPart() )
@@ -300,12 +300,12 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
 
         if ( processedItemInfo == null )
         {
-            logger.info( "FHIR server {} does neither return complete resource with update timestamp nor a version. " +
-                "Duplicate detection for resource {} will not work.", fhirServer.getId(), methodOutcome.getId() );
+            logger.info( "FHIR client {} does neither return complete resource with update timestamp nor a version. " +
+                "Duplicate detection for resource {} will not work.", fhirClient.getId(), methodOutcome.getId() );
         }
         else
         {
-            storedItemService.stored( fhirServer, processedItemInfo.toIdString( Instant.now() ) );
+            storedItemService.stored( fhirClient, processedItemInfo.toIdString( Instant.now() ) );
         }
 
         final IBaseResource result;
@@ -325,31 +325,31 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         return result;
     }
 
-    @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedFhirServerResourceEvent.class )
-    public void autoCreatedSubscriptionResource( @Nonnull AutoCreatedFhirServerResourceEvent event )
+    @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedFhirClientResourceEvent.class )
+    public void autoCreatedSubscriptionResource( @Nonnull AutoCreatedFhirClientResourceEvent event )
     {
-        final FhirVersion fhirVersion = event.getFhirServerResource().getFhirServer().getFhirVersion();
+        final FhirVersion fhirVersion = event.getFhirClientResource().getFhirClient().getFhirVersion();
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, event.getFhirServerResource().getFhirServer().getFhirEndpoint() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, event.getFhirClientResource().getFhirClient().getFhirEndpoint() );
 
         final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );
         final MethodOutcome methodOutcome;
         try
         {
-            methodOutcome = client.create().resource( support.createFhirSubscription( event.getFhirServerResource() ) ).execute();
+            methodOutcome = client.create().resource( support.createFhirSubscription( event.getFhirClientResource() ) ).execute();
         }
         catch ( BaseServerResponseException e )
         {
             throw new RestBadRequestException( "The subscription could not be created on " +
-                event.getFhirServerResource().getFhirServer().getFhirEndpoint().getBaseUrl() + ": " + e.getMessage(), e );
+                event.getFhirClientResource().getFhirClient().getFhirEndpoint().getBaseUrl() + ": " + e.getMessage(), e );
         }
         final String id = methodOutcome.getId().toUnqualifiedVersionless().getIdPart();
-        logger.info( "Created FHIR subscription {} for FHIR server {}.", id, event.getFhirServerResource().getFhirServer().getId() );
-        event.getFhirServerResource().setFhirSubscriptionId( id );
+        logger.info( "Created FHIR subscription {} for FHIR client {}.", id, event.getFhirClientResource().getFhirClient().getId() );
+        event.getFhirClientResource().setFhirSubscriptionId( id );
     }
 
     @Nonnull
-    protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
+    protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
     {
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
@@ -361,6 +361,6 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
             .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
         final IBaseResource resource = support.getFirstResource( bundle );
         logger.debug( "Read {}?{}={} from FHIR endpoints {} (found={}).", resourceType, identifier, field, fhirEndpoint.getBaseUrl(), (resource != null) );
-        return Optional.ofNullable( transform( fhirServerId, fhirVersion, resource ) );
+        return Optional.ofNullable( transform( fhirClientId, fhirVersion, resource ) );
     }
 }

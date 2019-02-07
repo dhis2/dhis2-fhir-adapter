@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -62,10 +62,10 @@ public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends
     Class<U> getRuleClass();
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,
+    DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 
     @Nullable
-    DhisToFhirTransformOutcome<? extends IBaseResource> transformCasted( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context,
+    DhisToFhirTransformOutcome<? extends IBaseResource> transformCasted( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull ScriptedDhisResource input, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
 }

@@ -1,0 +1,6 @@
+{
+  "fhirClient": "$fhirClientId",
+  "fhirResourceType": "LOCATION",
+  "system": "$systemId",
+  "codePrefix": "LOC_"
+}

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -55,9 +55,9 @@ import java.util.Set;
 public class Dstu3FhirClientFhirToDhisTransformerUtils extends AbstractFhirClientFhirToDhisTransformerUtils
 {
     public Dstu3FhirClientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext, fhirContext, fhirServerResourceRepository, systemCodeRepository );
+        super( scriptExecutionContext, fhirContext, fhirClientResourceRepository, systemCodeRepository );
     }
 
     @Nonnull

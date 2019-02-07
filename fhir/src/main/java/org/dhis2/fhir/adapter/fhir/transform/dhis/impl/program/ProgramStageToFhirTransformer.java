@@ -32,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleDhisDataReference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -110,7 +110,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     @Nullable
     @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform(
-        @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
+        @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
         @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
@@ -122,16 +122,16 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
         if ( isDataAbsent( context, input, ruleInfo ) )
         {
-            return handleDataAbsent( fhirServer, context, ruleInfo, resourceMapping, variables );
+            return handleDataAbsent( fhirClient, context, ruleInfo, resourceMapping, variables );
         }
 
-        final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( fhirServer, context,
+        final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( fhirClient, context,
             new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ),
             Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
             .orElseThrow( () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
         variables.put( ScriptVariable.TEI_FHIR_RESOURCE.getVariableName(), trackedEntityFhirResource );
 
-        final IBaseResource resource = getResource( fhirServer, context, ruleInfo, variables ).orElse( null );
+        final IBaseResource resource = getResource( fhirClient, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -145,7 +145,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
         if ( isDataDelete( context, ruleInfo, resourceMapping, variables ) )
         {
-            return handleDataDelete( fhirServer, context, ruleInfo, resourceMapping, modifiedResource, variables );
+            return handleDataDelete( fhirClient, context, ruleInfo, resourceMapping, modifiedResource, variables );
         }
 
         if ( (resourceMapping.getExpStatusTransformScript() != null) &&
@@ -207,7 +207,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     }
 
     @Nullable
-    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataAbsent( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
+    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataAbsent( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
     {
         final boolean delete = ruleInfo.getRule().isEffectiveFhirDeleteEnable() &&
@@ -219,9 +219,9 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
         if ( delete )
         {
-            lockResource( fhirServer, context, ruleInfo, variables );
+            lockResource( fhirClient, context, ruleInfo, variables );
         }
-        final IBaseResource resource = getExistingResource( fhirServer, context, ruleInfo, variables ).orElse( null );
+        final IBaseResource resource = getExistingResource( fhirClient, context, ruleInfo, variables ).orElse( null );
         if ( resource == null )
         {
             return null;
@@ -245,14 +245,14 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     }
 
     @Nullable
-    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataDelete( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
+    private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataDelete( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull IBaseResource resource, @Nonnull Map<String, Object> variables )
     {
         if ( resource.getIdElement().isEmpty() )
         {
             return null;
         }
-        lockResource( fhirServer, context, ruleInfo, variables );
+        lockResource( fhirClient, context, ruleInfo, variables );
         return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), resource, true );
     }
 
@@ -298,13 +298,13 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
 
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return Optional.empty();
     }
 
     @Override
-    protected void lockResource( @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final ScriptedEvent scriptedEvent =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedEvent.class );

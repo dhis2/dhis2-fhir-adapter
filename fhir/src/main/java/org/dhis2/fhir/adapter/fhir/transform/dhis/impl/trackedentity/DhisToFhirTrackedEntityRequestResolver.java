@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataSe
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
@@ -70,12 +70,12 @@ public class DhisToFhirTrackedEntityRequestResolver extends AbstractDhisToFhirRe
     private final ValueConverter valueConverter;
 
     public DhisToFhirTrackedEntityRequestResolver(
-        @Nonnull FhirServerRepository fhirServerRepository,
+        @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull TrackedEntityRuleRepository ruleRepository,
         @Nonnull ValueConverter valueConverter )
     {
-        super( fhirServerRepository );
+        super( fhirClientRepository );
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.ruleRepository = ruleRepository;
         this.valueConverter = valueConverter;

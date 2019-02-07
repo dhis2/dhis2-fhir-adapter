@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import javax.annotation.Nonnull;
 
 /**
- * Thrown if the included DHIS 2 resource is missing on FHIR server and it should
+ * Thrown if the included DHIS 2 resource is missing on FHIR client and it should
  * be tried to create the missing FHIR resource before retrying to process the
  * current resource again.
  *

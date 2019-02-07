@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,8 +70,8 @@ public class SetupController
         if ( !completedSetup )
         {
             final Setup setup = new Setup();
-            setup.getFhirServerSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
-            setup.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
+            setup.getFhirClientSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
+            setup.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
 
             model.addAttribute( "setup", setup );
         }

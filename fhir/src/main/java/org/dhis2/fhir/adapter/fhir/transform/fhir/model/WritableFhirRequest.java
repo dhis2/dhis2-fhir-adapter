@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,9 +66,9 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private String dhisUsername;
 
-    private String fhirServerCode;
+    private String fhirClientCode;
 
-    private UUID fhirServerResourceId;
+    private UUID fhirClientResourceId;
 
     private Map<FhirResourceType, ResourceSystem> resourceSystemsByType;
 
@@ -167,33 +167,33 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     }
 
     @Override
-    public boolean isFhirServer()
+    public boolean isFhirClient()
     {
-        return (getFhirServerResourceId() != null);
+        return (getFhirClientResourceId() != null);
     }
 
     @Nullable
     @Override
-    public UUID getFhirServerResourceId()
+    public UUID getFhirClientResourceId()
     {
-        return fhirServerResourceId;
+        return fhirClientResourceId;
     }
 
-    public void setFhirServerResourceId( UUID fhirServerResourceId )
+    public void setFhirClientResourceId( UUID fhirClientResourceId )
     {
-        this.fhirServerResourceId = fhirServerResourceId;
+        this.fhirClientResourceId = fhirClientResourceId;
     }
 
     @Nullable
     @Override
-    public String getFhirServerCode()
+    public String getFhirClientCode()
     {
-        return fhirServerCode;
+        return fhirClientCode;
     }
 
-    public void setFhirServerCode( String fhirServerCode )
+    public void setFhirClientCode( String fhirClientCode )
     {
-        this.fhirServerCode = fhirServerCode;
+        this.fhirClientCode = fhirClientCode;
     }
 
     public Map<FhirResourceType, ResourceSystem> getResourceSystemsByType()

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
@@ -50,7 +50,7 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 {
     private static final long serialVersionUID = 4181923310602004074L;
 
-    private final FhirServerResource fhirServerResource;
+    private final FhirClientResource fhirClientResource;
 
     private final FhirToDhisTransformerContext context;
 
@@ -62,10 +62,10 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     private int ruleIndex;
 
-    public FhirToDhisTransformerRequestImpl( @Nonnull FhirServerResource fhirServerResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils,
+    public FhirToDhisTransformerRequestImpl( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input, @Nonnull Map<String, FhirToDhisTransformerUtils> transformerUtils,
         @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
-        this.fhirServerResource = fhirServerResource;
+        this.fhirClientResource = fhirClientResource;
         this.context = context;
         this.input = input;
         this.transformerUtils = transformerUtils;
@@ -74,9 +74,9 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
 
     @Nonnull
     @Override
-    public FhirServerResource getFhirServerResource()
+    public FhirClientResource getFhirClientResource()
     {
-        return fhirServerResource;
+        return fhirClientResource;
     }
 
     @Nonnull

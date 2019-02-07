@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceTransformationException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
@@ -49,14 +49,14 @@ import java.util.UUID;
  */
 public abstract class AbstractFhirRepositoryResourceUtils
 {
-    private final UUID fhirServerId;
+    private final UUID fhirClientId;
 
-    private final FhirServerSystemRepository fhirServerSystemRepository;
+    private final FhirClientSystemRepository fhirClientSystemRepository;
 
-    protected AbstractFhirRepositoryResourceUtils( @Nonnull UUID fhirServerId, @Nonnull FhirServerSystemRepository fhirServerSystemRepository )
+    protected AbstractFhirRepositoryResourceUtils( @Nonnull UUID fhirClientId, @Nonnull FhirClientSystemRepository fhirClientSystemRepository )
     {
-        this.fhirServerId = fhirServerId;
-        this.fhirServerSystemRepository = fhirServerSystemRepository;
+        this.fhirClientId = fhirClientId;
+        this.fhirClientSystemRepository = fhirClientSystemRepository;
     }
 
     @Nonnull
@@ -85,7 +85,7 @@ public abstract class AbstractFhirRepositoryResourceUtils
             throw new FhirResourceTransformationException( "Invalid FHIR resource type: " + resourceType, e );
         }
 
-        return fhirServerSystemRepository.findOneByFhirServerResourceType( fhirServerId, fhirResourceType )
+        return fhirClientSystemRepository.findOneByFhirClientResourceType( fhirClientId, fhirResourceType )
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
             .orElse( null );
     }

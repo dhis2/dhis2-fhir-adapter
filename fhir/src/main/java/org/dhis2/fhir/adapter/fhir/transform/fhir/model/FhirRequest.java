@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,14 +71,14 @@ public interface FhirRequest
     @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
     FhirVersion getVersion();
 
-    boolean isFhirServer();
+    boolean isFhirClient();
 
     @Nullable
-    @ScriptMethod( description = "Returns the code of the FHIR server that caused the execution of the current transformation." )
-    String getFhirServerCode();
+    @ScriptMethod( description = "Returns the code of the FHIR client that caused the execution of the current transformation." )
+    String getFhirClientCode();
 
     @Nullable
-    UUID getFhirServerResourceId();
+    UUID getFhirClientResourceId();
 
     @Nullable
     String getDhisUsername();

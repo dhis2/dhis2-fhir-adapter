@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.StoredItem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 
 import javax.annotation.Nonnull;
 import javax.persistence.EmbeddedId;
@@ -46,7 +46,7 @@ import java.time.Instant;
  */
 @Entity
 @Table( name = "fhir_stored_resource" )
-public class StoredFhirResource extends StoredItem<StoredFhirResourceId, FhirServer> implements Serializable
+public class StoredFhirResource extends StoredItem<StoredFhirResourceId, FhirClient> implements Serializable
 {
     private static final long serialVersionUID = -6484140859863504862L;
 

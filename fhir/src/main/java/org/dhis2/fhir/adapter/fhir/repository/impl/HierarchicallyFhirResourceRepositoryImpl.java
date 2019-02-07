@@ -74,9 +74,9 @@ public class HierarchicallyFhirResourceRepositoryImpl implements HierarchicallyF
     }
 
     @Nonnull
-    @Cacheable( key = "{#fhirServerId, #fhirVersion, #resourceType, #resourceId, #hierarchyType}" )
+    @Cacheable( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, #hierarchyType}" )
     @Override
-    public IBaseBundle findWithParents( @Nonnull UUID fhirServerId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint,
+    public IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint,
         @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType,
         @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction )
     {
@@ -86,7 +86,7 @@ public class HierarchicallyFhirResourceRepositoryImpl implements HierarchicallyF
             return support.createBundle( Collections.emptyList() );
         }
 
-        IBaseResource child = fhirResourceRepository.find( fhirServerId, fhirVersion, fhirEndpoint, resourceType, resourceId ).orElse( null );
+        IBaseResource child = fhirResourceRepository.find( fhirClientId, fhirVersion, fhirEndpoint, resourceType, resourceId ).orElse( null );
         if ( child == null )
         {
             return support.createBundle( Collections.emptyList() );
@@ -110,7 +110,7 @@ public class HierarchicallyFhirResourceRepositoryImpl implements HierarchicallyF
                     // there is a dependency loop and search must be interrupted
                     break;
                 }
-                child = fhirResourceRepository.find( fhirServerId, fhirVersion, fhirEndpoint,
+                child = fhirResourceRepository.find( fhirClientId, fhirVersion, fhirEndpoint,
                     childResourceType, parentReference.getReferenceElement().getIdPart() ).orElse( null );
             }
             else

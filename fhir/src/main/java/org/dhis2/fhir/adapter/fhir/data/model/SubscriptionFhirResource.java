@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -54,7 +54,7 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_subscription_resource" )
-@NamedQuery( name = SubscriptionFhirResource.RESOURCE_NAMED_QUERY, query = "SELECT sfr FROM SubscriptionFhirResource sfr WHERE sfr.fhirServerResource=:fhirServerResource AND sfr.fhirResourceId=:fhirResourceId" )
+@NamedQuery( name = SubscriptionFhirResource.RESOURCE_NAMED_QUERY, query = "SELECT sfr FROM SubscriptionFhirResource sfr WHERE sfr.fhirClientResource=:fhirClientResource AND sfr.fhirResourceId=:fhirResourceId" )
 public class SubscriptionFhirResource implements Serializable
 {
     private static final long serialVersionUID = -7965763701550940008L;
@@ -65,7 +65,7 @@ public class SubscriptionFhirResource implements Serializable
 
     private Instant createdAt;
 
-    private FhirServerResource fhirServerResource;
+    private FhirClientResource fhirClientResource;
 
     private String fhirResourceId;
 
@@ -102,15 +102,15 @@ public class SubscriptionFhirResource implements Serializable
     }
 
     @ManyToOne( optional = false )
-    @JoinColumn( name = "fhir_server_resource_id", nullable = false )
-    public FhirServerResource getFhirServerResource()
+    @JoinColumn( name = "fhir_client_resource_id", nullable = false )
+    public FhirClientResource getFhirClientResource()
     {
-        return fhirServerResource;
+        return fhirClientResource;
     }
 
-    public void setFhirServerResource( FhirServerResource fhirServerResource )
+    public void setFhirClientResource( FhirClientResource fhirClientResource )
     {
-        this.fhirServerResource = fhirServerResource;
+        this.fhirClientResource = fhirClientResource;
     }
 
     @Basic

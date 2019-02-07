@@ -33,10 +33,10 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
@@ -49,7 +49,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeCategoryRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptArgRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackedEntityRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
@@ -101,7 +101,7 @@ public class SetupService
 
     private final ExecutableScriptArgRepository executableScriptArgRepository;
 
-    private final FhirServerRepository fhirServerRepository;
+    private final FhirClientRepository fhirClientRepository;
 
     private final MappedTrackedEntityRepository trackedEntityRepository;
 
@@ -109,7 +109,7 @@ public class SetupService
 
     public SetupService( @Nonnull CodeCategoryRepository codeCategoryRepository, @Nonnull CodeRepository codeRepository,
         @Nonnull SystemRepository systemRepository, @Nonnull SystemCodeRepository systemCodeRepository,
-        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull FhirServerRepository fhirServerRepository,
+        @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull ScriptRepository scriptRepository, @Nonnull MappedTrackedEntityRepository trackedEntityRepository )
     {
         this.codeCategoryRepository = codeCategoryRepository;
@@ -117,7 +117,7 @@ public class SetupService
         this.systemRepository = systemRepository;
         this.systemCodeRepository = systemCodeRepository;
         this.executableScriptArgRepository = executableScriptArgRepository;
-        this.fhirServerRepository = fhirServerRepository;
+        this.fhirClientRepository = fhirClientRepository;
         this.scriptRepository = scriptRepository;
         this.trackedEntityRepository = trackedEntityRepository;
     }
@@ -128,7 +128,7 @@ public class SetupService
         SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try
         {
-            return (fhirServerRepository.count() > 0);
+            return (fhirClientRepository.count() > 0);
         }
         finally
         {
@@ -140,13 +140,13 @@ public class SetupService
     public SetupResult apply( @Nonnull Setup setup )
     {
         final System organizationSystem = findOrCreateSystem(
-            setup.getFhirServerSetup().getSystemUriSetup().getOrganizationSystemUri(),
+            setup.getFhirClientSetup().getSystemUriSetup().getOrganizationSystemUri(),
             "Default DHIS2 Organization Units", "DEFAULT_DHIS2_ORG_UNIT", "National Organization ID", "Default DHIS2 organization unit system URI." );
         final System patientSystem = findOrCreateSystem(
-            setup.getFhirServerSetup().getSystemUriSetup().getPatientSystemUri(),
+            setup.getFhirClientSetup().getSystemUriSetup().getPatientSystemUri(),
             "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "National Patient ID", "Default DHIS2 patient system URI." );
 
-        final SetupResult setupResult = createFhirServer( setup.getFhirServerSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem );
+        final SetupResult setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem );
         createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         updateTrackedEntity( setup.getTrackedEntitySetup() );
         return setupResult;
@@ -154,19 +154,19 @@ public class SetupService
 
     @Nonnull
     @Transactional
-    public SetupResult createFhirServer( @Nonnull FhirServerSetup setup, @Nonnull FhirVersion fhirVersion, @Nonnull String suffix, @Nonnull System organizationSystem, @Nonnull System patientSystem )
+    public SetupResult createFhirClient( @Nonnull FhirClientSetup setup, @Nonnull FhirVersion fhirVersion, @Nonnull String suffix, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
         final Set<FhirResourceType> autoCreatedSubscriptionResources = new HashSet<>();
         autoCreatedSubscriptionResources.add( FhirResourceType.PATIENT );
 
-        final FhirServer fhirServer = new FhirServer();
-        fhirServer.setSystems( new ArrayList<>() );
-        fhirServer.setName( "Default Remote Subscription" + suffix );
-        fhirServer.setCode( "DEFAULT" + suffix );
-        fhirServer.setDescription( "Default FHIR server." );
-        fhirServer.setFhirVersion( fhirVersion );
-        fhirServer.setEnabled( true );
-        fhirServer.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
+        final FhirClient fhirClient = new FhirClient();
+        fhirClient.setSystems( new ArrayList<>() );
+        fhirClient.setName( "Default Remote Subscription" + suffix );
+        fhirClient.setCode( "DEFAULT" + suffix );
+        fhirClient.setDescription( "Default FHIR client." );
+        fhirClient.setFhirVersion( fhirVersion );
+        fhirClient.setEnabled( true );
+        fhirClient.setToleranceMillis( setup.getFhirSetup().getToleranceMillis() );
 
         if ( setup.getFhirSetup().isSupportsRelatedPerson() )
         {
@@ -174,31 +174,31 @@ public class SetupService
         }
         else
         {
-            if ( fhirServer.getResources() == null )
+            if ( fhirClient.getResources() == null )
             {
-                fhirServer.setResources( new ArrayList<>() );
+                fhirClient.setResources( new ArrayList<>() );
             }
 
-            final FhirServerResource rsr = new FhirServerResource();
-            rsr.setFhirServer( fhirServer );
+            final FhirClientResource rsr = new FhirClientResource();
+            rsr.setFhirClient( fhirClient );
             rsr.setFhirResourceType( FhirResourceType.RELATED_PERSON );
             rsr.setVirtual( true );
-            rsr.setDescription( "Virtual FHIR server for FHIR Related Person." );
-            fhirServer.getResources().add( rsr );
+            rsr.setDescription( "Virtual FHIR client for FHIR Related Person." );
+            fhirClient.getResources().add( rsr );
         }
-        fhirServer.setAutoCreatedSubscriptionResources( autoCreatedSubscriptionResources );
+        fhirClient.setAutoCreatedSubscriptionResources( autoCreatedSubscriptionResources );
 
         final SubscriptionAdapterEndpoint adapterEndpoint = new SubscriptionAdapterEndpoint();
         adapterEndpoint.setBaseUrl( StringUtils.trim( setup.getAdapterSetup().getBaseUrl() ) );
         adapterEndpoint.setAuthorizationHeader( StringUtils.trim( setup.getAdapterSetup().getAuthorizationHeaderValue() ) );
         adapterEndpoint.setSubscriptionType( setup.getFhirSetup().getSubscriptionType() );
-        fhirServer.setAdapterEndpoint( adapterEndpoint );
+        fhirClient.setAdapterEndpoint( adapterEndpoint );
 
         final SubscriptionDhisEndpoint dhisEndpoint = new SubscriptionDhisEndpoint();
         dhisEndpoint.setAuthenticationMethod( AuthenticationMethod.BASIC );
         dhisEndpoint.setUsername( StringUtils.trim( setup.getDhisSetup().getUsername() ) );
         dhisEndpoint.setPassword( StringUtils.trim( setup.getDhisSetup().getPassword() ) );
-        fhirServer.setDhisEndpoint( dhisEndpoint );
+        fhirClient.setDhisEndpoint( dhisEndpoint );
 
         final SubscriptionFhirEndpoint fhirEndpoint = new SubscriptionFhirEndpoint();
         fhirEndpoint.setBaseUrl( setup.getFhirSetup().getBaseUrl() );
@@ -210,25 +210,25 @@ public class SetupService
                 StringUtils.trim( setup.getFhirSetup().getHeaderValue() ),
                 AUTHORIZATION_HEADER_NAME.equalsIgnoreCase( StringUtils.trim( setup.getFhirSetup().getHeaderName() ) ) ) ) ) );
         }
-        fhirServer.setFhirEndpoint( fhirEndpoint );
+        fhirClient.setFhirEndpoint( fhirEndpoint );
 
-        final FhirServerSystem subscriptionOrganizationSystem = new FhirServerSystem();
-        subscriptionOrganizationSystem.setFhirServer( fhirServer );
+        final FhirClientSystem subscriptionOrganizationSystem = new FhirClientSystem();
+        subscriptionOrganizationSystem.setFhirClient( fhirClient );
         subscriptionOrganizationSystem.setFhirResourceType( FhirResourceType.ORGANIZATION );
         subscriptionOrganizationSystem.setSystem( organizationSystem );
         subscriptionOrganizationSystem.setCodePrefix( StringUtils.trim( setup.getSystemUriSetup().getOrganizationCodePrefix() ) );
-        fhirServer.getSystems().add( subscriptionOrganizationSystem );
+        fhirClient.getSystems().add( subscriptionOrganizationSystem );
 
-        final FhirServerSystem subscriptionPatientSystem = new FhirServerSystem();
-        subscriptionPatientSystem.setFhirServer( fhirServer );
+        final FhirClientSystem subscriptionPatientSystem = new FhirClientSystem();
+        subscriptionPatientSystem.setFhirClient( fhirClient );
         subscriptionPatientSystem.setFhirResourceType( FhirResourceType.PATIENT );
         subscriptionPatientSystem.setSystem( patientSystem );
         subscriptionPatientSystem.setCodePrefix( StringUtils.trim( setup.getSystemUriSetup().getPatientCodePrefix() ) );
-        fhirServer.getSystems().add( subscriptionPatientSystem );
+        fhirClient.getSystems().add( subscriptionPatientSystem );
 
-        fhirServerRepository.saveAndFlush( fhirServer );
-        return new SetupResult( fhirServer.getId(), fhirServer.getResources().stream()
-            .collect( Collectors.toMap( FhirServerResource::getFhirResourceType, VersionedBaseMetadata::getId ) ),
+        fhirClientRepository.saveAndFlush( fhirClient );
+        return new SetupResult( fhirClient.getId(), fhirClient.getResources().stream()
+            .collect( Collectors.toMap( FhirClientResource::getFhirResourceType, VersionedBaseMetadata::getId ) ),
             organizationSystem, patientSystem );
     }
 

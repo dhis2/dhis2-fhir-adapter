@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,7 @@ public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
                 fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional(),
-                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR servers." ).type( JsonFieldType.STRING ).optional()
+                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR clients." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -114,7 +114,7 @@ public class SystemRepositoryRestDocsTest extends AbstractJpaRepositoryRestDocsT
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the system is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "systemUri" ).description( "The system URI of the system." ).type( JsonFieldType.STRING ),
                 fields.withPath( "enabled" ).description( "Specifies if this system and its code are enabled." ).type( JsonFieldType.BOOLEAN ),
-                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR servers." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "fhirDisplayName" ).description( "Display name of the system and its assigned identifiers and codes that is used when storing data on FHIR clients." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "descriptionProtected" ).description( "Specifies if the description contains license information that must not be changed." ).type( JsonFieldType.BOOLEAN ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );

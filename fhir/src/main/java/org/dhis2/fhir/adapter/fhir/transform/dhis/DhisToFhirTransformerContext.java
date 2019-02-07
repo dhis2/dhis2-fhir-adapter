@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AvailableFhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
@@ -67,11 +67,11 @@ public interface DhisToFhirTransformerContext extends TransformerContext
     FhirVersion getVersion();
 
     @Nonnull
-    UUID getFhirServerId();
+    UUID getFhirClientId();
 
     @Nonnull
-    @ScriptMethod( description = "Returns the code of the FHIR server that is associated with the execution of the current transformation." )
-    String getFhirServerCode();
+    @ScriptMethod( description = "Returns the code of the FHIR client that is associated with the execution of the current transformation." )
+    String getFhirClientCode();
 
     @ScriptMethod( description = "Returns if the adapter should add an adapter specific identifier when creating or updating resources." )
     boolean isUseAdapterIdentifier();
@@ -83,10 +83,10 @@ public interface DhisToFhirTransformerContext extends TransformerContext
     Optional<ResourceSystem> getOptionalResourceSystem( @Nonnull FhirResourceType resourceType );
 
     @Nullable
-    AvailableFhirServerResource getAvailableResource( @Nonnull FhirResourceType resourceType );
+    AvailableFhirClientResource getAvailableResource( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
-    Optional<AvailableFhirServerResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
+    Optional<AvailableFhirClientResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
 
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )

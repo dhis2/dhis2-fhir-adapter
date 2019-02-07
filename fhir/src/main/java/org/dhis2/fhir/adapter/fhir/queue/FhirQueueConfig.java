@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.queue;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@ import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationI
 import org.dhis2.fhir.adapter.dhis.queue.JmsJsonTypeIdMapping;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
 import org.dhis2.fhir.adapter.fhir.repository.impl.RepositoryConfig;
-import org.dhis2.fhir.adapter.fhir.server.impl.FhirServerConfig;
-import org.dhis2.fhir.adapter.fhir.server.impl.FhirServerRestHookRequest;
+import org.dhis2.fhir.adapter.fhir.server.impl.FhirClientConfig;
+import org.dhis2.fhir.adapter.fhir.server.impl.FhirClientRestHookRequest;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,13 +56,13 @@ import java.util.Map;
 @Validated
 public class FhirQueueConfig
 {
-    private final FhirServerConfig fhirServerConfig;
+    private final FhirClientConfig fhirClientConfig;
 
     private final RepositoryConfig repositoryConfig;
 
-    public FhirQueueConfig( @Nonnull FhirServerConfig fhirServerConfig, @Nonnull RepositoryConfig repositoryConfig )
+    public FhirQueueConfig( @Nonnull FhirClientConfig fhirClientConfig, @Nonnull RepositoryConfig repositoryConfig )
     {
-        this.fhirServerConfig = fhirServerConfig;
+        this.fhirClientConfig = fhirClientConfig;
         this.repositoryConfig = repositoryConfig;
     }
 
@@ -71,7 +71,7 @@ public class FhirQueueConfig
     protected ArtemisConfigurationCustomizer artemisConfigurationCustomizer()
     {
         return configuration -> {
-            configuration.addAddressesSetting( fhirServerConfig.getRestHookRequestQueue().getQueueName(), fhirServerConfig.getRestHookRequestQueue().getEmbeddedAddressSettings() );
+            configuration.addAddressesSetting( fhirClientConfig.getRestHookRequestQueue().getQueueName(), fhirClientConfig.getRestHookRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceQueue().getQueueName(), repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceDlQueue().getQueueName(), repositoryConfig.getFhirResourceDlQueue().getEmbeddedAddressSettings() );
         };
@@ -82,7 +82,7 @@ public class FhirQueueConfig
     protected JMSQueueConfiguration webHookRequestQueueConfiguration()
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
-        queueConfiguration.setName( fhirServerConfig.getRestHookRequestQueue().getQueueName() );
+        queueConfiguration.setName( fhirClientConfig.getRestHookRequestQueue().getQueueName() );
         queueConfiguration.setDurable( true );
         return queueConfiguration;
     }
@@ -112,7 +112,7 @@ public class FhirQueueConfig
     protected JmsTemplate fhirRestHookRequestQueueJmsTemplate( @Nonnull ConnectionFactory connectionFactory, @Nonnull MessageConverter jmsMessageConverter )
     {
         final JmsTemplate jmsTemplate = new JmsTemplate( connectionFactory );
-        jmsTemplate.setDefaultDestinationName( fhirServerConfig.getRestHookRequestQueue().getQueueName() );
+        jmsTemplate.setDefaultDestinationName( fhirClientConfig.getRestHookRequestQueue().getQueueName() );
         jmsTemplate.setMessageConverter( jmsMessageConverter );
         return jmsTemplate;
     }
@@ -138,7 +138,7 @@ public class FhirQueueConfig
             public Map<String, Class<?>> getTypeIdMappings()
             {
                 return ImmutableMap.of(
-                    "fhirRestHookRequest", FhirServerRestHookRequest.class,
+                    "fhirRestHookRequest", FhirClientRestHookRequest.class,
                     "fhirResource", FhirResource.class );
             }
         };

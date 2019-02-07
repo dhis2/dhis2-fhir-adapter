@@ -29,11 +29,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
@@ -71,7 +71,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
     private ScriptExecutionContext scriptExecutionContext;
 
     @Mock
-    private FhirServerResourceRepository fhirServerResourceRepository;
+    private FhirClientResourceRepository fhirClientResourceRepository;
 
     @Mock
     private FhirResourceRepository fhirResourceRepository;
@@ -134,25 +134,25 @@ public class ReferenceFhirToDhisTransformerUtilsTest
     public void getResource()
     {
         final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
-        final UUID fhirServerId = UUID.randomUUID();
-        final FhirServer fhirServer = new FhirServer();
-        fhirServer.setId( fhirServerId );
-        fhirServer.setFhirVersion( FhirVersion.DSTU3 );
-        fhirServer.setFhirEndpoint( subscriptionFhirEndpoint );
+        final UUID fhirClientId = UUID.randomUUID();
+        final FhirClient fhirClient = new FhirClient();
+        fhirClient.setId( fhirClientId );
+        fhirClient.setFhirVersion( FhirVersion.DSTU3 );
+        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
-        final UUID fhirServerResourceId = UUID.randomUUID();
-        final FhirServerResource fhirServerResource = new FhirServerResource();
-        fhirServerResource.setId( fhirServerResourceId );
-        fhirServerResource.setFhirServer( fhirServer );
+        final UUID fhirClientResourceId = UUID.randomUUID();
+        final FhirClientResource fhirClientResource = new FhirClientResource();
+        fhirClientResource.setId( fhirClientResourceId );
+        fhirClientResource.setFhirClient( fhirClient );
         final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
         Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( fhirServerResourceId ).when( request ).getFhirServerResourceId();
+        Mockito.doReturn( fhirClientResourceId ).when( request ).getFhirClientResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( fhirServerResource ) ).when( fhirServerResourceRepository ).findOneByIdCached( Mockito.eq( fhirServerResourceId ) );
+        Mockito.doReturn( Optional.of( fhirClientResource ) ).when( fhirClientResourceRepository ).findOneByIdCached( Mockito.eq( fhirClientResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();
@@ -161,7 +161,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final Reference reference = new Reference( id );
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
-            .find( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+            .find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
                 Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         final Resource result = (Resource) utils.getResource( reference, null, false );
@@ -169,7 +169,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertEquals( id, result.getIdElement() );
         Assert.assertNotSame( resource, result );
 
-        Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+        Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
             Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 
@@ -177,25 +177,25 @@ public class ReferenceFhirToDhisTransformerUtilsTest
     public void getResourceRefreshed()
     {
         final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
-        final UUID fhirServerId = UUID.randomUUID();
-        final FhirServer fhirServer = new FhirServer();
-        fhirServer.setId( fhirServerId );
-        fhirServer.setFhirVersion( FhirVersion.DSTU3 );
-        fhirServer.setFhirEndpoint( subscriptionFhirEndpoint );
+        final UUID fhirClientId = UUID.randomUUID();
+        final FhirClient fhirClient = new FhirClient();
+        fhirClient.setId( fhirClientId );
+        fhirClient.setFhirVersion( FhirVersion.DSTU3 );
+        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
-        final UUID fhirServerResourceId = UUID.randomUUID();
-        final FhirServerResource fhirServerResource = new FhirServerResource();
-        fhirServerResource.setId( fhirServerResourceId );
-        fhirServerResource.setFhirServer( fhirServer );
+        final UUID fhirClientResourceId = UUID.randomUUID();
+        final FhirClientResource fhirClientResource = new FhirClientResource();
+        fhirClientResource.setId( fhirClientResourceId );
+        fhirClientResource.setFhirClient( fhirClient );
         final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
         Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( fhirServerResourceId ).when( request ).getFhirServerResourceId();
+        Mockito.doReturn( fhirClientResourceId ).when( request ).getFhirClientResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( fhirServerResource ) ).when( fhirServerResourceRepository ).findOneByIdCached( Mockito.eq( fhirServerResourceId ) );
+        Mockito.doReturn( Optional.of( fhirClientResource ) ).when( fhirClientResourceRepository ).findOneByIdCached( Mockito.eq( fhirClientResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();
@@ -204,7 +204,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final Reference reference = new Reference( id );
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
-            .findRefreshed( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+            .findRefreshed( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
                 Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         final Resource result = (Resource) utils.getResource( reference, null, true );
@@ -212,7 +212,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertEquals( id, result.getIdElement() );
         Assert.assertNotSame( resource, result );
 
-        Mockito.verify( fhirResourceRepository ).findRefreshed( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+        Mockito.verify( fhirResourceRepository ).findRefreshed( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
             Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 
@@ -220,25 +220,25 @@ public class ReferenceFhirToDhisTransformerUtilsTest
     public void initReference()
     {
         final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
-        final UUID fhirServerId = UUID.randomUUID();
-        final FhirServer fhirServer = new FhirServer();
-        fhirServer.setId( fhirServerId );
-        fhirServer.setFhirVersion( FhirVersion.DSTU3 );
-        fhirServer.setFhirEndpoint( subscriptionFhirEndpoint );
+        final UUID fhirClientId = UUID.randomUUID();
+        final FhirClient fhirClient = new FhirClient();
+        fhirClient.setId( fhirClientId );
+        fhirClient.setFhirVersion( FhirVersion.DSTU3 );
+        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
-        final UUID fhirServerResourceId = UUID.randomUUID();
-        final FhirServerResource fhirServerResource = new FhirServerResource();
-        fhirServerResource.setId( fhirServerResourceId );
-        fhirServerResource.setFhirServer( fhirServer );
+        final UUID fhirClientResourceId = UUID.randomUUID();
+        final FhirClientResource fhirClientResource = new FhirClientResource();
+        fhirClientResource.setId( fhirClientResourceId );
+        fhirClientResource.setFhirClient( fhirClient );
         final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
         Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( fhirServerResourceId ).when( request ).getFhirServerResourceId();
+        Mockito.doReturn( fhirClientResourceId ).when( request ).getFhirClientResourceId();
         Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-        Mockito.doReturn( Optional.of( fhirServerResource ) ).when( fhirServerResourceRepository ).findOneByIdCached( Mockito.eq( fhirServerResourceId ) );
+        Mockito.doReturn( Optional.of( fhirClientResource ) ).when( fhirClientResourceRepository ).findOneByIdCached( Mockito.eq( fhirClientResourceId ) );
         Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
 
         final Patient resource = new Patient();
@@ -247,7 +247,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         final Reference reference = new Reference( id );
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
-            .find( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+            .find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
                 Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         utils.initReference( reference, "PATIENT" );
@@ -255,7 +255,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertEquals( id, reference.getResource().getIdElement() );
         Assert.assertNotSame( resource, reference.getResource() );
 
-        Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirServerId ), Mockito.eq( FhirVersion.DSTU3 ),
+        Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
             Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 }

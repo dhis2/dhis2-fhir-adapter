@@ -46,32 +46,32 @@ public class SetupResult implements Serializable
 {
     private static final long serialVersionUID = -5493649240520618453L;
 
-    private final UUID fhirServerId;
+    private final UUID fhirClientId;
 
-    private final Map<FhirResourceType, UUID> fhirServerResourceIds;
+    private final Map<FhirResourceType, UUID> fhirClientResourceIds;
 
     private final System organizationSystem;
 
     private final System patientSystem;
 
-    public SetupResult( @Nonnull UUID fhirServerId, @Nonnull Map<FhirResourceType, UUID> fhirServerResourceIds, @Nonnull System organizationSystem, @Nonnull System patientSystem )
+    public SetupResult( @Nonnull UUID fhirClientId, @Nonnull Map<FhirResourceType, UUID> fhirClientResourceIds, @Nonnull System organizationSystem, @Nonnull System patientSystem )
     {
-        this.fhirServerId = fhirServerId;
-        this.fhirServerResourceIds = Collections.unmodifiableMap( fhirServerResourceIds );
+        this.fhirClientId = fhirClientId;
+        this.fhirClientResourceIds = Collections.unmodifiableMap( fhirClientResourceIds );
         this.organizationSystem = organizationSystem;
         this.patientSystem = patientSystem;
     }
 
     @Nonnull
-    public UUID getFhirServerId()
+    public UUID getFhirClientId()
     {
-        return fhirServerId;
+        return fhirClientId;
     }
 
     @Nonnull
-    public Map<FhirResourceType, UUID> getFhirServerResourceIds()
+    public Map<FhirResourceType, UUID> getFhirClientResourceIds()
     {
-        return fhirServerResourceIds;
+        return fhirClientResourceIds;
     }
 
     public System getOrganizationSystem()

@@ -33,8 +33,8 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -70,7 +70,7 @@ public class OrganizationUnitResolver
 
     private final FhirResourceRepository fhirResourceRepository;
 
-    private final FhirServer fhirServer;
+    private final FhirClient fhirClient;
 
     private final IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider;
 
@@ -82,12 +82,12 @@ public class OrganizationUnitResolver
 
     public OrganizationUnitResolver(
         @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirServer fhirServer, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
         @Nonnull IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider )
     {
         this.organizationUnitService = organizationUnitService;
         this.fhirResourceRepository = fhirResourceRepository;
-        this.fhirServer = fhirServer;
+        this.fhirClient = fhirClient;
         this.context = context;
         this.ruleInfo = ruleInfo;
         this.scriptVariables = scriptVariables;
@@ -153,7 +153,7 @@ public class OrganizationUnitResolver
 
         final ResourceSystem resourceSystem = context.getOptionalResourceSystem( resourceType )
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + ruleInfo.getRule().getFhirResourceType() + "." ) );
-        return fhirResourceRepository.findByIdentifier( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+        return fhirResourceRepository.findByIdentifier( fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
             resourceType.getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
     }
 }

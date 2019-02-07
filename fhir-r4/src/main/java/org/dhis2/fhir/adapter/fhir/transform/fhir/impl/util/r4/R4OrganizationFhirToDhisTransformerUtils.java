@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  */
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
@@ -61,11 +61,11 @@ public class R4OrganizationFhirToDhisTransformerUtils extends AbstractOrganizati
 {
     public R4OrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull HierarchicallyFhirResourceRepository hierarchicallyFhirResourceRepository )
     {
-        super( scriptExecutionContext, organizationUnitService, fhirServerResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
+        super( scriptExecutionContext, organizationUnitService, fhirClientResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
     }
 
     @Nonnull

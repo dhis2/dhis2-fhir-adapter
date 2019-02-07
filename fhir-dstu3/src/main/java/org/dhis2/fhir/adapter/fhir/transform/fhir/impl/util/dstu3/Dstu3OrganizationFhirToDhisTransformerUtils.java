@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
@@ -61,11 +61,11 @@ public class Dstu3OrganizationFhirToDhisTransformerUtils extends AbstractOrganiz
 {
     public Dstu3OrganizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull HierarchicallyFhirResourceRepository hierarchicallyFhirResourceRepository )
     {
-        super( scriptExecutionContext, organizationUnitService, fhirServerResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
+        super( scriptExecutionContext, organizationUnitService, fhirClientResourceRepository, fhirResourceRepository, hierarchicallyFhirResourceRepository );
     }
 
     @Nonnull

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,13 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
 import org.dhis2.fhir.adapter.data.repository.QueuedItemRepository;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 /**
  * Custom repository for {@link QueuedFhirResource} entities.
  *
  * @author volsch
  */
-public interface CustomQueuedFhirResourceRepository extends QueuedItemRepository<QueuedFhirResourceId, FhirServerResource>
+public interface CustomQueuedFhirResourceRepository extends QueuedItemRepository<QueuedFhirResourceId, FhirClientResource>
 {
 }

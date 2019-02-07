@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.server.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
@@ -73,13 +73,13 @@ import java.util.stream.Collectors;
 
 /**
  * Retrieves the data for the specified subscription beginning from the last
- * updated timestamp that is associated with the FHIR server resource.
- * The retriever must be able to handle that the FHIR server does not support
+ * updated timestamp that is associated with the FHIR client resource.
+ * The retriever must be able to handle that the FHIR client does not support
  * paging.
  *
  * @author volsch
  */
-public abstract class AbstractSubscriptionResourceItemRetriever implements DataProcessorItemRetriever<FhirServerResource>, FhirVersionRestricted
+public abstract class AbstractSubscriptionResourceItemRetriever implements DataProcessorItemRetriever<FhirClientResource>, FhirVersionRestricted
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -104,9 +104,9 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
 
     @Override
     @Nonnull
-    public Instant poll( @Nonnull FhirServerResource group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
+    public Instant poll( @Nonnull FhirClientResource group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        final IGenericClient client = FhirClientUtils.createClient( fhirContext, group.getFhirServer().getFhirEndpoint() );
+        final IGenericClient client = FhirClientUtils.createClient( fhirContext, group.getFhirClient().getFhirEndpoint() );
         Instant processedLastUpdated = null;
         Instant fromLastUpdated = lastUpdated;
 
@@ -119,14 +119,14 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         final String resourceName = group.getFhirResourceType().getResourceTypeName();
         do
         {
-            logger.debug( "Loading next since {} for FHIR server resource {} with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
+            logger.debug( "Loading next since {} for FHIR client resource {} with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
             if ( processedLastUpdated == null )
             {
                 // last updated must only bet set on the first search invocation
                 processedLastUpdated = Instant.now();
             }
             fromLastUpdated = fromLastUpdated
-                .minus( group.getFhirServer().getToleranceMillis(), ChronoUnit.MILLIS );
+                .minus( group.getFhirClient().getToleranceMillis(), ChronoUnit.MILLIS );
             IBaseBundle bundle = createBaseQuery( client, resourceName, group, fromLastUpdated ).count( maxSearchCount )
                 .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
             do
@@ -169,19 +169,19 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                         }
                         else if ( resources.size() < (totalCount = getTotalCount( client, resourceName, group, fromLastUpdated, currentBundle )) )
                         {
-                            logger.debug( "Returned {} of {} for FHIR server resource {} with maximum requested {}.",
+                            logger.debug( "Returned {} of {} for FHIR client resource {} with maximum requested {}.",
                                 resources.size(), totalCount, group.getId(), maxSearchCount );
                             final Instant minLastUpdated = resources.stream().map( ProcessedItemInfo::getLastUpdated )
                                 .filter( Objects::nonNull ).min( Comparator.naturalOrder() ).orElse( null );
                             if ( (minLastUpdated != null) && minLastUpdated.isBefore( fromLastUpdated ) )
                             {
-                                logger.warn( "FHIR server resource {} returned minimum last updated {} for lower bound {}.",
+                                logger.warn( "FHIR client resource {} returned minimum last updated {} for lower bound {}.",
                                     group.getId(), minLastUpdated, fromLastUpdated );
                             }
 
                             if ( (previousResources != null) && previousResources.containsAll( resources ) && (previousResources.size() >= resources.size()) )
                             {
-                                throw new QueuedDataProcessorException( "FHIR server resource " + group.getId() + " returned same result for last updated  " +
+                                throw new QueuedDataProcessorException( "FHIR client resource " + group.getId() + " returned same result for last updated  " +
                                     fromLastUpdated + " (count " + resources.size() + " of maximum " + maxSearchCount + ")." );
                             }
                             previousResources = new HashSet<>( resources );
@@ -190,7 +190,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                                 .filter( Objects::nonNull ).max( Comparator.naturalOrder() ).orElse( null );
                             if ( maxLastUpdated == null )
                             {
-                                logger.warn( "FHIR server resource {} does not support last updated timestamps.", group.getId() );
+                                logger.warn( "FHIR client resource {} does not support last updated timestamps.", group.getId() );
                             }
                             else
                             {
@@ -201,7 +201,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                                 }
                                 else
                                 {
-                                    throw new QueuedDataProcessorException( "FHIR server resource " + group.getId() + " last updated timestamp " +
+                                    throw new QueuedDataProcessorException( "FHIR client resource " + group.getId() + " last updated timestamp " +
                                         fromLastUpdated + " has not been changed after processing " + resources.size() + " resources (total " + totalCount + ")." );
                                 }
                             }
@@ -225,7 +225,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         return processedLastUpdated;
     }
 
-    protected long getTotalCount( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull FhirServerResource fhirServerResource, @Nonnull Instant fromLastUpdated, @Nonnull IBaseBundle bundle )
+    protected long getTotalCount( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull FhirClientResource fhirClientResource, @Nonnull Instant fromLastUpdated, @Nonnull IBaseBundle bundle )
     {
         Long totalCount = getBundleTotalCount( bundle );
         if ( totalCount != null )
@@ -233,21 +233,21 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
             return totalCount;
         }
 
-        final IBaseBundle newBundle = createBaseQuery( client, resourceName, fhirServerResource, fromLastUpdated )
+        final IBaseBundle newBundle = createBaseQuery( client, resourceName, fhirClientResource, fromLastUpdated )
             .summaryMode( SummaryEnum.COUNT ).returnBundle( getBundleClass() ).execute();
         totalCount = getBundleTotalCount( newBundle );
         if ( totalCount == null )
         {
-            throw new QueuedDataProcessorException( "FHIR server resource " + fhirServerResource.getId() + " did not return requested total count." );
+            throw new QueuedDataProcessorException( "FHIR client resource " + fhirClientResource.getId() + " did not return requested total count." );
         }
         return totalCount;
     }
 
     @Nonnull
-    protected IQuery<? extends IBaseBundle> createBaseQuery( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull FhirServerResource fhirServerResource, @Nonnull Instant fromLastUpdated )
+    protected IQuery<? extends IBaseBundle> createBaseQuery( @Nonnull IGenericClient client, @Nonnull String resourceName, @Nonnull FhirClientResource fhirClientResource, @Nonnull Instant fromLastUpdated )
     {
         return client.search().forResource( resourceName )
-            .whereMap( getQuery( fhirServerResource ) ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) )
+            .whereMap( getQuery( fhirClientResource ) ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) )
             .cacheControl( new CacheControlDirective().setNoCache( true ) );
     }
 
@@ -269,14 +269,14 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
     protected abstract boolean isEmpty( @Nullable IBaseBundle bundle );
 
     @Nonnull
-    protected Map<String, List<String>> getQuery( @Nonnull FhirServerResource fhirServerResource )
+    protected Map<String, List<String>> getQuery( @Nonnull FhirClientResource fhirClientResource )
     {
-        if ( StringUtils.isBlank( fhirServerResource.getFhirCriteriaParameters() ) || fhirServerResource.getFhirCriteriaParameters().equals( "?" ) )
+        if ( StringUtils.isBlank( fhirClientResource.getFhirCriteriaParameters() ) || fhirClientResource.getFhirCriteriaParameters().equals( "?" ) )
         {
             return Collections.emptyMap();
         }
 
-        final String parameters = fhirServerResource.getFhirCriteriaParameters().trim();
+        final String parameters = fhirClientResource.getFhirCriteriaParameters().trim();
         final StringBuilder url = new StringBuilder( "Resource" );
         if ( !parameters.startsWith( "?" ) )
         {
@@ -291,7 +291,7 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         }
         catch ( URISyntaxException e )
         {
-            throw new QueuedDataProcessorException( "FHIR criteria parameters of FHIR server resource " + fhirServerResource.getId() + " are no valid query string.", e );
+            throw new QueuedDataProcessorException( "FHIR criteria parameters of FHIR client resource " + fhirClientResource.getId() + " are no valid query string.", e );
         }
 
         final Map<String, List<String>> result = new LinkedHashMap<>();

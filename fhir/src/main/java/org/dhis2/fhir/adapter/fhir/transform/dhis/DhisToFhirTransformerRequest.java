@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
@@ -52,5 +52,5 @@ public interface DhisToFhirTransformerRequest extends Serializable
     ScriptedDhisResource getInput();
 
     @Nonnull
-    FhirServer getFhirServer();
+    FhirClient getFhirClient();
 }

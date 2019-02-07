@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.data.model;
  */
 
 import org.dhis2.fhir.adapter.data.model.ProcessedItem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 import javax.annotation.Nonnull;
 import javax.persistence.AttributeOverride;
@@ -48,7 +48,7 @@ import java.time.Instant;
  */
 @Entity
 @Table( name = "fhir_processed_resource" )
-public class ProcessedFhirResource extends ProcessedItem<ProcessedFhirResourceId, FhirServerResource> implements Serializable
+public class ProcessedFhirResource extends ProcessedItem<ProcessedFhirResourceId, FhirClientResource> implements Serializable
 {
     private static final long serialVersionUID = -6484140859863504862L;
 

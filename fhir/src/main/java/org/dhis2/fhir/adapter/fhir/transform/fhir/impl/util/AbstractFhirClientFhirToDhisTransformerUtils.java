@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
@@ -76,16 +76,16 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
 
     private final FhirContext fhirContext;
 
-    private final FhirServerResourceRepository fhirServerResourceRepository;
+    private final FhirClientResourceRepository fhirClientResourceRepository;
 
     private final SystemCodeRepository systemCodeRepository;
 
     protected AbstractFhirClientFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirContext fhirContext,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
         this.fhirContext = fhirContext;
-        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirClientResourceRepository = fhirClientResourceRepository;
         this.systemCodeRepository = systemCodeRepository;
     }
 
@@ -211,13 +211,13 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
     protected IGenericClient createFhirClient()
     {
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final UUID resourceId = context.getFhirRequest().getFhirServerResourceId();
+        final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
         if ( resourceId == null )
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
         }
-        final FhirServerResource fhirServerResource = fhirServerResourceRepository.findOneByIdCached( resourceId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server resource with ID " + resourceId ) );
-        return FhirClientUtils.createClient( fhirContext, fhirServerResource.getFhirServer().getFhirEndpoint() );
+        final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );
+        return FhirClientUtils.createClient( fhirContext, fhirClientResource.getFhirClient().getFhirEndpoint() );
     }
 }

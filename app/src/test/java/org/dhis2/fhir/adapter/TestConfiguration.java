@@ -102,44 +102,44 @@ public class TestConfiguration
 
     private WireMockServer fhirMockServer;
 
-    private UUID fhirServerId;
+    private UUID fhirClientId;
 
-    private Map<FhirResourceType, UUID> fhirServerResourceIds;
+    private Map<FhirResourceType, UUID> fhirClientResourceIds;
 
-    private UUID fhirServerIdR4;
+    private UUID fhirClientIdR4;
 
-    private Map<FhirResourceType, UUID> fhirServerResourceIdsR4;
+    private Map<FhirResourceType, UUID> fhirClientResourceIdsR4;
 
     @Nonnull
-    public UUID getFhirServerId( @Nonnull FhirVersion fhirVersion )
+    public UUID getFhirClientId( @Nonnull FhirVersion fhirVersion )
     {
         switch ( fhirVersion )
         {
             case DSTU3:
-                return fhirServerId;
+                return fhirClientId;
             case R4:
-                return fhirServerIdR4;
+                return fhirClientIdR4;
             default:
                 throw new AssertionError( "Unhandled FHIR version: " + fhirVersion );
         }
     }
 
     @Nonnull
-    public UUID getFhirServerResourceId( @Nonnull FhirVersion fhirVersion, @Nonnull FhirResourceType resourceType )
+    public UUID getFhirClientResourceId( @Nonnull FhirVersion fhirVersion, @Nonnull FhirResourceType resourceType )
     {
         final UUID resourceId;
         switch ( fhirVersion )
         {
             case DSTU3:
-                resourceId = fhirServerResourceIds.get( resourceType );
+                resourceId = fhirClientResourceIds.get( resourceType );
                 break;
             case R4:
-                resourceId = fhirServerResourceIdsR4.get( resourceType );
+                resourceId = fhirClientResourceIdsR4.get( resourceType );
                 break;
             default:
                 throw new AssertionError( "Unhandled FHIR version: " + fhirVersion );
         }
-        Assert.assertNotNull( "FHIR server resource for " + resourceType + " could not be found.", resourceId );
+        Assert.assertNotNull( "FHIR client resource for " + resourceType + " could not be found.", resourceId );
         return resourceId;
     }
 
@@ -196,22 +196,22 @@ public class TestConfiguration
 
         final Setup setup = new Setup();
 
-        setup.getFhirServerSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
-        setup.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
+        setup.getFhirClientSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
+        setup.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
 
-        setup.getFhirServerSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
-        setup.getFhirServerSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
+        setup.getFhirClientSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
+        setup.getFhirClientSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
 
-        setup.getFhirServerSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_DSTU3_CONTEXT );
-        setup.getFhirServerSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
-        setup.getFhirServerSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
-        setup.getFhirServerSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
-        setup.getFhirServerSetup().getFhirSetup().setSupportsRelatedPerson( true );
+        setup.getFhirClientSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_DSTU3_CONTEXT );
+        setup.getFhirClientSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
+        setup.getFhirClientSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
+        setup.getFhirClientSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
+        setup.getFhirClientSetup().getFhirSetup().setSupportsRelatedPerson( true );
 
-        setup.getFhirServerSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
-        setup.getFhirServerSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
-        setup.getFhirServerSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
-        setup.getFhirServerSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
+        setup.getFhirClientSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
+        setup.getFhirClientSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
+        setup.getFhirClientSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
+        setup.getFhirClientSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
 
         setup.getOrganizationCodeSetup().setFallback( true );
         setup.getOrganizationCodeSetup().setDefaultDhisCode( "OU_4567" );
@@ -224,22 +224,22 @@ public class TestConfiguration
 
         final Setup setupR4 = new Setup();
 
-        setupR4.getFhirServerSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
-        setupR4.getFhirServerSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
+        setupR4.getFhirClientSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
+        setupR4.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
 
-        setupR4.getFhirServerSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
-        setupR4.getFhirServerSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
+        setupR4.getFhirClientSetup().getDhisSetup().setUsername( DHIS2_USERNAME );
+        setupR4.getFhirClientSetup().getDhisSetup().setPassword( DHIS2_PASSWORD );
 
-        setupR4.getFhirServerSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_R4_CONTEXT );
-        setupR4.getFhirServerSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
-        setupR4.getFhirServerSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
-        setupR4.getFhirServerSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
-        setupR4.getFhirServerSetup().getFhirSetup().setSupportsRelatedPerson( true );
+        setupR4.getFhirClientSetup().getFhirSetup().setBaseUrl( fhirMockServer.baseUrl() + BASE_R4_CONTEXT );
+        setupR4.getFhirClientSetup().getFhirSetup().setHeaderName( FHIR_SERVICE_HEADER_NAME );
+        setupR4.getFhirClientSetup().getFhirSetup().setHeaderValue( FHIR_SERVICE_HEADER_VALUE );
+        setupR4.getFhirClientSetup().getFhirSetup().setSubscriptionType( SubscriptionType.REST_HOOK );
+        setupR4.getFhirClientSetup().getFhirSetup().setSupportsRelatedPerson( true );
 
-        setupR4.getFhirServerSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
-        setupR4.getFhirServerSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
-        setupR4.getFhirServerSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
-        setupR4.getFhirServerSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
+        setupR4.getFhirClientSetup().getSystemUriSetup().setOrganizationSystemUri( "http://example.sl/organizations" );
+        setupR4.getFhirClientSetup().getSystemUriSetup().setOrganizationCodePrefix( "OU_" );
+        setupR4.getFhirClientSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
+        setupR4.getFhirClientSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
 
         final SetupResult setupResult;
         final SetupResult setupResultR4;
@@ -248,7 +248,7 @@ public class TestConfiguration
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
             setupResult = setupService.apply( setup );
-            setupResultR4 = setupService.createFhirServer( setupR4.getFhirServerSetup(), FhirVersion.R4, "_R4",
+            setupResultR4 = setupService.createFhirClient( setupR4.getFhirClientSetup(), FhirVersion.R4, "_R4",
                 setupResult.getOrganizationSystem(), setupResult.getPatientSystem() );
             Assert.assertTrue( setupService.hasCompletedSetup() );
         }
@@ -257,10 +257,10 @@ public class TestConfiguration
             SecurityContextHolder.clearContext();
         }
 
-        this.fhirServerId = setupResult.getFhirServerId();
-        this.fhirServerResourceIds = setupResult.getFhirServerResourceIds();
-        this.fhirServerIdR4 = setupResultR4.getFhirServerId();
-        this.fhirServerResourceIdsR4 = setupResultR4.getFhirServerResourceIds();
+        this.fhirClientId = setupResult.getFhirClientId();
+        this.fhirClientResourceIds = setupResult.getFhirClientResourceIds();
+        this.fhirClientIdR4 = setupResultR4.getFhirClientId();
+        this.fhirClientResourceIdsR4 = setupResultR4.getFhirClientResourceIds();
     }
 
     @PreDestroy

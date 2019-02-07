@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,11 @@ import org.apache.commons.lang.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServer;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirServerResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -76,7 +76,7 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
 
     private final OrganizationUnitService organizationUnitService;
 
-    private final FhirServerResourceRepository fhirServerResourceRepository;
+    private final FhirClientResourceRepository fhirClientResourceRepository;
 
     private final FhirResourceRepository fhirResourceRepository;
 
@@ -84,13 +84,13 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
 
     public AbstractOrgUnitFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull FhirServerResourceRepository fhirServerResourceRepository,
+        @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull HierarchicallyFhirResourceRepository hierarchicallyFhirResourceRepository )
     {
         super( scriptExecutionContext );
         this.organizationUnitService = organizationUnitService;
-        this.fhirServerResourceRepository = fhirServerResourceRepository;
+        this.fhirClientResourceRepository = fhirClientResourceRepository;
         this.fhirResourceRepository = fhirResourceRepository;
         this.hierarchicallyFhirResourceRepository = hierarchicallyFhirResourceRepository;
     }
@@ -109,7 +109,7 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
 
     @Nullable
     @ScriptExecutionRequired
-    @ScriptMethod( description = "Checks if the specified DHIS2 organization unit code exists on DHIS2 with the code prefix that is defined for organizations of the FHIR server of the current transformation context.",
+    @ScriptMethod( description = "Checks if the specified DHIS2 organization unit code exists on DHIS2 with the code prefix that is defined for organizations of the FHIR client of the current transformation context.",
         args = @ScriptMethodArg( value = "code", description = "The DHIS2 organization unit code (without prefix) that should be checked." ),
         returnDescription = "The DHIS2 organization unit code (includin prefix, as it exists on DHIS2) or null if it does not exist." )
     public String existsWithPrefix( @Nullable String code )
@@ -176,19 +176,19 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
         }
 
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final UUID resourceId = context.getFhirRequest().getFhirServerResourceId();
+        final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
         if ( resourceId == null )
         {
             throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
         }
-        final FhirServerResource fhirServerResource = fhirServerResourceRepository.findOneByIdCached( resourceId )
-            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR server resource with ID " + resourceId ) );
+        final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
+            .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );
 
         final FhirContext fhirContext = fhirResourceRepository.findFhirContext( context.getFhirRequest().getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + context.getFhirRequest().getVersion() + " is not available." ) );
-        final FhirServer fhirServer = fhirServerResource.getFhirServer();
+        final FhirClient fhirClient = fhirClientResource.getFhirClient();
 
-        final IBaseBundle hierarchyBundle = hierarchicallyFhirResourceRepository.findWithParents( fhirServer.getId(), fhirServer.getFhirVersion(), fhirServer.getFhirEndpoint(),
+        final IBaseBundle hierarchyBundle = hierarchicallyFhirResourceRepository.findWithParents( fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
             getFhirResourceType().getResourceTypeName(), childReference.getReferenceElement().getIdPart(), getFhirResourceType() + "PartOf", this::getParentReference );
         final List<IBaseResource> hierarchy = extractResources( hierarchyBundle );
         return hierarchy.isEmpty() ? null : FhirBeanTransformerUtils.clone( fhirContext, hierarchy );

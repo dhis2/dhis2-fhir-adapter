@@ -90,21 +90,21 @@ public class MetadataRepositoryAuthoritiesAppTest extends AbstractAppTest
     }
 
     @Test
-    public void fhirServerScriptAuthorities() throws Exception
+    public void fhirClientScriptAuthorities() throws Exception
     {
-        testAuthorities( "/fhirServers", "administration", "data_mapping" );
+        testAuthorities( "/fhirClients", "administration", "data_mapping" );
     }
 
     @Test
-    public void fhirServerResourceScriptAuthorities() throws Exception
+    public void fhirClientResourceScriptAuthorities() throws Exception
     {
-        testAuthorities( "/fhirServerResources", "administration", "data_mapping" );
+        testAuthorities( "/fhirClientResources", "administration", "data_mapping" );
     }
 
     @Test
-    public void fhirServerSystemScriptAuthorities() throws Exception
+    public void fhirClientSystemScriptAuthorities() throws Exception
     {
-        testAuthorities( "/fhirServerSystems", "administration", "data_mapping" );
+        testAuthorities( "/fhirClientSystems", "administration", "data_mapping" );
     }
 
     @Test

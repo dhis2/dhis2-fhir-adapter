@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.r4;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirServerRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
@@ -51,7 +51,7 @@ import java.util.Set;
 public class R4FhirClientDhisToFhirTransformerUtils extends AbstractFhirClientDhisToFhirTransformerUtils
 {
     public R4FhirClientDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull @Qualifier( "fhirContextR4" ) FhirContext fhirContext,
-        @Nonnull FhirServerRepository subscriptionRepository, @Nonnull FhirResourceRepository fhirResourceRepository )
+        @Nonnull FhirClientRepository subscriptionRepository, @Nonnull FhirResourceRepository fhirResourceRepository )
     {
         super( scriptExecutionContext, fhirContext, subscriptionRepository, fhirResourceRepository );
     }
