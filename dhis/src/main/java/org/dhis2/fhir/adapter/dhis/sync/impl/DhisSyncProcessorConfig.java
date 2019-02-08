@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +46,7 @@ import java.util.Set;
 @Component
 @ConfigurationProperties( "dhis2.fhir-adapter.sync.processor" )
 @Validated
-public class DhisSyncProcessorConfig implements Serializable
+public class DhisSyncProcessorConfig implements StoredItemServiceConfig, Serializable
 {
     private static final long serialVersionUID = 5043058728246300723L;
 
@@ -69,6 +70,7 @@ public class DhisSyncProcessorConfig implements Serializable
     @NotNull
     private Set<DhisResourceType> resourceTypes = new HashSet<>();
 
+    @Override
     public boolean isEnabled()
     {
         return enabled;

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.sync.impl;
+package org.dhis2.fhir.adapter.data.processor;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,20 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
-import org.dhis2.fhir.adapter.data.processor.impl.AbstractStoredItemService;
-import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
-import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.data.repository.StoredDhisResourceRepository;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupRepository;
-import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nonnull;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
- * Stored item service for {@link StoredDhisResource}s.
+ * Base configuration interface for the {@link StoredItemService}.
  *
  * @author volsch
  */
-@Service
-public class StoredDhisResourceServiceImpl extends AbstractStoredItemService<StoredDhisResource, StoredDhisResourceId, DhisSyncGroup> implements StoredDhisResourceService
+public interface StoredItemServiceConfig
 {
-    private final DhisSyncGroupRepository syncGroupRepository;
-
-    public StoredDhisResourceServiceImpl( @Nonnull StoredItemServiceConfig config, @Nonnull StoredDhisResourceRepository repository, @Nonnull DhisSyncGroupRepository syncGroupRepository )
-    {
-        super( config, repository );
-        this.syncGroupRepository = syncGroupRepository;
-    }
-
-    @Nonnull
-    @Override
-    public Optional<DhisSyncGroup> findSyncGroupById( @Nonnull UUID id )
-    {
-        return syncGroupRepository.findByIdCached( id );
-    }
+    /**
+     * Returns if the stored item service is enabled. If the stored item
+     * service has been disabled no items will be saved and also the service
+     * will return that no items have been stored already.
+     *
+     * @return <code>true</code> if the stored item service is enabled,
+     * <code>false</code> otherwise.
+     */
+    boolean isEnabled();
 }

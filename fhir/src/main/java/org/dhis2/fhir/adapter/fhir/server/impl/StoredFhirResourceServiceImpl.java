@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.server.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
 import org.dhis2.fhir.adapter.data.processor.impl.AbstractStoredItemService;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
@@ -46,8 +47,8 @@ import javax.annotation.Nonnull;
 @Service
 public class StoredFhirResourceServiceImpl extends AbstractStoredItemService<StoredFhirResource, StoredFhirResourceId, FhirClient> implements StoredFhirResourceService
 {
-    public StoredFhirResourceServiceImpl( @Nonnull StoredFhirResourceRepository repository )
+    public StoredFhirResourceServiceImpl( @Nonnull StoredItemServiceConfig config, @Nonnull StoredFhirResourceRepository repository )
     {
-        super( repository );
+        super( config, repository );
     }
 }

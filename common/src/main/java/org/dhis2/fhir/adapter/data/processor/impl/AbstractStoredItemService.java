@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.processor.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,13 @@ import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.StoredItem;
 import org.dhis2.fhir.adapter.data.model.StoredItemId;
 import org.dhis2.fhir.adapter.data.processor.StoredItemService;
+import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
 import org.dhis2.fhir.adapter.data.repository.StoredItemRepository;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -51,20 +53,36 @@ public abstract class AbstractStoredItemService<S extends StoredItem<I, G>, I ex
 {
     private final StoredItemRepository<S, I, G> repository;
 
-    protected AbstractStoredItemService( @Nonnull StoredItemRepository<S, I, G> repository )
+    private final boolean enabled;
+
+    protected AbstractStoredItemService( @Nonnull StoredItemServiceConfig config, @Nonnull StoredItemRepository<S, I, G> repository )
     {
         this.repository = repository;
+        this.enabled = config.isEnabled();
+    }
+
+    protected boolean isEnabled()
+    {
+        return enabled;
     }
 
     @Override
     public boolean stored( @Nonnull G prefix, @Nonnull String storedId )
     {
+        if ( !isEnabled() )
+        {
+            return false;
+        }
         return repository.stored( prefix, storedId );
     }
 
     @Override
     public boolean contains( @Nonnull G prefix, @Nonnull String storedId )
     {
+        if ( !isEnabled() )
+        {
+            return false;
+        }
         return repository.contains( prefix, storedId );
     }
 
@@ -72,12 +90,20 @@ public abstract class AbstractStoredItemService<S extends StoredItem<I, G>, I ex
     @Override
     public Set<String> findProcessedIds( @Nonnull G prefix, @Nonnull Collection<String> processedIds )
     {
+        if ( !isEnabled() )
+        {
+            return Collections.emptySet();
+        }
         return repository.findProcessedIds( prefix, processedIds );
     }
 
     @Override
     public int deleteOldest( @Nonnull G prefix, @Nonnull Instant timestamp )
     {
+        if ( !isEnabled() )
+        {
+            return 0;
+        }
         return repository.deleteOldest( prefix, timestamp );
     }
 }
