@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.security;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
 import org.dhis2.fhir.adapter.model.Id;
@@ -36,6 +38,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -71,7 +75,15 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
 
     public DhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull SecurityConfig securityConfig )
     {
-        this.restTemplateBuilder = restTemplateBuilder.rootUri( DhisConfig.getRootUri( endpointConfig, true ) )
+        final HttpClient httpClient = HttpClientBuilder.create()
+            .useSystemProperties()
+            .disableCookieManagement()
+            .disableAuthCaching()
+            .build();
+        final ClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory( httpClient );
+
+        this.restTemplateBuilder = restTemplateBuilder.requestFactory( () -> clientHttpRequestFactory )
+            .rootUri( DhisConfig.getRootUri( endpointConfig, true ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() );
         this.securityConfig = securityConfig;
     }

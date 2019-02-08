@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.auth;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.auth;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.rest.AuthorizedRestTemplate;
+import org.dhis2.fhir.adapter.rest.NullRestTemplateCookieStore;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -89,7 +91,7 @@ public class AuthorizedRestTemplateTest
     public void before() throws IOException
     {
         Mockito.when( authorizationContext.getAuthorization() ).thenReturn( authorization );
-        template = new AuthorizedRestTemplate( authorizationContext, authenticates );
+        template = new AuthorizedRestTemplate( authorizationContext, authenticates, new NullRestTemplateCookieStore() );
         Mockito.when( requestFactory.createRequest( Mockito.any(), Mockito.any() ) ).thenReturn( request );
         template.setRequestFactory( requestFactory );
         Mockito.when( request.getHeaders() ).thenReturn( requestHeaders );
@@ -157,7 +159,7 @@ public class AuthorizedRestTemplateTest
     @Test( expected = UnauthorizedException.class )
     public void handleResponseUnauthorizedWithoutHeaders() throws IOException
     {
-        template = new AuthorizedRestTemplate( authorizationContext );
+        template = new AuthorizedRestTemplate( authorizationContext, new NullRestTemplateCookieStore() );
         template.setRequestFactory( requestFactory );
 
         Mockito.when( authorization.getAuthorization() ).thenReturn( "Bearer 123" );

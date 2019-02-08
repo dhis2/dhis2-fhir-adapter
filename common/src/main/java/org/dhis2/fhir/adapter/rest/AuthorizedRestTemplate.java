@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.auth;
+package org.dhis2.fhir.adapter.rest;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,14 @@ package org.dhis2.fhir.adapter.auth;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.auth.Authorization;
+import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.auth.ForbiddenException;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
+import org.dhis2.fhir.adapter.auth.WwwAuthenticate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -49,10 +52,8 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-public class AuthorizedRestTemplate extends RestTemplate
+public class AuthorizedRestTemplate extends AbstractSessionCookieRestTemplate
 {
-    protected static final String AUTHORIZATION_HEADER_NAME = "Authorization";
-
     protected static final String WWW_AUTHENTICATE_HEADER_NAME = "WWW-Authenticate";
 
     private final AuthorizationContext authorizationContext;
@@ -61,35 +62,36 @@ public class AuthorizedRestTemplate extends RestTemplate
 
     /**
      * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
+     * @param cookieStore          the cookie store in which session cookies can be stored and retrieved.
      */
-    public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext )
+    public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull RestTemplateCookieStore cookieStore )
     {
-        this( authorizationContext, Collections.emptyList() );
+        this( authorizationContext, Collections.emptyList(), cookieStore );
     }
 
     /**
      * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
      * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a server failure.
+     * @param cookieStore          the cookie store in which session cookies can be stored and retrieved.
      */
-    public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates )
+    public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates, @Nonnull RestTemplateCookieStore cookieStore )
     {
+        super( cookieStore );
         this.authorizationContext = authorizationContext;
         this.wwwAuthenticates = wwwAuthenticates;
     }
 
     @Nonnull
     @Override
-    protected ClientHttpRequest createRequest( @Nonnull URI url, @Nonnull HttpMethod method ) throws IOException
+    protected String getAuthorizationHeaderValue()
     {
-        final ClientHttpRequest request = super.createRequest( url, method );
         final Authorization authorization = authorizationContext.getAuthorization();
         if ( authorization.getAuthorization() == null )
         {
             throw new UnauthorizedException( "Authentication has failed.",
                 wwwAuthenticates.stream().map( WwwAuthenticate::toString ).collect( Collectors.toList() ) );
         }
-        request.getHeaders().set( AUTHORIZATION_HEADER_NAME, authorization.getAuthorization() );
-        return request;
+        return authorization.getAuthorization();
     }
 
     @Override

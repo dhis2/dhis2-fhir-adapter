@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.config;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,17 +39,25 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
-import org.dhis2.fhir.adapter.auth.AuthorizedRestTemplate;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
+import org.dhis2.fhir.adapter.rest.AbstractSessionCookieRestTemplate;
+import org.dhis2.fhir.adapter.rest.AuthorizedRestTemplate;
+import org.dhis2.fhir.adapter.rest.CaffeineRestTemplateCookieStore;
+import org.dhis2.fhir.adapter.rest.RestTemplateCookieStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
@@ -72,6 +80,25 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 @Configuration
 public class DhisConfig
 {
+    private final ClientHttpRequestFactory clientHttpRequestFactory;
+
+    public DhisConfig()
+    {
+        final HttpClient httpClient = HttpClientBuilder.create()
+            .useSystemProperties()
+            .disableCookieManagement()
+            .disableAuthCaching()
+            .build();
+        clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory( httpClient );
+    }
+
+    @Bean
+    @Nonnull
+    public RestTemplateCookieStore dhisCookieStore()
+    {
+        return new CaffeineRestTemplateCookieStore();
+    }
+
     /**
      * Creates a REST template that connects to DHIS2 with the authentication that is provided by {@link AuthorizationContext}
      * in the current execution scope of the request.
@@ -79,15 +106,18 @@ public class DhisConfig
      * @param builder              the rest template builder to be used.
      * @param endpointConfig       the endpoint configuration of the DHIS2 endpoint.
      * @param authorizationContext the authorization context from which the REST template gets its authorization information dynamically.
+     * @param cookieStore          the cookie store in which session cookies of DHIS2 are stored.
      * @return the generated user rest template that uses the specified authorization context for authorization.
      */
     @Bean
     @Nonnull
-    public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext )
+    public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext,
+        @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
     {
-        return builder.rootUri( getRootUri( endpointConfig, false ) )
+        return builder.requestFactory( () -> clientHttpRequestFactory )
+            .rootUri( getRootUri( endpointConfig, false ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
-            .configure( new AuthorizedRestTemplate( authorizationContext ) );
+            .configure( new AuthorizedRestTemplate( authorizationContext, cookieStore ) );
     }
 
     /**
@@ -95,15 +125,26 @@ public class DhisConfig
      *
      * @param builder        the rest template builder to be used.
      * @param endpointConfig the endpoint configuration of the DHIS2 endpoint.
+     * @param cookieStore          the cookie store in which session cookies of DHIS2 are stored.
      * @return the generated system rest template that uses the authorization that is included in the specified endpoint configuration
      */
     @Bean
     @Nonnull
-    public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig )
+    public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
     {
-        return builder.rootUri( getRootUri( endpointConfig, false ) )
+        final String basicAuthHeaderValue = createBasicAuthHeaderValue( endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() );
+        return builder.requestFactory( () -> clientHttpRequestFactory )
+            .rootUri( getRootUri( endpointConfig, false ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
-            .basicAuthorization( endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ).build();
+            .configure( new AbstractSessionCookieRestTemplate( cookieStore )
+            {
+                @Nonnull
+                @Override
+                protected String getAuthorizationHeaderValue()
+                {
+                    return basicAuthHeaderValue;
+                }
+            } );
     }
 
     /**
@@ -116,9 +157,8 @@ public class DhisConfig
     @Nonnull
     public Authorization systemDhis2Authorization( @Nonnull DhisEndpointConfig endpointConfig )
     {
-        return new Authorization( "Basic " + Base64.getEncoder().encodeToString(
-            (endpointConfig.getSystemAuthentication().getUsername() + ":" + endpointConfig.getSystemAuthentication().getPassword())
-                .getBytes( StandardCharsets.UTF_8 ) ) );
+        return new Authorization( createBasicAuthHeaderValue(
+            endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() ) );
     }
 
     /**
@@ -161,5 +201,11 @@ public class DhisConfig
             return endpointConfig.getUrl() + "/api";
         }
         return endpointConfig.getUrl() + "/api/" + endpointConfig.getApiVersion();
+    }
+
+    @Nonnull
+    protected static String createBasicAuthHeaderValue( @Nonnull String username, @Nonnull String password )
+    {
+        return "Basic " + Base64.getEncoder().encodeToString( (username + ":" + password).getBytes( StandardCharsets.UTF_8 ) );
     }
 }
