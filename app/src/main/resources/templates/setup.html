@@ -118,7 +118,7 @@
     </div>
     <div class="value">
       <p>The type of subscription that is used. Even if the Adapter requests data based on the last updated timestamp of the resources when it receives a notification about created or updated data on the FHIR server, it also supports notifications that
-        contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.7.0 (and may be later versions as well) are used, the
+        contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.6.0 (and may be later versions as well) are used, the
         subscription that uses a payload must be selected (preselected below already). If the FHIR server has no known issues with a subscription without a payload, this type of subscription should be selected since it requires less resources on the FHIR
         server.</p>
       <p><label for="fhirSubscriptionType">Subscription Type:</label><select id="fhirSubscriptionType" th:field="*{fhirClientSetup.fhirSetup.subscriptionType}">
