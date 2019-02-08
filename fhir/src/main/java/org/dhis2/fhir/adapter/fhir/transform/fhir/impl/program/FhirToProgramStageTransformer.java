@@ -98,6 +98,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -308,6 +309,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
     {
+        return getExistingResource( context, ruleInfo, scriptVariables, this::getMostAppropriateEvent, sync );
+    }
+
+    @Nonnull
+    private Optional<Event> getExistingResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull BiFunction<Collection<Event>, LazyObject<ZonedDateTime>, Event> function, boolean sync )
+    {
         final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
         if ( eventInfo.getEvents().isEmpty() )
         {
@@ -321,7 +329,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final LazyObject<FhirResourceMapping> resourceMapping = new LazyObject<>( () -> getResourceMapping( ruleInfo ) );
         final LazyObject<Map<String, Object>> variables = new LazyObject<>( () -> createResourceVariables( context, scriptVariables, eventInfo, enrollment ) );
         final LazyObject<ZonedDateTime> effectiveDate = new LazyObject<>( () -> getEffectiveDate( context, ruleInfo, resourceMapping.get(), scriptVariables ) );
-        final Event event = getMostAppropriateEvent( eventInfo.getEvents(), effectiveDate );
+        final Event event = function.apply( eventInfo.getEvents(), effectiveDate );
+        if ( event == null )
+        {
+            return Optional.empty();
+        }
         if ( ruleInfo.getRule().getProgramStage().getBeforeScript() != null )
         {
             variables.get().put( ScriptVariable.DATE_TIME.getVariableName(), getEffectiveDate( context, ruleInfo, resourceMapping.get(), variables.get() ) );
@@ -369,9 +381,9 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     @Nonnull
     @Override
-    protected Optional<Event> findResourceById( @Nonnull String id )
+    protected Optional<Event> findResourceById( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull String id, @Nonnull Map<String, Object> scriptVariables )
     {
-        return eventService.findOneById( id );
+        return getExistingResource( context, ruleInfo, scriptVariables, ( events, effectiveDate ) -> events.stream().filter( e -> id.equals( e.getId() ) ).findFirst().orElse( null ), false );
     }
 
     @Nullable

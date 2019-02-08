@@ -188,11 +188,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         {
             return Optional.empty();
         }
-        return findResourceById( dhisResourceId );
+        return findResourceById( context, ruleInfo, dhisResourceId, scriptVariables );
     }
 
     @Nonnull
-    protected abstract Optional<R> findResourceById( @Nonnull String id );
+    protected abstract Optional<R> findResourceById( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull String id, @Nonnull Map<String, Object> scriptVariables );
 
     @Nullable
     protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,

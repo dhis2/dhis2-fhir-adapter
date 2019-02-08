@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.script.ScriptPreparationException;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.scripting.ScriptCompilationException;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.support.StaticScriptSource;
 import org.springframework.stereotype.Component;
@@ -135,7 +136,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     executableScriptInfo.getScriptSource().getSourceText() ), scriptVariables ),
                 executableScriptInfo.getScript().getReturnType() );
         }
-        catch ( ScriptExecutionException e )
+        catch ( ScriptCompilationException | ScriptExecutionException e )
         {
             throw new ScriptExecutionException( "Error while executing script \"" + executableScriptInfo.getScript().getName() +
                 "\" (" + executableScriptInfo.getExecutableScript().getId() + "): " + e.getMessage(), e );

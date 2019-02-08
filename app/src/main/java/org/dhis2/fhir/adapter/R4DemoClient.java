@@ -160,6 +160,7 @@ public class R4DemoClient
 
         Immunization imm1 = new Immunization();
         imm1.setId( IdType.newRandomUuid() );
+        imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm1.getPatient().setReference( child.getId() );
         imm1.getLocation().setReference( location.getId() );
         imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
@@ -175,6 +176,7 @@ public class R4DemoClient
 
         Immunization imm2 = new Immunization();
         imm2.setId( IdType.newRandomUuid() );
+        imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm2.getPatient().setReference( child.getId() );
         imm2.getLocation().setReference( location.getId() );
         imm2.setStatus( Immunization.ImmunizationStatus.COMPLETED );
@@ -190,6 +192,7 @@ public class R4DemoClient
 
         Immunization imm3 = new Immunization();
         imm3.setId( IdType.newRandomUuid() );
+        imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm3.getPatient().setReference( child.getId() );
         imm3.getLocation().setReference( location.getId() );
         imm3.setStatus( Immunization.ImmunizationStatus.COMPLETED );
@@ -205,6 +208,7 @@ public class R4DemoClient
 
         Immunization imm4 = new Immunization();
         imm4.setId( IdType.newRandomUuid() );
+        imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm4.getPatient().setReference( child.getId() );
         imm4.getLocation().setReference( location.getId() );
         imm4.setStatus( Immunization.ImmunizationStatus.COMPLETED );
@@ -220,6 +224,7 @@ public class R4DemoClient
 
         Immunization imm5 = new Immunization();
         imm5.setId( IdType.newRandomUuid() );
+        imm5.setStatus( Immunization.ImmunizationStatus.COMPLETED );
         imm5.getPatient().setReference( child.getId() );
         imm5.getLocation().setReference( location.getId() );
         imm5.setStatus( Immunization.ImmunizationStatus.COMPLETED );

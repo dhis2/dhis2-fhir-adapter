@@ -218,7 +218,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
 
     @Nonnull
     @Override
-    protected Optional<TrackedEntityInstance> findResourceById( @Nonnull String id )
+    protected Optional<TrackedEntityInstance> findResourceById( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull String id, @Nonnull Map<String, Object> scriptVariables )
     {
         return getTrackedEntityService().findOneById( id );
     }

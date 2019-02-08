@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
@@ -97,11 +98,34 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nonnull
     @Override
-    protected Optional<R> findResourceById( @Nonnull String id )
+    protected Optional<R> findResourceById( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull String id, @Nonnull Map<String, Object> scriptVariables )
     {
         return Optional.empty();
     }
 
+    @SuppressWarnings( "ConstantConditions" )
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return null;
+    }
+
+    @SuppressWarnings( "ConstantConditions" )
+    @Nonnull
+    @Override
+    public Class<R> getDhisResourceClass()
+    {
+        return null;
+    }
+
+    @SuppressWarnings( "ConstantConditions" )
+    @Nonnull
+    @Override
+    public Class<U> getRuleClass()
+    {
+        return null;
+    }
 
     @Nullable
     @Override

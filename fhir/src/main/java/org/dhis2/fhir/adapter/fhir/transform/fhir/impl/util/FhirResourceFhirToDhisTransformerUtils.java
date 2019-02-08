@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
@@ -36,30 +36,26 @@ import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
-import org.hl7.fhir.instance.model.api.IBase;
-import org.hl7.fhir.instance.model.api.IBaseElement;
-import org.hl7.fhir.instance.model.api.IBaseReference;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.ICompositeType;
-import org.hl7.fhir.instance.model.api.IPrimitiveType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Set;
 
 /**
  * DHIS2 to FHIR transformer utility methods for FHIR identifiers.
  *
  * @author volsch
  */
+@Component
 @Scriptable
-@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.EXP, var = AbstractFhirResourceDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities to handle DHIS2 to FHIR transformations of FHIR resources." )
-public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
+@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.IMP, var = FhirResourceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities to handle FHIR to DHIS2 transformations of FHIR resources." )
+public class FhirResourceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirResourceUtils";
 
-    protected AbstractFhirResourceDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    public FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
@@ -72,9 +68,11 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
     }
 
     @Nonnull
-    @ScriptMethod( description = "Creates the FHIR resource (HAPI FHIR) with the specified resource type name.", returnDescription = "The created FHIR resource.",
-        args = @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type name of the resource to be created (e.g. Patient)." ) )
-    public abstract IBaseResource createResource( @Nonnull String resourceType );
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
+    }
 
     @Nullable
     @ScriptMethod( description = "Resolves the enumeration value for a specific property path of an object.", returnDescription = "The resolved enumeration value.",
@@ -87,37 +85,4 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
     {
         return EnumValueUtils.resolveEnumValue( object, propertyPath, enumValueName );
     }
-
-    @Nonnull
-    @ScriptMethod( description = "Creates a FHIR codeable concept.", returnDescription = "The created FHIR codeable concept." )
-    public abstract ICompositeType createCodeableConcept();
-
-    @Nonnull
-    @ScriptMethod( description = "Returns the created reference for the specified resource." )
-    public abstract IBaseReference createReference( @Nonnull IBaseResource resource );
-
-    @ScriptMethod( description = "Returns if the specified string value is included in the specified string type list.",
-        args = {
-            @ScriptMethodArg( value = "stringList", description = "The list of string type values." ),
-            @ScriptMethodArg( value = "value", description = "The value that should be checked in the string type list." )
-        } )
-    public abstract boolean containsString( @Nonnull List<? extends IPrimitiveType<String>> stringList, @Nullable String value );
-
-    @Nonnull
-    public IBaseResource createResource( @Nonnull Object fhirResourceType )
-    {
-        final FhirResourceType resourceType = convertFhirResourceType( fhirResourceType );
-        return createResource( resourceType.getResourceTypeName() );
-    }
-
-    @Nonnull
-    public abstract IBaseElement createType( @Nonnull String fhirType );
-
-    @Nonnull
-    public IBaseResource createResource( @Nonnull FhirResourceType fhirResourceType )
-    {
-        return createResource( fhirResourceType.getResourceTypeName() );
-    }
-
-    public abstract boolean equalsDeep( @Nonnull IBase base1, @Nonnull IBase base2 );
 }
