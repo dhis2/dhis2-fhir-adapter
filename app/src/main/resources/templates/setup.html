@@ -76,10 +76,10 @@
     <div class="value">
       <p>The username and password of the user that is used to connect to DHIS2 and that creates and updates data on DHIS2. This user must have privileges to create and update tracked entity instances,
         create and update Tracker program instances and create and update tracker program stage instances.</p>
-      <p><label for="dhisUsername">Username:</label><input id="dhisUsername" type="text" th:field="*{fhirServerSetup.dhisSetup.username}"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.dhisSetup.username')}" th:errors="*{fhirServerSetup.dhisSetup.username}" class="error">DHIS2 Username</p>
-      <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:name="fhirServerSetup.dhisSetup.password" th:value="*{fhirServerSetup.dhisSetup.password}"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.dhisSetup.password')}" th:errors="*{fhirServerSetup.dhisSetup.password}" class="error">DHIS2 Password</p>
+      <p><label for="dhisUsername">Username:</label><input id="dhisUsername" type="text" th:field="*{fhirClientSetup.dhisSetup.username}"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.username')}" th:errors="*{fhirClientSetup.dhisSetup.username}" class="error">DHIS2 Username</p>
+      <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:name="fhirClientSetup.dhisSetup.password" th:value="*{fhirClientSetup.dhisSetup.password}"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.password')}" th:errors="*{fhirClientSetup.dhisSetup.password}" class="error">DHIS2 Password</p>
     </div>
 
     <h3>Adapter Setup</h3>
@@ -87,56 +87,56 @@
     <div class="value">
       <p>The base URL of the adapter that is used by the FHIR server to send subscription notifications. If the FHIR server does not run on the same machine like the Adapter, the URL <b>must not include localhost</b>.<br/>
         Example: http://localhost:8081</p>
-      <p><label for="adapterBaseUrl">Base URL:</label><input id="adapterBaseUrl" type="text" th:field="*{fhirServerSetup.adapterSetup.baseUrl}" size="80"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.adapterSetup.baseUrl')}" th:errors="*{fhirServerSetup.adapterSetup.baseUrl}" class="error">Adapter Base URL</p>
+      <p><label for="adapterBaseUrl">Base URL:</label><input id="adapterBaseUrl" type="text" th:field="*{fhirClientSetup.adapterSetup.baseUrl}" size="80"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.baseUrl')}" th:errors="*{fhirClientSetup.adapterSetup.baseUrl}" class="error">Adapter Base URL</p>
     </div>
     <div class="value">
       <p>The authorization header value that is used by the FHIR server to authenticate at the Adapter. The already entered value can be taken for this purpose and does not need to be changed normally.<br/>
         Example: Bearer 88e26f25fcd81027f5955941e456223cd9c226fcb3e7d628b0</p>
-      <p><label for="adapterAuthorizationHeaderValue">Authorization Header:</label><input id="adapterAuthorizationHeaderValue" type="text" th:field="*{fhirServerSetup.adapterSetup.authorizationHeaderValue}" size="100"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.adapterSetup.authorizationHeaderValue')}" th:errors="*{fhirServerSetup.adapterSetup.authorizationHeaderValue}" class="error">Adapter Authorization Header Value</p>
+      <p><label for="adapterAuthorizationHeaderValue">Authorization Header:</label><input id="adapterAuthorizationHeaderValue" type="text" th:field="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" size="100"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.authorizationHeaderValue')}" th:errors="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" class="error">Adapter Authorization Header Value</p>
     </div>
 
     <h3>FHIR Setup</h3>
     <p>This sub-section contains the data of the FHIR server that is required by the Adapter to access the FHIR server and to create the FHIR subscriptions. When this form is submitted the Adapter will create a subscription for FHIR resource Patient on FHIR
-      server. A subscription can also created manually. In this case the adapter context relative REST hook endpoint URL will be /remote-fhir-rest-hook/{fhirServerId}/{fhirServerResourceId}.</p>
+      server. A subscription can also created manually. In this case the adapter context relative REST hook endpoint URL will be /remote-fhir-rest-hook/{fhirClientId}/{fhirClientResourceId}.</p>
     <div class="value">
       <p>The base URL of the FHIR endpoints that support version DSTU3.<br/>
         Example: http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3</p>
-      <p><label for="fhirBaseUrl">Base URL:</label><input id="fhirBaseUrl" type="text" th:field="*{fhirServerSetup.fhirSetup.baseUrl}" size="80"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.fhirSetup.baseUrl')}" th:errors="*{fhirServerSetup.fhirSetup.baseUrl}" class="error">FHIR Base URL</p>
+      <p><label for="fhirBaseUrl">Base URL:</label><input id="fhirBaseUrl" type="text" th:field="*{fhirClientSetup.fhirSetup.baseUrl}" size="80"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.baseUrl')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Base URL</p>
     </div>
     <div class="value">
       <p>The header name and header value to be set when accessing the FHIR endpoints. The server may require for example a authorization header with Basic or Bearer Token authorization.
         If any if the input fields contain a blank value, no header will be sent.<br/>
         Example Name (first input field): Authorization<br/>
         Example Value (second input field): Bearer 9b2f-9a14-cac3-e82c-01d0-a9168c</p>
-      <p><label for="fhirHeaderName">Header:</label><input id="fhirHeaderName" type="text" th:field="*{fhirServerSetup.fhirSetup.headerName}" size="20" title="Header Name"/>
-        <input type="text" th:field="*{fhirServerSetup.fhirSetup.headerValue}" size="60" style="margin-left: 2px" title="Header Value"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.fhirSetup.headerName')}" th:errors="*{fhirServerSetup.fhirSetup.headerName}" class="error">FHIR Header Name</p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.fhirSetup.headerValue')}" th:errors="*{fhirServerSetup.fhirSetup.headerValue}" class="error">FHIR Header Value</p>
+      <p><label for="fhirHeaderName">Header:</label><input id="fhirHeaderName" type="text" th:field="*{fhirClientSetup.fhirSetup.headerName}" size="20" title="Header Name"/>
+        <input type="text" th:field="*{fhirClientSetup.fhirSetup.headerValue}" size="60" style="margin-left: 2px" title="Header Value"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerName')}" th:errors="*{fhirClientSetup.fhirSetup.headerName}" class="error">FHIR Header Name</p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerValue')}" th:errors="*{fhirClientSetup.fhirSetup.headerValue}" class="error">FHIR Header Value</p>
     </div>
     <div class="value">
       <p>The type of subscription that is used. Even if the Adapter requests data based on the last updated timestamp of the resources when it receives a notification about created or updated data on the FHIR server, it also supports notifications that
-        contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.5.0 (and may be later versions as well) are used, the
+        contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.7.0 (and may be later versions as well) are used, the
         subscription that uses a payload must be selected (preselected below already). If the FHIR server has no known issues with a subscription without a payload, this type of subscription should be selected since it requires less resources on the FHIR
         server.</p>
-      <p><label for="fhirSubscriptionType">Subscription Type:</label><select id="fhirSubscriptionType" th:field="*{fhirServerSetup.fhirSetup.subscriptionType}">
+      <p><label for="fhirSubscriptionType">Subscription Type:</label><select id="fhirSubscriptionType" th:field="*{fhirClientSetup.fhirSetup.subscriptionType}">
         <option th:value="'REST_HOOK'" th:text="'REST Hook without Payload'"></option>
         <option th:value="'REST_HOOK_WITH_JSON_PAYLOAD'" th:text="'REST Hook with Payload'"></option>
       </select>
       </p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.fhirSetup.subscriptionType')}" th:errors="*{fhirServerSetup.fhirSetup.baseUrl}" class="error">FHIR Subscription Type</p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.subscriptionType')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Subscription Type</p>
     </div>
     <div class="value">
       <p>The data from FHIR servers is retrieved based on its last update timestamp. The clocks on all servers should be synchronized. Due to clock inaccuracies and concurrent updates that might not yet been visible, at least 5 additional overlapping seconds
         should be given when retrieving the data.</p>
-      <p><label for="fhirToleranceMillis">Tolerance Time:</label><input id="fhirToleranceMillis" type="text" th:field="*{fhirServerSetup.fhirSetup.toleranceMillis}"/> ms</p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.fhirSetup.toleranceMillis')}" th:errors="*{fhirServerSetup.fhirSetup.toleranceMillis}" class="error">Tolerance Millis Errors</p>
+      <p><label for="fhirToleranceMillis">Tolerance Time:</label><input id="fhirToleranceMillis" type="text" th:field="*{fhirClientSetup.fhirSetup.toleranceMillis}"/> ms</p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.toleranceMillis')}" th:errors="*{fhirClientSetup.fhirSetup.toleranceMillis}" class="error">Tolerance Millis Errors</p>
     </div>
     <div class="value">
       <p>If your FHIR service has support for related persons of patients and also supports subscriptions for related persons (not only support for contained related persons), then you should mark the following checkbox.</p>
-      <p><label for="fhirRelatedPersonSubscription">Related Person Subscription:</label><input id="fhirRelatedPersonSubscription" type="checkbox" th:field="*{fhirServerSetup.fhirSetup.supportsRelatedPerson}"/></p>
+      <p><label for="fhirRelatedPersonSubscription">Related Person Subscription:</label><input id="fhirRelatedPersonSubscription" type="checkbox" th:field="*{fhirClientSetup.fhirSetup.supportsRelatedPerson}"/></p>
     </div>
 
     <h3>System URI Setup</h3>
@@ -147,17 +147,17 @@
     <div class="value">
       <p>The following system URI is used to extract the business identifier from FHIR organization resources.<br/>
         Example: http://example.sl/organizations</p>
-      <p><label for="fhirOrganizationSystemUri" style="width: 180px">Organization System URI:</label><input id="fhirOrganizationSystemUri" type="text" th:field="*{fhirServerSetup.systemUriSetup.organizationSystemUri}" size="60" title="System URI"/>
-        <input type="text" th:field="*{fhirServerSetup.systemUriSetup.organizationCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.systemUriSetup.organizationSystemUri')}" th:errors="*{fhirServerSetup.systemUriSetup.organizationSystemUri}" class="error">Organization System URI</p>
+      <p><label for="fhirOrganizationSystemUri" style="width: 180px">Organization System URI:</label><input id="fhirOrganizationSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" size="60" title="System URI"/>
+        <input type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.organizationSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" class="error">Organization System URI</p>
     </div>
     <div class="value">
       <p>The following system URI is used to extract the business identifier from FHIR patient resources.<br/>
         Example: http://example.sl/patients</p>
-      <p><label for="fhirPatientSystemUri" style="width: 180px">Patient System URI:</label><input id="fhirPatientSystemUri" type="text" th:field="*{fhirServerSetup.systemUriSetup.patientSystemUri}" size="60" title="System URI"/>
-        <input type="text" th:field="*{fhirServerSetup.systemUriSetup.patientCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.systemUriSetup.patientSystemUri')}" th:errors="*{fhirServerSetup.systemUriSetup.patientSystemUri}" class="error">Patient System URI</p>
-      <p th:if="${#fields.hasErrors('fhirServerSetup.systemUriSetup.patientCodePrefix')}" th:errors="*{fhirServerSetup.systemUriSetup.patientCodePrefix}" class="error">Patient Code Prefix</p>
+      <p><label for="fhirPatientSystemUri" style="width: 180px">Patient System URI:</label><input id="fhirPatientSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.patientSystemUri}" size="60" title="System URI"/>
+        <input type="text" th:field="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.patientSystemUri}" class="error">Patient System URI</p>
+      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientCodePrefix')}" th:errors="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" class="error">Patient Code Prefix</p>
     </div>
 
     <h2>Code Mappings</h2>
