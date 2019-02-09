@@ -28,18 +28,18 @@ package org.dhis2.fhir.adapter.dhis.security;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
 import org.dhis2.fhir.adapter.model.Id;
+import org.dhis2.fhir.adapter.rest.AbstractSessionCookieRestTemplate;
+import org.dhis2.fhir.adapter.rest.RestTemplateCookieStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -73,19 +73,16 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
 
     private final SecurityConfig securityConfig;
 
-    public DhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull SecurityConfig securityConfig )
-    {
-        final HttpClient httpClient = HttpClientBuilder.create()
-            .useSystemProperties()
-            .disableCookieManagement()
-            .disableAuthCaching()
-            .build();
-        final ClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory( httpClient );
+    private final RestTemplateCookieStore cookieStore;
 
+    public DhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull SecurityConfig securityConfig,
+        @Nonnull @Qualifier( "dhisClientHttpRequestFactory" ) ClientHttpRequestFactory clientHttpRequestFactory, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
+    {
         this.restTemplateBuilder = restTemplateBuilder.requestFactory( () -> clientHttpRequestFactory )
             .rootUri( DhisConfig.getRootUri( endpointConfig, true ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() );
         this.securityConfig = securityConfig;
+        this.cookieStore = cookieStore;
     }
 
     @Override
@@ -97,7 +94,15 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
     @Override
     protected UserDetails retrieveUser( String username, UsernamePasswordAuthenticationToken authentication ) throws AuthenticationException
     {
-        final RestTemplate restTemplate = restTemplateBuilder.basicAuthorization( username, String.valueOf( authentication.getCredentials() ) ).build();
+        final RestTemplate restTemplate = restTemplateBuilder.configure( new AbstractSessionCookieRestTemplate( cookieStore )
+        {
+            @Nonnull
+            @Override
+            protected String getAuthorizationHeaderValue()
+            {
+                return DhisConfig.createBasicAuthHeaderValue( username, String.valueOf( authentication.getCredentials() ) );
+            }
+        } );
         final ResponseEntity<Id> idResponse;
         final ResponseEntity<List<String>> authorizationResponse;
         try

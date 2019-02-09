@@ -80,16 +80,16 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 @Configuration
 public class DhisConfig
 {
-    private final ClientHttpRequestFactory clientHttpRequestFactory;
-
-    public DhisConfig()
+    @Bean
+    @Nonnull
+    public ClientHttpRequestFactory dhisClientHttpRequestFactory()
     {
         final HttpClient httpClient = HttpClientBuilder.create()
             .useSystemProperties()
             .disableCookieManagement()
             .disableAuthCaching()
             .build();
-        clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory( httpClient );
+        return new HttpComponentsClientHttpRequestFactory( httpClient );
     }
 
     @Bean
@@ -112,7 +112,7 @@ public class DhisConfig
     @Bean
     @Nonnull
     public RestTemplate userDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull AuthorizationContext authorizationContext,
-        @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
+        @Nonnull @Qualifier( "dhisClientHttpRequestFactory" ) ClientHttpRequestFactory clientHttpRequestFactory, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
     {
         return builder.requestFactory( () -> clientHttpRequestFactory )
             .rootUri( getRootUri( endpointConfig, false ) )
@@ -130,7 +130,8 @@ public class DhisConfig
      */
     @Bean
     @Nonnull
-    public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
+    public RestTemplate systemDhis2RestTemplate( @Nonnull RestTemplateBuilder builder, @Nonnull DhisEndpointConfig endpointConfig,
+        @Nonnull @Qualifier( "dhisClientHttpRequestFactory" ) ClientHttpRequestFactory clientHttpRequestFactory, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
     {
         final String basicAuthHeaderValue = createBasicAuthHeaderValue( endpointConfig.getSystemAuthentication().getUsername(), endpointConfig.getSystemAuthentication().getPassword() );
         return builder.requestFactory( () -> clientHttpRequestFactory )
@@ -204,7 +205,7 @@ public class DhisConfig
     }
 
     @Nonnull
-    protected static String createBasicAuthHeaderValue( @Nonnull String username, @Nonnull String password )
+    public static String createBasicAuthHeaderValue( @Nonnull String username, @Nonnull String password )
     {
         return "Basic " + Base64.getEncoder().encodeToString( (username + ":" + password).getBytes( StandardCharsets.UTF_8 ) );
     }

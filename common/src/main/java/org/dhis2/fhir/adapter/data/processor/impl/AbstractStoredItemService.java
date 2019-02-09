@@ -61,7 +61,8 @@ public abstract class AbstractStoredItemService<S extends StoredItem<I, G>, I ex
         this.enabled = config.isEnabled();
     }
 
-    protected boolean isEnabled()
+    @Override
+    public boolean isEnabled()
     {
         return enabled;
     }

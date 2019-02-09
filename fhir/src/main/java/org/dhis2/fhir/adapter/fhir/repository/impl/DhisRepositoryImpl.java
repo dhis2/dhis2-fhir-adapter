@@ -302,7 +302,7 @@ public class DhisRepositoryImpl implements DhisRepository
         }
         while ( !saved );
 
-        if ( !initial )
+        if ( !initial && storedItemService.isEnabled() )
         {
             final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource );
             storedItemService.stored( syncGroup, processedItemInfo.toIdString( Instant.now() ) );

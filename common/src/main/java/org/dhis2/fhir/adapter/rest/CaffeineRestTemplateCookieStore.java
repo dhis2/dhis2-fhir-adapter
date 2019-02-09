@@ -44,6 +44,8 @@ public class CaffeineRestTemplateCookieStore implements RestTemplateCookieStore
 {
     public static final long DEFAULT_MAX_COOKIE_LIFETIME_MILLIS = 30L * 60L * 1_000L;
 
+    private volatile String cookieName;
+
     private final Cache<String, String> cookieStore;
 
     public CaffeineRestTemplateCookieStore()
@@ -51,6 +53,19 @@ public class CaffeineRestTemplateCookieStore implements RestTemplateCookieStore
         this.cookieStore = Caffeine.newBuilder()
             .expireAfterWrite( DEFAULT_MAX_COOKIE_LIFETIME_MILLIS, TimeUnit.MILLISECONDS )
             .maximumSize( 1000L ).build();
+    }
+
+    @Nullable
+    @Override
+    public String getCookieName()
+    {
+        return cookieName;
+    }
+
+    @Override
+    public void setCookieName( @Nonnull String cookieName )
+    {
+        this.cookieName = cookieName;
     }
 
     @Override

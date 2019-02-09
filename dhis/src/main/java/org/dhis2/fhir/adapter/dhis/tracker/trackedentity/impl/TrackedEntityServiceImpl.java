@@ -274,8 +274,11 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     protected void storeItem( @Nonnull DhisSyncGroup syncGroup, @Nonnull String id, @Nonnull ResponseEntity<?> responseEntity )
     {
-        getProcessedItemInfo( id, responseEntity )
-            .ifPresent( pii -> storedItemService.stored( syncGroup, pii.toIdString( epochStartInstant ) ) );
+        if ( storedItemService.isEnabled() )
+        {
+            getProcessedItemInfo( id, responseEntity )
+                .ifPresent( pii -> storedItemService.stored( syncGroup, pii.toIdString( epochStartInstant ) ) );
+        }
     }
 
     @Nonnull

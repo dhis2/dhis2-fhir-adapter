@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.processor;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,8 @@ import java.util.Set;
  */
 public interface StoredItemService<S extends StoredItem<I, G>, I extends StoredItemId<G>, G extends DataGroup>
 {
+    boolean isEnabled();
+
     boolean stored( @Nonnull G prefix, @Nonnull String storedId );
 
     boolean contains( @Nonnull G prefix, @Nonnull String storedId );

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,14 @@ import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
 import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
 import org.dhis2.fhir.adapter.dhis.security.DhisWebApiAuthenticationProvider;
 import org.dhis2.fhir.adapter.dhis.security.SecurityConfig;
+import org.dhis2.fhir.adapter.rest.RestTemplateCookieStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -55,9 +58,10 @@ public class AppConfig
 {
     @Bean
     @Nonnull
-    public AbstractUserDetailsAuthenticationProvider dhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig dhisEndpointConfig, @Nonnull SecurityConfig securityConfig )
+    public AbstractUserDetailsAuthenticationProvider dhisWebApiAuthenticationProvider( @Nonnull RestTemplateBuilder restTemplateBuilder, @Nonnull DhisEndpointConfig dhisEndpointConfig, @Nonnull SecurityConfig securityConfig,
+        @Nonnull @Qualifier( "dhisClientHttpRequestFactory" ) ClientHttpRequestFactory clientHttpRequestFactory, @Nonnull @Qualifier( "dhisCookieStore" ) RestTemplateCookieStore cookieStore )
     {
-        return new DhisWebApiAuthenticationProvider( restTemplateBuilder, dhisEndpointConfig, securityConfig );
+        return new DhisWebApiAuthenticationProvider( restTemplateBuilder, dhisEndpointConfig, securityConfig, clientHttpRequestFactory, cookieStore );
     }
 
     @Bean

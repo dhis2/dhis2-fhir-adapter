@@ -40,6 +40,18 @@ import javax.annotation.Nullable;
 public interface RestTemplateCookieStore
 {
     /**
+     * @return the name of the cookie that contains the session cookie or
+     * <code>null</code> if this is not yet known.
+     */
+    @Nullable
+    String getCookieName();
+
+    /**
+     * @param cookieName he name of the cookie that contains the session cookie.
+     */
+    void setCookieName( @Nonnull String cookieName );
+
+    /**
      * Replaces the existing cookie for the specified authorization header.
      *
      * @param authorizationHeaderValue the authorization header value to which the cookie value should be associated.

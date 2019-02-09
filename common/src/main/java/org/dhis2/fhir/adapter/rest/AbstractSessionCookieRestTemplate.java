@@ -68,8 +68,6 @@ public abstract class AbstractSessionCookieRestTemplate extends RestTemplate
 
     private final RestTemplateCookieStore cookieStore;
 
-    private volatile String sessionCookieName;
-
     protected AbstractSessionCookieRestTemplate( @Nonnull RestTemplateCookieStore cookieStore )
     {
         this.cookieStore = cookieStore;
@@ -151,7 +149,7 @@ public abstract class AbstractSessionCookieRestTemplate extends RestTemplate
         @Nonnull
         public ClientHttpResponse execute() throws IOException
         {
-            String sessionCookieName = AbstractSessionCookieRestTemplate.this.sessionCookieName;
+            String sessionCookieName = cookieStore.getCookieName();
 
             final String authorizationHeaderValue = getAuthorizationHeaderValue();
             final String sessionCookieValue;
@@ -230,7 +228,7 @@ public abstract class AbstractSessionCookieRestTemplate extends RestTemplate
             final HttpStatus httpStatus = response.getStatusCode();
             if ( httpStatus.is2xxSuccessful() || httpStatus.is3xxRedirection() )
             {
-                if ( AbstractSessionCookieRestTemplate.this.sessionCookieName == null )
+                if ( cookieStore.getCookieName() == null )
                 {
                     final String cookieHeader = response.getHeaders().getFirst( HttpHeaders.SET_COOKIE );
                     if ( cookieHeader != null )
@@ -238,16 +236,16 @@ public abstract class AbstractSessionCookieRestTemplate extends RestTemplate
                         final Map<String, HttpCookie> cookiesByName = HttpCookie.parse( cookieHeader )
                             .stream().collect( Collectors.toMap( HttpCookie::getName, c -> c ) );
                         Arrays.stream( SESSION_COOKIE_NAMES ).filter( cookiesByName::containsKey ).findFirst()
-                            .ifPresent( sessionCookieName -> AbstractSessionCookieRestTemplate.this.sessionCookieName = sessionCookieName );
+                            .ifPresent( cookieStore::setCookieName );
                     }
                 }
 
-                if ( AbstractSessionCookieRestTemplate.this.sessionCookieName != null )
+                if ( cookieStore.getCookieName() != null )
                 {
                     final String cookieHeader = response.getHeaders().getFirst( HttpHeaders.SET_COOKIE );
                     if ( cookieHeader != null )
                     {
-                        final String sessionCookieName = AbstractSessionCookieRestTemplate.this.sessionCookieName;
+                        final String sessionCookieName = cookieStore.getCookieName();
                         HttpCookie.parse( cookieHeader )
                             .stream().filter( c -> sessionCookieName.equals( c.getName() ) ).findFirst()
                             .ifPresent( cookie -> cookieStore.add( authorizationHeaderValue, cookie.getValue() ) );

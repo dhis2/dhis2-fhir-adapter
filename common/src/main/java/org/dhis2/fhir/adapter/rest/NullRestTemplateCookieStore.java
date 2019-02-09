@@ -38,6 +38,20 @@ import javax.annotation.Nullable;
  */
 public class NullRestTemplateCookieStore implements RestTemplateCookieStore
 {
+    @Nullable
+    @Override
+    public String getCookieName()
+    {
+        // not known
+        return null;
+    }
+
+    @Override
+    public void setCookieName( @Nonnull String cookieName )
+    {
+// nothing to be done
+    }
+
     @Override
     public void add( @Nonnull String authorizationHeaderValue, @Nonnull String cookieValue )
     {
