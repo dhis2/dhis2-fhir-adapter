@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.data.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 import java.io.Serializable;
@@ -64,4 +65,10 @@ public abstract class QueuedItemId<G extends DataGroup> implements Serializable
     {
         return 0;
     }
+
+    /**
+     * @return the unique key of this queued item ID as a minimal string representation.
+     */
+    @Nonnull
+    public abstract String toKey();
 }

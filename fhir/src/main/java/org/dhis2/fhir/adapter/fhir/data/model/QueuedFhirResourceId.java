@@ -107,6 +107,13 @@ public class QueuedFhirResourceId extends QueuedItemId<FhirClientResource> imple
         return Objects.hash( (group == null) ? null : group.getId(), fhirResourceId );
     }
 
+    @Nonnull
+    @Override
+    public String toKey()
+    {
+        return group.getGroupId().toString() + "|" + fhirResourceId;
+    }
+
     @Override
     public String toString()
     {

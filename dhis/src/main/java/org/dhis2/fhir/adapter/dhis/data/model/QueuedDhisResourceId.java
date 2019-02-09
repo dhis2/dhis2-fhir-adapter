@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.data.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -105,6 +105,13 @@ public class QueuedDhisResourceId extends QueuedItemId<DhisSyncGroup> implements
     public int hashCode()
     {
         return Objects.hash( (group == null) ? null : group.getId(), dhisResourceId );
+    }
+
+    @Nonnull
+    @Override
+    public String toKey()
+    {
+        return group.getGroupId().toString() + "|" + dhisResourceId;
     }
 
     @Override

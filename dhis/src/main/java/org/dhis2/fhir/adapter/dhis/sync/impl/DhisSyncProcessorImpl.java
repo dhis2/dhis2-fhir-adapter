@@ -41,8 +41,6 @@ import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisSyncRequestId;
 import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResource;
 import org.dhis2.fhir.adapter.dhis.data.model.StoredDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.data.repository.ProcessedDhisResourceRepository;
-import org.dhis2.fhir.adapter.dhis.data.repository.QueuedDhisResourceRepository;
-import org.dhis2.fhir.adapter.dhis.data.repository.QueuedDhisSyncRequestRepository;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupRepository;
 import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupUpdateRepository;
@@ -86,14 +84,14 @@ public class DhisSyncProcessorImpl extends
 
     private final DataProcessorItemRetriever<DhisSyncGroup> dataProcessorItemRetriever;
 
-    public DhisSyncProcessorImpl( @Nonnull QueuedDhisSyncRequestRepository queuedGroupRepository, @Nonnull @Qualifier( "dhisSyncRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
+    public DhisSyncProcessorImpl( @Nonnull @Qualifier( "dhisSyncRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
         @Nonnull DhisSyncGroupUpdateRepository dataGroupUpdateRepository, @Nonnull StoredDhisResourceService storedItemService, @Nonnull ProcessedDhisResourceRepository processedItemRepository,
-        @Nonnull QueuedDhisResourceRepository queuedItemRepository, @Nonnull @Qualifier( "dhisResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
+        @Nonnull @Qualifier( "dhisResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager, @Nonnull SystemAuthenticationToken systemAuthenticationToken,
         @Nonnull DhisSyncProcessorConfig processorConfig, @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull DataProcessorItemRetriever<DhisSyncGroup> dataProcessorItemRetriever )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate,
+        super( groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, itemQueueJmsTemplate,
             platformTransactionManager, systemAuthenticationToken, new ForkJoinPool( processorConfig.getParallelCount() ) );
         this.processorConfig = processorConfig;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;

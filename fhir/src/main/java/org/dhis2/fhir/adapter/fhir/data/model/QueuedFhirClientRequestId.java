@@ -91,6 +91,13 @@ public class QueuedFhirClientRequestId extends QueuedItemId<FhirClientResource> 
         return Objects.hash( (group == null) ? null : group.getId() );
     }
 
+    @Nonnull
+    @Override
+    public String toKey()
+    {
+        return group.getGroupId().toString();
+    }
+
     @Override
     public String toString()
     {

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.queue;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,8 +63,11 @@ public class DhisQueueConfig
 
     @Bean
     @Nonnull
-    protected ArtemisConfigurationCustomizer artemisConfigurationCustomizer()
+    protected ArtemisConfigurationCustomizer dhisArtemisConfigurationCustomizer()
     {
+        syncConfig.getSyncRequestQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
+        syncConfig.getDhisResourceQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
+
         return configuration -> {
             configuration.addAddressesSetting( syncConfig.getSyncRequestQueue().getQueueName(), syncConfig.getSyncRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( syncConfig.getDhisResourceQueue().getQueueName(), syncConfig.getDhisResourceQueue().getEmbeddedAddressSettings() );

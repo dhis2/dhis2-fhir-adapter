@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Accepts the web hook request from the server FHIR service and queues the request
@@ -60,19 +61,27 @@ public class FhirClientRestHookController extends AbstractFhirClientController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final AtomicLong receivedWithPayloadCount = new AtomicLong();
+
+    private final AtomicLong receivedCount = new AtomicLong();
+
     public FhirClientRestHookController( @Nonnull FhirClientResourceRepository resourceRepository, @Nonnull FhirClientRestHookProcessor processor )
     {
         super( resourceRepository, processor );
     }
 
-    @RequestMapping( path = "/{fhirClientId}/{fhirClientResourceId}/{resourceType}/{resourceId}/**", method = { RequestMethod.POST, RequestMethod.PUT } )
+    @RequestMapping( path = "/{fhirClientId}/{fhirClientResourceId}/{resourceType}/{resourceId}/_history/{version}", method = { RequestMethod.POST, RequestMethod.PUT } )
     public ResponseEntity<byte[]> receiveWithPayloadAndHistory(
         @PathVariable( "fhirClientId" ) UUID fhirClientId, @PathVariable( "fhirClientResourceId" ) UUID fhirClientResourceId,
         @PathVariable( "resourceType" ) String resourceType, @PathVariable( "resourceId" ) String resourceId,
-        @RequestHeader( value = "Authorization", required = false ) String authorization,
+        @PathVariable( "version" ) String version, @RequestHeader( value = "Authorization", required = false ) String authorization,
         @Nonnull HttpEntity<byte[]> requestEntity )
     {
-        return receiveWithPayload( fhirClientId, fhirClientResourceId, resourceType, resourceId, authorization, requestEntity );
+        final long count = receivedWithPayloadCount.incrementAndGet();
+        logger.info( "Received rest hook {}/{} (version={}) for FHIR client resource ID {} (received with payload={}).",
+            resourceType, resourceId, version, fhirClientResourceId, count );
+        return processPayload( lookupFhirClientResource( fhirClientId, fhirClientResourceId, authorization ),
+            resourceType, resourceId, requestEntity );
     }
 
     @RequestMapping( path = "/{fhirClientId}/{fhirClientResourceId}/{resourceType}/{resourceId}", method = { RequestMethod.POST, RequestMethod.PUT } )
@@ -82,14 +91,16 @@ public class FhirClientRestHookController extends AbstractFhirClientController
         @RequestHeader( value = "Authorization", required = false ) String authorization,
         @Nonnull HttpEntity<byte[]> requestEntity )
     {
-        return processPayload( lookupFhirClientResource( fhirClientId, fhirClientResourceId, authorization ),
-            resourceType, resourceId, requestEntity );
+        return receiveWithPayloadAndHistory( fhirClientId, fhirClientResourceId, resourceType, resourceId, null, authorization, requestEntity );
     }
 
     @PostMapping( path = "/{fhirClientId}/{fhirClientResourceId}" )
     public void receive( @PathVariable UUID fhirClientId, @PathVariable UUID fhirClientResourceId,
         @RequestHeader( value = "Authorization", required = false ) String authorization )
     {
+        final long count = receivedCount.incrementAndGet();
+        logger.info( "Received rest hook for FHIR client resource ID {} (received without payload={}).",
+            fhirClientResourceId, count );
         final FhirClientResource fhirClientResource = lookupFhirClientResource( fhirClientId, fhirClientResourceId, authorization );
         getProcessor().process( fhirClientResource );
     }

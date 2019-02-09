@@ -44,8 +44,6 @@ import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.repository.ProcessedFhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirClientRequestRepository;
-import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
@@ -108,12 +106,10 @@ public class FhirClientRestHookProcessorImpl extends
     private final Map<FhirVersion, AbstractSubscriptionResourceItemRetriever> itemRetrievers = new HashMap<>();
 
     public FhirClientRestHookProcessorImpl(
-        @Nonnull QueuedFhirClientRequestRepository queuedGroupRepository,
         @Nonnull @Qualifier( "fhirRestHookRequestQueueJmsTemplate" ) JmsTemplate groupQueueJmsTemplate,
         @Nonnull FhirClientResourceUpdateRepository dataGroupUpdateRepository,
         @Nonnull StoredFhirResourceService storedItemService,
         @Nonnull ProcessedFhirResourceRepository processedItemRepository,
-        @Nonnull QueuedFhirResourceRepository queuedItemRepository,
         @Nonnull @Qualifier( "fhirResourceQueueJmsTemplate" ) JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull FhirClientProcessorConfig processorConfig,
@@ -123,7 +119,7 @@ public class FhirClientRestHookProcessorImpl extends
         @Nonnull ObjectProvider<List<AbstractSubscriptionResourceItemRetriever>> itemRetrievers,
         @Nonnull Set<FhirContext> fhirContexts )
     {
-        super( queuedGroupRepository, groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, queuedItemRepository, itemQueueJmsTemplate,
+        super( groupQueueJmsTemplate, dataGroupUpdateRepository, storedItemService, processedItemRepository, itemQueueJmsTemplate,
             platformTransactionManager, systemAuthenticationToken, new ForkJoinPool( processorConfig.getParallelCount() ) );
         this.processorConfig = processorConfig;
         this.fhirClientResourceRepository = fhirClientResourceRepository;
@@ -167,7 +163,7 @@ public class FhirClientRestHookProcessorImpl extends
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( parsedFhirResource );
         subscriptionFhirResourceRepository.enqueue( fhirClientResource, contentType, fhirVersion, fhirResourceId, fhirResource );
-        super.enqueueDataItem( fhirClientResource, processedItemInfo, true, true );
+        super.enqueueDataItem( fhirClientResource, processedItemInfo, true );
     }
 
     @HystrixCommand

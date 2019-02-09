@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.queue;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,10 @@ package org.dhis2.fhir.adapter.dhis.queue;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.dhis2.fhir.adapter.queue.QueueListenerErrorHandler;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.jms.JmsProperties;
 import org.springframework.context.annotation.Bean;
@@ -70,6 +73,31 @@ public class QueueConfig
         converter.setTypeIdPropertyName( "_type" );
         converter.setTypeIdMappings( resultingMappings );
         return converter;
+    }
+
+    @Bean
+    protected BeanPostProcessor postProcessQueueConnectionFactory()
+    {
+        return new BeanPostProcessor()
+        {
+            @Override
+            public Object postProcessBeforeInitialization( @Nonnull Object bean, String beanName ) throws BeansException
+            {
+                return bean;
+            }
+
+            @Bean
+            @Override
+            public Object postProcessAfterInitialization( @Nonnull Object bean, String beanName ) throws BeansException
+            {
+                if ( bean instanceof ActiveMQConnectionFactory )
+                {
+                    // consumer window size must be set to 0 since otherwise last value queues do not work with consumers
+                    ((ActiveMQConnectionFactory) bean).setConsumerWindowSize( 0 );
+                }
+                return bean;
+            }
+        };
     }
 
     @SuppressWarnings( "ConstantConditions" )

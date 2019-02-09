@@ -43,11 +43,8 @@ import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessor;
 import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
 import org.dhis2.fhir.adapter.data.processor.StoredItemService;
-import org.dhis2.fhir.adapter.data.repository.AlreadyQueuedException;
 import org.dhis2.fhir.adapter.data.repository.DataGroupUpdateRepository;
-import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.data.repository.ProcessedItemRepository;
-import org.dhis2.fhir.adapter.data.repository.QueuedItemRepository;
 import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +52,6 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -91,8 +85,6 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final QueuedItemRepository<QG, G> queuedGroupRepository;
-
     private final JmsTemplate groupQueueJmsTemplate;
 
     private final DataGroupUpdateRepository<DataGroupUpdate<G>, G> dataGroupUpdateRepository;
@@ -100,8 +92,6 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
     private final StoredItemService<S, SI, SG> storedItemService;
 
     private final ProcessedItemRepository<P, PI, G> processedItemRepository;
-
-    private final QueuedItemRepository<QI, G> queuedItemRepository;
 
     private final JmsTemplate itemQueueJmsTemplate;
 
@@ -114,23 +104,19 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
     private boolean periodicInfoLogging = true;
 
     public AbstractQueuedDataProcessorImpl(
-        @Nonnull QueuedItemRepository<QG, G> queuedGroupRepository,
         @Nonnull JmsTemplate groupQueueJmsTemplate,
         @Nonnull DataGroupUpdateRepository<DataGroupUpdate<G>, G> dataGroupUpdateRepository,
         @Nonnull StoredItemService<S, SI, SG> storedItemService,
         @Nonnull ProcessedItemRepository<P, PI, G> processedItemRepository,
-        @Nonnull QueuedItemRepository<QI, G> queuedItemRepository,
         @Nonnull JmsTemplate itemQueueJmsTemplate,
         @Nonnull PlatformTransactionManager platformTransactionManager,
         @Nonnull SystemAuthenticationToken systemAuthenticationToken,
         @Nonnull ForkJoinPool itemProcessorForkJoinPool )
     {
-        this.queuedGroupRepository = queuedGroupRepository;
         this.groupQueueJmsTemplate = groupQueueJmsTemplate;
         this.dataGroupUpdateRepository = dataGroupUpdateRepository;
         this.storedItemService = storedItemService;
         this.processedItemRepository = processedItemRepository;
-        this.queuedItemRepository = queuedItemRepository;
         this.itemQueueJmsTemplate = itemQueueJmsTemplate;
         this.platformTransactionManager = platformTransactionManager;
         this.systemAuthenticationToken = systemAuthenticationToken;
@@ -162,29 +148,13 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             return;
         }
 
-        final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
-        try
-        {
-            logger.debug( "Checking for a queued entry of group {}.", group.getGroupId() );
-            try
-            {
-                queuedGroupRepository.enqueue( createQueuedGroupId( group ) );
-            }
-            catch ( AlreadyQueuedException e )
-            {
-                logger.debug( "There is already a queued entry for group {}.", group.getGroupId() );
-                return;
-            }
-            catch ( IgnoredQueuedItemException e )
-            {
-                // has already been logged with sufficient details
-                return;
-            }
-
+        final QG queuedGroupId = createQueuedGroupId( group );
             logger.debug( "Enqueuing entry for group {}.", group.getGroupId() );
             groupQueueJmsTemplate.convertAndSend( createDataGroupQueueItem( group ), message -> {
+                // only one message for a single group must be in the queue at a specific time (grouping)
+                message.setStringProperty( "_AMQ_LVQ_NAME", queuedGroupId.toKey() );
                 // only one message for a single group must be processed at a specific time (grouping)
-                message.setStringProperty( "JMSXGroupID", group.getGroupId().toString() );
+                message.setStringProperty( "JMSXGroupID", queuedGroupId.toKey() );
                 return message;
             } );
             if ( isPeriodicInfoLogging() )
@@ -195,11 +165,6 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
             {
                 logger.debug( "Enqueued entry for group {}.", group.getGroupId() );
             }
-        }
-        finally
-        {
-            finalizeTransaction( transactionStatus );
-        }
     }
 
     protected void receive( @Nonnull DataGroupQueueItem<GI> dataGroupQueueItem )
@@ -234,16 +199,6 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         }
         final SG storedItemGroup = getStoredItemGroup( group );
 
-        try
-        {
-            queuedGroupRepository.dequeued( createQueuedGroupId( group ) );
-        }
-        catch ( IgnoredQueuedItemException e )
-        {
-            // has already been logger with sufficient details
-            return;
-        }
-
         final Instant begin = Instant.now();
         final DataProcessorItemRetriever<G> itemRetriever = getDataProcessorItemRetriever( group );
         final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
@@ -260,7 +215,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                 {
                     // persist processed item
                     processedItemRepository.process( createProcessedItem( group, processedId, processedAt ), p -> {
-                        if ( enqueueDataItem( group, item, false, true ) )
+                        if ( enqueueDataItem( group, item, false ) )
                         {
                             count.incrementAndGet();
                         }
@@ -291,41 +246,16 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         }
     }
 
-    protected boolean enqueueDataItem( @Nonnull G group, @Nonnull ProcessedItemInfo item, boolean persistedDataItem, boolean autonomousTransaction )
+    protected boolean enqueueDataItem( @Nonnull G group, @Nonnull ProcessedItemInfo item, boolean persistedDataItem )
     {
-        final TransactionStatus transactionStatus;
-        if ( autonomousTransaction )
-        {
-            transactionStatus = platformTransactionManager.getTransaction(
-                new DefaultTransactionDefinition( TransactionDefinition.PROPAGATION_NOT_SUPPORTED ) );
-        }
-        else
-        {
-            transactionStatus = null;
-        }
-        try
-        {
-            queuedItemRepository.enqueue( createQueuedItemId( group, item ) );
-            itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item, persistedDataItem ) );
-            logger.debug( "Item {} of group {} has been enqueued.", item.getId(), group.getGroupId() );
-            return true;
-        }
-        catch ( AlreadyQueuedException e )
-        {
-            logger.debug( "Item {} of group {} is still queued.", item.getId(), group.getGroupId() );
-        }
-        catch ( IgnoredQueuedItemException e )
-        {
-            // has already been logged with sufficient details
-        }
-        finally
-        {
-            if ( transactionStatus != null )
-            {
-                finalizeTransaction( transactionStatus );
-            }
-        }
-        return false;
+        final QI queuedItemId = createQueuedItemId( group, item );
+        itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item, persistedDataItem ), message -> {
+            // only one message for a single group must be in the queue at a specific time (grouping)
+            message.setStringProperty( "_AMQ_LVQ_NAME", queuedItemId.toKey() );
+            return message;
+        } );
+        logger.debug( "Item {} of group {} has been enqueued.", item.getId(), group.getGroupId() );
+        return true;
     }
 
     private void awaitTaskTermination( @Nonnull ForkJoinTask<?> task )
@@ -408,16 +338,4 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
 
     @Nonnull
     protected abstract SG getStoredItemGroup( @Nonnull G group );
-
-    private void finalizeTransaction( @Nonnull TransactionStatus transactionStatus )
-    {
-        if ( transactionStatus.isRollbackOnly() )
-        {
-            platformTransactionManager.rollback( transactionStatus );
-        }
-        else
-        {
-            platformTransactionManager.commit( transactionStatus );
-        }
-    }
 }

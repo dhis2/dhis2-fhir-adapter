@@ -36,14 +36,11 @@ import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
-import org.dhis2.fhir.adapter.fhir.data.model.QueuedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.data.repository.QueuedFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
@@ -95,6 +92,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -119,8 +117,6 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final FhirClientResourceRepository fhirClientResourceRepository;
 
-    private final QueuedFhirResourceRepository queuedFhirResourceRepository;
-
     private final SubscriptionFhirResourceRepository subscriptionFhirResourceRepository;
 
     private final StoredFhirResourceService storedItemService;
@@ -135,11 +131,12 @@ public class FhirRepositoryImpl implements FhirRepository
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
+    private final AtomicLong processedCount = new AtomicLong();
+
     public FhirRepositoryImpl( @Nonnull AuthorizationContext authorizationContext,
         @Nonnull LockManager lockManager, @Nonnull RequestCacheService requestCacheService,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
-        @Nonnull QueuedFhirResourceRepository queuedFhirResourceRepository,
         @Nonnull SubscriptionFhirResourceRepository subscriptionFhirResourceRepository,
         @Nonnull StoredFhirResourceService storedItemService,
         @Nonnull FhirResourceRepository fhirResourceRepository,
@@ -152,7 +149,6 @@ public class FhirRepositoryImpl implements FhirRepository
         this.requestCacheService = requestCacheService;
         this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.fhirClientResourceRepository = fhirClientResourceRepository;
-        this.queuedFhirResourceRepository = queuedFhirResourceRepository;
         this.subscriptionFhirResourceRepository = subscriptionFhirResourceRepository;
         this.storedItemService = storedItemService;
         this.fhirResourceRepository = fhirResourceRepository;
@@ -205,24 +201,14 @@ public class FhirRepositoryImpl implements FhirRepository
 
     protected void receiveAuthenticated( @Nonnull FhirResource fhirResource )
     {
-        logger.info( "Processing FHIR resource {} for FHIR client resource {}.",
-            fhirResource.getId(), fhirResource.getFhirClientResourceId() );
+        final long currentProcessedCount = processedCount.incrementAndGet();
+
         final FhirClientResource fhirClientResource =
             fhirClientResourceRepository.findOneByIdCached( fhirResource.getFhirClientResourceId() ).orElse( null );
         if ( fhirClientResource == null )
         {
             logger.warn( "FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
                 fhirResource.getFhirClientResourceId(), fhirResource.getId() );
-            return;
-        }
-
-        try
-        {
-            queuedFhirResourceRepository.dequeued( new QueuedFhirResourceId( fhirClientResource, fhirResource.getId() ) );
-        }
-        catch ( IgnoredQueuedItemException e )
-        {
-            // has already been logger with sufficient details
             return;
         }
 
@@ -252,8 +238,8 @@ public class FhirRepositoryImpl implements FhirRepository
             {
                 try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", fhirClientResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
                 {
-                    logger.info( "Processing FHIR resource {} of FHIR client resource {} (persisted={}).",
-                        resource.get().getIdElement().toUnqualified(), fhirClientResource.getId(), fhirResource.isPersistedDataItem() );
+                    logger.info( "Processing FHIR resource {} of FHIR client resource {} (persisted={}, processed={}).",
+                        resource.get().getIdElement().toUnqualified(), fhirClientResource.getId(), fhirResource.isPersistedDataItem(), currentProcessedCount );
                     try
                     {
                         save( fhirClientResource, resource.get() );
@@ -273,10 +259,15 @@ public class FhirRepositoryImpl implements FhirRepository
                 storedItemService.stored( fhirClient, processedItemInfo.toIdString( Instant.now() ) );
             }
         }
+        else if ( fhirResource.isPersistedDataItem() )
+        {
+            logger.debug( "Persisted FHIR resource {}/{} for FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource.",
+                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId() );
+        }
         else
         {
-            logger.info( "FHIR resource {}/{} for FHIR client resource {} is no longer available (persisted={}). Skipping processing of updated FHIR resource.",
-                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId(), fhirResource.isPersistedDataItem() );
+            logger.info( "FHIR resource {}/{} for FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource.",
+                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId() );
         }
 
         // must not be deleted before since it is still required when a retry must be performed

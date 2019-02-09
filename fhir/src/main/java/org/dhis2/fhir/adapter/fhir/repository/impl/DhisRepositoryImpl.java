@@ -34,9 +34,6 @@ import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.data.repository.IgnoredQueuedItemException;
-import org.dhis2.fhir.adapter.dhis.data.model.QueuedDhisResourceId;
-import org.dhis2.fhir.adapter.dhis.data.repository.QueuedDhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupRepository;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
@@ -99,8 +96,6 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final DhisSyncGroupRepository dhisSyncGroupRepository;
 
-    private final QueuedDhisResourceRepository queuedDhisResourceRepository;
-
     private final StoredDhisResourceService storedItemService;
 
     private final DhisResourceRepository dhisResourceRepository;
@@ -118,7 +113,6 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull RequestCacheService requestCacheService,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
-        @Nonnull QueuedDhisResourceRepository queuedDhisResourceRepository,
         @Nonnull StoredDhisResourceService storedItemService,
         @Nonnull DhisResourceRepository dhisResourceRepository,
         @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
@@ -131,7 +125,6 @@ public class DhisRepositoryImpl implements DhisRepository
         this.requestCacheService = requestCacheService;
         this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.dhisSyncGroupRepository = dhisSyncGroupRepository;
-        this.queuedDhisResourceRepository = queuedDhisResourceRepository;
         this.storedItemService = storedItemService;
         this.dhisResourceRepository = dhisResourceRepository;
         this.dhisToFhirTransformerService = dhisToFhirTransformerService;
@@ -179,16 +172,6 @@ public class DhisRepositoryImpl implements DhisRepository
         {
             logger.warn( "Sync group {} is no longer available. Skipping processing of updated DHIS resource {}.",
                 queueItem.getDataGroupId(), queueItem.getId() );
-            return;
-        }
-
-        try
-        {
-            queuedDhisResourceRepository.dequeued( new QueuedDhisResourceId( syncGroup, queueItem.getId() ) );
-        }
-        catch ( IgnoredQueuedItemException e )
-        {
-            // has already been logged with sufficient details
             return;
         }
 
