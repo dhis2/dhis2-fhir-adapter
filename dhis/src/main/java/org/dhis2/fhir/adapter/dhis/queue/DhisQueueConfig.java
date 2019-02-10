@@ -81,7 +81,7 @@ public class DhisQueueConfig
     {
         final JMSQueueConfiguration queueConfiguration = new JMSQueueConfigurationImpl();
         queueConfiguration.setName( syncConfig.getSyncRequestQueue().getQueueName() );
-        queueConfiguration.setDurable( true );
+        queueConfiguration.setDurable( false );
         return queueConfiguration;
     }
 
