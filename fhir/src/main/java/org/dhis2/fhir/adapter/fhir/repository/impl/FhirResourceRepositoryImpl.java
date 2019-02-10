@@ -358,7 +358,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         logger.debug( "Reading {}?{}={} from FHIR endpoints {}.", resourceType, identifier, field, fhirEndpoint.getBaseUrl() );
         final IBaseBundle bundle = client.search().forResource( resourceType ).returnBundle( support.getBundleClass() )
             .where( new TokenClientParam( field ).exactly().systemAndIdentifier( identifier.getSystem(), identifier.getCode() ) )
-            .cacheControl( new CacheControlDirective().setNoCache( true ) ).execute();
+            .cacheControl( new CacheControlDirective().setNoCache( true ).setNoStore( true ).setMaxResults( 1 ) ).execute();
         final IBaseResource resource = support.getFirstResource( bundle );
         logger.debug( "Read {}?{}={} from FHIR endpoints {} (found={}).", resourceType, identifier, field, fhirEndpoint.getBaseUrl(), (resource != null) );
         return Optional.ofNullable( transform( fhirClientId, fhirVersion, resource ) );

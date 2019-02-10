@@ -113,7 +113,8 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         String... filter )
     {
         final Map<String, List<String>> filterMap = createFilter( referencedResourceParameter, referencedResourceType, referencedResourceId );
-        final IBaseBundle bundle = createFhirClient().search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) ).count( 1 )
+        final IBaseBundle bundle = createFhirClient().search().forResource( resourceName )
+            .cacheControl( new CacheControlDirective().setNoCache( true ).setMaxResults( 1 ) ).count( 1 )
             .whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
         return getFirstRep( bundle );
     }
@@ -142,7 +143,8 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         int foundMinIndex = Integer.MAX_VALUE;
         IBaseResource foundResource = null;
         final IGenericClient client = createFhirClient();
-        IBaseBundle bundle = client.search().forResource( resourceName ).cacheControl( new CacheControlDirective().setNoCache( true ) )
+        IBaseBundle bundle = client.search().forResource( resourceName )
+            .cacheControl( new CacheControlDirective().setNoCache( true ).setNoStore( true ).setMaxResults( resultingMaxCount ) )
             .count( resultingMaxCount ).whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
         do
         {

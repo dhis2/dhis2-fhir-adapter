@@ -38,7 +38,8 @@ The application includes a suggested tracked entity type person. The correspondi
  customize the mapping to the tracked entity type for the FHIR resource patient. Currently, the adapter supports text based, number based and date/time based tracked entity attributes.
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.6.0 or later can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.6.0 or later (in this case the HAPI-FHIR Starter) can be used. Instructions on how to setup the FHIR Service can be found at 
+http://hapifhir.io/doc_jpa.html.
 
 The initial subscription for FHIR Resource Patient is created by the initial setup user interface that is described later in this document. 
 
