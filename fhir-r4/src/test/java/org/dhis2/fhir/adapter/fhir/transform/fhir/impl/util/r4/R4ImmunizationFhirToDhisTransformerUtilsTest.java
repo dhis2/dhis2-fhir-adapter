@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,49 +28,40 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractImmunizationFhirToDhisTransformerUtils;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.dstu3.model.Immunization;
-import org.hl7.fhir.instance.model.api.IDomainResource;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.Set;
+import org.hl7.fhir.r4.model.Immunization;
+import org.hl7.fhir.r4.model.PositiveIntType;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
- * FHIR version DSTU3 implementation of {@link AbstractImmunizationFhirToDhisTransformerUtils}.
+ * Unit tests for {@link R4ImmunizationFhirToDhisTransformerUtils}.
  *
  * @author volsch
  */
-@Component
-@Scriptable
-public class Dstu3ImmunizationFhirToDhisTransformerUtils extends AbstractImmunizationFhirToDhisTransformerUtils
+public class R4ImmunizationFhirToDhisTransformerUtilsTest
 {
-    public Dstu3ImmunizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
-    {
-        super( scriptExecutionContext );
-    }
+    @Mock
+    private ScriptExecutionContext scriptExecutionContext;
 
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.DSTU3_ONLY;
-    }
+    @InjectMocks
+    private R4ImmunizationFhirToDhisTransformerUtils utils;
 
-    @Override
-    public int getMaxDoseSequence( @Nullable IDomainResource immunization ) throws TransformerException
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
+
+    @Test
+    public void testMaxDoseSequence()
     {
-        if ( immunization == null )
-        {
-            return 0;
-        }
-        return ((Immunization) immunization).getVaccinationProtocol().stream().map( Immunization.ImmunizationVaccinationProtocolComponent::getDoseSequence )
-            .max( Comparator.naturalOrder() ).orElse( 0 );
+        final Immunization immunization = new Immunization();
+        immunization.addProtocolApplied().setDoseNumber( new PositiveIntType( 10 ) );
+        immunization.addProtocolApplied().setDoseNumber( new PositiveIntType( 12 ) );
+        immunization.addProtocolApplied().setDoseNumber( new PositiveIntType( 8 ) );
+        Assert.assertEquals( 12, utils.getMaxDoseSequence( immunization ) );
     }
 }

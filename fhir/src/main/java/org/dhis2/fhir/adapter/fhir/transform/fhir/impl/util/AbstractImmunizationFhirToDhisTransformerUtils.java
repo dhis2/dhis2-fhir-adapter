@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,27 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for immunization resource.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "ImmunizationUtils", transformType = ScriptTransformType.IMP, var = AbstractImmunizationFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities for handling FHIR immunizations." )
 public abstract class AbstractImmunizationFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "immunizationUtils";
+    public static final String SCRIPT_ATTR_NAME = "immunizationUtils";
 
     protected AbstractImmunizationFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -53,5 +64,8 @@ public abstract class AbstractImmunizationFhirToDhisTransformerUtils extends Abs
         return SCRIPT_ATTR_NAME;
     }
 
+    @ScriptMethod( description = "Returns the maximum dose sequence from the specified FHIR immunization resource.",
+        args = @ScriptMethodArg( value = "immunization", description = "The FHIR immunization resource from which the maximum included dose sequence should be returned." ),
+        returnDescription = "Maximum dose sequence (0 if no dose sequence is included)." )
     public abstract int getMaxDoseSequence( @Nullable IDomainResource immunization ) throws TransformerException;
 }

@@ -45,6 +45,11 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * FHIR version R4 implementation of {@link AbstractObservationFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class R4ObservationFhirToDhisTransformerUtils extends AbstractObservationFhirToDhisTransformerUtils

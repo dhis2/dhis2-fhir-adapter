@@ -30,16 +30,27 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * FHIR to DHIS2 transformer utility methods for handling vital sign observations.
+ *
+ * @author volsch
+ */
 @Scriptable
+@ScriptType( value = "VitalSignUtils", transformType = ScriptTransformType.IMP, var = AbstractVitalSignFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+    description = "Utilities for handling vital sign observations." )
 public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
-    private static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
+    public static final String SCRIPT_ATTR_NAME = "vitalSignUtils";
 
     protected AbstractVitalSignFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
@@ -54,8 +65,22 @@ public abstract class AbstractVitalSignFhirToDhisTransformerUtils extends Abstra
     }
 
     @Nullable
+    @ScriptMethod( description = "Returns the weight with the specified weight unit from the specified composite value of a FHIR observation.",
+        args = {
+            @ScriptMethodArg( value = "value", description = "The composite value that includes the weight." ),
+            @ScriptMethodArg( value = "weightUnit", description = "The weight unit in which the weight should be returned." ),
+            @ScriptMethodArg( value = "round", description = "Specifies if the returned value should be rounded." ),
+        },
+        returnDescription = "Returns the included weight with the specified weight unit." )
     public abstract Double getWeight( @Nullable ICompositeType value, @Nullable Object weightUnit, boolean round ) throws TransformerDataException;
 
     @Nullable
+    @ScriptMethod( description = "Returns the height with the specified height unit from the specified composite value of a FHIR observation.",
+        args = {
+            @ScriptMethodArg( value = "value", description = "The composite value that includes the height." ),
+            @ScriptMethodArg( value = "heightUnit", description = "The height unit in which the height should be returned." ),
+            @ScriptMethodArg( value = "round", description = "Specifies if the returned value should be rounded." ),
+        },
+        returnDescription = "Returns the included height with the specified height unit." )
     public abstract Double getHeight( @Nullable ICompositeType value, @Nullable Object heightUnit, boolean round ) throws TransformerDataException;
 }

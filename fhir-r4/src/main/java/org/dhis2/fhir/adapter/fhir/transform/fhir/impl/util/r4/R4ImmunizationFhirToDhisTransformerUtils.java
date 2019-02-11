@@ -43,6 +43,11 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Set;
 
+/**
+ * FHIR version R4 implementation of {@link AbstractImmunizationFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class R4ImmunizationFhirToDhisTransformerUtils extends AbstractImmunizationFhirToDhisTransformerUtils

@@ -46,6 +46,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
+/**
+ * FHIR version R4 implementation of {@link AbstractVitalSignFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class R4VitalSignFhirToDhisTransformerUtils extends AbstractVitalSignFhirToDhisTransformerUtils

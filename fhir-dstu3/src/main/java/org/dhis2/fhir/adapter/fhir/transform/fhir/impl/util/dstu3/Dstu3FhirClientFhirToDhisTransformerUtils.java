@@ -50,6 +50,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * FHIR version DSTU3 implementation of {@link AbstractFhirClientFhirToDhisTransformerUtils}.
+ *
+ * @author volsch
+ */
 @Component
 @Scriptable
 public class Dstu3FhirClientFhirToDhisTransformerUtils extends AbstractFhirClientFhirToDhisTransformerUtils

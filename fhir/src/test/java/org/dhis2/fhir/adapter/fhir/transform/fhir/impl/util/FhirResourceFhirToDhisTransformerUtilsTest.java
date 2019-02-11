@@ -28,28 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.util.CastUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-
-/**
- * Utility class for handling date and time value that are passed by a script.
- *
- * @author volsch
- */
-public abstract class ScriptedDateTimeUtils
+public class FhirResourceFhirToDhisTransformerUtilsTest
 {
-    public static ZonedDateTime toZonedDateTime( @Nullable Object dateTime, @Nonnull ValueConverter valueConverter )
-    {
-        return CastUtils.cast( dateTime, ZonedDateTime.class, ed -> ed, Object.class, ed -> valueConverter.convert( ed, ValueType.DATETIME, ZonedDateTime.class ) );
-    }
 
-    private ScriptedDateTimeUtils()
-    {
-        super();
-    }
 }

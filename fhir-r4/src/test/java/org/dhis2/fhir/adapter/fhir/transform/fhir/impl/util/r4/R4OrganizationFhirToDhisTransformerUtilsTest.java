@@ -46,6 +46,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.hamcrest.Matchers;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
@@ -201,6 +202,6 @@ public class R4OrganizationFhirToDhisTransformerUtilsTest
         org1Ref.setResource( org1 );
 
         final List<? extends IBaseResource> hierarchy = utils.findHierarchy( org1Ref );
-
+        Assert.assertThat( hierarchy, Matchers.contains( org1, org2 ) );
     }
 }

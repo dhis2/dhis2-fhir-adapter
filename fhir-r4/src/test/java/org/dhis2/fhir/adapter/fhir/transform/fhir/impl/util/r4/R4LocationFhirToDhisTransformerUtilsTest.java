@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -29,10 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -47,11 +43,12 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.hamcrest.Matchers;
-import org.hl7.fhir.dstu3.model.Bundle;
-import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Location;
+import org.hl7.fhir.r4.model.Reference;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,17 +65,14 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * Unit tests for {@link Dstu3OrganizationFhirToDhisTransformerUtils}.
+ * Unit tests for {@link R4LocationFhirToDhisTransformerUtils}.
  *
  * @author volsch
  */
-public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
+public class R4LocationFhirToDhisTransformerUtilsTest
 {
     @Mock
     private ScriptExecutionContext scriptExecutionContext;
-
-    @Mock
-    private OrganizationUnitService organizationUnitService;
 
     @Mock
     private FhirClientResourceRepository fhirClientResourceRepository;
@@ -102,57 +96,10 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
     private Map<String, Object> variables;
 
     @InjectMocks
-    private Dstu3OrganizationFhirToDhisTransformerUtils utils;
+    private R4LocationFhirToDhisTransformerUtils utils;
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
-
-    @Test
-    public void exists()
-    {
-        Mockito.doReturn( Optional.of( new OrganizationUnit() ) ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
-        Assert.assertTrue( utils.exists( "ABC_123" ) );
-        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
-    }
-
-    @Test
-    public void existsNot()
-    {
-        Mockito.doReturn( Optional.empty() ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
-        Assert.assertFalse( utils.exists( "ABC_123" ) );
-        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "ABC_123", ReferenceType.CODE ) ) );
-    }
-
-    @Test
-    public void existsWithPrefix()
-    {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
-        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
-        Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
-        Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
-        Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-
-
-        Mockito.doReturn( Optional.of( new OrganizationUnit() ) ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
-        Assert.assertEquals( "OT_ABC_123", utils.existsWithPrefix( "ABC_123" ) );
-        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
-    }
-
-    @Test
-    public void existsNotWithPrefix()
-    {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
-        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
-        Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
-        Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
-        Mockito.doReturn( request ).when( context ).getFhirRequest();
-        Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
-
-        Mockito.doReturn( Optional.empty() ).when( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
-        Assert.assertNull( utils.existsWithPrefix( "ABC_123" ) );
-        Mockito.verify( organizationUnitService ).findOneByReference( Mockito.eq( new Reference( "OT_ABC_123", ReferenceType.CODE ) ) );
-    }
 
     @Test
     public void findHierarchy()
@@ -160,25 +107,25 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
         final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
         final FhirClient fhirClient = new FhirClient();
         fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
-        final FhirContext fhirContext = FhirContext.forDstu3();
+        final FhirContext fhirContext = FhirContext.forR4();
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
         fhirClientResource.setFhirClient( fhirClient );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com", "OT_", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.LOCATION, "http://test.com", "OT_", null, null );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
         Mockito.doReturn( request ).when( context ).getFhirRequest();
         Mockito.doReturn( fhirClientResourceId ).when( request ).getFhirClientResourceId();
-        Mockito.doReturn( FhirVersion.DSTU3 ).when( request ).getVersion();
-        Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.ORGANIZATION );
+        Mockito.doReturn( FhirVersion.R4 ).when( request ).getVersion();
+        Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.LOCATION );
         Mockito.doReturn( Optional.of( fhirClientResource ) ).when( fhirClientResourceRepository ).findOneByIdCached( Mockito.eq( fhirClientResourceId ) );
-        Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.DSTU3 ) );
+        Mockito.doReturn( Optional.of( fhirContext ) ).when( fhirResourceRepository ).findFhirContext( Mockito.eq( FhirVersion.R4 ) );
 
-        final Organization org1 = (Organization) new Organization().setId( new IdType( "Organization", "1" ) );
-        final Organization org2 = (Organization) new Organization().setId( new IdType( "2" ) );
-        final Organization org3 = (Organization) new Organization().setId( new IdType( ("3") ) );
-        final Organization org4 = (Organization) new Organization().setId( new IdType( "Organization", "4" ) );
+        final Location org1 = (Location) new Location().setId( new IdType( "Location", "1" ) );
+        final Location org2 = (Location) new Location().setId( new IdType( "2" ) );
+        final Location org3 = (Location) new Location().setId( new IdType( ("3") ) );
+        final Location org4 = (Location) new Location().setId( new IdType( "Location", "4" ) );
 
         Mockito.doAnswer( invocation -> {
             final Function<IBaseResource, IBaseReference> parentReferenceFunction = invocation.getArgument( 6 );
@@ -189,16 +136,16 @@ public class Dstu3OrganizationFhirToDhisTransformerUtilsTest
                 .addEntry( new Bundle.BundleEntryComponent().setResource( org4 ) );
         } )
             .when( hierarchicallyFhirResourceRepository )
-            .findWithParents( Mockito.eq( fhirClientResourceId ), Mockito.eq( FhirVersion.DSTU3 ), Mockito.same( subscriptionFhirEndpoint ),
-                Mockito.eq( "Organization" ), Mockito.eq( "3" ), Mockito.eq( "organizationPartOf" ), Mockito.any() );
+            .findWithParents( Mockito.eq( fhirClientResourceId ), Mockito.eq( FhirVersion.R4 ), Mockito.same( subscriptionFhirEndpoint ),
+                Mockito.eq( "Location" ), Mockito.eq( "3" ), Mockito.eq( "locationPartOf" ), Mockito.any() );
 
-        final org.hl7.fhir.dstu3.model.Reference org2Ref = new org.hl7.fhir.dstu3.model.Reference( org2.getIdElement() );
+        final Reference org2Ref = new Reference( org2.getIdElement() );
         org2Ref.setResource( org2 );
         org1.setPartOf( org2Ref );
-        org2.setPartOf( new org.hl7.fhir.dstu3.model.Reference( org3.getIdElement() ) );
-        org3.setPartOf( new org.hl7.fhir.dstu3.model.Reference( org4.getIdElement() ) );
+        org2.setPartOf( new Reference( org3.getIdElement() ) );
+        org3.setPartOf( new Reference( org4.getIdElement() ) );
 
-        final org.hl7.fhir.dstu3.model.Reference org1Ref = new org.hl7.fhir.dstu3.model.Reference( org1.getIdElement() );
+        final Reference org1Ref = new Reference( org1.getIdElement() );
         org1Ref.setResource( org1 );
 
         final List<? extends IBaseResource> hierarchy = utils.findHierarchy( org1Ref );

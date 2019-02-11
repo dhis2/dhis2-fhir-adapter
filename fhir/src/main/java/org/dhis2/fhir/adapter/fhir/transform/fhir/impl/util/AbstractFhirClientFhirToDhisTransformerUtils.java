@@ -43,9 +43,12 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -69,7 +72,7 @@ import java.util.stream.Collectors;
  */
 @Scriptable
 @ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.IMP, var = AbstractFhirClientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities for retrieving data from a server FHIR service." )
+    description = "Utilities for retrieving data from a FHIR server." )
 public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
@@ -108,6 +111,15 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
     protected abstract List<? extends IBaseResource> getEntries( @Nonnull IBaseBundle bundle );
 
     @Nullable
+    @ScriptMethod( description = "Returns the latest FHIR resource (based on last updated timestamp of resource) that match the specified criteria.",
+        args = {
+            @ScriptMethodArg( value = "resourceName", description = "The name of the FHIR resource that should be searched for (e.g. Observation)." ),
+            @ScriptMethodArg( value = "referencedResourceParameter", description = "The FHIR resource search parameter that contains the referenced resource (e.g. subject)." ),
+            @ScriptMethodArg( value = "referencedResourceType", description = "The FHIR resource type of the referenced resource (e.g. Patient)." ),
+            @ScriptMethodArg( value = "referencedResourceId", description = "The FHIR resource ID (ID element) of the reference resource." ),
+            @ScriptMethodArg( value = "filter", description = "Optional further filter argument pairs (variable arguments). The first value is the filtered parameter and the second is the value." ),
+        },
+        returnDescription = "The latest FHIR resource that matches the specified criteria." )
     public final IBaseResource queryLatest( @Nonnull String resourceName,
         @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId,
         String... filter )
@@ -195,7 +207,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
             filterMap.computeIfAbsent( filter[i], k -> new ArrayList<>() ).add( filter[i + 1] );
         }
 
-        if ( referencedResourceId.hasResourceType() && !referencedResourceType.equals( referencedResourceId.getResourceType() ) )
+        if ( referencedResourceId.hasResourceType() && !referencedResourceId.getResourceType().equals( NameUtils.toClassName( referencedResourceType ) ) )
         {
             throw new TransformerMappingException( "The referenced resource ID contains resource type " + referencedResourceId.getResourceType()
                 + ", but requested resource type is " + referencedResourceType );
@@ -216,7 +228,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
         if ( resourceId == null )
         {
-            throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
+            throw new TransformerMappingException( "FHIR client cannot be created without having a incoming FHIR client request." );
         }
         final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );
