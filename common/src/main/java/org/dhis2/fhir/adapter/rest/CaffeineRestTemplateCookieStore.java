@@ -50,8 +50,13 @@ public class CaffeineRestTemplateCookieStore implements RestTemplateCookieStore
 
     public CaffeineRestTemplateCookieStore()
     {
+        this( DEFAULT_MAX_COOKIE_LIFETIME_MILLIS );
+    }
+
+    public CaffeineRestTemplateCookieStore( long maxCookieLifetimeMillis )
+    {
         this.cookieStore = Caffeine.newBuilder()
-            .expireAfterWrite( DEFAULT_MAX_COOKIE_LIFETIME_MILLIS, TimeUnit.MILLISECONDS )
+            .expireAfterWrite( maxCookieLifetimeMillis, TimeUnit.MILLISECONDS )
             .maximumSize( 1000L ).build();
     }
 
