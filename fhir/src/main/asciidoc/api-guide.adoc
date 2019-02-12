@@ -146,6 +146,21 @@ data type.
 | A decision that is made before processing an event (tracker program stage instance). Possible values are CONTINUE (use the existing event), NEW_EVENT (create a new event, just for repeatable program stages), BREAK (the complete rule is not applicable).
 |===
 
+[[api-enumerations-enrollment-status]]
+=== Enrollment Status
+- ACTIVE
+- CANCELLED
+- COMPLETED
+
+[[api-enumerations-event-status]]
+=== Event Status
+- ACTIVE
+- COMPLETED
+- OVERDUE
+- SCHEDULE
+- SKIPPED
+- VISITED
+
 [[api-resources]]
 == Resources
 

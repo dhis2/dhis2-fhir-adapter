@@ -278,7 +278,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nullable
     @Override
-    @ScriptMethod( description = "Returns the value of a tracked entity instance attribute.", args = @ScriptMethodArg( value = "attributeReference", description = "The reference object to the tracked entity attribute." ) )
+    @ScriptMethod( description = "Returns the value of a tracked entity instance attribute.", args = @ScriptMethodArg( value = "attributeReference", description = "The referenced object to the tracked entity attribute." ) )
     public Object getValue( @Nonnull Reference attributeReference )
     {
         final TrackedEntityAttribute attribute = getTypeAttribute( attributeReference );
@@ -287,6 +287,7 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the string representation of the value of a tracked entity instance attribute.", args = @ScriptMethodArg( value = "attributeReference", description = "The referenced string to the tracked entity attribute." ) )
     public String getStringValue( @Nonnull Reference attributeReference )
     {
         return valueConverter.convert( getValue( attributeReference ), String.class );

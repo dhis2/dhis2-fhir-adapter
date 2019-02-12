@@ -39,6 +39,8 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ScriptedDateTimeUtil
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
+import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
 
@@ -54,6 +56,8 @@ import java.util.Objects;
  * @author volsch
  */
 @Scriptable
+@ScriptType( value = "Enrollment", var = "enrollment", transformDataType = "DHIS_ENROLLMENT",
+    description = "Program instance (aka enrollment). If enrollment is not new and will be modified, it will be persisted." )
 public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializable
 {
     private static final long serialVersionUID = -9043373621936561310L;
@@ -75,6 +79,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     }
 
     @Override
+    @ScriptMethod( description = "Returns if the event is new ans has not yet been saved on DHIS2." )
     public boolean isNewResource()
     {
         return enrollment.isNewResource();
@@ -88,6 +93,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the ID of the event on DHIS2. Return null if the instance is new." )
     public String getId()
     {
         return enrollment.getId();
@@ -117,6 +123,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the ID of the organisation unit on DHIS2 where this event has been registered." )
     public String getOrganizationUnitId()
     {
         return enrollment.getOrgUnitId();
@@ -124,6 +131,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the tracked entity instance to which this event belongs to." )
     public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
         return trackedEntityInstance;
@@ -131,37 +139,59 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the date and time when the enrollment took place." )
     public ZonedDateTime getEnrollmentDate()
     {
         return enrollment.getEnrollmentDate();
     }
 
+    @ScriptMethod( description = "Sets the date and time when the enrollment took place.",
+        args = @ScriptMethodArg( value = "enrollmentDate", description = "The date and time when the enrollment took place." ),
+        returnDescription = "Returns if the event specified enrollment date was non-null." )
     public boolean setEnrollmentDate( @Nullable Object enrollmentDate )
     {
-        enrollment.setEnrollmentDate( ScriptedDateTimeUtils.toZonedDateTime( enrollmentDate, valueConverter ) );
+        final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( enrollmentDate, valueConverter );
+        if ( !Objects.equals( enrollment.getEnrollmentDate(), zonedDateTime ) )
+        {
+            enrollment.setModified();
+        }
+        enrollment.setEnrollmentDate( zonedDateTime );
         return (enrollmentDate != null);
     }
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the date and time when the incident took place." )
     public ZonedDateTime getIncidentDate()
     {
         return enrollment.getIncidentDate();
     }
 
+    @ScriptMethod( description = "Sets the date and time when the incident took place.",
+        args = @ScriptMethodArg( value = "incidentDate", description = "The date and time when the incident took place." ),
+        returnDescription = "Returns if the event specified incident date was non-null." )
     public boolean setIncidentDate( @Nullable Object incidentDate )
     {
-        enrollment.setIncidentDate( ScriptedDateTimeUtils.toZonedDateTime( incidentDate, valueConverter ) );
+        final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( incidentDate, valueConverter );
+        if ( !Objects.equals( enrollment.getIncidentDate(), zonedDateTime ) )
+        {
+            enrollment.setModified();
+        }
+        enrollment.setIncidentDate( zonedDateTime );
         return (incidentDate != null);
     }
 
     @Nullable
     @Override
+    @ScriptMethod( description = "Returns the coordinates (normally longitude and latitude) of the enrollment." )
     public Location getCoordinate()
     {
         return enrollment.getCoordinate();
     }
 
+    @ScriptMethod( description = "Sets the coordinates of the enrollment. This might be a string representation of the coordinates or a location object.",
+        returnDescription = "Returns true each time (at end of script return of true can be avoided).",
+        args = @ScriptMethodArg( value = "coordinate", description = "The coordinates as string representation, location object or null." ) )
     public boolean setCoordinate( @Nullable Object coordinate )
     {
         final Location convertedCoordinate = valueConverter.convert( coordinate, ValueType.COORDINATE, Location.class );
@@ -174,6 +204,7 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     }
 
     @Override
+    @ScriptMethod( description = "Validates the content of the enrollment and throws an exception if the content is invalid." )
     public void validate() throws TransformerException
     {
         if ( enrollment.getOrgUnitId() == null )
