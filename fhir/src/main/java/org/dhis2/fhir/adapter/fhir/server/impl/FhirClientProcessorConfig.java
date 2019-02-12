@@ -53,6 +53,8 @@ public class FhirClientProcessorConfig implements Serializable
     @Min( value = 1 )
     private int parallelCount = 1;
 
+    private boolean storeFhirResource;
+
     public int getMaxSearchCount()
     {
         return maxSearchCount;
@@ -81,5 +83,15 @@ public class FhirClientProcessorConfig implements Serializable
     public void setParallelCount( int parallelCount )
     {
         this.parallelCount = parallelCount;
+    }
+
+    public boolean isStoreFhirResource()
+    {
+        return storeFhirResource;
+    }
+
+    public void setStoreFhirResource( boolean storeFhirResource )
+    {
+        this.storeFhirResource = storeFhirResource;
     }
 }

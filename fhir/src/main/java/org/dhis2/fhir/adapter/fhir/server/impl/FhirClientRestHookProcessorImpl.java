@@ -162,8 +162,12 @@ public class FhirClientRestHookProcessorImpl extends
         }
 
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( parsedFhirResource );
-        subscriptionFhirResourceRepository.enqueue( fhirClientResource, contentType, fhirVersion, fhirResourceId, fhirResource );
-        super.enqueueDataItem( fhirClientResource, processedItemInfo, true );
+        final boolean storeFhirResource = processorConfig.isStoreFhirResource();
+        if ( storeFhirResource )
+        {
+            subscriptionFhirResourceRepository.enqueue( fhirClientResource, contentType, fhirVersion, fhirResourceId, fhirResource );
+        }
+        super.enqueueDataItem( fhirClientResource, processedItemInfo, storeFhirResource );
     }
 
     @HystrixCommand
