@@ -52,6 +52,7 @@ import org.dhis2.fhir.adapter.security.SystemAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -72,6 +73,7 @@ import java.util.concurrent.ForkJoinPool;
  * @author volsch
  */
 @Service
+@ConditionalOnProperty( name = "dhis2.fhir-adapter.export-enabled" )
 public class DhisSyncProcessorImpl extends
     AbstractQueuedDataProcessorImpl<ProcessedDhisResource, ProcessedDhisResourceId, StoredDhisResource, StoredDhisResourceId, DhisSyncGroup, QueuedDhisSyncRequestId, QueuedDhisResourceId,
         DhisSyncGroup, UuidDataGroupId> implements DhisSyncProcessor
@@ -117,21 +119,7 @@ public class DhisSyncProcessorImpl extends
         concurrency = "#{@dhisSyncConfig.syncRequestQueue.listener.concurrency}" )
     public void receive( @Nonnull DhisSyncRequestQueueItem dhisSyncRequestQueueItem )
     {
-        if ( processorConfig.isEnabled() )
-        {
-            super.receive( dhisSyncRequestQueueItem );
-        }
-        else
-        {
-            final DhisSyncGroup group = findGroupByGroupId( dhisSyncRequestQueueItem.getDataGroupId() );
-            if ( group == null )
-            {
-                logger.warn( "Group {} is no longer available. Skipping processing of updated group.",
-                    dhisSyncRequestQueueItem.getDataGroupId() );
-                return;
-            }
-            purgeOldestProcessed( group, getStoredItemGroup( group ) );
-        }
+        super.receive( dhisSyncRequestQueueItem );
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.config.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,11 @@ import ca.uhn.fhir.context.FhirContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for FHIR version DSTU3.
+ *
+ * @author volsch
+ */
 @Configuration
 public class Dstu3FhirConfig
 {

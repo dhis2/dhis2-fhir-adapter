@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceReposit
 import org.dhis2.fhir.adapter.rest.RestResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,6 +58,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @RestController
 @RequestMapping( "/remote-fhir-rest-hook" )
+@ConditionalOnProperty( name = "dhis2.fhir-adapter.import-enabled" )
 public class FhirClientRestHookController extends AbstractFhirClientController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );

@@ -110,6 +110,13 @@ hystrix:
 
 # Configuration of the DHIS2 FHIR adapter.
 dhis2.fhir-adapter:
+  # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
+  import-enabled: true
+  # Specifies if the automatic export of DHIS2 resources to FHIR resources is enabled.
+  # Important note: This is an experimental feature currently.
+  export-enabled: false
+  # Specifies if the FHIR interfaces should be enabled.
+  fhir-interfaces-enabled: true
   # Configuration of DHIS2 endpoint that is accessed by the adapter.
   endpoint:
     # The base URL of the DHIS2 installation.
@@ -286,10 +293,6 @@ dhis2.fhir-adapter:
     # Retrieves new and updated DHIS2 resources periodically.
     # IMPORTANT NOTE: This feature is still under development and beta.
     processor:
-      # Specifies how often the DHIS2 resources should be synchronized. Event if the
-      # processor has been disabled, this value is used to periodically clean-up
-      # information about DHIS2 resources that have been stored by the adapter.
-      enabled: false
       # Specifies how often the DHIS2 resources should be synchronized. Event if the
       # processor has been disabled, this value is used to periodically clean-up
       # information about DHIS2 resources that have been stored by the adapter.

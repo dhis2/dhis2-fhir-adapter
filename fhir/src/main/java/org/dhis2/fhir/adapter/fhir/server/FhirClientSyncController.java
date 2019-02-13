@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.rest.RestResourceNotFoundException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -64,6 +65,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping( "/remote-fhir-sync" )
+@ConditionalOnProperty( name = "dhis2.fhir-adapter.import-enabled" )
 public class FhirClientSyncController extends AbstractFhirClientController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );

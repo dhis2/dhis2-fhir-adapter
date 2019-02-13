@@ -75,6 +75,7 @@ import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -101,6 +102,7 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Component
+@ConditionalOnProperty( name = "dhis2.fhir-adapter.import-enabled" )
 public class FhirRepositoryImpl implements FhirRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );

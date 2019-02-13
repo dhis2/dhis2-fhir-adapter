@@ -32,6 +32,11 @@ import ca.uhn.fhir.context.FhirContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for FHIR version R4.
+ *
+ * @author volsch
+ */
 @Configuration
 public class R4FhirConfig
 {

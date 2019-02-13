@@ -63,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
@@ -88,6 +89,7 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Service
+@ConditionalOnProperty( name = "dhis2.fhir-adapter.import-enabled" )
 public class FhirClientRestHookProcessorImpl extends
     AbstractQueuedDataProcessorImpl<ProcessedFhirResource, ProcessedFhirResourceId, StoredFhirResource, StoredFhirResourceId, FhirClient, QueuedFhirClientRequestId, QueuedFhirResourceId,
         FhirClientResource, UuidDataGroupId>

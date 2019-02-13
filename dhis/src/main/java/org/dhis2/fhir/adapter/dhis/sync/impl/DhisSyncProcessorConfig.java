@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -46,11 +45,9 @@ import java.util.Set;
 @Component
 @ConfigurationProperties( "dhis2.fhir-adapter.sync.processor" )
 @Validated
-public class DhisSyncProcessorConfig implements StoredItemServiceConfig, Serializable
+public class DhisSyncProcessorConfig implements Serializable
 {
     private static final long serialVersionUID = 5043058728246300723L;
-
-    private boolean enabled;
 
     @Min( 1 )
     private int requestRateMillis = 60_000;
@@ -69,17 +66,6 @@ public class DhisSyncProcessorConfig implements StoredItemServiceConfig, Seriali
 
     @NotNull
     private Set<DhisResourceType> resourceTypes = new HashSet<>();
-
-    @Override
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
-
-    public void setEnabled( boolean enabled )
-    {
-        this.enabled = enabled;
-    }
 
     public int getRequestRateMillis()
     {

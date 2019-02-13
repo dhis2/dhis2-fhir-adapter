@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.converter.dstu3;
+package org.dhis2.fhir.adapter.dhis.config;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,46 +28,33 @@ package org.dhis2.fhir.adapter.fhir.converter.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
-import org.dhis2.fhir.adapter.fhir.converter.AbstractStringToAdministrativeGenderConverter;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ConstantResolver;
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.dhis2.fhir.adapter.data.processor.StoredItemServiceConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * FHIR version DSTU3 implementation of {@link AbstractStringToAdministrativeGenderConverter}.
+ * Provides the configuration for the stored item services based
+ * on an enabled export.
  *
  * @author volsch
  */
 @Component
-@ConvertedValueTypes( types = ValueType.TEXT )
-public class Dstu3StringToAdministrativeGenderConverter extends AbstractStringToAdministrativeGenderConverter<AdministrativeGender>
+public class ExportStoredItemServiceConfig implements Serializable, StoredItemServiceConfig
 {
-    public Dstu3StringToAdministrativeGenderConverter( @Nonnull ConstantResolver constantResolver )
+    private static final long serialVersionUID = -1182664788568325828L;
+
+    private final boolean enabled;
+
+    public ExportStoredItemServiceConfig( @Value( "${dhis2.fhir-adapter.export-enabled}" ) boolean enabled )
     {
-        super( AdministrativeGender.class, constantResolver );
+        this.enabled = enabled;
     }
 
-    @Nullable
     @Override
-    protected AdministrativeGender getAdministrativeGender( @Nullable Gender gender )
+    public boolean isEnabled()
     {
-        if ( gender == null )
-        {
-            return AdministrativeGender.NULL;
-        }
-        switch ( gender )
-        {
-            case FEMALE:
-                return AdministrativeGender.FEMALE;
-            case MALE:
-                return AdministrativeGender.MALE;
-            default:
-                throw new AssertionError( "Unhandled gender: " + gender );
-        }
+        return enabled;
     }
 }
