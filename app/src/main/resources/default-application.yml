@@ -116,7 +116,11 @@ dhis2.fhir-adapter:
   # Important note: This is an experimental feature currently.
   export-enabled: false
   # Specifies if the FHIR interfaces should be enabled.
-  fhir-interfaces-enabled: true
+  fhir-interfaces:
+    # Specifies if DSTU3 FHIR interfaces should be enabled.
+    dstu3-enabled: true
+    # Specifies if R4 FHIR interfaces should be enabled.
+    r4-enabled: true
   # Configuration of DHIS2 endpoint that is accessed by the adapter.
   endpoint:
     # The base URL of the DHIS2 installation.
