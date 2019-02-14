@@ -113,7 +113,7 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
 
     @NotNull
     @Valid
-    private SubscriptionFhirEndpoint fhirEndpoint;
+    private ClientFhirEndpoint fhirEndpoint;
 
     @NotNull
     @Valid
@@ -285,12 +285,12 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
     }
 
     @Embedded
-    public SubscriptionFhirEndpoint getFhirEndpoint()
+    public ClientFhirEndpoint getFhirEndpoint()
     {
         return fhirEndpoint;
     }
 
-    public void setFhirEndpoint( SubscriptionFhirEndpoint fhirEndpoint )
+    public void setFhirEndpoint( ClientFhirEndpoint fhirEndpoint )
     {
         this.fhirEndpoint = fhirEndpoint;
     }

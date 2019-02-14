@@ -44,9 +44,11 @@ import org.dhis2.fhir.adapter.data.processor.QueuedDataProcessorException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
+import org.dhis2.fhir.adapter.fhir.repository.FhirConformanceService;
 import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
+import org.hl7.fhir.instance.model.api.IBaseConformance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,11 +87,14 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
 
     private final FhirContext fhirContext;
 
+    private final FhirConformanceService fhirConformanceService;
+
     private int maxConsumedSize = 1000;
 
-    protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext )
+    protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext, @Nonnull FhirConformanceService fhirConformanceService )
     {
         this.fhirContext = fhirContext;
+        this.fhirConformanceService = fhirConformanceService;
     }
 
     public int getMaxConsumedSize()
@@ -106,7 +111,10 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
     @Nonnull
     public Instant poll( @Nonnull FhirClientResource group, @Nonnull Instant lastUpdated, int maxSearchCount, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
+        final String resourceName = group.getFhirResourceType().getResourceTypeName();
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, group.getFhirClient().getFhirEndpoint() );
+        final boolean sortSupported = group.getFhirClient().getFhirEndpoint().isSortSupported();
+
         Instant processedLastUpdated = null;
         Instant fromLastUpdated = lastUpdated;
 
@@ -116,7 +124,6 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
         boolean paging = false;
         boolean backwardPaging = false;
         boolean moreAvailable;
-        final String resourceName = group.getFhirResourceType().getResourceTypeName();
         do
         {
             logger.debug( "Loading next since {} for FHIR client resource {} with maximum count {}.", fromLastUpdated, group.getId(), maxSearchCount );
@@ -125,10 +132,15 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                 // last updated must only bet set on the first search invocation
                 processedLastUpdated = Instant.now();
             }
-            fromLastUpdated = fromLastUpdated
-                .minus( group.getFhirClient().getToleranceMillis(), ChronoUnit.MILLIS );
-            IBaseBundle bundle = createBaseQuery( client, resourceName, group, fromLastUpdated ).count( maxSearchCount )
-                .elementsSubset( "meta", "id" ).returnBundle( getBundleClass() ).sort().ascending( "_lastUpdated" ).execute();
+            fromLastUpdated = fromLastUpdated.minus( group.getFhirClient().getToleranceMillis(), ChronoUnit.MILLIS );
+
+            IQuery<? extends IBaseBundle> baseQuery = createBaseQuery( client, resourceName, group, fromLastUpdated )
+                .count( maxSearchCount ).returnBundle( getBundleClass() );
+            if ( sortSupported )
+            {
+                baseQuery = baseQuery.elementsSubset( "meta", "id" ).sort().ascending( "_lastUpdated" );
+            }
+            IBaseBundle bundle = baseQuery.execute();
             do
             {
                 final List<ProcessedItemInfo> resources = getResourceEntries( bundle ).stream()
@@ -197,7 +209,14 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
                                 if ( maxLastUpdated.isAfter( fromLastUpdated ) )
                                 {
                                     fromLastUpdated = maxLastUpdated;
-                                    moreAvailable = true;
+                                    if ( sortSupported )
+                                    {
+                                        moreAvailable = true;
+                                    }
+                                    else
+                                    {
+                                        logger.warn( "FHIR client resource {} does not support sorting but contains more resources.", group.getId() );
+                                    }
                                 }
                                 else
                                 {
@@ -250,6 +269,9 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
             .whereMap( getQuery( fhirClientResource ) ).lastUpdated( new DateRangeParam( Date.from( fromLastUpdated ), null ) )
             .cacheControl( new CacheControlDirective().setNoCache( true ) );
     }
+
+    @Nonnull
+    protected abstract Class<? extends IBaseConformance> getBaseConformanceClass();
 
     @Nonnull
     protected abstract Class<? extends IBaseBundle> getBundleClass();

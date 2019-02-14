@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.setup;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
@@ -43,7 +44,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeCategoryRepository;
@@ -200,8 +200,9 @@ public class SetupService
         dhisEndpoint.setPassword( StringUtils.trim( setup.getDhisSetup().getPassword() ) );
         fhirClient.setDhisEndpoint( dhisEndpoint );
 
-        final SubscriptionFhirEndpoint fhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint fhirEndpoint = new ClientFhirEndpoint();
         fhirEndpoint.setBaseUrl( setup.getFhirSetup().getBaseUrl() );
+        fhirEndpoint.setSortSupported( true );
         if ( StringUtils.isNotBlank( setup.getFhirSetup().getHeaderName() ) &&
             StringUtils.isNotBlank( setup.getFhirSetup().getHeaderValue() ) )
         {

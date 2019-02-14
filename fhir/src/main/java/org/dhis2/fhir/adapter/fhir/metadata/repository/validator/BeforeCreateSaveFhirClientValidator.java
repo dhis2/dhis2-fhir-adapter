@@ -29,11 +29,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -159,9 +159,9 @@ public class BeforeCreateSaveFhirClientValidator implements Validator
             {
                 errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid HTTP/HTTPS URL." );
             }
-            if ( StringUtils.length( fhirClient.getFhirEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
+            if ( StringUtils.length( fhirClient.getFhirEndpoint().getBaseUrl() ) > ClientFhirEndpoint.MAX_BASE_URL_LENGTH )
             {
-                errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.length", new Object[]{ SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
+                errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.length", new Object[]{ ClientFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
             }
             if ( fhirClient.getFhirEndpoint().getHeaders() != null )
             {

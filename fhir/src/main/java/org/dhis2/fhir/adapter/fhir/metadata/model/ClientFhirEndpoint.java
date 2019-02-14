@@ -51,7 +51,7 @@ import java.util.List;
  * @author volsch
  */
 @Embeddable
-public class SubscriptionFhirEndpoint implements Serializable
+public class ClientFhirEndpoint implements Serializable
 {
     private static final long serialVersionUID = 5238213075216094777L;
 
@@ -65,6 +65,10 @@ public class SubscriptionFhirEndpoint implements Serializable
     private boolean logging;
 
     private boolean verboseLogging;
+
+    private boolean useJsonFormat;
+
+    private boolean sortSupported = true;
 
     @Valid
     private List<RequestHeader> headers;
@@ -117,5 +121,29 @@ public class SubscriptionFhirEndpoint implements Serializable
     public void setVerboseLogging( boolean verboseLogging )
     {
         this.verboseLogging = verboseLogging;
+    }
+
+    @Basic
+    @Column( name = "use_json_format", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isUseJsonFormat()
+    {
+        return useJsonFormat;
+    }
+
+    public void setUseJsonFormat( boolean useJsonFormat )
+    {
+        this.useJsonFormat = useJsonFormat;
+    }
+
+    @Basic
+    @Column( name = "sort_supported", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE NOT NULL" )
+    public boolean isSortSupported()
+    {
+        return sortSupported;
+    }
+
+    public void setSortSupported( boolean sortSupported )
+    {
+        this.sortSupported = sortSupported;
     }
 }

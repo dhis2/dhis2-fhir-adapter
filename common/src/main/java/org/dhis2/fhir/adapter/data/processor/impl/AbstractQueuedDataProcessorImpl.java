@@ -197,11 +197,17 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                 dataGroupQueueItem.getDataGroupId() );
             return;
         }
-        final SG storedItemGroup = getStoredItemGroup( group );
+        final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
+        if ( origLastUpdated.isAfter( dataGroupQueueItem.getReceivedAt().toInstant() ) )
+        {
+            logger.debug( "Processing queued group {} does not take place since queued item timestamp {} is after last processed timestamp {}.",
+                dataGroupQueueItem.getDataGroupId(), dataGroupQueueItem.getReceivedAt(), origLastUpdated );
+            return;
+        }
 
+        final SG storedItemGroup = getStoredItemGroup( group );
         final Instant begin = Instant.now();
         final DataProcessorItemRetriever<G> itemRetriever = getDataProcessorItemRetriever( group );
-        final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
         final AtomicLong count = new AtomicLong();
         final Instant lastUpdated = itemRetriever.poll( group, origLastUpdated, getMaxSearchCount(), items -> {
             final Instant processedAt = Instant.now();

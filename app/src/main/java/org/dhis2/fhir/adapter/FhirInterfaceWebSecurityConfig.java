@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository;
+package org.dhis2.fhir.adapter;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,26 +28,31 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseReference;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.UUID;
-import java.util.function.Function;
 
 /**
- * Facade for {@link FhirResourceRepository} to handle parent child relationships on
- * to request the complete hierarchy up to the root.
+ * Security configuration of FHIR interfaces
+ * (perform authentication handling, not performed by Spring).
  *
  * @author volsch
  */
-public interface HierarchicallyFhirResourceRepository
+@Configuration
+@Order( 5 )
+public class FhirInterfaceWebSecurityConfig extends WebSecurityConfigurerAdapter
 {
-    @Nonnull
-    IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint,
-        @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType, @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction );
+    @Override
+    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    {
+        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
+        http.csrf().disable();
+        http.antMatcher( "/fhir/**" )
+            .authorizeRequests()
+            .antMatchers( "/fhir/**" ).permitAll();
+    }
 }

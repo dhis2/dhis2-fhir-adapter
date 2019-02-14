@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
 import org.dhis2.fhir.adapter.validator.HttpUrl;
 
@@ -50,7 +50,7 @@ public class FhirSetup implements Serializable
 
     @NotBlank( message = "URL must not be blank." )
     @HttpUrl
-    @Size( max = SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH, message = "URL must note be longer than {max} characters." )
+    @Size( max = ClientFhirEndpoint.MAX_BASE_URL_LENGTH, message = "URL must note be longer than {max} characters." )
     private String baseUrl;
 
     @Size( max = RequestHeader.MAX_NAME_LENGTH, message = "Header name must not be longer than {max} characters." )

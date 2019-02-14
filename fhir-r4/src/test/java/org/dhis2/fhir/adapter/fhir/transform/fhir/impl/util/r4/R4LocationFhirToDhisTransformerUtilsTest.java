@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
@@ -104,9 +104,9 @@ public class R4LocationFhirToDhisTransformerUtilsTest
     @Test
     public void findHierarchy()
     {
-        final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint clientFhirEndpoint = new ClientFhirEndpoint();
         final FhirClient fhirClient = new FhirClient();
-        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
+        fhirClient.setFhirEndpoint( clientFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forR4();
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
@@ -136,7 +136,7 @@ public class R4LocationFhirToDhisTransformerUtilsTest
                 .addEntry( new Bundle.BundleEntryComponent().setResource( org4 ) );
         } )
             .when( hierarchicallyFhirResourceRepository )
-            .findWithParents( Mockito.eq( fhirClientResourceId ), Mockito.eq( FhirVersion.R4 ), Mockito.same( subscriptionFhirEndpoint ),
+            .findWithParents( Mockito.eq( fhirClientResourceId ), Mockito.eq( FhirVersion.R4 ), Mockito.same( clientFhirEndpoint ),
                 Mockito.eq( "Location" ), Mockito.eq( "3" ), Mockito.eq( "locationPartOf" ), Mockito.any() );
 
         final Reference org2Ref = new Reference( org2.getIdElement() );

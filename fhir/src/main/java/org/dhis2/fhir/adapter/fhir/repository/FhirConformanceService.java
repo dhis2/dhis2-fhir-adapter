@@ -28,26 +28,21 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseReference;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
+import org.hl7.fhir.instance.model.api.IBaseConformance;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.Set;
 
 /**
- * Facade for {@link FhirResourceRepository} to handle parent child relationships on
- * to request the complete hierarchy up to the root.
+ * Service that uses a cached capability statement to check for the FHIR conformance.
  *
  * @author volsch
  */
-public interface HierarchicallyFhirResourceRepository
+public interface FhirConformanceService
 {
     @Nonnull
-    IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint,
-        @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType, @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction );
+    IBaseConformance getBaseConformance( @Nonnull IGenericClient client );
+
+    boolean supportSearchParameters( @Nonnull IGenericClient client, @Nonnull String resourceType, @Nonnull Set<String> searchParameterNames );
 }

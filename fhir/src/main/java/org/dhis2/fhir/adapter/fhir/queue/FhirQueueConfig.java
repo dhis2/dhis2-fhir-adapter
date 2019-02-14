@@ -70,9 +70,6 @@ public class FhirQueueConfig
     @Nonnull
     protected ArtemisConfigurationCustomizer fhirArtemisConfigurationCustomizer()
     {
-        fhirClientConfig.getRestHookRequestQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-        repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-
         return configuration -> {
             configuration.addAddressesSetting( fhirClientConfig.getRestHookRequestQueue().getQueueName(), fhirClientConfig.getRestHookRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceQueue().getQueueName(), repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings() );

@@ -40,11 +40,11 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.event.AutoCreatedFhirClientResourceEvent;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -126,7 +126,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @CachePut( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, #transform}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform )
+    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform )
     {
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
@@ -149,7 +149,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @CachePut( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
+    public Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
     {
         return findRefreshed( fhirClientId, fhirVersion, fhirEndpoint, resourceType, resourceId, true );
     }
@@ -158,7 +158,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @Cacheable( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, true}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> find( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
+    public Optional<IBaseResource> find( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId )
     {
         return findRefreshed( fhirClientId, fhirVersion, fhirEndpoint, resourceType, resourceId );
     }
@@ -167,7 +167,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @CachePut( key = "{'findByIdentifier', #fhirClientId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    public Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
         return findByToken( fhirClientId, fhirVersion, fhirEndpoint, resourceType, "identifier", identifier );
     }
@@ -176,7 +176,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @Cacheable( key = "{'findByIdentifier', #fhirClientId, #fhirVersion, #resourceType, #identifier.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
+    public Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier )
     {
         return findRefreshedByIdentifier( fhirClientId, fhirVersion, fhirEndpoint, resourceType, identifier );
     }
@@ -185,7 +185,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @CachePut( key = "{'findByCode', #fhirClientId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    public Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
     {
         return findByToken( fhirClientId, fhirVersion, fhirEndpoint, resourceType, "code", code );
     }
@@ -194,7 +194,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @Cacheable( key = "{'findByCode', #fhirClientId, #fhirVersion, #resourceType, #code.toString()}", unless = "#result==null" )
     @Nonnull
     @Override
-    public Optional<IBaseResource> findByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
+    public Optional<IBaseResource> findByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code )
     {
         return findRefreshedByCode( fhirClientId, fhirVersion, fhirEndpoint, resourceType, code );
     }
@@ -349,7 +349,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     }
 
     @Nonnull
-    protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
+    protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
     {
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );

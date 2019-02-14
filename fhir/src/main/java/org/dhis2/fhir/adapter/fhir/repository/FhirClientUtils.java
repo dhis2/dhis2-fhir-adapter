@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,22 +29,36 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.EncodingEnum;
+import ca.uhn.fhir.rest.client.apache.ApacheHttpRequest;
+import ca.uhn.fhir.rest.client.api.IClientInterceptor;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.client.api.IHttpRequest;
+import ca.uhn.fhir.rest.client.api.IHttpResponse;
 import ca.uhn.fhir.rest.client.interceptor.AdditionalRequestHeadersInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 
 import javax.annotation.Nonnull;
+import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Utility class to create FHIR client with its required configuration.
+ * Utility class to create FHIR client with its required configuration. The
+ * class performs also caching of capability statements by the server URLs.
+ * Capability statements will never be refreshed once they have been fetched.
  *
  * @author volsch
  */
 public abstract class FhirClientUtils
 {
+    private static final JsonFormatClientInterceptor jsonFormatClientInterceptor = new JsonFormatClientInterceptor();
+
     @Nonnull
-    public static IGenericClient createClient( @Nonnull FhirContext fhirContext, @Nonnull SubscriptionFhirEndpoint fhirEndpoint )
+    public static IGenericClient createClient( @Nonnull FhirContext fhirContext, @Nonnull ClientFhirEndpoint fhirEndpoint )
     {
         final IGenericClient client = fhirContext.newRestfulGenericClient( fhirEndpoint.getBaseUrl() );
         if ( fhirEndpoint.isLogging() )
@@ -59,11 +73,94 @@ public abstract class FhirClientUtils
         }
         client.registerInterceptor( requestHeadersInterceptor );
 
+        if ( fhirEndpoint.isUseJsonFormat() )
+        {
+            client.setEncoding( EncodingEnum.JSON );
+            // use FHIR specification compliant format content type
+            client.registerInterceptor( jsonFormatClientInterceptor );
+        }
+
         return client;
     }
 
     private FhirClientUtils()
     {
         super();
+    }
+
+    protected static class JsonFormatClientInterceptor implements IClientInterceptor
+    {
+        private final static Pattern JSON_FORMAT_PATTERN = Pattern.compile( "[?&]_format=(json)(?:&|$|;)" );
+
+        @Override
+        public void interceptRequest( IHttpRequest theRequest )
+        {
+            final ApacheHttpRequest request = (ApacheHttpRequest) theRequest;
+            final HttpRequestBase baseRequest = request.getApacheRequest();
+            final URI uri = baseRequest.getURI();
+            try
+            {
+                baseRequest.setURI( new URI( replaceJsonFormat( uri.toASCIIString() ) ) );
+            }
+            catch ( Exception e )
+            {
+                throw new IllegalStateException( e );
+            }
+        }
+
+        @Override
+        public void interceptResponse( IHttpResponse theResponse )
+        {
+            // nothing to be done
+        }
+
+        protected static String replaceJsonFormat( String url )
+        {
+            return replaceJsonFormat( url, false );
+        }
+
+        private static String replaceJsonFormat( String url, boolean removeAll )
+        {
+            if ( StringUtils.isBlank( url ) )
+            {
+                return url;
+            }
+
+            final StringBuffer sb = new StringBuffer();
+            final Matcher m = JSON_FORMAT_PATTERN.matcher( url );
+            boolean found = false;
+            while ( m.find() )
+            {
+                final String begin = url.substring( m.start(), m.start( 1 ) );
+                final String end = url.substring( m.end( 1 ), m.end() );
+                if ( !found && !removeAll )
+                {
+                    m.appendReplacement( sb, begin + "application/fhir%2Bjson" + end );
+                    found = true;
+                }
+                else
+                {
+                    final String replacement = begin + end;
+                    switch ( replacement )
+                    {
+                        case "&_format=":
+                            m.appendReplacement( sb, "" );
+                            break;
+                        case "&_format=;":
+                            m.appendReplacement( sb, ";" );
+                            break;
+                        case "&_format=&":
+                            m.appendReplacement( sb, "&" );
+                            break;
+                        default:
+                            m.appendReplacement( sb, replacement );
+                            break;
+                    }
+                    found = true;
+                }
+            }
+            m.appendTail( sb );
+            return found ? replaceJsonFormat( sb.toString(), true ) : sb.toString();
+        }
     }
 }

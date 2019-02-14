@@ -31,11 +31,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryTest;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hamcrest.Matchers;
@@ -83,7 +83,7 @@ public class BeforeCreateSaveFhirClientValidatorTest extends AbstractJpaReposito
         dhisEndpoint.setAuthenticationMethod( AuthenticationMethod.BASIC );
         entity.setDhisEndpoint( dhisEndpoint );
 
-        final SubscriptionFhirEndpoint fhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint fhirEndpoint = new ClientFhirEndpoint();
         fhirEndpoint.setBaseUrl( "http://localhost:8082/baseDstu3" );
         fhirEndpoint.setHeaders( Collections.singletonList( new RequestHeader( "Authentication", "Bearer 987654321", false ) ) );
         entity.setFhirEndpoint( fhirEndpoint );
@@ -309,7 +309,7 @@ public class BeforeCreateSaveFhirClientValidatorTest extends AbstractJpaReposito
     @Test
     public void testFhirEndpointUrlLength() throws Exception
     {
-        entity.getFhirEndpoint().setBaseUrl( "http://" + StringUtils.repeat( 'a', SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH - 6 ) );
+        entity.getFhirEndpoint().setBaseUrl( "http://" + StringUtils.repeat( 'a', ClientFhirEndpoint.MAX_BASE_URL_LENGTH - 6 ) );
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "dhisEndpoint/password", null, "district" ) ) ) )

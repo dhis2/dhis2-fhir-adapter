@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository;
+package org.dhis2.fhir.adapter.fhir.repository.impl.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,26 +28,39 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseReference;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.repository.impl.AbstractFhirConformanceService;
+import org.hl7.fhir.instance.model.api.IBaseConformance;
+import org.hl7.fhir.r4.model.CapabilityStatement;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.Set;
 
 /**
- * Facade for {@link FhirResourceRepository} to handle parent child relationships on
- * to request the complete hierarchy up to the root.
+ * R4 based implementation of {@link AbstractFhirConformanceService}.
  *
  * @author volsch
  */
-public interface HierarchicallyFhirResourceRepository
+@Service( "r4FhirConformanceService" )
+public class R4FhirConformanceServiceImpl extends AbstractFhirConformanceService
 {
     @Nonnull
-    IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint,
-        @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType, @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction );
+    @Override
+    protected Class<? extends IBaseConformance> getBaseConformanceClass()
+    {
+        return CapabilityStatement.class;
+    }
+
+    @Override
+    protected boolean supportSearchParameters( @Nonnull IBaseConformance baseConformance, @Nonnull String resourceType, @Nonnull Set<String> searchParameterNames )
+    {
+        final CapabilityStatement capabilityStatement = (CapabilityStatement) baseConformance;
+        final CapabilityStatement.CapabilityStatementRestComponent restComponent = capabilityStatement.getRestFirstRep();
+        if ( restComponent.getSearchParam().stream().anyMatch( sp -> searchParameterNames.contains( sp.getName() ) ) )
+        {
+            return true;
+        }
+        return restComponent.getResource().stream().filter( r -> resourceType.equals( r.getType() ) )
+            .anyMatch( r -> r.getSearchParam().stream().anyMatch( sp -> searchParameterNames.contains( sp.getName() ) ) );
+    }
 }

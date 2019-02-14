@@ -248,8 +248,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   repository:
     # Queue that contains FHIR resource references that could not be processed
     # after multiple retries because of any error.
@@ -289,8 +287,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   # Settings for the retrieval of the synchronization data from DHIS2. The retrieved data
   # can be stored on connected server FHIR services.
   sync:
@@ -348,8 +344,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
     # Queue that contains DHIS2 resource references that could not be processed
     # after multiple retries because of any error.
     dhis-resource-dl-queue:
@@ -388,8 +382,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   # Settings of the transformation.
   transformation:
     # The JavaScript engine that is used to process rules, mappings and transformations.

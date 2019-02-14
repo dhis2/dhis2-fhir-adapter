@@ -31,10 +31,13 @@ package org.dhis2.fhir.adapter.fhir.server.impl.r4;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.FhirConformanceService;
 import org.dhis2.fhir.adapter.fhir.server.impl.AbstractSubscriptionResourceItemRetriever;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
+import org.hl7.fhir.instance.model.api.IBaseConformance;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.CapabilityStatement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -52,9 +55,9 @@ import java.util.stream.Collectors;
 @Component
 public class R4SubscriptionResourceItemRetrieverImpl extends AbstractSubscriptionResourceItemRetriever
 {
-    public R4SubscriptionResourceItemRetrieverImpl( @Nonnull @Qualifier( "fhirContextR4" ) FhirContext fhirContext )
+    public R4SubscriptionResourceItemRetrieverImpl( @Nonnull @Qualifier( "fhirContextR4" ) FhirContext fhirContext, @Nonnull @Qualifier( "r4FhirConformanceService" ) FhirConformanceService fhirConformanceService )
     {
-        super( fhirContext );
+        super( fhirContext, fhirConformanceService );
     }
 
     @Nonnull
@@ -62,6 +65,13 @@ public class R4SubscriptionResourceItemRetrieverImpl extends AbstractSubscriptio
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.R4_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<? extends IBaseConformance> getBaseConformanceClass()
+    {
+        return CapabilityStatement.class;
     }
 
     @Nonnull
