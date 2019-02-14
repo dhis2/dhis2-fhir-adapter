@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,4 +97,10 @@ public interface FhirToDhisTransformerContext extends TransformerContext
     @ScriptMethod( description = "Causes that the current transformation will fail with the specified message due to invalid data.",
         args = @ScriptMethodArg( value = "message", description = "The reason that specifies why the transformation data is invalid." ) )
     void fail( @Nonnull String message ) throws TransformerDataException;
+
+    @ScriptMethod( description = "Extracts the DHIS2 ID from a FHIR ID element. In order to extract the DHIS2 ID the FHIR request must use DHIS2 FHIR IDs.",
+        args = @ScriptMethodArg( value = "idElement", description = "The ID element from which the DHIS2 ID should be extracted." ),
+        returnDescription = "The DHIS2 ID of the corresponding DHIS2 resource." )
+    @Nullable
+    String extractDhisId( @Nullable IIdType idElement );
 }

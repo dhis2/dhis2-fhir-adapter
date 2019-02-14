@@ -31,7 +31,7 @@
 COMMENT ON TABLE fhir_subscription_resource IS 'Contains the payload of a subscription notification. On receipt of the notification this is inserted/merged into this table and when processing the data it is selected and deleted.';
 COMMENT ON COLUMN fhir_subscription_resource.id IS 'The unique ID of the payload of a subscription notification.';
 COMMENT ON COLUMN fhir_subscription_resource.created_at IS 'The timestamp when the data has been inserted or merged.';
-COMMENT ON COLUMN fhir_subscription_resource.fhir_server_resource_id IS 'References the FHIR server resource to which the notification belongs to.';
+COMMENT ON COLUMN fhir_subscription_resource.fhir_server_resource_id IS 'References the FHIR client resource to which the notification belongs to.';
 COMMENT ON COLUMN fhir_subscription_resource.fhir_resource_id IS 'The ID of the remote FHIR resource (without resource type).';
 COMMENT ON COLUMN fhir_subscription_resource.content_type IS 'The content type of the payload or NULL if the content type must be guessed.';
 COMMENT ON COLUMN fhir_subscription_resource.fhir_version IS 'The FHIR version of the received content type.';

@@ -61,18 +61,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * FHIR to DHIS2 transformer utility methods for retrieving data from a server FHIR service.
+ * FHIR to DHIS2 transformer utility methods for retrieving data from a client FHIR service.
  *
  * @author volsch
  */
 @Scriptable
 @ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.IMP, var = AbstractFhirClientFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities for retrieving data from a FHIR server." )
+    description = "Utilities for retrieving data from a FHIR client." )
 public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
@@ -124,8 +125,14 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         @Nonnull String referencedResourceParameter, @Nonnull String referencedResourceType, @Nonnull IIdType referencedResourceId,
         String... filter )
     {
+        final Optional<IGenericClient> client = createFhirClient( true );
+        if ( !client.isPresent() )
+        {
+            return null;
+        }
+
         final Map<String, List<String>> filterMap = createFilter( referencedResourceParameter, referencedResourceType, referencedResourceId );
-        final IBaseBundle bundle = createFhirClient().search().forResource( resourceName )
+        final IBaseBundle bundle = client.get().search().forResource( resourceName )
             .cacheControl( new CacheControlDirective().setNoCache( true ).setMaxResults( 1 ) ).count( 1 )
             .whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
         return getFirstRep( bundle );
@@ -137,6 +144,12 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         @Nonnull String codeParameter, @Nullable Object mappedCodes, @Nonnull Function<IBaseResource, Collection<SystemCodeValue>> systemCodeValuesMapper,
         @Nullable Integer maxCount, String... filter )
     {
+        final Optional<IGenericClient> client = createFhirClient( true );
+        if ( !client.isPresent() )
+        {
+            return null;
+        }
+
         final List<String> convertedMappedCodes = ScriptArgUtils.extractStringArray( mappedCodes );
         if ( (convertedMappedCodes == null) || convertedMappedCodes.isEmpty() )
         {
@@ -154,8 +167,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         int processedResources = 0;
         int foundMinIndex = Integer.MAX_VALUE;
         IBaseResource foundResource = null;
-        final IGenericClient client = createFhirClient();
-        IBaseBundle bundle = client.search().forResource( resourceName )
+        IBaseBundle bundle = client.get().search().forResource( resourceName )
             .cacheControl( new CacheControlDirective().setNoCache( true ).setNoStore( true ).setMaxResults( resultingMaxCount ) )
             .count( resultingMaxCount ).whereMap( filterMap ).sort().descending( "_lastUpdated" ).returnBundle( getBundleClass() ).execute();
         do
@@ -187,7 +199,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
             }
             else
             {
-                bundle = hasNextLink( bundle ) ? client.loadPage().next( bundle ).execute() : null;
+                bundle = hasNextLink( bundle ) ? client.get().loadPage().next( bundle ).execute() : null;
             }
         }
         while ( bundle != null );
@@ -222,7 +234,7 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
     }
 
     @Nonnull
-    protected IGenericClient createFhirClient()
+    protected Optional<IGenericClient> createFhirClient( boolean requiresSort )
     {
         final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
         final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
@@ -232,6 +244,11 @@ public abstract class AbstractFhirClientFhirToDhisTransformerUtils extends Abstr
         }
         final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );
-        return FhirClientUtils.createClient( fhirContext, fhirClientResource.getFhirClient().getFhirEndpoint() );
+        if ( !fhirClientResource.getFhirClient().getFhirEndpoint().isUseRemote() ||
+            (requiresSort && !fhirClientResource.getFhirClient().getFhirEndpoint().isSortSupported()) )
+        {
+            return Optional.empty();
+        }
+        return Optional.of( FhirClientUtils.createClient( fhirContext, fhirClientResource.getFhirClient().getFhirEndpoint() ) );
     }
 }

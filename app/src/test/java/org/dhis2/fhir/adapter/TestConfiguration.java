@@ -48,6 +48,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,8 +58,6 @@ import org.springframework.security.authentication.dao.AbstractUserDetailsAuthen
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -72,7 +72,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
  * @author volsch
  */
 @Configuration
-@AutoConfigureAfter( HibernateJpaAutoConfiguration.class )
+@AutoConfigureAfter( { HibernateJpaAutoConfiguration.class, DataSourceAutoConfiguration.class, ArtemisAutoConfiguration.class } )
 public class TestConfiguration
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -100,8 +100,6 @@ public class TestConfiguration
     @Autowired
     private SetupService setupService;
 
-    private WireMockServer fhirMockServer;
-
     private UUID fhirClientId;
 
     private Map<FhirResourceType, UUID> fhirClientResourceIds;
@@ -109,6 +107,8 @@ public class TestConfiguration
     private UUID fhirClientIdR4;
 
     private Map<FhirResourceType, UUID> fhirClientResourceIdsR4;
+
+    private boolean initialized;
 
     @Nonnull
     public UUID getFhirClientId( @Nonnull FhirVersion fhirVersion )
@@ -181,18 +181,21 @@ public class TestConfiguration
     }
 
     @Nonnull
-    @Bean
+    @Bean( destroyMethod = "stop" )
     protected WireMockServer fhirMockServer()
     {
+        final WireMockServer fhirMockServer = new WireMockServer( wireMockConfig().dynamicPort() );
+        fhirMockServer.start();
+        logger.info( "Started WireMock client for FHIR requests on port {}.", fhirMockServer.port() );
         return fhirMockServer;
     }
 
-    @PostConstruct
-    protected void postConstruct()
+    public void init( @Nonnull WireMockServer fhirMockServer )
     {
-        fhirMockServer = new WireMockServer( wireMockConfig().dynamicPort() );
-        fhirMockServer.start();
-        logger.info( "Started WireMock server for FHIR requests on port {}.", fhirMockServer.port() );
+        if ( initialized )
+        {
+            return;
+        }
 
         final Setup setup = new Setup();
 
@@ -247,9 +250,9 @@ public class TestConfiguration
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
-            setupResult = setupService.apply( setup );
+            setupResult = setupService.apply( setup, false );
             setupResultR4 = setupService.createFhirClient( setupR4.getFhirClientSetup(), FhirVersion.R4, "_R4",
-                setupResult.getOrganizationSystem(), setupResult.getPatientSystem() );
+                setupResult.getOrganizationSystem(), setupResult.getPatientSystem(), false );
             Assert.assertTrue( setupService.hasCompletedSetup() );
         }
         finally
@@ -261,14 +264,7 @@ public class TestConfiguration
         this.fhirClientResourceIds = setupResult.getFhirClientResourceIds();
         this.fhirClientIdR4 = setupResultR4.getFhirClientId();
         this.fhirClientResourceIdsR4 = setupResultR4.getFhirClientResourceIds();
-    }
 
-    @PreDestroy
-    protected void preDestroy()
-    {
-        if ( fhirMockServer != null )
-        {
-            fhirMockServer.stop();
-        }
+        initialized = true;
     }
 }

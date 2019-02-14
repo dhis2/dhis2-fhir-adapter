@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * Configuration for accepting and processing server web hook requests.
+ * Configuration for accepting and processing client web hook requests.
  *
  * @author volsch
  */

@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The repository that is used to store FHIR Resources.
@@ -40,5 +41,6 @@ import javax.annotation.Nonnull;
  */
 public interface FhirRepository
 {
-    void save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource );
+    @Nullable
+    FhirRepositoryOperationOutcome save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation );
 }

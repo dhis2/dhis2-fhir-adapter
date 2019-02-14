@@ -40,7 +40,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The unique ID of a distinct version of a stored server FHIR resource.
+ * The unique ID of a distinct version of a stored client FHIR resource.
  *
  * @author volsch
  */

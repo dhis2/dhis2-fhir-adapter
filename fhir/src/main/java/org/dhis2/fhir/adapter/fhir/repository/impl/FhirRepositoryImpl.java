@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
 import com.google.common.collect.ArrayListMultimap;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
@@ -39,7 +38,8 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
-import org.dhis2.fhir.adapter.fhir.data.model.SubscriptionFhirResource;
+import org.dhis2.fhir.adapter.fhir.client.ProcessedFhirItemInfoUtils;
+import org.dhis2.fhir.adapter.fhir.client.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
@@ -49,12 +49,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationOutcome;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
-import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
-import org.dhis2.fhir.adapter.fhir.server.ProcessedFhirItemInfoUtils;
-import org.dhis2.fhir.adapter.fhir.server.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -65,19 +64,13 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundE
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.WritableFhirRequest;
-import org.dhis2.fhir.adapter.fhir.util.FhirParserUtils;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
-import org.dhis2.fhir.adapter.queue.RetryQueueDeliveryException;
 import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,13 +78,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -102,7 +93,6 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Component
-@ConditionalOnProperty( name = "dhis2.fhir-adapter.import-enabled" )
 public class FhirRepositoryImpl implements FhirRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -118,10 +108,6 @@ public class FhirRepositoryImpl implements FhirRepository
     private final FhirClientSystemRepository fhirClientSystemRepository;
 
     private final FhirClientResourceRepository fhirClientResourceRepository;
-
-    private final SubscriptionFhirResourceRepository subscriptionFhirResourceRepository;
-
-    private final StoredFhirResourceService storedItemService;
 
     private final FhirResourceRepository fhirResourceRepository;
 
@@ -151,8 +137,6 @@ public class FhirRepositoryImpl implements FhirRepository
         this.requestCacheService = requestCacheService;
         this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.fhirClientResourceRepository = fhirClientResourceRepository;
-        this.subscriptionFhirResourceRepository = subscriptionFhirResourceRepository;
-        this.storedItemService = storedItemService;
         this.fhirResourceRepository = fhirResourceRepository;
         this.fhirToDhisTransformerService = fhirToDhisTransformerService;
         this.dhisResourceRepository = dhisResourceRepository;
@@ -160,17 +144,25 @@ public class FhirRepositoryImpl implements FhirRepository
     }
 
     @Override
-    public void save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
+    @Nullable
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class } )
+    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    public FhirRepositoryOperationOutcome save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation )
     {
-        authorizationContext.setAuthorization( createAuthorization( fhirClientResource.getFhirClient() ) );
-        try
+        // if no FHIR repository operation is specified, DHIS2 authorization has not yet been set
+        if ( fhirRepositoryOperation == null )
         {
-            saveRetriedWithoutTrackedEntityInstance( fhirClientResource, resource );
+            authorizationContext.setAuthorization( createAuthorization( fhirClientResource.getFhirClient() ) );
+            try
+            {
+                return saveRetriedWithoutTrackedEntityInstance( fhirClientResource, resource );
+            }
+            finally
+            {
+                authorizationContext.resetAuthorization();
+            }
         }
-        finally
-        {
-            authorizationContext.resetAuthorization();
-        }
+        return saveInternally( fhirClientResource, resource, fhirRepositoryOperation, false );
     }
 
     @Nonnull
@@ -184,126 +176,16 @@ public class FhirRepositoryImpl implements FhirRepository
             (fhirClient.getDhisEndpoint().getUsername() + ":" + fhirClient.getDhisEndpoint().getPassword()).getBytes( StandardCharsets.UTF_8 ) ) );
     }
 
-    @HystrixCommand( ignoreExceptions = RetryQueueDeliveryException.class )
-    @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    @JmsListener( destination = "#{@fhirRepositoryConfig.fhirResourceQueue.queueName}",
-        concurrency = "#{@fhirRepositoryConfig.fhirResourceQueue.listener.concurrency}" )
-    public void receive( @Nonnull FhirResource fhirResource )
+    @Nullable
+    protected FhirRepositoryOperationOutcome saveRetriedWithoutTrackedEntityInstance( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
     {
-        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
+        FhirRepositoryOperationOutcome outcome;
         try
         {
-            receiveAuthenticated( fhirResource );
-        }
-        finally
-        {
-            SecurityContextHolder.clearContext();
-        }
-    }
-
-    protected void receiveAuthenticated( @Nonnull FhirResource fhirResource )
-    {
-        final long currentProcessedCount = processedCount.incrementAndGet();
-
-        final FhirClientResource fhirClientResource =
-            fhirClientResourceRepository.findOneByIdCached( fhirResource.getFhirClientResourceId() ).orElse( null );
-        if ( fhirClientResource == null )
-        {
-            logger.warn( "FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource {}.",
-                fhirResource.getFhirClientResourceId(), fhirResource.getId() );
-            return;
-        }
-
-        final FhirClient fhirClient = fhirClientResource.getFhirClient();
-        final SubscriptionFhirResource subscriptionFhirResource = subscriptionFhirResourceRepository.findResource( fhirClientResource, fhirResource.getIdPart() ).orElse( null );
-        final Optional<IBaseResource> resource;
-        if ( fhirResource.isPersistedDataItem() )
-        {
-            resource = getParsedFhirResource( fhirResource, fhirClientResource, subscriptionFhirResource );
-        }
-        else
-        {
-            resource = fhirResourceRepository.findRefreshed(
-                fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
-                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId() );
-        }
-
-        if ( resource.isPresent() )
-        {
-            final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource.get() );
-            if ( storedItemService.contains( fhirClient, processedItemInfo.toIdString( Instant.now() ) ) )
+            outcome = saveRetried( fhirClientResource, resource, null, false );
+            if ( outcome == null )
             {
-                logger.info( "FHIR resource {} of FHIR client resource {} has already been stored.",
-                    resource.get().getIdElement().toUnqualified(), fhirClientResource.getId() );
-            }
-            else
-            {
-                try ( final MDC.MDCCloseable c = MDC.putCloseable( "fhirId", fhirClientResource.getId() + ":" + resource.get().getIdElement().toUnqualifiedVersionless() ) )
-                {
-                    logger.info( "Processing FHIR resource {} of FHIR client resource {} (persisted={}, processed={}).",
-                        resource.get().getIdElement().toUnqualified(), fhirClientResource.getId(), fhirResource.isPersistedDataItem(), currentProcessedCount );
-                    try
-                    {
-                        save( fhirClientResource, resource.get() );
-                    }
-                    catch ( DhisConflictException e )
-                    {
-                        logger.warn( "Processing of data of FHIR resource caused a conflict on DHIS2. Skipping FHIR resource because of the occurred conflict: {}", e.getMessage() );
-                    }
-                    catch ( TransformerDataException | TransformerMappingException e )
-                    {
-                        logger.warn( "Processing of data of FHIR resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
-                        throw new RetryQueueDeliveryException( e );
-                    }
-                    logger.info( "Processed FHIR resource {} for FHIR client resource {}.",
-                        resource.get().getIdElement().toUnqualifiedVersionless(), fhirClientResource.getId() );
-                }
-                storedItemService.stored( fhirClient, processedItemInfo.toIdString( Instant.now() ) );
-            }
-        }
-        else if ( fhirResource.isPersistedDataItem() )
-        {
-            logger.debug( "Persisted FHIR resource {}/{} for FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId() );
-        }
-        else
-        {
-            logger.info( "FHIR resource {}/{} for FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId() );
-        }
-
-        // must not be deleted before since it is still required when a retry must be performed
-        if ( subscriptionFhirResource != null )
-        {
-            subscriptionFhirResourceRepository.deleteEnqueued( subscriptionFhirResource );
-        }
-    }
-
-    @Nonnull
-    private Optional<IBaseResource> getParsedFhirResource( @Nonnull FhirResource fhirResource, @Nonnull FhirClientResource fhirClientResource, @Nullable SubscriptionFhirResource subscriptionFhirResource )
-    {
-        final Optional<IBaseResource> resource;
-        if ( subscriptionFhirResource == null )
-        {
-            resource = Optional.empty();
-        }
-        else
-        {
-            final FhirContext fhirContext = fhirResourceRepository.findFhirContext( subscriptionFhirResource.getFhirVersion() )
-                .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + subscriptionFhirResource.getFhirVersion() + " has not been configured." ) );
-            resource = Optional.of( Objects.requireNonNull( fhirResourceRepository.transform( fhirClientResource.getFhirClient().getId(), subscriptionFhirResource.getFhirVersion(),
-                FhirParserUtils.parse( fhirContext, subscriptionFhirResource.getFhirResource(), subscriptionFhirResource.getContentType() ) ) ) );
-        }
-        return resource;
-    }
-
-    protected boolean saveRetriedWithoutTrackedEntityInstance( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
-    {
-        try
-        {
-            if ( !saveRetried( fhirClientResource, resource, false ) )
-            {
-                return false;
+                return null;
             }
         }
         catch ( TrackedEntityInstanceNotFoundException e )
@@ -314,21 +196,22 @@ public class FhirRepositoryImpl implements FhirRepository
             {
                 logger.info( "Tracked entity instance {} could not be created for {}. Ignoring FHIR resource.",
                     e.getResource().getIdElement().toUnqualifiedVersionless(), resource.getIdElement().toUnqualifiedVersionless() );
-                return false;
+                return null;
             }
 
             try
             {
-                if ( !saveRetried( fhirClientResource, resource, false ) )
+                outcome = saveRetried( fhirClientResource, resource, null, false );
+                if ( outcome == null )
                 {
-                    return false;
+                    return null;
                 }
             }
             catch ( TrackedEntityInstanceNotFoundException e2 )
             {
                 logger.info( "Tracked entity instance {} could not be found for {}. Ignoring FHIR resource.",
                     e2.getResource().getIdElement().toUnqualifiedVersionless(), resource.getIdElement().toUnqualifiedVersionless() );
-                return false;
+                return null;
             }
         }
 
@@ -347,16 +230,17 @@ public class FhirRepositoryImpl implements FhirRepository
             }
         }
 
-        return true;
+        return outcome;
     }
 
-    protected boolean saveContainedResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
+    @Nullable
+    protected FhirRepositoryOperationOutcome saveContainedResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
     {
         final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
         if ( fhirResourceType == null )
         {
             logger.info( "FHIR Resource type for {} is not available. Contained FHIR Resource cannot be processed." );
-            return false;
+            return null;
         }
 
         final FhirClientResource containedFhirClientResource =
@@ -365,10 +249,10 @@ public class FhirRepositoryImpl implements FhirRepository
         {
             logger.info( "FHIR client {} does not define a resource {}. Contained FHIR Resource cannot be processed.",
                 fhirClientResource.getFhirClient().getId(), fhirResourceType );
-            return false;
+            return null;
         }
 
-        return saveRetried( containedFhirClientResource, resource, true );
+        return saveRetried( containedFhirClientResource, resource, null, true );
     }
 
     protected boolean createTrackedEntityInstance( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource )
@@ -401,18 +285,19 @@ public class FhirRepositoryImpl implements FhirRepository
             return false;
         }
 
-        saveRetried( trackedEntityFhirClientResource, optionalRefreshedResource.get(), false );
+        saveRetried( trackedEntityFhirClientResource, optionalRefreshedResource.get(), null, false );
         return true;
     }
 
-    protected boolean saveRetried( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, boolean contained )
+    @Nullable
+    protected FhirRepositoryOperationOutcome saveRetried( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation, boolean contained )
     {
         DhisConflictException lastException = null;
         for ( int i = 0; i < MAX_CONFLICT_RETRIES + 1; i++ )
         {
             try
             {
-                return saveInternally( fhirClientResource, resource, contained );
+                return saveInternally( fhirClientResource, resource, fhirRepositoryOperation, contained );
             }
             catch ( DhisConflictException e )
             {
@@ -423,15 +308,15 @@ public class FhirRepositoryImpl implements FhirRepository
         throw lastException;
     }
 
-    protected boolean saveInternally( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, boolean contained )
+    @Nullable
+    protected FhirRepositoryOperationOutcome saveInternally( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation, boolean contained )
     {
         final Collection<FhirClientSystem> systems = fhirClientSystemRepository.findByFhirClient( fhirClientResource.getFhirClient() );
 
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
-        fhirRequest.setDhisUsername( fhirClientResource.getFhirClient().getDhisEndpoint().getUsername() );
-        fhirRequest.setRequestMethod( FhirRequestMethod.PUT );
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setLastUpdated( getLastUpdated( resource ) );
+        fhirRequest.setResourceId( (resource.getMeta() == null) ? null : resource.getIdElement().getIdPart() );
         fhirRequest.setResourceVersionId( (resource.getMeta() == null) ? null : resource.getMeta().getVersionId() );
         fhirRequest.setFhirClientResourceId( fhirClientResource.getId() );
         fhirRequest.setVersion( fhirClientResource.getFhirClient().getFhirVersion() );
@@ -441,8 +326,26 @@ public class FhirRepositoryImpl implements FhirRepository
             .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
+        if ( fhirRepositoryOperation == null )
+        {
+            // since automatic parallel processing of multiple resources take place synchronization must be performed
+            fhirRequest.setSync( true );
+            fhirRequest.setDhisUsername( fhirClientResource.getFhirClient().getDhisEndpoint().getUsername() );
+        }
+        else
+        {
+            fhirRequest.setRequestMethod( getRequestMethod( fhirRepositoryOperation ) );
+            fhirRequest.setDhisFhirId( true );
+            fhirRequest.setFirstRuleOnly( true );
+            if ( fhirRepositoryOperation.getDhisFhirResourceId() != null )
+            {
+                fhirRequest.setDhisResourceType( fhirRepositoryOperation.getDhisFhirResourceId().getType() );
+                fhirRequest.setDhisResourceId( fhirRepositoryOperation.getDhisFhirResourceId().getId() );
+            }
+        }
+
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );
-        boolean saved = false;
+        FhirRepositoryOperationOutcome operationOutcome = null;
         FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, fhirClientResource, resource, contained );
         do
         {
@@ -459,17 +362,39 @@ public class FhirRepositoryImpl implements FhirRepository
                 }
                 else
                 {
-                    dhisResourceRepository.save( outcome.getResource() );
-                    fhirDhisAssignmentRepository.saveDhisResourceId(
-                        outcome.getRule(), fhirClientResource.getFhirClient(),
-                        resource.getIdElement(), outcome.getResource().getResourceId() );
-                    saved = true;
+                    final DhisResource persistedDhisResource =
+                        dhisResourceRepository.save( outcome.getResource() );
+                    if ( fhirRepositoryOperation == null )
+                    {
+                        fhirDhisAssignmentRepository.saveDhisResourceId(
+                            outcome.getRule(), fhirClientResource.getFhirClient(),
+                            resource.getIdElement(), outcome.getResource().getResourceId() );
+                    }
+                    if ( operationOutcome == null )
+                    {
+                        operationOutcome = new FhirRepositoryOperationOutcome(
+                            DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() ) );
+                    }
                     transformerRequest = outcome.getNextTransformerRequest();
                 }
             }
         }
-        while ( transformerRequest != null );
-        return saved;
+        while ( (transformerRequest != null) && !fhirRequest.isFirstRuleOnly() );
+        return operationOutcome;
+    }
+
+    @Nonnull
+    private FhirRequestMethod getRequestMethod( @Nonnull FhirRepositoryOperation fhirRepositoryOperation )
+    {
+        switch ( fhirRepositoryOperation.getOperationType() )
+        {
+            case CREATE:
+                return FhirRequestMethod.CREATE;
+            case UPDATE:
+                return FhirRequestMethod.UPDATE;
+            default:
+                throw new AssertionError( "Unhandled operation type: " + fhirRepositoryOperation.getOperationType() );
+        }
     }
 
     @Nullable

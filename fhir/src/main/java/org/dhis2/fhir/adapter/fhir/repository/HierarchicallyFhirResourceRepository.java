@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseReference;
@@ -48,6 +48,6 @@ import java.util.function.Function;
 public interface HierarchicallyFhirResourceRepository
 {
     @Nonnull
-    IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint,
+    IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint,
         @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType, @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction );
 }

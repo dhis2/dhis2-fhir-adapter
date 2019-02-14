@@ -71,7 +71,7 @@ public class AuthorizedRestTemplate extends AbstractSessionCookieRestTemplate
 
     /**
      * @param authorizationContext the authorization context that returns the authorization that should be used in the current scope.
-     * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a server failure.
+     * @param wwwAuthenticates     the WWW authenticate headers that should be included in thrown {@link UnauthorizedException} in case of such a client failure.
      * @param cookieStore          the cookie store in which session cookies can be stored and retrieved.
      */
     public AuthorizedRestTemplate( @Nonnull AuthorizationContext authorizationContext, @Nonnull List<WwwAuthenticate> wwwAuthenticates, @Nonnull RestTemplateCookieStore cookieStore )

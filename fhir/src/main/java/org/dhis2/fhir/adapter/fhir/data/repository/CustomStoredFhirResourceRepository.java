@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.fhir.data.model.StoredFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 
 /**
- * Custom repository for stored server FHIR resources {@link StoredFhirResource}.
+ * Custom repository for stored client FHIR resources {@link StoredFhirResource}.
  */
 public interface CustomStoredFhirResourceRepository extends StoredItemRepository<StoredFhirResource, StoredFhirResourceId, FhirClient>
 {

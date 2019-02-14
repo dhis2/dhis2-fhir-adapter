@@ -35,19 +35,14 @@ import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.metadata.repository.DhisSyncGroupRepository;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.sync.DhisResourceQueueItem;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
-import org.dhis2.fhir.adapter.fhir.repository.OptimisticFhirResourceLockException;
-import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
@@ -56,14 +51,9 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.WritableDhisRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
-import org.dhis2.fhir.adapter.queue.RetryQueueDeliveryException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +62,6 @@ import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -81,7 +70,6 @@ import java.util.Set;
  * @author volsch
  */
 @Component
-@ConditionalOnProperty( name = "dhis2.fhir-adapter.export-enabled" )
 public class DhisRepositoryImpl implements DhisRepository
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -93,10 +81,6 @@ public class DhisRepositoryImpl implements DhisRepository
     private final LockManager lockManager;
 
     private final RequestCacheService requestCacheService;
-
-    private final FhirClientSystemRepository fhirClientSystemRepository;
-
-    private final DhisSyncGroupRepository dhisSyncGroupRepository;
 
     private final StoredDhisResourceService storedItemService;
 
@@ -113,8 +97,6 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull Authorization systemDhis2Authorization,
         @Nonnull LockManager lockManager,
         @Nonnull RequestCacheService requestCacheService,
-        @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
-        @Nonnull DhisSyncGroupRepository dhisSyncGroupRepository,
         @Nonnull StoredDhisResourceService storedItemService,
         @Nonnull DhisResourceRepository dhisResourceRepository,
         @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
@@ -125,8 +107,6 @@ public class DhisRepositoryImpl implements DhisRepository
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.lockManager = lockManager;
         this.requestCacheService = requestCacheService;
-        this.fhirClientSystemRepository = fhirClientSystemRepository;
-        this.dhisSyncGroupRepository = dhisSyncGroupRepository;
         this.storedItemService = storedItemService;
         this.dhisResourceRepository = dhisResourceRepository;
         this.dhisToFhirTransformerService = dhisToFhirTransformerService;
@@ -134,7 +114,9 @@ public class DhisRepositoryImpl implements DhisRepository
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, MissingDhisResourceException.class } )
     @Override
+    @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public void save( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )
     {
         authorizationContext.setAuthorization( systemDhis2Authorization );
@@ -146,106 +128,6 @@ public class DhisRepositoryImpl implements DhisRepository
         {
             authorizationContext.resetAuthorization();
         }
-    }
-
-    @HystrixCommand( ignoreExceptions = RetryQueueDeliveryException.class )
-    @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    @JmsListener( destination = "#{@dhisSyncConfig.dhisResourceQueue.queueName}",
-        concurrency = "#{@dhisSyncConfig.dhisResourceQueue.listener.concurrency}" )
-    public void receive( @Nonnull DhisResourceQueueItem queueItem )
-    {
-        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
-        try
-        {
-            receiveAuthenticated( queueItem );
-        }
-        finally
-        {
-            SecurityContextHolder.clearContext();
-        }
-    }
-
-    protected void receiveAuthenticated( @Nonnull DhisResourceQueueItem queueItem )
-    {
-        logger.info( "Processing DHIS resource {} of sync group {}.", queueItem.getId(), queueItem.getDataGroupId() );
-        final DhisSyncGroup syncGroup =
-            dhisSyncGroupRepository.findByIdCached( queueItem.getDataGroupId().getId() ).orElse( null );
-        if ( syncGroup == null )
-        {
-            logger.warn( "Sync group {} is no longer available. Skipping processing of updated DHIS resource {}.",
-                queueItem.getDataGroupId(), queueItem.getId() );
-            return;
-        }
-
-        final Optional<? extends DhisResource> resource;
-        authorizationContext.setAuthorization( systemDhis2Authorization );
-        try
-        {
-            final DhisResourceId resourceId = Objects.requireNonNull( DhisResourceId.parse( queueItem.getId() ) );
-            if ( queueItem.isDeleted() )
-            {
-                resource = dhisResourceRepository.findRefreshedDeleted( resourceId );
-            }
-            else
-            {
-                resource = dhisResourceRepository.findRefreshed( resourceId );
-            }
-        }
-        finally
-        {
-            authorizationContext.resetAuthorization();
-        }
-
-        if ( resource.isPresent() )
-        {
-            final ProcessedItemInfo processedItemInfo = getProcessedItemInfo( resource.get() );
-            if ( storedItemService.contains( syncGroup, processedItemInfo.toIdString( Instant.now() ) ) )
-            {
-                logger.info( "DHIS resource {} of sync group {} has already been stored.",
-                    resource.get().getResourceId(), syncGroup.getId() );
-            }
-            else
-            {
-                try ( final MDC.MDCCloseable c = MDC.putCloseable( "dhisId", syncGroup.getId() + ":" + resource.get().getResourceId() ) )
-                {
-                    logger.info( "Processing DHIS resource {} of sync group {}.", resource.get().getResourceId(), syncGroup.getId() );
-                    try
-                    {
-                        save( syncGroup, resource.get() );
-                    }
-                    catch ( MissingDhisResourceException e )
-                    {
-                        // retrying this issue will result in the same issue most likely
-                        logger.warn( "Processing of data of DHIS resource caused a transformation error because of a missing DHIS resource {} that could not be created. Transformation will not be retried.", e.getDhisResourceId() );
-                    }
-                    catch ( TransformerDataException | TransformerMappingException e )
-                    {
-                        logger.warn( "Processing of data of DHIS resource caused a transformation error. Retrying processing later because of resolvable issue: {}", e.getMessage() );
-                        throw new RetryQueueDeliveryException( e );
-                    }
-                    catch ( OptimisticFhirResourceLockException e )
-                    {
-                        logger.debug( e.getMessage(), e );
-                        logger.info( "Processing of data of DHIS resource caused an optimistic locking error. Retrying processing later because of resolvable issue." );
-                        throw new RetryQueueDeliveryException( e );
-                    }
-                    logger.info( "Processed DHIS resource {} for sync group {}.", resource.get().getResourceId(), syncGroup.getId() );
-                }
-                storedItemService.stored( syncGroup, processedItemInfo.toIdString( Instant.now() ) );
-            }
-        }
-        else
-        {
-            logger.info( "DHIS resource {} for sync group {} is no longer available. Skipping processing of updated DHIS resource.",
-                queueItem.getId(), syncGroup.getId() );
-        }
-    }
-
-    @Nonnull
-    private ProcessedItemInfo getProcessedItemInfo( @Nonnull DhisResource resource )
-    {
-        return new ProcessedItemInfo( resource.getResourceId().toString(),
-            Objects.requireNonNull( resource.getLastUpdated() ).toInstant(), resource.isDeleted() );
     }
 
     protected boolean saveInternallyWithMissingDhisResources( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource, @Nonnull Set<DhisResourceId> missingDhisResourceIds, boolean initial )
@@ -293,6 +175,13 @@ public class DhisRepositoryImpl implements DhisRepository
             storedItemService.stored( syncGroup, processedItemInfo.toIdString( Instant.now() ) );
         }
         return result;
+    }
+
+    @Nonnull
+    private ProcessedItemInfo getProcessedItemInfo( @Nonnull DhisResource resource )
+    {
+        return new ProcessedItemInfo( resource.getResourceId().toString(),
+            Objects.requireNonNull( resource.getLastUpdated() ).toInstant(), resource.isDeleted() );
     }
 
     protected boolean saveInternally( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )

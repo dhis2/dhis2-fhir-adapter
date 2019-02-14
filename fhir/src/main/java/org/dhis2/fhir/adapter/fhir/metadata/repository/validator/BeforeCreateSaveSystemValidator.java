@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,10 @@ public class BeforeCreateSaveSystemValidator implements Validator
         if ( StringUtils.isBlank( system.getCode() ) )
         {
             errors.rejectValue( "code", "System.code.blank", "Code must not be blank." );
+        }
+        else if ( system.getCode().startsWith( System.DHIS2_FHIR_ADAPTER_CODE_PREFIX ) )
+        {
+            errors.rejectValue( "code", "System.code.reserved", new Object[]{ System.DHIS2_FHIR_ADAPTER_CODE_PREFIX }, "Adapter defined systems (prefix {1}) cannot be created or updated." );
         }
         if ( StringUtils.length( system.getCode() ) > System.MAX_CODE_LENGTH )
         {

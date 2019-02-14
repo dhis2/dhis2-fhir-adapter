@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
@@ -57,10 +58,30 @@ public interface FhirRequest
     @ScriptMethod( description = "Returns the processed FHIR resource type as Java enumeration (e.g. RELATED_PERSON as enum constant)." )
     FhirResourceType getResourceType();
 
+    @ScriptMethod( description = "Returns if the FHIR resources contains DHIS2 IDs. Otherwise FHIR resources contain IDs of the remote system." )
+    boolean isDhisFhirId();
+
+    @ScriptMethod( description = "Returns if only the first matching rule is applied and no further rules afterwards." )
+    boolean isFirstRuleOnly();
+
     @Nullable
+    @ScriptMethod( description = "Returns the ID of the rule that should be applied or null if normal rule processing should take place." )
+    UUID getRuleId();
+
+    @Nullable
+    @ScriptMethod( description = "Returns the resource type of the DHIS2 resource." )
+    DhisResourceType getDhisResourceType();
+
+    @Nullable
+    @ScriptMethod( description = "Returns the ID of the DHIS2 resource that should be processed or null if this must be evaluated by rules." )
+    String getDhisResourceId();
+
+    @Nullable
+    @ScriptMethod( description = "Returns the FHIR resource ID of the request." )
     String getResourceId();
 
     @Nullable
+    @ScriptMethod( description = "Returns the FHIR resource version ID of the request (versioning may not be supported)." )
     String getResourceVersionId();
 
     @Nullable
@@ -71,11 +92,11 @@ public interface FhirRequest
     @ScriptMethod( description = "Returns the FHIR version of the processed FHIR resource as Java enumeration (e.g. DSTU3 as enum constant)." )
     FhirVersion getVersion();
 
-    boolean isFhirClient();
-
     @Nullable
     @ScriptMethod( description = "Returns the code of the FHIR client that caused the execution of the current transformation." )
     String getFhirClientCode();
+
+    boolean isSync();
 
     @Nullable
     UUID getFhirClientResourceId();

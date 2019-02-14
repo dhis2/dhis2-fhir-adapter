@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -86,6 +87,46 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     }
 
     @Override
+    public boolean isSync()
+    {
+        return delegate.isSync();
+    }
+
+    @Override
+    public boolean isDhisFhirId()
+    {
+        return delegate.isDhisFhirId();
+    }
+
+    @Override
+    public boolean isFirstRuleOnly()
+    {
+        return delegate.isFirstRuleOnly();
+    }
+
+    @Override
+    @Nullable
+    public UUID getRuleId()
+    {
+        return delegate.getRuleId();
+    }
+
+
+    @Override
+    @Nullable
+    public DhisResourceType getDhisResourceType()
+    {
+        return delegate.getDhisResourceType();
+    }
+
+    @Override
+    @Nullable
+    public String getDhisResourceId()
+    {
+        return delegate.getDhisResourceId();
+    }
+
+    @Override
     @Nullable
     public ZonedDateTime getLastUpdated()
     {
@@ -104,12 +145,6 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
     public String getDhisUsername()
     {
         return delegate.getDhisUsername();
-    }
-
-    @Override
-    public boolean isFhirClient()
-    {
-        return delegate.isFhirClient();
     }
 
     @Nullable

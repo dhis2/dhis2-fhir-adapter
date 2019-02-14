@@ -29,11 +29,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RequestHeader;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -60,6 +60,10 @@ public class BeforeCreateSaveFhirClientValidator implements Validator
     {
         final FhirClient fhirClient = (FhirClient) target;
 
+        if ( FhirClient.FHIR_REST_INTERFACE_IDS.contains( fhirClient.getId() ) )
+        {
+            errors.rejectValue( "code", "FhirClient.code.reserved", "Adapter specific FHIR client cannot be created or updated." );
+        }
         if ( StringUtils.isBlank( fhirClient.getName() ) )
         {
             errors.rejectValue( "name", "FhirClient.name.blank", "Name must not be blank." );
@@ -71,6 +75,11 @@ public class BeforeCreateSaveFhirClientValidator implements Validator
         if ( StringUtils.isBlank( fhirClient.getCode() ) )
         {
             errors.rejectValue( "code", "FhirClient.code.blank", "Code must not be blank." );
+        }
+        else if ( fhirClient.getCode().startsWith( FhirClient.DHIS2_FHIR_ADAPTER_CODE_PREFIX ) )
+        {
+            errors.rejectValue( "code", "FhirClient.code.reserved", new Object[]{ FhirClient.DHIS2_FHIR_ADAPTER_CODE_PREFIX },
+                "Code must not start with reserved prefix {0}." );
         }
         if ( StringUtils.length( fhirClient.getCode() ) > FhirClient.MAX_CODE_LENGTH )
         {
@@ -159,9 +168,9 @@ public class BeforeCreateSaveFhirClientValidator implements Validator
             {
                 errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.blank", "FHIR endpoint base URL is not a valid HTTP/HTTPS URL." );
             }
-            if ( StringUtils.length( fhirClient.getFhirEndpoint().getBaseUrl() ) > SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH )
+            if ( StringUtils.length( fhirClient.getFhirEndpoint().getBaseUrl() ) > ClientFhirEndpoint.MAX_BASE_URL_LENGTH )
             {
-                errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.length", new Object[]{ SubscriptionFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
+                errors.rejectValue( "baseUrl", "FhirClient.fhirEndpoint.baseUrl.length", new Object[]{ ClientFhirEndpoint.MAX_BASE_URL_LENGTH }, "FHIR endpoint base URL must not be longer than {0} characters." );
             }
             if ( fhirClient.getFhirEndpoint().getHeaders() != null )
             {

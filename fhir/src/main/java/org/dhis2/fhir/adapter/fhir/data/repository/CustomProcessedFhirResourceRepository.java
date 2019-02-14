@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.fhir.data.model.ProcessedFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 
 /**
- * Custom repository for processed server FHIR resources {@link ProcessedFhirResource}.
+ * Custom repository for processed client FHIR resources {@link ProcessedFhirResource}.
  *
  * @author volsch
  */

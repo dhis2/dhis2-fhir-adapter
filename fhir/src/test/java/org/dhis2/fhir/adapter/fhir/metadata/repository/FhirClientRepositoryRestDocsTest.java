@@ -84,7 +84,7 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                 fields.withPath( "outEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this FHIR client is enabled (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "useAdapterIdentifier" ).description( "Specifies if the adapter should add an adapter specific identifier to created and updated resources (by default true). Using such identifiers makes it easier to map resources between " +
                     "FHIR and DHIS 2." ).type( JsonFieldType.BOOLEAN ).optional(),
-                fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the server FHIR service." ).type( JsonFieldType.STRING ),
+                fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the client FHIR service." ).type( JsonFieldType.STRING ),
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +
                     "be used when creating and updating the entity." ).type( JsonFieldType.ARRAY ).optional(),
@@ -92,7 +92,7 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "adapterEndpoint" ).description( "Specifies FHIR client settings that are relevant for the adapter." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "adapterEndpoint.baseUrl" ).description( "The base URL of the adapter that is used to register the subscription on the FHIR service. " +
-                    "If the FHIR service runs on a different server, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),
+                    "If the FHIR service runs on a different client, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "adapterEndpoint.subscriptionType" ).description( "The subscription type that is used to register the subscription on FHIR service. " +
                     "A normal REST hook subscription is sufficient (without any payload). If this causes issues on the FHIR service also a subscription with payload can be used." )
                     .type( JsonFieldType.STRING ),
@@ -105,7 +105,11 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                     "This value will not be returned and will be set using the original value when performing an update without this value." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "fhirEndpoint" ).description( "Specifies FHIR client settings that are relevant for the connection to FHIR." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "fhirEndpoint.baseUrl" ).description( "The base URL of the FHIR endpoints on the FHIR service." ).type( JsonFieldType.STRING ),
-                fields.withPath( "fhirEndpoint.headers" ).description( "The headers that are sent to the server FHIR service when connecting to the FHIR endpoints." ).type( JsonFieldType.ARRAY ),
+                fields.withPath( "fhirEndpoint.useRemote" ).description( "Specifies if connections to the remote FHIR endpoint are enabled (true by default). Otherwise no connection attempt will be made and default values will be used." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirEndpoint.useJsonFormat" ).description( "Specifies if JSON format instead of XML should be used when communicating with this FHIR client (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirEndpoint.sortSupported" ).description( "Specifies if client does support sorting (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirEndpoint.headers" ).description( "The headers that are sent to the client FHIR service when connecting to the FHIR endpoints." ).type( JsonFieldType.ARRAY ),
                 fields.withPath( "fhirEndpoint.headers[].name" ).description( "The name of the header for which the value will be sent (e.g. Authorization)." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirEndpoint.headers[].value" ).description( "The value of the header for which the value will be sent (e.g. a bearer token). If the value of the header is marked as secure, " +
                     "the value will not be returned and will be set using the original value when performing an update without this value." ).type( JsonFieldType.STRING ).optional(),
@@ -164,7 +168,7 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                 fields.withPath( "expEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this FHIR client is enabled." ).type( JsonFieldType.BOOLEAN ),
                 fields.withPath( "useAdapterIdentifier" ).description( "Specifies if the adapter should add an adapter specific identifier to created and updated resources (by default true). Using such identifiers makes it easier to map resources " +
                     "between FHIR and DHIS 2." ).type( JsonFieldType.BOOLEAN ).optional(),
-                fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the server FHIR service." ).type( JsonFieldType.STRING ),
+                fields.withPath( "fhirVersion" ).description( "The FHIR version that should be used when communicating with the client FHIR service." ).type( JsonFieldType.STRING ),
                 fields.withPath( "toleranceMillis" ).description( "The number of milli-seconds to subtract from the last updated timestamp when searching for created and updated resources." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "autoCreatedSubscriptionResources" ).description( "Subscription resources for which the subscriptions should be created automatically when creating the subscription resource. This value will not be returned and can only " +
                     "be used when creating and updating the entity." ).type( JsonFieldType.ARRAY ).optional(),
@@ -172,7 +176,7 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "adapterEndpoint" ).description( "Specifies FHIR client settings that are relevant for the adapter." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "adapterEndpoint.baseUrl" ).description( "The base URL of the adapter that is used to register the subscription on the FHIR service. " +
-                    "If the FHIR service runs on a different server, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),
+                    "If the FHIR service runs on a different client, the URL must not contain localhost. If this URL is not specified it is calculated automatically." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "adapterEndpoint.subscriptionType" ).description( "The subscription type that is used to register the subscription on FHIR service. " +
                     "A normal REST hook subscription is sufficient (without any payload). If this causes issues on the FHIR service also a subscription with payload can be used." )
                     .type( JsonFieldType.STRING ),
@@ -185,10 +189,14 @@ public class FhirClientRepositoryRestDocsTest extends AbstractJpaRepositoryRestD
                     "This value will not be returned and will be set using the original value when performing an update without this value." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "fhirEndpoint" ).description( "Specifies FHIR client settings that are relevant for the connection to FHIR." ).type( JsonFieldType.OBJECT ),
                 fields.withPath( "fhirEndpoint.baseUrl" ).description( "The base URL of the FHIR endpoints on the FHIR service." ).type( JsonFieldType.STRING ),
+                fields.withPath( "fhirEndpoint.useRemote" ).description( "Specifies if connections to the remote FHIR endpoint are enabled (true by default). Otherwise no connection attempt will be made and default values will be used." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirEndpoint.useJsonFormat" ).description( "Specifies if JSON format instead of XML should be used when communicating with this FHIR client (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "fhirEndpoint.sortSupported" ).description( "Specifies if client does support sorting (by default true)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "fhirEndpoint.logging" ).description( "Specifies if basic logging should be enabled when communicating with the FHIR endpoints of this FHIR service." ).type( JsonFieldType.BOOLEAN ).optional(),
-                fields.withPath( "fhirEndpoint.verboseLogging" ).description( "Specifies if verbose logging (includes complete pazload) should be enabled when communicating with the FHIR endpoints of this FHIR service. " +
+                fields.withPath( "fhirEndpoint.verboseLogging" ).description( "Specifies if verbose logging (includes complete payload) should be enabled when communicating with the FHIR endpoints of this FHIR service. " +
                     "Enabling verbose logging may log confidential patient data. This could violate data protection laws and regulations." ).type( JsonFieldType.BOOLEAN ).optional(),
-                fields.withPath( "fhirEndpoint.headers" ).description( "The headers that are sent to the server FHIR service when connecting to the FHIR endpoints." ).type( JsonFieldType.ARRAY ),
+                fields.withPath( "fhirEndpoint.headers" ).description( "The headers that are sent to the client FHIR service when connecting to the FHIR endpoints." ).type( JsonFieldType.ARRAY ),
                 fields.withPath( "fhirEndpoint.headers[].name" ).description( "The name of the header for which the value will be sent (e.g. Authorization)." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirEndpoint.headers[].value" ).description( "The value of the header for which the value will be sent (e.g. a bearer token). If the value of the header is marked as secure, " +
                     "the value will not be returned and will be set using the original value when performing an update without this value." ).type( JsonFieldType.STRING ).optional(),

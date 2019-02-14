@@ -57,18 +57,18 @@ spring:
     # Example: redis://user:password@example.com:6379
     url: redis://localhost:6379
   # Settings of the Artemis message queueing system. For a non-clustered
-  # installation the embedded server can be used where the data is stored
+  # installation the embedded client can be used where the data is stored
   # on the local file system.
   artemis:
-    # Settings for the embedded server, that can be used for a non-clustered
+    # Settings for the embedded client, that can be used for a non-clustered
     # installation.
     embedded:
-      # Specifies of the embedded server should be enabled. If the adapter
-      # runs in a clustered environment the embedded server must not be enabled
+      # Specifies of the embedded client should be enabled. If the adapter
+      # runs in a clustered environment the embedded client must not be enabled
       # and host, port, username and password for the Artemis broker must be
       # specified.
       enabled: true
-      # The ID of the embedded server (should not be changed).
+      # The ID of the embedded client (should not be changed).
       server-id: 1
       # Specifies if the queue data should be persisted or just hold in memory.
       # In production and production-like environments data must be persisted
@@ -116,7 +116,7 @@ dhis2.fhir-adapter:
   # Important note: This is an experimental feature currently.
   export-enabled: false
   # Specifies if the FHIR interfaces should be enabled.
-  fhir-interfaces:
+  fhir-rest-interfaces:
     # Specifies if DSTU3 FHIR interfaces should be enabled.
     dstu3-enabled: true
     # Specifies if R4 FHIR interfaces should be enabled.
@@ -199,10 +199,10 @@ dhis2.fhir-adapter:
   # data processing.
   fhir-client:
     # Settings of the processor that retrieves the FHIR resources by last update
-    # timestamp from the FHIR server.
+    # timestamp from the FHIR client.
     processor:
       # The maximum number of FHIR resources that should be returned by the FHIR
-      # server at once. The last updated timestamp that is used by the FHIR server
+      # client at once. The last updated timestamp that is used by the FHIR client
       # must change at least within the specified amount of items.
       max-search-count: 10000
       # The maximum number of minutes processed FHIR resource IDs will remain stored
@@ -220,13 +220,13 @@ dhis2.fhir-adapter:
       # protection issue since encryption of stored FHIR resources is not yet supported.
       # If this feature is disabled, the received FHIR resources will not be stored in
       # database and will be re-read when processing them for import. This might even be
-      # faster (depending on the remote FHIR server and if such an operation is possible)
+      # faster (depending on the remote FHIR client and if such an operation is possible)
       # than storing the FHIR resources in the adapter database.
       store-fhir-resource: true
     # The queue that is used to store incoming REST hook requests. For each FHIR
-    # resource type (per FHIR server) there should be maximum one item in the queue.
+    # resource type (per FHIR client) there should be maximum one item in the queue.
     # Also processing will be grouped. It must absolutely avoided that the data
-    # retrieval of the same FHIR resource type of one FHIR server is done more than
+    # retrieval of the same FHIR resource type of one FHIR client is done more than
     # one time.
     rest-hook-request-queue:
       # The name of the queue.
@@ -248,8 +248,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   repository:
     # Queue that contains FHIR resource references that could not be processed
     # after multiple retries because of any error.
@@ -289,10 +287,8 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   # Settings for the retrieval of the synchronization data from DHIS2. The retrieved data
-  # can be stored on connected server FHIR services.
+  # can be stored on connected client FHIR services.
   sync:
     # Retrieves new and updated DHIS2 resources periodically.
     # IMPORTANT NOTE: This feature is still under development and beta.
@@ -307,7 +303,7 @@ dhis2.fhir-adapter:
       # stored data is not visible (not yet committed).
       tolerance-millis: 2000
       # The maximum number of DHIS2 resources that should be returned by the DHIS2
-      # server at once. The last updated timestamp that is used by the DHIS2 server
+      # client at once. The last updated timestamp that is used by the DHIS2 client
       # must change at least within the specified amount of items.
       max-search-count: 50000
       # The maximum number of minutes processed DHIS2 resource IDs will remain stored
@@ -348,8 +344,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
     # Queue that contains DHIS2 resource references that could not be processed
     # after multiple retries because of any error.
     dhis-resource-dl-queue:
@@ -363,7 +357,7 @@ dhis2.fhir-adapter:
         # is regarded as expired.
         expiry-delay: 2419200000
     # Queue that contains references of DHIS2 resources that should be processed and
-    # should be synchronized with server FHIR servers.
+    # should be synchronized with client FHIR servers.
     dhis-resource-queue:
       # The name of the queue.
       queue-name: jms.queue.dhisResourceQueue
@@ -388,8 +382,6 @@ dhis2.fhir-adapter:
         redelivery-multiplier: 3.0
         # The maximum delay (in milli seconds) between each retry in case of an error.
         max-redelivery-delay: 1800000
-        # Specifies that only unique items are inside the queue (cannot be changed).
-        last-value-queue: true
   # Settings of the transformation.
   transformation:
     # The JavaScript engine that is used to process rules, mappings and transformations.

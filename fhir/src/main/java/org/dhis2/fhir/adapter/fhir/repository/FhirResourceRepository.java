@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -41,7 +41,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Utility methods to access a server FHIR repository (a FHIR service/server).
+ * Utility methods to access a client FHIR repository (a FHIR service/client).
  *
  * @author volsch
  */
@@ -51,31 +51,31 @@ public interface FhirResourceRepository
     Optional<FhirContext> findFhirContext( @Nonnull FhirVersion fhirVersion );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
+    Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform );
+    Optional<IBaseResource> findRefreshed( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId, boolean transform );
 
     @Nonnull
-    Optional<IBaseResource> find( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
+    Optional<IBaseResource> find( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String resourceId );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
+    Optional<IBaseResource> findRefreshedByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
 
     @Nonnull
-    Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
+    Optional<IBaseResource> findByIdentifier( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue identifier );
 
     @Nonnull
-    Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
+    Optional<IBaseResource> findRefreshedByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
 
     @Nonnull
-    Optional<IBaseResource> findByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
+    Optional<IBaseResource> findByCode( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull SystemCodeValue code );
 
     @Nullable
     IBaseResource transform( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nullable IBaseResource resource );
 
     @Nonnull
-    IBaseResource save( @Nonnull FhirClient subscription, @Nonnull IBaseResource resource );
+    IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource );
 
-    boolean delete( @Nonnull FhirClient subscription, @Nonnull IBaseResource resource );
+    boolean delete( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource );
 }

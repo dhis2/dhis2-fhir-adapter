@@ -31,12 +31,15 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ImmutableFhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,6 +95,33 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
             return null;
         }
         return new Reference( value, rt );
+    }
+
+    @Nullable
+    @Override
+    public String extractDhisId( @Nullable IIdType idElement )
+    {
+        if ( !getFhirRequest().isDhisFhirId() )
+        {
+            throw new TransformerMappingException( "Request does not use DHIS FHIR IDs." );
+        }
+        if ( idElement == null )
+        {
+            return null;
+        }
+        final String id = idElement.getIdPart();
+        if ( id == null )
+        {
+            return null;
+        }
+        try
+        {
+            return DhisFhirResourceId.parse( id ).getId();
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerDataException( "Not a valid DHIS2 FHIR ID: " + id, e );
+        }
     }
 
     @Nonnull

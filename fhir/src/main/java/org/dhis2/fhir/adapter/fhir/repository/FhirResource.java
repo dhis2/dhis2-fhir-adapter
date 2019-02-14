@@ -40,7 +40,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * Processing request for a server FHIR resource that is enqueued and dequeued.
+ * Processing request for a client FHIR resource that is enqueued and dequeued.
  * The class must support the initial legacy serialized format.
  * <b>The class must not be moved to a different package since the full qualified class name is used in JMS messages.</b>
  *

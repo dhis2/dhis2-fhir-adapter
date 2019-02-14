@@ -149,22 +149,20 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
         }
 
         final QG queuedGroupId = createQueuedGroupId( group );
-            logger.debug( "Enqueuing entry for group {}.", group.getGroupId() );
-            groupQueueJmsTemplate.convertAndSend( createDataGroupQueueItem( group ), message -> {
-                // only one message for a single group must be in the queue at a specific time (grouping)
-                message.setStringProperty( "_AMQ_LVQ_NAME", queuedGroupId.toKey() );
-                // only one message for a single group must be processed at a specific time (grouping)
-                message.setStringProperty( "JMSXGroupID", queuedGroupId.toKey() );
-                return message;
-            } );
-            if ( isPeriodicInfoLogging() )
-            {
-                logger.info( "Enqueued entry for group {}.", group.getGroupId() );
-            }
-            else
-            {
-                logger.debug( "Enqueued entry for group {}.", group.getGroupId() );
-            }
+        logger.debug( "Enqueuing entry for group {}.", group.getGroupId() );
+        groupQueueJmsTemplate.convertAndSend( createDataGroupQueueItem( group ), message -> {
+            // only one message for a single group must be processed at a specific time (grouping)
+            message.setStringProperty( "JMSXGroupID", queuedGroupId.toKey() );
+            return message;
+        } );
+        if ( isPeriodicInfoLogging() )
+        {
+            logger.info( "Enqueued entry for group {}.", group.getGroupId() );
+        }
+        else
+        {
+            logger.debug( "Enqueued entry for group {}.", group.getGroupId() );
+        }
     }
 
     protected void receive( @Nonnull DataGroupQueueItem<GI> dataGroupQueueItem )
@@ -197,11 +195,17 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
                 dataGroupQueueItem.getDataGroupId() );
             return;
         }
-        final SG storedItemGroup = getStoredItemGroup( group );
+        final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
+        if ( origLastUpdated.isAfter( dataGroupQueueItem.getReceivedAt().toInstant() ) )
+        {
+            logger.debug( "Processing queued group {} does not take place since queued item timestamp {} is after last processed timestamp {}.",
+                dataGroupQueueItem.getDataGroupId(), dataGroupQueueItem.getReceivedAt(), origLastUpdated );
+            return;
+        }
 
+        final SG storedItemGroup = getStoredItemGroup( group );
         final Instant begin = Instant.now();
         final DataProcessorItemRetriever<G> itemRetriever = getDataProcessorItemRetriever( group );
-        final Instant origLastUpdated = dataGroupUpdateRepository.getLastUpdated( group );
         final AtomicLong count = new AtomicLong();
         final Instant lastUpdated = itemRetriever.poll( group, origLastUpdated, getMaxSearchCount(), items -> {
             final Instant processedAt = Instant.now();
@@ -249,11 +253,7 @@ public abstract class AbstractQueuedDataProcessorImpl<P extends ProcessedItem<PI
     protected boolean enqueueDataItem( @Nonnull G group, @Nonnull ProcessedItemInfo item, boolean persistedDataItem )
     {
         final QI queuedItemId = createQueuedItemId( group, item );
-        itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item, persistedDataItem ), message -> {
-            // only one message for a single group must be in the queue at a specific time (grouping)
-            message.setStringProperty( "_AMQ_LVQ_NAME", queuedItemId.toKey() );
-            return message;
-        } );
+        itemQueueJmsTemplate.convertAndSend( createDataItemQueueItem( group, item, persistedDataItem ) );
         logger.debug( "Item {} of group {} has been enqueued.", item.getId(), group.getGroupId() );
         return true;
     }

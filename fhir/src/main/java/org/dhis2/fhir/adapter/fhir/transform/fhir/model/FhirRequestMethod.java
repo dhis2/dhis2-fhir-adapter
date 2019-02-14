@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,20 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * The type of FHIR request that should be performed.
+ *
+ * @author volsch
+ */
 public enum FhirRequestMethod
 {
-    POST( "POST" ), PUT( "PUT" );
+    CREATE( "CREATE" ), UPDATE( "UPDATE" );
 
     private static final Map<String, FhirRequestMethod> requestMethodsByCode = Arrays.stream( values() ).collect( Collectors.toMap( FhirRequestMethod::getCode, v -> v ) );
 
@@ -52,6 +58,7 @@ public enum FhirRequestMethod
         this.code = code;
     }
 
+    @Nonnull
     public String getCode()
     {
         return code;

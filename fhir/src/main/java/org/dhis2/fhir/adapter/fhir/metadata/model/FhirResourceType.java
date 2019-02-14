@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -55,17 +56,17 @@ import java.util.stream.Collectors;
  */
 public enum FhirResourceType
 {
-    DIAGNOSTIC_REPORT( "DiagnosticReport", 30, "DiagnosticReport" ),
-    ENCOUNTER( "Encounter", 4, "Encounter" ),
-    IMMUNIZATION( "Immunization", 22, "Immunization" ),
-    LOCATION( "Location", 2, "Location" ),
-    MEDICATION_REQUEST( "MedicationRequest", 21, "MedicationRequest" ),
-    OBSERVATION( "Observation", 20, "Observation" ),
-    ORGANIZATION( "Organization", 1, "Organization" ),
-    PATIENT( "Patient", 10, "Patient" ),
-    RELATED_PERSON( "RelatedPerson", 11, "RelatedPerson" ),
-    PRACTITIONER( "Practitioner", 9, "Practitioner" ),
-    ;
+    CONDITION( FhirVersion.ALL, "Condition", 19, "Condition" ),
+    DIAGNOSTIC_REPORT( FhirVersion.ALL, "DiagnosticReport", 30, "DiagnosticReport" ),
+    ENCOUNTER( FhirVersion.ALL, "Encounter", 4, "Encounter" ),
+    IMMUNIZATION( FhirVersion.ALL, "Immunization", 22, "Immunization" ),
+    LOCATION( FhirVersion.ALL, "Location", 2, "Location" ),
+    MEDICATION_REQUEST( FhirVersion.ALL, "MedicationRequest", 21, "MedicationRequest" ),
+    OBSERVATION( FhirVersion.ALL, "Observation", 20, "Observation" ),
+    ORGANIZATION( FhirVersion.ALL, "Organization", 1, "Organization" ),
+    PATIENT( FhirVersion.ALL, "Patient", 10, "Patient" ),
+    RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, "RelatedPerson" ),
+    PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, "Practitioner" );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
@@ -92,10 +93,18 @@ public enum FhirResourceType
     }
 
     @Nullable
+    public static FhirResourceType getByResourceType( @Nonnull Class<? extends IBaseResource> resourceType )
+    {
+        return resourcesBySimpleClassName.get( resourceType.getSimpleName() );
+    }
+
+    @Nullable
     public static FhirResourceType getByResourceTypeName( @Nullable String resourceTypeName )
     {
         return resourcesBySimpleClassName.get( NameUtils.toClassName( resourceTypeName ) );
     }
+
+    private final Set<FhirVersion> fhirVersions;
 
     private final String resourceTypeName;
 
@@ -103,11 +112,18 @@ public enum FhirResourceType
 
     private final Set<String> simpleClassNames;
 
-    FhirResourceType( String resourceTypeName, int order, String... simpleClassNames )
+    FhirResourceType( Set<FhirVersion> fhirVersions, String resourceTypeName, int order, String... simpleClassNames )
     {
+        this.fhirVersions = fhirVersions;
         this.resourceTypeName = resourceTypeName;
         this.order = order;
         this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( simpleClassNames ) ) );
+    }
+
+    @Nonnull
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return fhirVersions;
     }
 
     @Nonnull

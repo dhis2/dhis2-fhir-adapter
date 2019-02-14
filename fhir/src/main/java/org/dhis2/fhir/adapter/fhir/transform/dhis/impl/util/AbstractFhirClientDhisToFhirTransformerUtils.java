@@ -29,13 +29,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.rest.client.api.IGenericClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
-import org.dhis2.fhir.adapter.fhir.repository.FhirClientUtils;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -51,13 +49,13 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * DHIS2 to FHIR transformer utility methods for retrieving data from a server FHIR service.
+ * DHIS2 to FHIR transformer utility methods for retrieving data from a client FHIR service.
  *
  * @author volsch
  */
 @Scriptable
 @ScriptType( value = "FhirClientUtils", transformType = ScriptTransformType.EXP, var = AbstractFhirClientDhisToFhirTransformerUtils.SCRIPT_ATTR_NAME,
-    description = "Utilities for retrieving data from a server FHIR service." )
+    description = "Utilities for retrieving data from a client FHIR service." )
 public abstract class AbstractFhirClientDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirClientUtils";
@@ -90,8 +88,8 @@ public abstract class AbstractFhirClientDhisToFhirTransformerUtils extends Abstr
         final FhirResourceType resourceType = convertFhirResourceType( fhirResourceType );
         final ResourceSystem resourceSystem = getMandatoryResourceSystem( resourceType );
 
-        final FhirClient subscription = getFhirClient();
-        return fhirResourceRepository.findByIdentifier( subscription.getId(), subscription.getFhirVersion(), subscription.getFhirEndpoint(),
+        final FhirClient fhirClient = getFhirClient();
+        return fhirResourceRepository.findByIdentifier( fhirClient.getId(), fhirClient.getFhirVersion(), fhirClient.getFhirEndpoint(),
             resourceType.getResourceTypeName(), new SystemCodeValue( resourceSystem.getSystem(), identifier ) ).orElse( null );
     }
 
@@ -102,11 +100,5 @@ public abstract class AbstractFhirClientDhisToFhirTransformerUtils extends Abstr
         final UUID subId = context.getFhirClientId();
         return subscriptionRepository.findOneByIdCached( subId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client with ID " + subId ) );
-    }
-
-    @Nonnull
-    protected IGenericClient createFhirClient( @Nonnull FhirClient subscription )
-    {
-        return FhirClientUtils.createClient( fhirContext, subscription.getFhirEndpoint() );
     }
 }

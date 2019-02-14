@@ -54,11 +54,11 @@ import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerRequestException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -133,37 +133,50 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<R> getResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context,
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final String id = getDhisId( context, ruleInfo );
-        R resource = getResourceById( id ).orElse( null );
-        if ( resource != null )
+        if ( context.getFhirRequest().getRequestMethod() != FhirRequestMethod.CREATE )
         {
-            return Optional.of( resource );
-        }
-
-        resource = getResourceByAssignment( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
-        if ( resource != null )
-        {
-            return Optional.of( resource );
-        }
-
-        resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
-        if ( resource != null )
-        {
-            return Optional.of( resource );
-        }
-
-        resource = createResource( context, ruleInfo, id, scriptVariables, false );
-        if ( (resource != null) && isSyncRequired( context, ruleInfo, scriptVariables ) )
-        {
-            // the active resource may have been created in the meantime
-            resource = getActiveResource( context, ruleInfo, scriptVariables, true ).orElse( null );
-            if ( resource != null )
+            if ( context.getFhirRequest().isDhisFhirId() )
             {
-                return Optional.of( resource );
+                final String id = getDhisId( context, ruleInfo );
+                R resource = getResourceById( id ).orElse( null );
+                if ( resource != null )
+                {
+                    return Optional.of( resource );
+                }
             }
-            resource = createResource( context, ruleInfo, id, scriptVariables, true );
+            else
+            {
+                R resource = getResourceByAssignment( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
+                if ( resource != null )
+                {
+                    return Optional.of( resource );
+                }
+
+                resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
+                if ( resource != null )
+                {
+                    return Optional.of( resource );
+                }
+            }
         }
 
+        R resource = null;
+        if ( (context.getFhirRequest().getRequestMethod() == FhirRequestMethod.CREATE) ||
+            (context.getFhirRequest().getRequestMethod() == null) )
+        {
+            final String id = getDhisId( context, ruleInfo );
+            resource = createResource( context, ruleInfo, id, scriptVariables, false );
+            if ( (resource != null) && isSyncRequired( context, ruleInfo, scriptVariables ) )
+            {
+                // the active resource may have been created in the meantime
+                resource = getActiveResource( context, ruleInfo, scriptVariables, true ).orElse( null );
+                if ( resource != null )
+                {
+                    return Optional.of( resource );
+                }
+                resource = createResource( context, ruleInfo, id, scriptVariables, true );
+            }
+        }
         return Optional.ofNullable( resource );
     }
 
@@ -201,13 +214,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Nullable
     protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo )
     {
-        final String resourceId = context.getFhirRequest().getResourceId();
-        if ( (resourceId != null) && context.getFhirRequest().isFhirClient() )
-        {
-            throw new TransformerRequestException( "Requests that contain a resource ID " +
-                "while processing a FHIR client are not supported." );
-        }
-        return resourceId;
+        return context.getFhirRequest().getDhisResourceId();
     }
 
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException

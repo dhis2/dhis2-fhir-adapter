@@ -205,7 +205,7 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         final UUID resourceId = context.getFhirRequest().getFhirClientResourceId();
         if ( resourceId == null )
         {
-            throw new TransformerMappingException( "FHIR client cannot be created without having a server request." );
+            throw new TransformerMappingException( "FHIR client cannot be created without having a client request." );
         }
         final FhirClientResource fhirClientResource = fhirClientResourceRepository.findOneByIdCached( resourceId )
             .orElseThrow( () -> new TransformerMappingException( "Could not find FHIR client resource with ID " + resourceId ) );

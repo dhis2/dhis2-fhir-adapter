@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,24 +44,26 @@ public enum DhisResourceType
     /**
      * Resource is a tracked entity instance.
      */
-    TRACKED_ENTITY( "trackedEntityInstances" ),
+    TRACKED_ENTITY( "trackedEntityInstances", "te" ),
 
     /**
      * Resource is a program instance (aka enrollment).
      */
-    ENROLLMENT( "enrollments" ),
+    ENROLLMENT( "enrollments", "en" ),
 
     /**
      * Resource is a program stage instance (aka event of a program instance).
      */
-    PROGRAM_STAGE_EVENT( "events" ),
+    PROGRAM_STAGE_EVENT( "events", "ps" ),
 
     /**
      * Resource is a organisation unit.
      */
-    ORGANIZATION_UNIT( "organisationUnits" );
+    ORGANIZATION_UNIT( "organisationUnits", "ou" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
+
+    private static final Map<String, DhisResourceType> byAbbreviation = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getAbbreviation, v -> v ) );
 
     @Nullable
     public static DhisResourceType getByTypeName( @Nullable String typeName )
@@ -69,11 +71,20 @@ public enum DhisResourceType
         return byTypeName.get( typeName );
     }
 
+    @Nullable
+    public static DhisResourceType getByAbbreviation( @Nullable String abbreviation )
+    {
+        return byAbbreviation.get( abbreviation );
+    }
+
     private final String typeName;
 
-    DhisResourceType( @Nonnull String typeName )
+    private final String abbreviation;
+
+    DhisResourceType( @Nonnull String typeName, @Nonnull String abbreviation )
     {
         this.typeName = typeName;
+        this.abbreviation = abbreviation;
     }
 
     @Nonnull
@@ -81,5 +92,10 @@ public enum DhisResourceType
     {
         return typeName;
     }
-}
 
+    @Nonnull
+    public String getAbbreviation()
+    {
+        return abbreviation;
+    }
+}

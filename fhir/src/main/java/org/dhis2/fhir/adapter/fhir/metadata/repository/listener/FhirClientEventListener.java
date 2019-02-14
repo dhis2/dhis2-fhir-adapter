@@ -128,7 +128,7 @@ public class FhirClientEventListener extends AbstractRepositoryEventListener<Fhi
         }
         catch ( MalformedURLException e )
         {
-            throw new IllegalStateException( "Could not construct base URL from servlet request.", e );
+            throw new IllegalStateException( "Could not construct base URL from server request.", e );
         }
     }
 }

@@ -95,21 +95,21 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
-    public boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
+    public boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId )
     {
         boolean updated = false;
         final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
-            final String existingId = findFirstDhisResourceId( rule, subscription, fhirResourceId );
+            final String existingId = findFirstDhisResourceId( rule, fhirClient, fhirResourceId );
             if ( existingId == null )
             {
-                updated = persist( rule, subscription, fhirResourceId, dhisResourceId );
+                updated = persist( rule, fhirClient, fhirResourceId, dhisResourceId );
             }
             else if ( !existingId.equals( dhisResourceId.getId() ) )
             {
                 final FhirDhisAssignment assignment = entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, FhirDhisAssignment.class )
-                    .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
+                    .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", fhirClient.getId() )
                     .setParameter( "fhirResourceId", fhirResourceId.getIdPart() ).setLockMode( LockModeType.PESSIMISTIC_WRITE ).getSingleResult();
                 assignment.setDhisResourceId( dhisResourceId.getId() );
                 updated = true;

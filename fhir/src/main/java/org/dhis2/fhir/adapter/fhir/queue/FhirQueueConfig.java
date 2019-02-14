@@ -32,10 +32,10 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.activemq.artemis.jms.server.config.JMSQueueConfiguration;
 import org.apache.activemq.artemis.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.dhis2.fhir.adapter.dhis.queue.JmsJsonTypeIdMapping;
+import org.dhis2.fhir.adapter.fhir.client.impl.FhirClientConfig;
+import org.dhis2.fhir.adapter.fhir.client.impl.FhirClientRestHookRequest;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResource;
 import org.dhis2.fhir.adapter.fhir.repository.impl.RepositoryConfig;
-import org.dhis2.fhir.adapter.fhir.server.impl.FhirClientConfig;
-import org.dhis2.fhir.adapter.fhir.server.impl.FhirClientRestHookRequest;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,9 +70,6 @@ public class FhirQueueConfig
     @Nonnull
     protected ArtemisConfigurationCustomizer fhirArtemisConfigurationCustomizer()
     {
-        fhirClientConfig.getRestHookRequestQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-        repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-
         return configuration -> {
             configuration.addAddressesSetting( fhirClientConfig.getRestHookRequestQueue().getQueueName(), fhirClientConfig.getRestHookRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( repositoryConfig.getFhirResourceQueue().getQueueName(), repositoryConfig.getFhirResourceQueue().getEmbeddedAddressSettings() );

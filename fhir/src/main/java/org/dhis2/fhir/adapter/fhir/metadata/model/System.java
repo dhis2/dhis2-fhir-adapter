@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,9 @@ public class System extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1072841132452061822L;
 
-    public static final String DHIS2_FHIR_IDENTIFIER_CODE = "SYSTEM_DHIS2_FHIR_IDENTIFIER";
+    public static final String DHIS2_FHIR_ADAPTER_CODE_PREFIX = "SYSTEM_DHIS2_";
+
+    public static final String DHIS2_FHIR_IDENTIFIER_CODE = DHIS2_FHIR_ADAPTER_CODE_PREFIX + "FHIR_IDENTIFIER";
 
     public static final int MAX_NAME_LENGTH = 230;
 

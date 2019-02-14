@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -58,8 +59,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Contains all required information to handle the FHIR client of a FHIR client.
@@ -73,6 +78,15 @@ import java.util.Set;
 public class FhirClient extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
+
+    public static final UUID FHIR_REST_INTERFACE_DSTU3_ID = UUID.fromString( "a5a6a642-15a2-4f27-9cee-55a26a86d062" );
+
+    public static final UUID FHIR_REST_INTERFACE_R4_ID = UUID.fromString( "46f0af46-3654-40b3-8d4c-7a633332c3b3" );
+
+    public static final Set<UUID> FHIR_REST_INTERFACE_IDS = Collections.unmodifiableSet( new HashSet<>(
+        Arrays.asList( FHIR_REST_INTERFACE_DSTU3_ID, FHIR_REST_INTERFACE_R4_ID ) ) );
+
+    public static final String DHIS2_FHIR_ADAPTER_CODE_PREFIX = "FHIR_RI_";
 
     public static final String ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "FhirClient.all";
 
@@ -113,7 +127,7 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
 
     @NotNull
     @Valid
-    private SubscriptionFhirEndpoint fhirEndpoint;
+    private ClientFhirEndpoint fhirEndpoint;
 
     @NotNull
     @Valid
@@ -285,12 +299,12 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
     }
 
     @Embedded
-    public SubscriptionFhirEndpoint getFhirEndpoint()
+    public ClientFhirEndpoint getFhirEndpoint()
     {
         return fhirEndpoint;
     }
 
-    public void setFhirEndpoint( SubscriptionFhirEndpoint fhirEndpoint )
+    public void setFhirEndpoint( ClientFhirEndpoint fhirEndpoint )
     {
         this.fhirEndpoint = fhirEndpoint;
     }
@@ -324,5 +338,19 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
     public DataGroupId getGroupId()
     {
         return new UuidDataGroupId( getId() );
+    }
+
+    @Nonnull
+    public static UUID getIdByFhirVersion( @Nonnull FhirVersion fhirVersion )
+    {
+        switch ( fhirVersion )
+        {
+            case DSTU3:
+                return FHIR_REST_INTERFACE_DSTU3_ID;
+            case R4:
+                return FHIR_REST_INTERFACE_R4_ID;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + fhirVersion );
+        }
     }
 }

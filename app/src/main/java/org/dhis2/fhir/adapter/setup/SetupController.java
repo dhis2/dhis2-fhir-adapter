@@ -91,7 +91,7 @@ public class SetupController
 
         try
         {
-            setupService.apply( setup );
+            setupService.apply( setup, true );
         }
         catch ( SetupException | RestResponseEntityException e )
         {
@@ -118,7 +118,7 @@ public class SetupController
         }
         catch ( MalformedURLException e )
         {
-            throw new IllegalStateException( "Could not construct base URL from servlet request.", e );
+            throw new IllegalStateException( "Could not construct base URL from server request.", e );
         }
     }
 

@@ -188,7 +188,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Override
     protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return true;
+        return context.getFhirRequest().isSync();
     }
 
     @Nonnull

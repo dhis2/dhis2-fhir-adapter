@@ -162,7 +162,7 @@ public class FhirClientResource extends VersionedBaseMetadata implements DataGro
     }
 
     @Basic
-    @Column( name = "virtual", nullable = false )
+    @Column( name = "virtual", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isVirtual()
     {
         return virtual;

@@ -65,9 +65,6 @@ public class DhisQueueConfig
     @Nonnull
     protected ArtemisConfigurationCustomizer dhisArtemisConfigurationCustomizer()
     {
-        syncConfig.getSyncRequestQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-        syncConfig.getDhisResourceQueue().getEmbeddedAddressSettings().setLastValueQueue( true );
-
         return configuration -> {
             configuration.addAddressesSetting( syncConfig.getSyncRequestQueue().getQueueName(), syncConfig.getSyncRequestQueue().getEmbeddedAddressSettings() );
             configuration.addAddressesSetting( syncConfig.getDhisResourceQueue().getQueueName(), syncConfig.getDhisResourceQueue().getEmbeddedAddressSettings() );

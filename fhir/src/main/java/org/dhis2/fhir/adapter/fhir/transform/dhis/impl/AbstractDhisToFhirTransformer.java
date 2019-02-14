@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -425,7 +426,8 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     @Nonnull
     protected String createAdapterIdentifierValue( @Nonnull RuleInfo<? extends AbstractRule> rule, @Nonnull ScriptedDhisResource dhisResource )
     {
-        return rule.getRule().getRuleTypeAbbreviation() + "-" + dhisResource.getId() + "-" + rule.getRule().getId();
+        return DhisFhirResourceId.toString( rule.getRule().getDhisResourceType(),
+            Objects.requireNonNull( dhisResource.getId() ), rule.getRule().getId() );
     }
 
     @Nullable

@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
  */
 
 import com.google.common.collect.ListMultimap;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 
@@ -57,6 +58,18 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     private String resourceId;
 
     private String resourceVersionId;
+
+    private boolean sync;
+
+    private boolean dhisFhirId;
+
+    private boolean firstRuleOnly;
+
+    private UUID ruleId;
+
+    private DhisResourceType dhisResourceType;
+
+    private String dhisResourceId;
 
     private ZonedDateTime lastUpdated;
 
@@ -120,6 +133,75 @@ public class WritableFhirRequest implements FhirRequest, Serializable
         this.resourceVersionId = resourceVersionId;
     }
 
+    @Override
+    public boolean isSync()
+    {
+        return sync;
+    }
+
+    public void setSync( boolean sync )
+    {
+        this.sync = sync;
+    }
+
+    @Override
+    public boolean isDhisFhirId()
+    {
+        return dhisFhirId;
+    }
+
+    public void setDhisFhirId( boolean dhisFhirId )
+    {
+        this.dhisFhirId = dhisFhirId;
+    }
+
+    @Override
+    public boolean isFirstRuleOnly()
+    {
+        return firstRuleOnly;
+    }
+
+    public void setFirstRuleOnly( boolean firstRuleOnly )
+    {
+        this.firstRuleOnly = firstRuleOnly;
+    }
+
+    @Nullable
+    @Override
+    public UUID getRuleId()
+    {
+        return ruleId;
+    }
+
+    public void setRuleId( UUID ruleId )
+    {
+        this.ruleId = ruleId;
+    }
+
+    @Nullable
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return dhisResourceType;
+    }
+
+    public void setDhisResourceType( DhisResourceType dhisResourceType )
+    {
+        this.dhisResourceType = dhisResourceType;
+    }
+
+    @Nullable
+    @Override
+    public String getDhisResourceId()
+    {
+        return dhisResourceId;
+    }
+
+    public void setDhisResourceId( String dhisResourceId )
+    {
+        this.dhisResourceId = dhisResourceId;
+    }
+
     @Nullable
     @Override
     public ZonedDateTime getLastUpdated()
@@ -164,12 +246,6 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setDhisUsername( String dhisUsername )
     {
         this.dhisUsername = dhisUsername;
-    }
-
-    @Override
-    public boolean isFhirClient()
-    {
-        return (getFhirClientResourceId() != null);
     }
 
     @Nullable

@@ -293,7 +293,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Override
     protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return true;
+        return context.getFhirRequest().isSync();
     }
 
     @Nonnull

@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
@@ -64,6 +65,10 @@ public class BeforeCreateSaveFhirClientResourceValidator implements Validator
         if ( fhirClientResource.getFhirClient() == null )
         {
             errors.rejectValue( "fhirClient", "FhirClientResource.fhirClient.null", "FHIR client is mandatory." );
+        }
+        else if ( FhirClient.FHIR_REST_INTERFACE_IDS.contains( fhirClientResource.getFhirClient().getId() ) )
+        {
+            errors.rejectValue( "fhirResourceType", "FhirClientResource.fhirResourceType.reserved", "Adapter specific FHIR client cannot be created or updated." );
         }
         if ( fhirClientResource.getFhirResourceType() == null )
         {

@@ -29,10 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
@@ -133,12 +133,12 @@ public class ReferenceFhirToDhisTransformerUtilsTest
     @Test
     public void getResource()
     {
-        final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint clientFhirEndpoint = new ClientFhirEndpoint();
         final UUID fhirClientId = UUID.randomUUID();
         final FhirClient fhirClient = new FhirClient();
         fhirClient.setId( fhirClientId );
         fhirClient.setFhirVersion( FhirVersion.DSTU3 );
-        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
+        fhirClient.setFhirEndpoint( clientFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
@@ -162,7 +162,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
             .find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-                Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+                Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         final Resource result = (Resource) utils.getResource( reference, null, false );
         Assert.assertTrue( result instanceof Patient );
@@ -170,18 +170,18 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertNotSame( resource, result );
 
         Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-            Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+            Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 
     @Test
     public void getResourceRefreshed()
     {
-        final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint clientFhirEndpoint = new ClientFhirEndpoint();
         final UUID fhirClientId = UUID.randomUUID();
         final FhirClient fhirClient = new FhirClient();
         fhirClient.setId( fhirClientId );
         fhirClient.setFhirVersion( FhirVersion.DSTU3 );
-        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
+        fhirClient.setFhirEndpoint( clientFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
@@ -205,7 +205,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
             .findRefreshed( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-                Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+                Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         final Resource result = (Resource) utils.getResource( reference, null, true );
         Assert.assertTrue( result instanceof Patient );
@@ -213,18 +213,18 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertNotSame( resource, result );
 
         Mockito.verify( fhirResourceRepository ).findRefreshed( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-            Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+            Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 
     @Test
     public void initReference()
     {
-        final SubscriptionFhirEndpoint subscriptionFhirEndpoint = new SubscriptionFhirEndpoint();
+        final ClientFhirEndpoint clientFhirEndpoint = new ClientFhirEndpoint();
         final UUID fhirClientId = UUID.randomUUID();
         final FhirClient fhirClient = new FhirClient();
         fhirClient.setId( fhirClientId );
         fhirClient.setFhirVersion( FhirVersion.DSTU3 );
-        fhirClient.setFhirEndpoint( subscriptionFhirEndpoint );
+        fhirClient.setFhirEndpoint( clientFhirEndpoint );
         final FhirContext fhirContext = FhirContext.forDstu3();
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
@@ -248,7 +248,7 @@ public class ReferenceFhirToDhisTransformerUtilsTest
 
         Mockito.doReturn( Optional.of( resource ) ).when( fhirResourceRepository )
             .find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-                Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+                Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
 
         utils.initReference( reference, "PATIENT" );
         Assert.assertTrue( reference.getResource() instanceof Patient );
@@ -256,6 +256,6 @@ public class ReferenceFhirToDhisTransformerUtilsTest
         Assert.assertNotSame( resource, reference.getResource() );
 
         Mockito.verify( fhirResourceRepository ).find( Mockito.eq( fhirClientId ), Mockito.eq( FhirVersion.DSTU3 ),
-            Mockito.same( subscriptionFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
+            Mockito.same( clientFhirEndpoint ), Mockito.eq( "Patient" ), Mockito.eq( "123" ) );
     }
 }

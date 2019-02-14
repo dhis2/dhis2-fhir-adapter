@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.data.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.dhis.data.model.ProcessedDhisResourceId;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 
 /**
- * Custom repository for processed server DHIS2 resources {@link ProcessedDhisResource}.
+ * Custom repository for processed client DHIS2 resources {@link ProcessedDhisResource}.
  *
  * @author volsch
  */

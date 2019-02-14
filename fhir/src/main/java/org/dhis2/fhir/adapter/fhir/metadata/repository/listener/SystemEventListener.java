@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,10 @@ public class SystemEventListener extends AbstractRepositoryEventListener<System>
 
         if ( previousEntity != null )
         {
+            if ( previousEntity.getCode().startsWith( System.DHIS2_FHIR_ADAPTER_CODE_PREFIX ) )
+            {
+                entity.setCode( previousEntity.getCode() );
+            }
             entity.setDescriptionProtected( previousEntity.isDescriptionProtected() );
             if ( entity.isDescriptionProtected() )
             {

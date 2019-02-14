@@ -89,13 +89,13 @@ ALTER TABLE fhir_queued_subscription_request RENAME CONSTRAINT fhir_queued_subsc
 ALTER TABLE fhir_queued_subscription_request RENAME CONSTRAINT fhir_queued_subscription_request_fk1 TO fhir_queued_fhir_server_request_fk1;
 ALTER TABLE fhir_queued_subscription_request RENAME TO fhir_queued_fhir_server_request;
 
-COMMENT ON COLUMN fhir_stored_resource.fhir_server_id IS 'References the FHIR server to which the subscription belongs to.';
-COMMENT ON COLUMN fhir_server_system.fhir_server_id IS 'References the FHIR server to which this system URI belongs to.';
-COMMENT ON COLUMN fhir_server_resource.fhir_server_id IS 'References the FHIR server to which this subscribed resource belongs to.';
-COMMENT ON COLUMN fhir_server_header.fhir_server_id IS 'References the FHIR server to which this header belongs to.';
-COMMENT ON COLUMN fhir_server.exp_enabled IS 'Specifies if output transformation from DHIS to FHIR for this FHIR server is enabled.';
-COMMENT ON COLUMN fhir_queued_fhir_server_request.id IS 'References the FHIR server resource request.';
-COMMENT ON TABLE fhir_queued_fhir_server_request IS 'Contains queued FHIR server requests.';
-COMMENT ON COLUMN fhir_queued_resource.fhir_server_resource_id IS 'References the FHIR server resource to which the subscription belongs to.';
-COMMENT ON COLUMN fhir_processed_resource.fhir_server_resource_id IS 'References the FHIR server resource to which the subscription belongs to.';
-COMMENT ON COLUMN fhir_dhis_assignment.fhir_server_id IS 'The reference to the FHIR server to which the resource belongs to.';
+COMMENT ON COLUMN fhir_stored_resource.fhir_server_id IS 'References the FHIR client to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_server_system.fhir_server_id IS 'References the FHIR client to which this system URI belongs to.';
+COMMENT ON COLUMN fhir_server_resource.fhir_server_id IS 'References the FHIR client to which this subscribed resource belongs to.';
+COMMENT ON COLUMN fhir_server_header.fhir_server_id IS 'References the FHIR client to which this header belongs to.';
+COMMENT ON COLUMN fhir_server.exp_enabled IS 'Specifies if output transformation from DHIS to FHIR for this FHIR client is enabled.';
+COMMENT ON COLUMN fhir_queued_fhir_server_request.id IS 'References the FHIR client resource request.';
+COMMENT ON TABLE fhir_queued_fhir_server_request IS 'Contains queued FHIR client requests.';
+COMMENT ON COLUMN fhir_queued_resource.fhir_server_resource_id IS 'References the FHIR client resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_processed_resource.fhir_server_resource_id IS 'References the FHIR client resource to which the subscription belongs to.';
+COMMENT ON COLUMN fhir_dhis_assignment.fhir_server_id IS 'The reference to the FHIR client to which the resource belongs to.';

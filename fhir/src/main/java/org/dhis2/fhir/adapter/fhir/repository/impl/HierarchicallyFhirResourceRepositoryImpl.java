@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionFhirEndpoint;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.HierarchicallyFhirResourceRepository;
@@ -76,7 +76,7 @@ public class HierarchicallyFhirResourceRepositoryImpl implements HierarchicallyF
     @Nonnull
     @Cacheable( key = "{#fhirClientId, #fhirVersion, #resourceType, #resourceId, #hierarchyType}" )
     @Override
-    public IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull SubscriptionFhirEndpoint fhirEndpoint,
+    public IBaseBundle findWithParents( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint,
         @Nonnull String resourceType, @Nullable String resourceId, @Nonnull String hierarchyType,
         @Nonnull Function<IBaseResource, IBaseReference> parentReferenceFunction )
     {

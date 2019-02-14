@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 
-import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -155,15 +154,6 @@ public class TrackedEntityRule extends AbstractRule
     public void setExpOuTransformScript( ExecutableScript expOuTransformScript )
     {
         this.expOuTransformScript = expOuTransformScript;
-    }
-
-    @JsonIgnore
-    @Transient
-    @Nonnull
-    @Override
-    public String getRuleTypeAbbreviation()
-    {
-        return "te";
     }
 
     @Override

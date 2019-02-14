@@ -41,8 +41,8 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * A processed server FHIR resource that contains also the distinct version of the
- * server FHIR resource.
+ * A processed client FHIR resource that contains also the distinct version of the
+ * client FHIR resource.
  *
  * @author volsch
  */

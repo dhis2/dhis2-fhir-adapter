@@ -34,7 +34,7 @@ INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_ORGANIZATION');
 
 ALTER TABLE fhir_remote_subscription_resource
   ADD COLUMN exp_only BOOLEAN DEFAULT FALSE NOT NULL;
-COMMENT ON COLUMN fhir_remote_subscription_resource.exp_only IS 'Specified if the resource is just exported to the FHIR server.';
+COMMENT ON COLUMN fhir_remote_subscription_resource.exp_only IS 'Specified if the resource is just exported to the FHIR client.';
 
 ALTER TABLE fhir_organization_unit_rule
   ADD COLUMN identifier_lookup_script_id UUID NOT NULL,

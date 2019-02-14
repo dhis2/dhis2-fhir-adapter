@@ -89,12 +89,12 @@ public abstract class AbstractAppTest
     private static final String RESOURCE_DL_QUEUE_NAME = "jms.queue.remoteFhirResourceDlQueue";
 
     /**
-     * The DHIS2 server that is accessed to retrieve metadata.
+     * The DHIS2 client that is accessed to retrieve metadata.
      */
     protected MockRestServiceServer systemDhis2Server;
 
     /**
-     * The DHIS2 server that is accessed to retrieve non-metadata
+     * The DHIS2 client that is accessed to retrieve non-metadata
      * as user that is assigned to the FHIR client service.
      */
     protected MockRestServiceServer userDhis2Server;
@@ -291,6 +291,8 @@ public abstract class AbstractAppTest
     @Before
     public void beforeAbstractAppTest() throws Exception
     {
+        testConfiguration.init( fhirMockServer );
+
         fhirMockServer.resetAll();
         WireMock.configureFor( fhirMockServer.port() );
         previousResourceSearchStubMapping = null;
