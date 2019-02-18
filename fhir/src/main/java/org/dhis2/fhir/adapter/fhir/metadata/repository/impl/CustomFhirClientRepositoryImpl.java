@@ -70,7 +70,7 @@ public class CustomFhirClientRepositoryImpl implements CustomFhirClientRepositor
     @Cacheable( key = "{#root.methodName}", cacheManager = "metadataCacheManager", cacheNames = "fhirClient" )
     public Optional<FhirClient> findOnly()
     {
-        final List<FhirClient> result = entityManager.createNamedQuery( FhirClient.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, FhirClient.class )
+        final List<FhirClient> result = entityManager.createNamedQuery( FhirClient.ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, FhirClient.class )
             .setMaxResults( 2 ).getResultList();
         if ( (result.isEmpty()) || (result.size() > 1) )
         {

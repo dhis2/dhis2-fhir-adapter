@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,31 +28,52 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.dstu3.model.ResourceFactory;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
- * Security configuration of FHIR interfaces
- * (perform authentication handling, not performed by Spring).
+ * FHIR version DSTU3 implementation of {@link AbstractFhirResourceFhirToDhisTransformerUtils}.
  *
  * @author volsch
  */
-@Configuration
-@Order( 5 )
-public class FhirInterfaceWebSecurityConfig extends WebSecurityConfigurerAdapter
+@Component
+@Scriptable
+public class Dstu3FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResourceFhirToDhisTransformerUtils
 {
-    @Override
-    protected void configure( @Nonnull HttpSecurity http ) throws Exception
+    public Dstu3FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        http.sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS );
-        http.csrf().disable();
-        http.antMatcher( "/fhir/**" )
-            .authorizeRequests()
-            .antMatchers( "/fhir/**" ).permitAll();
+        super( scriptExecutionContext );
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    public IBaseResource createResource( @Nonnull String resourceType )
+    {
+        try
+        {
+            return ResourceFactory.createResource( NameUtils.toClassName( resourceType ) );
+        }
+        catch ( FHIRException e )
+        {
+            throw new FhirRepositoryException( "Unknown FHIR resource type: " + resourceType, e );
+        }
     }
 }

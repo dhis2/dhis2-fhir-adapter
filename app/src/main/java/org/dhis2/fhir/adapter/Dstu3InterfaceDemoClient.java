@@ -34,12 +34,19 @@ import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Coding;
+import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.hl7.fhir.dstu3.model.Extension;
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Quantity;
 import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.codesystems.ObservationCategory;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -82,7 +89,6 @@ public class Dstu3InterfaceDemoClient
         final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
 
         Patient child = new Patient();
-        child.setIdElement( IdType.newRandomUuid() );
         child.addIdentifier()
             .setSystem( "http://www.dhis2.org/dhis2-fhir-adapter/systems/patient-identifier" )
             .setValue( childNationalId );
@@ -113,5 +119,48 @@ public class Dstu3InterfaceDemoClient
 
         MethodOutcome methodOutcome = client.create().resource( child ).execute();
         System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        child.setId( methodOutcome.getId() );
+        child.getNameFirstRep().setFamily( "Newton" );
+
+        methodOutcome = client.update().resource( child ).execute();
+        System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        Immunization imm1 = new Immunization();
+        imm1.getPatient().setReference( child.getId() );
+        imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm1.getDateElement().setValue( new Date(), TemporalPrecisionEnum.SECOND );
+        imm1.setNotGiven( false );
+        imm1.setPrimarySource( true );
+        imm1.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "01" )
+            .setDisplay( "DTP" );
+        imm1.addVaccinationProtocol().setDoseSequence( 1 )
+            .setSeries( "2" );
+        // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
+        imm1.setLocation( new Reference( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a-05e6-47c9-b36b-ff1f06fec352" ) ) );
+
+        methodOutcome = client.create().resource( imm1 ).execute();
+        System.out.println( "Immunization 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        Observation bw1 = new Observation();
+        bw1.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw1.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8339-4" ) ) );
+        bw1.getSubject().setReference( child.getId() );
+        bw1.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
+
+        methodOutcome = client.create().resource( bw1 ).execute();
+        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        bw1.setId( methodOutcome.getId() );
+        bw1.getValueQuantity().setValue( 121 );
+
+        methodOutcome = client.update().resource( bw1 ).execute();
+        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
     }
 }

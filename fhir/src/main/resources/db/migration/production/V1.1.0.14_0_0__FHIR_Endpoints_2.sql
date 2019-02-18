@@ -233,7 +233,18 @@ if (context.getFhirRequest().isDhisFhirId())
       fhirOrgUnitRef = getLocationReference(encounter.location);
     }
   }
-  if (fhirOrgUnitRef != null)
+  if (fhirOrgUnitRef == null)
+  {
+    if (args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+    {
+      ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+    }
+    else if ((typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+    {
+      ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+    }
+  }
+  else
   {
     ref = context.createReference(context.extractDhisId(fhirOrgUnitRef.getReferenceElement()), ''id'');
   }
@@ -265,5 +276,35 @@ else
   {
     ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
   }
+  else if ((ref == null) && (typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+  {
+    ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+  }
 }
 ref' WHERE id='7b94feba-bcf6-4635-929a-01311b25d975' AND version=0;
+
+UPDATE fhir_script_source SET source_text='var fhirResource = null;
+if (context.getFhirRequest().isDhisFhirId())
+{
+  fhirResource = fhirResourceUtils.createResource(''Patient'');
+  fhirResource.setId(input.getPatient().getReferenceElement());
+}
+else
+{
+  fhirResource = referenceUtils.getResource(input.patient, ''Patient'');
+}
+fhirResource'
+WHERE id='85b3c460-6c2a-4f50-af46-ff09bf2e69df' AND version=0;
+
+UPDATE fhir_script_source SET source_text='var fhirResource = null;
+if (context.getFhirRequest().isDhisFhirId())
+{
+  fhirResource = fhirResourceUtils.createResource(''Patient'');
+  fhirResource.setId(input.getSubject().getReferenceElement());
+}
+else
+{
+  fhirResource = referenceUtils.getResource(input.subject, ''Patient'');
+}
+fhirResource'
+WHERE id='960d2e6c-2479-48a2-b04e-b14879e71d14' AND version=0;

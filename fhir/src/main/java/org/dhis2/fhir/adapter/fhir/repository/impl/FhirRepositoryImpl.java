@@ -341,6 +341,7 @@ public class FhirRepositoryImpl implements FhirRepository
             {
                 fhirRequest.setDhisResourceType( fhirRepositoryOperation.getDhisFhirResourceId().getType() );
                 fhirRequest.setDhisResourceId( fhirRepositoryOperation.getDhisFhirResourceId().getId() );
+                fhirRequest.setRuleId( fhirRepositoryOperation.getDhisFhirResourceId().getRuleId() );
             }
         }
 

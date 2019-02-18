@@ -34,12 +34,20 @@ import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.hl7.fhir.r4.model.CodeableConcept;
+import org.hl7.fhir.r4.model.Coding;
+import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DecimalType;
 import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.IdType;
+import org.hl7.fhir.r4.model.Immunization;
+import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.PositiveIntType;
+import org.hl7.fhir.r4.model.Quantity;
 import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.codesystems.ObservationCategory;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -81,8 +89,7 @@ public class R4InterfaceDemoClient
 
         final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
 
-        Patient child = new Patient();
-        child.setIdElement( IdType.newRandomUuid() );
+        org.hl7.fhir.r4.model.Patient child = new Patient();
         child.addIdentifier()
             .setSystem( "http://www.dhis2.org/dhis2-fhir-adapter/systems/patient-identifier" )
             .setValue( childNationalId );
@@ -101,17 +108,59 @@ public class R4InterfaceDemoClient
         child.getAddress().get( 0 )
             .addExtension()
             .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
-            .addExtension( new Extension()
+            .addExtension( new org.hl7.fhir.r4.model.Extension()
                 .setUrl( "latitude" )
-                .setValue( new DecimalType( 8.4665341 ) ) )
+                .setValue( new org.hl7.fhir.r4.model.DecimalType( 8.4665341 ) ) )
             .addExtension( new Extension()
                 .setUrl( "longitude" )
                 .setValue( new DecimalType( -13.262743 ) ) );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
-        child.setManagingOrganization( new Reference(
-            new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a-05e6-47c9-b36b-ff1f06fec352" ) ) );
+        child.setManagingOrganization( new org.hl7.fhir.r4.model.Reference(
+            new org.hl7.fhir.r4.model.IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a-05e6-47c9-b36b-ff1f06fec352" ) ) );
 
         MethodOutcome methodOutcome = client.create().resource( child ).execute();
         System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        child.setId( methodOutcome.getId() );
+        child.getNameFirstRep().setFamily( "Newton" );
+
+        methodOutcome = client.update().resource( child ).execute();
+        System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        Immunization imm1 = new Immunization();
+        imm1.getPatient().setReference( child.getId() );
+        imm1.setStatus( Immunization.ImmunizationStatus.COMPLETED );
+        imm1.setOccurrence( new DateTimeType( new Date(), TemporalPrecisionEnum.SECOND ) );
+        imm1.setPrimarySource( true );
+        imm1.getVaccineCode()
+            .addCoding()
+            .setSystem( "http://hl7.org/fhir/sid/cvx" )
+            .setCode( "01" )
+            .setDisplay( "DTP" );
+        imm1.addProtocolApplied().setDoseNumber( new PositiveIntType( 1 ) )
+            .setSeries( "2" );
+        // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
+        imm1.setLocation( new Reference( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a-05e6-47c9-b36b-ff1f06fec352" ) ) );
+
+        methodOutcome = client.create().resource( imm1 ).execute();
+        System.out.println( "Immunization 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        Observation bw1 = new Observation();
+        bw1.addCategory( new CodeableConcept().addCoding(
+            new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
+        bw1.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8339-4" ) ) );
+        bw1.getSubject().setReference( child.getId() );
+        bw1.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
+            TemporalPrecisionEnum.DAY ) );
+        bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
+
+        methodOutcome = client.create().resource( bw1 ).execute();
+        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+
+        bw1.setId( methodOutcome.getId() );
+        bw1.getValueQuantity().setValue( 121 );
+
+        methodOutcome = client.update().resource( bw1 ).execute();
+        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
     }
 }

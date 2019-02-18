@@ -62,7 +62,7 @@ public class ClientFhirEndpoint implements Serializable
     @Size( max = MAX_BASE_URL_LENGTH )
     private String baseUrl;
 
-    private boolean useRemote;
+    private boolean useRemote = true;
 
     private boolean logging;
 

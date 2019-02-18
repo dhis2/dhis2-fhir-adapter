@@ -36,7 +36,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
-import org.springframework.stereotype.Component;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,15 +47,14 @@ import java.util.Set;
  *
  * @author volsch
  */
-@Component
 @Scriptable
-@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.IMP, var = FhirResourceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
+@ScriptType( value = "FhirResourceUtils", transformType = ScriptTransformType.IMP, var = AbstractFhirResourceFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities to handle FHIR to DHIS2 transformations of FHIR resources." )
-public class FhirResourceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
+public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "fhirResourceUtils";
 
-    public FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected AbstractFhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }
@@ -73,6 +72,11 @@ public class FhirResourceFhirToDhisTransformerUtils extends AbstractFhirToDhisTr
     {
         return FhirVersion.ALL;
     }
+
+    @Nonnull
+    @ScriptMethod( description = "Creates the FHIR resource (HAPI FHIR) with the specified resource type name.", returnDescription = "The created FHIR resource.",
+        args = @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type name of the resource to be created (e.g. Patient)." ) )
+    public abstract IBaseResource createResource( @Nonnull String resourceType );
 
     @Nullable
     @ScriptMethod( description = "Resolves the enumeration value for a specific property path of an object.", returnDescription = "The resolved enumeration value.",

@@ -74,7 +74,7 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_client" )
 @JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
-@NamedQuery( name = FhirClient.ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM FhirClient rs" )
+@NamedQuery( name = FhirClient.ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM FhirClient rs WHERE rs.enabled=true" )
 public class FhirClient extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
@@ -88,7 +88,7 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
 
     public static final String DHIS2_FHIR_ADAPTER_CODE_PREFIX = "FHIR_RI_";
 
-    public static final String ALL_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "FhirClient.all";
+    public static final String ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY = "FhirClient.allEnabled";
 
     public static final int MAX_NAME_LENGTH = 50;
 

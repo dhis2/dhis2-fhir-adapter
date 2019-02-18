@@ -30,15 +30,18 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
 
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
@@ -111,6 +114,19 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
     protected FhirResourceType getFhirResourceType()
     {
         return fhirResourceType;
+    }
+
+    @Nonnull
+    protected DhisFhirResourceId extractDhisFhirResourceId( @Nonnull IIdType idType ) throws UnprocessableEntityException
+    {
+        try
+        {
+            return DhisFhirResourceId.parse( idType.getIdPart() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new UnprocessableEntityException( "Invalid DHIS2 FHIR ID: " + idType.getIdPart() );
+        }
     }
 
     @Nonnull

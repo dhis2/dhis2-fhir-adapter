@@ -69,7 +69,7 @@ public interface FhirRequest
     UUID getRuleId();
 
     @Nullable
-    @ScriptMethod( description = "Returns the resource type of the DHIS2 resource." )
+    @ScriptMethod( description = "Returns the resource type of the DHIS2 resource (the resource type that defines the rule)." )
     DhisResourceType getDhisResourceType();
 
     @Nullable

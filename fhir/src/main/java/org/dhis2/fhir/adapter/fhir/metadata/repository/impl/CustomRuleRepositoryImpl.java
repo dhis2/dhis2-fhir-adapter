@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -47,8 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +68,33 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     public CustomRuleRepositoryImpl( @Nonnull EntityManager entityManager )
     {
         this.entityManager = entityManager;
+    }
+
+    @RestResource( exported = false )
+    @Cacheable( key = "{#root.methodName, #a0, #a1, #a2}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
+    @Nonnull
+    @Override
+    public Optional<RuleInfo<? extends AbstractRule>> findOneByDhisFhirInputData(
+        @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId )
+    {
+        final List<AbstractRule> rules = new ArrayList<>(
+            entityManager.createNamedQuery( AbstractRule.FIND_RULE_BY_RULE_NAMED_QUERY, AbstractRule.class )
+                .setParameter( "fhirResourceType", fhirResourceType )
+                .setParameter( "ruleId", ruleId ).getResultList() );
+        if ( rules.isEmpty() )
+        {
+            return Optional.empty();
+        }
+
+        final AbstractRule rule = rules.get( 0 );
+        if ( rule.getDhisResourceType() != dhisResourceType )
+        {
+            return Optional.empty();
+        }
+
+        Hibernate.initialize( rule.getDhisDataReferences() );
+        return Optional.of( new RuleInfo<>( rule, rule.getDhisDataReferences() ) );
     }
 
     @Override

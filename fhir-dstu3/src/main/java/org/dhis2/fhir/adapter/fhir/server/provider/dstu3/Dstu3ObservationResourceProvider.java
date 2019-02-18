@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadWriteResourceProvider;
-import org.hl7.fhir.dstu3.model.Location;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -44,11 +44,11 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class Dstu3ObservationResourceProvider extends AbstractReadWriteResourceProvider<Location>
+public class Dstu3ObservationResourceProvider extends AbstractReadWriteResourceProvider<Observation>
 {
     public Dstu3ObservationResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        super( Location.class, fhirClientResourceRepository, fhirRepository, dhisRepository );
+        super( Observation.class, fhirClientResourceRepository, fhirRepository, dhisRepository );
     }
 
     @Nonnull

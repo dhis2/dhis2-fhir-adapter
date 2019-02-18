@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,32 +28,52 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.ResourceFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Set;
 
 /**
- * Custom repository for {@link AbstractRule}s.
+ * FHIR version DSTU3 implementation of {@link AbstractFhirResourceFhirToDhisTransformerUtils}.
  *
  * @author volsch
  */
-public interface CustomRuleRepository
+@Component
+@Scriptable
+public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResourceFhirToDhisTransformerUtils
 {
-    @RestResource( exported = false )
-    @Nonnull
-    Optional<RuleInfo<? extends AbstractRule>> findOneByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId );
+    public R4FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( scriptExecutionContext );
+    }
 
-    @RestResource( exported = false )
     @Nonnull
-    List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.R4_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    public IBaseResource createResource( @Nonnull String resourceType )
+    {
+        try
+        {
+            return ResourceFactory.createResource( NameUtils.toClassName( resourceType ) );
+        }
+        catch ( FHIRException e )
+        {
+            throw new FhirRepositoryException( "Unknown FHIR resource type: " + resourceType, e );
+        }
+    }
 }

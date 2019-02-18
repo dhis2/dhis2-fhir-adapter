@@ -260,7 +260,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull TrackedEntityInstance trackedEntityInstance ) throws TransformerException
     {
-        if ( trackedEntityInstance.getIdentifier() == null )
+        if ( !context.getFhirRequest().isDhisFhirId() && (trackedEntityInstance.getIdentifier() == null) )
         {
             throw new FatalTransformerException( "Identifier of tracked entity instance has not yet been set." );
         }
@@ -300,8 +300,23 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Override
     protected Optional<Event> getResourceById( @Nullable String id ) throws TransformerException
     {
-        // resolving resources by technical ID is not supported
-        return Optional.empty();
+        if ( id == null )
+        {
+            return Optional.empty();
+        }
+        final Optional<Event> event = eventService.findOneById( id );
+        if ( !event.isPresent() )
+        {
+            return Optional.empty();
+        }
+        final Optional<Enrollment> enrollment = enrollmentService.findOneById( event.get().getEnrollmentId() );
+        if ( !enrollment.isPresent() )
+        {
+            return Optional.empty();
+        }
+        enrollment.get().setEvents( Collections.singletonList( event.get() ) );
+        event.get().setEnrollment( enrollment.get() );
+        return event;
     }
 
     @Nonnull
@@ -663,9 +678,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected List<WritableScriptedEvent> createScriptedProgramStageEvents( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull List<Event> events,
+    protected List<WritableScriptedEvent> createScriptedProgramStageEvents( @Nonnull FhirToDhisTransformerContext transformerContext, @Nonnull Program program, @Nonnull ProgramStage programStage, @Nullable List<Event> events,
         @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance )
     {
+        if ( events == null )
+        {
+            return Collections.emptyList();
+        }
         return events.stream().filter( e -> programStage.getId().equals( e.getProgramStageId() ) ).sorted( new EventComparator() )
             .map( e -> new WritableScriptedEvent( transformerContext, program, programStage, e, scriptedTrackedEntityInstance, valueConverter ) ).collect( Collectors.toList() );
     }

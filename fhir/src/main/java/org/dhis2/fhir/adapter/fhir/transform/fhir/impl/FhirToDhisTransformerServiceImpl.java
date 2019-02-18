@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
@@ -62,10 +63,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -141,8 +144,18 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         final FhirContext fhirContext = fhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
         final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
-        final List<RuleInfo<? extends AbstractRule>> rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
-            .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
+        final List<RuleInfo<? extends AbstractRule>> rules;
+        if ( fhirRequest.getRuleId() == null )
+        {
+            rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
+                .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
+        }
+        else
+        {
+            final Optional<RuleInfo<? extends AbstractRule>> rule = ruleRepository.findOneByDhisFhirInputData(
+                Objects.requireNonNull( FhirResourceType.getByResource( originalInput ) ), Objects.requireNonNull( fhirRequest.getDhisResourceType() ), fhirRequest.getRuleId() );
+            rules = rule.<List<RuleInfo<? extends AbstractRule>>>map( Collections::singletonList ).orElse( Collections.emptyList() );
+        }
 
         return new FhirToDhisTransformerRequestImpl( fhirClientResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
     }

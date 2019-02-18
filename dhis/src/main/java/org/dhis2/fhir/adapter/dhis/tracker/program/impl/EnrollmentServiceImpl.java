@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
+import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -61,6 +62,8 @@ import java.util.Optional;
 public class EnrollmentServiceImpl implements EnrollmentService
 {
     protected static final String ENROLLMENTS_URI = "/enrollments.json";
+
+    protected static final String ENROLLMENT_ID_URI = "/enrollments/{id}.json";
 
     protected static final String ENROLLMENT_UPDATE_URI = "/enrollments/{id}.json?mergeMode=MERGE";
 
@@ -91,6 +94,27 @@ public class EnrollmentServiceImpl implements EnrollmentService
     public Optional<Enrollment> findLatestActive( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
     {
         return findLatestActiveRefreshed( programId, trackedEntityInstanceId );
+    }
+
+    @HystrixCommand
+    @Nonnull
+    @Override
+    public Optional<Enrollment> findOneById( @Nonnull String id )
+    {
+        Enrollment instance;
+        try
+        {
+            instance = Objects.requireNonNull( restTemplate.getForObject( ENROLLMENT_ID_URI, Enrollment.class, id ) );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                return Optional.empty();
+            }
+            throw e;
+        }
+        return Optional.of( instance );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )

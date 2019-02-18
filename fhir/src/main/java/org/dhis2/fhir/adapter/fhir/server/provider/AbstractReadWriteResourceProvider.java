@@ -82,6 +82,17 @@ public abstract class AbstractReadWriteResourceProvider<T extends IBaseResource>
     @Nonnull
     public MethodOutcome update( @ResourceParam T resource )
     {
-        return new MethodOutcome();
+        if ( !resource.getIdElement().hasIdPart() )
+        {
+            throw new UnprocessableEntityException( "For a resource that should be updated an ID must be specified." );
+        }
+        final FhirRepositoryOperationOutcome outcome = executeInSecurityContext( () ->
+            getFhirRepository().save( getFhirClientResource(), resource,
+                new FhirRepositoryOperation( FhirRepositoryOperationType.UPDATE, extractDhisFhirResourceId( resource.getIdElement() ) ) ) );
+        if ( outcome == null )
+        {
+            throw new UnprocessableEntityException( "Could not find a rule that matches the resource that should be updated." );
+        }
+        return new MethodOutcome( new IdDt( getFhirResourceType().getResourceTypeName(), outcome.getId() ), Boolean.FALSE );
     }
 }

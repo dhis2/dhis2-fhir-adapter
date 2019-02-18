@@ -199,7 +199,7 @@ public class FhirResourceQueueListener
         else if ( fhirResource.isPersistedDataItem() )
         {
             logger.debug( "Persisted FHIR resource {}/{} for FHIR client resource {} is no longer available. Skipping processing of updated FHIR resource.",
-                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getId(), fhirClientResource.getId() );
+                fhirClientResource.getFhirResourceType().getResourceTypeName(), fhirResource.getIdPart(), fhirClientResource.getId() );
         }
         else
         {
