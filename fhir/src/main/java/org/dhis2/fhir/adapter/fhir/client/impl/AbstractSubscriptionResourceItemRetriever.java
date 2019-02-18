@@ -86,11 +86,14 @@ public abstract class AbstractSubscriptionResourceItemRetriever implements DataP
 
     private final FhirContext fhirContext;
 
+    private final FhirConformanceService fhirConformanceService;
+
     private int maxConsumedSize = 1000;
 
-    protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext )
+    protected AbstractSubscriptionResourceItemRetriever( @Nonnull FhirContext fhirContext, @Nonnull FhirConformanceService fhirConformanceService )
     {
         this.fhirContext = fhirContext;
+        this.fhirConformanceService = fhirConformanceService;
     }
 
     public int getMaxConsumedSize()

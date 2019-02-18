@@ -54,9 +54,9 @@ import java.util.stream.Collectors;
 @Component
 public class Dstu3SubscriptionResourceItemRetrieverImpl extends AbstractSubscriptionResourceItemRetriever
 {
-    public Dstu3SubscriptionResourceItemRetrieverImpl( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext )
+    public Dstu3SubscriptionResourceItemRetrieverImpl( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext, @Nonnull @Qualifier( "dstu3FhirConformanceService" ) FhirConformanceService fhirConformanceService )
     {
-        super( fhirContext );
+        super( fhirContext, fhirConformanceService );
     }
 
     @Nonnull
