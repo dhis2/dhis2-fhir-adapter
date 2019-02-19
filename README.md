@@ -141,4 +141,4 @@ The adapter provides REST interfaces for administration and mapping. The documen
  found at docs/api-guide.html. If the Adapter has been started by command line without changing the port, then the guide is available at `http://localhost:8081/docs/api-guide.html`.
  
 The JavaScript API that is used to create rules and transformations is generated automatically when running the adapter. The script can be found at scripts/to-dhis2-all-mapping.js. If the Adapter has been started by command line without changing the port, 
- then the guide is available at `http://localhost:8081/scripts/to-dhis2-all-mapping.js`. The FHIR resources are exposed to JavaScript by [HAPI FHIR 3.6.0](http://hapifhir.io/) objects. 
+ then the guide is available at `http://localhost:8081/scripts/to-dhis2-all-mapping.js`. The FHIR resources are exposed to JavaScript by [HAPI FHIR 3.7.0](http://hapifhir.io/) objects. 
