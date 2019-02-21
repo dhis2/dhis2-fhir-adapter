@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.cache;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,35 @@ package org.dhis2.fhir.adapter.cache;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
- * Provides access to one or more request scope cache managers.
+ * Spring Data REST validator for {@link FhirClientResource} before deletion.
  *
  * @author volsch
  */
-public interface RequestCacheService
+@Component
+public class BeforeDeleteFhirClientResourceValidator implements Validator
 {
-    @Nonnull
-    RequestCacheContext createRequestCacheContext( boolean useExisting );
+    @Override
+    public boolean supports( @Nonnull Class<?> clazz )
+    {
+        return FhirClientResource.class.isAssignableFrom( clazz );
+    }
 
-    @Nonnull
-    RequestCacheContext createRequestCacheContext();
-
-    @Nullable
-    RequestCacheContext getCurrentRequestCacheContext();
+    @Override
+    public void validate( Object target, @Nonnull Errors errors )
+    {
+        final FhirClientResource fhirClientResource = (FhirClientResource) target;
+        if ( FhirClient.FHIR_REST_INTERFACE_IDS.contains( fhirClientResource.getFhirClient().getId() ) )
+        {
+            errors.rejectValue( "fhirResourceType", "FhirClientResource.fhirResourceType.reserved", "Adapter specific FHIR client cannot be deleted." );
+        }
+    }
 }

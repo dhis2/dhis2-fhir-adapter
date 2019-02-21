@@ -143,6 +143,13 @@ dhis2.fhir-adapter:
     connectTimeout: 5000
     # The read timeout when accessing DHIS2 in milli-seconds.
     readTimeout: 30000
+    # The WWW-Authenticate headers that are returned to the FHIR REST client
+    # in case of an authentication error.
+    wwwAuthenticates:
+      - type: Basic
+        realm: DHIS2
+      - type: Bearer
+        realm: dhis2/oauth2
   # Contains the security settings of the adapter.
   security:
     # The adapter uses security authorities that are mapped to authorities of DHIS2.

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomTrackedEntityRuleRepository;
 import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,10 +66,10 @@ public class CustomTrackedEntityRuleRepositoryImpl implements CustomTrackedEntit
     @Transactional( readOnly = true )
     @RestResource( exported = false )
     @Cacheable( keyGenerator = "trackedEntityRuleFindAllByTypeKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
-    public Collection<RuleInfo<TrackedEntityRule>> findAllByType( @Param( "typeReferences" ) @Nonnull Collection<Reference> typeReferences )
+    public Collection<RuleInfo<TrackedEntityRule>> findAllByType( @Nonnull Collection<Reference> typeReferences )
     {
         final List<TrackedEntityRule> trackedEntityRules = entityManager.createNamedQuery(
-            TrackedEntityRule.FIND_ALL_BY_TYPE_NAMED_QUERY, TrackedEntityRule.class )
+            TrackedEntityRule.FIND_ALL_EXP_BY_TYPE_NAMED_QUERY, TrackedEntityRule.class )
             .setParameter( "typeReferences", typeReferences ).getResultList();
         return trackedEntityRules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );

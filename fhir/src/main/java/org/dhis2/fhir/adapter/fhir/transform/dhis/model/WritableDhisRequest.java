@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,50 @@ public class WritableDhisRequest implements DhisRequest, Serializable
 {
     private static final long serialVersionUID = 6482108680860344148L;
 
+    private final boolean dhisFhirId;
+
+    private boolean completeTransformation;
+
+    private boolean includeReferences;
+
     private DhisResourceType resourceType;
 
     private ZonedDateTime lastUpdated;
+
+    public WritableDhisRequest( boolean dhisFhirId, boolean completeTransformation, boolean includeReferences )
+    {
+        this.dhisFhirId = dhisFhirId;
+        this.completeTransformation = completeTransformation;
+        this.includeReferences = includeReferences;
+    }
+
+    @Override
+    public boolean isDhisFhirId()
+    {
+        return dhisFhirId;
+    }
+
+    @Override
+    public boolean isCompleteTransformation()
+    {
+        return completeTransformation;
+    }
+
+    public void setCompleteTransformation( boolean completeTransformation )
+    {
+        this.completeTransformation = completeTransformation;
+    }
+
+    @Override
+    public boolean isIncludeReferences()
+    {
+        return includeReferences;
+    }
+
+    public void setIncludeReferences( boolean includeReferences )
+    {
+        this.includeReferences = includeReferences;
+    }
 
     @Override
     public DhisResourceType getResourceType()
@@ -69,4 +110,6 @@ public class WritableDhisRequest implements DhisRequest, Serializable
     {
         this.lastUpdated = lastUpdated;
     }
+
+
 }

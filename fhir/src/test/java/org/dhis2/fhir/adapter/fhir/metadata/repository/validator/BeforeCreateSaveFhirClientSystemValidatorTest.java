@@ -82,6 +82,15 @@ public class BeforeCreateSaveFhirClientSystemValidatorTest extends AbstractJpaRe
     }
 
     @Test
+    public void testReservedId() throws Exception
+    {
+        mockMvc.perform( patch( RESOURCE_PATH + "/47fd1b28-7558-429b-85ab-c5f5fcc3d00f" )
+            .header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.parseMediaType( "application/merge-patch+json" ) ).content( "{}" ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirResourceType" ) ) );
+    }
+
+    @Test
     public void testSystemNull() throws Exception
     {
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )

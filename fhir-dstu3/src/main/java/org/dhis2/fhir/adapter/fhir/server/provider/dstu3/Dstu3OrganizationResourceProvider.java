@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadOnlyResourceProvider;
 import org.hl7.fhir.dstu3.model.Organization;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
@@ -42,6 +43,7 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
+@Component
 public class Dstu3OrganizationResourceProvider extends AbstractReadOnlyResourceProvider<Organization>
 {
     public Dstu3OrganizationResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )

@@ -93,7 +93,10 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
     public abstract ICompositeType createCodeableConcept();
 
     @Nonnull
-    @ScriptMethod( description = "Returns the created reference for the specified resource." )
+    @ScriptMethod( description = "Returns the created reference for the specified resource.",
+        args = {
+            @ScriptMethodArg( value = "resource", description = "The FHIR Resource for which the reference should be created." )
+        } )
     public abstract IBaseReference createReference( @Nonnull IBaseResource resource );
 
     @ScriptMethod( description = "Returns if the specified string value is included in the specified string type list.",

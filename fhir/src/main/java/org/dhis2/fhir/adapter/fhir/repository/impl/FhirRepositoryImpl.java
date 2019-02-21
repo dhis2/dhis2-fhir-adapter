@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.IdDt;
 import com.google.common.collect.ArrayListMultimap;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
@@ -83,6 +84,7 @@ import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -373,8 +375,12 @@ public class FhirRepositoryImpl implements FhirRepository
                     }
                     if ( operationOutcome == null )
                     {
-                        operationOutcome = new FhirRepositoryOperationOutcome(
-                            DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() ) );
+                        final String dhisFhirResourceId = DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() );
+                        if ( fhirRequest.isDhisFhirId() && resource.getIdElement().isEmpty() )
+                        {
+                            resource.setId( new IdDt( Objects.requireNonNull( fhirRequest.getResourceType() ).getResourceTypeName(), dhisFhirResourceId ) );
+                        }
+                        operationOutcome = new FhirRepositoryOperationOutcome( dhisFhirResourceId );
                     }
                     transformerRequest = outcome.getNextTransformerRequest();
                 }

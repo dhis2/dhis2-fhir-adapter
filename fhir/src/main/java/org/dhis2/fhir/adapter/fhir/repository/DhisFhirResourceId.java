@@ -29,11 +29,14 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Includes the ID for a DHIS2 resource that is used by FHIR.
@@ -43,6 +46,8 @@ import java.util.UUID;
 public class DhisFhirResourceId implements Serializable
 {
     private static final long serialVersionUID = 2783682126270684036L;
+
+    private static final Pattern UUID_PATTERN = Pattern.compile( "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})" );
 
     private final DhisResourceType type;
 
@@ -75,6 +80,12 @@ public class DhisFhirResourceId implements Serializable
         return ruleId;
     }
 
+    @Nonnull
+    public DhisResourceId getDhisResourceId()
+    {
+        return new DhisResourceId( getType(), getId() );
+    }
+
     @Override
     @Nonnull
     public String toString()
@@ -85,7 +96,7 @@ public class DhisFhirResourceId implements Serializable
     @Nonnull
     public static String toString( @Nonnull DhisResourceType type, @Nonnull String id, @Nonnull UUID ruleId )
     {
-        return type.getAbbreviation() + "-" + id + "-" + ruleId;
+        return type.getAbbreviation() + "-" + id + "-" + StringUtils.remove( ruleId.toString(), '-' );
     }
 
     @Nonnull
@@ -115,7 +126,12 @@ public class DhisFhirResourceId implements Serializable
         final UUID ruleId;
         try
         {
-            ruleId = UUID.fromString( value.substring( secondIndex + 1 ) );
+            final Matcher matcher = UUID_PATTERN.matcher( value.substring( secondIndex + 1 ) );
+            if ( !matcher.matches() )
+            {
+                throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
+            }
+            ruleId = UUID.fromString( matcher.replaceAll( "$1-$2-$3-$4-$5" ) );
         }
         catch ( IllegalArgumentException e )
         {

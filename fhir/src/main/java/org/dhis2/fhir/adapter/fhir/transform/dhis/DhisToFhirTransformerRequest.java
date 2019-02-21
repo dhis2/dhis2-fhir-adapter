@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Contains the next request to the transformer, that may deliver further transformer
@@ -50,6 +51,9 @@ public interface DhisToFhirTransformerRequest extends Serializable
 
     @Nonnull
     ScriptedDhisResource getInput();
+
+    @Nonnull
+    UUID getRuleId();
 
     @Nonnull
     FhirClient getFhirClient();

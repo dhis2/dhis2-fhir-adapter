@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.fhir.server;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.PreferReturnEnum;
+import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
@@ -79,6 +81,9 @@ public class FhirRestfulServer extends RestfulServer
     @Override
     protected void initialize()
     {
+        setDefaultPreferReturn( PreferReturnEnum.MINIMAL );
+        setETagSupport( ETagSupportEnum.DISABLED );
+
         setResourceProviders( resourceProviders );
         setInterceptors( interceptors );
     }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,12 +29,15 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 /**
  * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
@@ -45,6 +48,12 @@ public interface DhisToFhirTransformerService
 {
     @Nullable
     DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
+
+    @Nullable
+    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirClient fhirClient, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType, @Nonnull UUID ruleId );
+
+    @Nonnull
+    DhisToFhirTransformerRequest updateTransformerRequest( @Nonnull DhisToFhirTransformerRequest transformerRequest, @Nonnull DhisResource dhisResource );
 
     @Nullable
     DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;

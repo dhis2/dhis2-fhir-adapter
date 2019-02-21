@@ -124,22 +124,25 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
             return null;
         }
 
-        // transform organization unit into output FHIR resource
-        if ( (ruleInfo.getRule().getExpOuTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpOuTransformScript(), variables, Boolean.class ) ) )
+        if ( context.getDhisRequest().isCompleteTransformation() )
         {
-            logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
-            return null;
+            // transform organization unit into output FHIR resource
+            if ( (ruleInfo.getRule().getExpOuTransformScript() != null) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpOuTransformScript(), variables, Boolean.class ) ) )
+            {
+                logger.info( "Organization unit {} could not be set on FHIR resource.", input.getOrganizationUnitId() );
+                return null;
+            }
+
+            // transformation of GEO information must follow normal transformation since normal transformation may reset this information
+            if ( (ruleInfo.getRule().getExpGeoTransformScript() != null) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpGeoTransformScript(), variables, Boolean.class ) ) )
+            {
+                return null;
+            }
         }
 
-        // transformation of GEO information must follow normal transformation since normal transformation may reset this information
-        if ( (ruleInfo.getRule().getExpGeoTransformScript() != null) &&
-            !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getExpGeoTransformScript(), variables, Boolean.class ) ) )
-        {
-            return null;
-        }
-
-        if ( equalsDeep( context, variables, resource, modifiedResource ) )
+        if ( evaluateNotModified( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
             return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
@@ -169,10 +172,13 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
-            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
-        getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
-            .lock( "out-te:" + scriptedTrackedEntityInstance.getId() );
+        if ( !context.getDhisRequest().isDhisFhirId() )
+        {
+            final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance =
+                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedTrackedEntityInstance.class );
+            getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
+                .lock( "out-te:" + scriptedTrackedEntityInstance.getId() );
+        }
     }
 
     @Override

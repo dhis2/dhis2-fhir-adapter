@@ -147,12 +147,12 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         final List<RuleInfo<? extends AbstractRule>> rules;
         if ( fhirRequest.getRuleId() == null )
         {
-            rules = ruleRepository.findAllByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
+            rules = ruleRepository.findAllImpByInputData( fhirRequest.getResourceType(), codeTransformerUtils.getResourceCodes( input ) )
                 .stream().filter( r -> !contained || r.getRule().isContainedAllowed() ).sorted().collect( Collectors.toList() );
         }
         else
         {
-            final Optional<RuleInfo<? extends AbstractRule>> rule = ruleRepository.findOneByDhisFhirInputData(
+            final Optional<RuleInfo<? extends AbstractRule>> rule = ruleRepository.findOneImpByDhisFhirInputData(
                 Objects.requireNonNull( FhirResourceType.getByResource( originalInput ) ), Objects.requireNonNull( fhirRequest.getDhisResourceType() ), fhirRequest.getRuleId() );
             rules = rule.<List<RuleInfo<? extends AbstractRule>>>map( Collections::singletonList ).orElse( Collections.emptyList() );
         }

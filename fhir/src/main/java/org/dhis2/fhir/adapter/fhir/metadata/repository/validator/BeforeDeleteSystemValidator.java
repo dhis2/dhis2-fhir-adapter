@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.cache;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,34 @@ package org.dhis2.fhir.adapter.cache;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
- * Provides access to one or more request scope cache managers.
+ * Spring Data REST validator for {@link System} before deletion.
  *
  * @author volsch
  */
-public interface RequestCacheService
+@Component
+public class BeforeDeleteSystemValidator implements Validator
 {
-    @Nonnull
-    RequestCacheContext createRequestCacheContext( boolean useExisting );
+    @Override
+    public boolean supports( @Nonnull Class<?> clazz )
+    {
+        return System.class.isAssignableFrom( clazz );
+    }
 
-    @Nonnull
-    RequestCacheContext createRequestCacheContext();
-
-    @Nullable
-    RequestCacheContext getCurrentRequestCacheContext();
+    @Override
+    public void validate( Object target, @Nonnull Errors errors )
+    {
+        final System system = (System) target;
+        if ( system.getCode().startsWith( System.DHIS2_FHIR_ADAPTER_CODE_PREFIX ) )
+        {
+            errors.rejectValue( "code", "System.code.reserved", new Object[]{ System.DHIS2_FHIR_ADAPTER_CODE_PREFIX }, "Adapter defined systems (prefix {1}) cannot be deleted." );
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,12 @@ package org.dhis2.fhir.adapter.fhir.repository;
 
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 /**
  * The repository that is used to store DHIS 2 Resources.
@@ -41,4 +45,7 @@ import javax.annotation.Nonnull;
 public interface DhisRepository
 {
     void save( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource );
+
+    @Nonnull
+    Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisFhirResourceId dhisFhirResourceId );
 }

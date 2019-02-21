@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
@@ -40,6 +41,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Implementation of {@link DhisToFhirTransformerRequest}.
@@ -52,7 +54,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private final DhisToFhirTransformerContext context;
 
-    private final ScriptedDhisResource input;
+    private ScriptedDhisResource input;
 
     private final FhirClient fhirClient;
 
@@ -62,7 +64,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private int ruleIndex;
 
-    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input, @Nonnull FhirClient fhirClient, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
+    public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nullable ScriptedDhisResource input, @Nonnull FhirClient fhirClient, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
         @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
     {
         this.context = context;
@@ -83,7 +85,16 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
     @Override
     public ScriptedDhisResource getInput()
     {
+        if ( input == null )
+        {
+            throw new FatalTransformerException( "Transformer input has not yet been set." );
+        }
         return input;
+    }
+
+    public void setInput( @Nonnull ScriptedDhisResource input )
+    {
+        this.input = input;
     }
 
     @Nonnull
@@ -105,6 +116,17 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         return transformerUtils;
     }
 
+    @Nonnull
+    @Override
+    public UUID getRuleId()
+    {
+        if ( ruleIndex >= rules.size() )
+        {
+            throw new FatalTransformerException( "Rule ID is not available." );
+        }
+        return rules.get( ruleIndex ).getRule().getId();
+    }
+
     public boolean isFirstRule()
     {
         return (ruleIndex == 0);
@@ -122,6 +144,11 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         {
             return null;
         }
-        return rules.get( ruleIndex++ );
+        final RuleInfo<? extends AbstractRule> ruleInfo = rules.get( ruleIndex++ );
+        if ( (input != null) && (ruleInfo.getRule().getDhisResourceType() != input.getResourceType()) )
+        {
+            input = null;
+        }
+        return ruleInfo;
     }
 }

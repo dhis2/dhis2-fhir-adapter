@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.cache.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.cache.impl;
 
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -49,10 +50,26 @@ public class RequestCacheServiceImpl implements RequestCacheService
     @Override
     public RequestCacheContext createRequestCacheContext()
     {
-        if ( threadLocal.get() != null )
+        return createRequestCacheContext( false );
+    }
+
+    @Nonnull
+    @Override
+    public RequestCacheContext createRequestCacheContext( boolean useExisting )
+    {
+        final RequestCacheContext existingContext = threadLocal.get();
+        if ( existingContext != null )
         {
-            throw new IllegalStateException( "There is already a request cache context bound to the current thread." );
+            if ( useExisting )
+            {
+                return new ExistingRequestCacheContextDelegate( existingContext );
+            }
+            else
+            {
+                throw new IllegalStateException( "There is already a request cache context bound to the current thread." );
+            }
         }
+
         final RequestCacheContextImpl context = new RequestCacheContextImpl( this );
         threadLocal.set( context );
         return context;
@@ -72,5 +89,38 @@ public class RequestCacheServiceImpl implements RequestCacheService
             throw new IllegalStateException( "A different request cache context has been bound to the thread." );
         }
         threadLocal.remove();
+    }
+
+    protected static class ExistingRequestCacheContextDelegate implements RequestCacheContext
+    {
+        private final RequestCacheContext requestCacheContext;
+
+        private boolean closed;
+
+        public ExistingRequestCacheContextDelegate( @Nonnull RequestCacheContext requestCacheContext )
+        {
+            this.requestCacheContext = requestCacheContext;
+        }
+
+        @Nonnull
+        @Override
+        public CacheManager getCacheManager( @Nonnull String name )
+        {
+            if ( closed )
+            {
+                throw new IllegalStateException( "Request cache context has already been closed." );
+            }
+            return requestCacheContext.getCacheManager( name );
+        }
+
+        @Override
+        public void close()
+        {
+            if ( closed )
+            {
+                throw new IllegalStateException( "Request cache context has already been closed." );
+            }
+            closed = true;
+        }
     }
 }

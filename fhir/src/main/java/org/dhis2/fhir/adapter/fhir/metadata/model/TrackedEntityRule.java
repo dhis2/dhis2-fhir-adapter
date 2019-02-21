@@ -51,7 +51,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table( name = "fhir_tracked_entity_rule" )
 @DiscriminatorValue( "TRACKED_ENTITY" )
-@NamedQuery( name = TrackedEntityRule.FIND_ALL_BY_TYPE_NAMED_QUERY, query = "SELECT ter FROM TrackedEntityRule ter JOIN ter.trackedEntity te " +
+@NamedQuery( name = TrackedEntityRule.FIND_ALL_EXP_BY_TYPE_NAMED_QUERY, query = "SELECT ter FROM TrackedEntityRule ter JOIN ter.trackedEntity te " +
     "WHERE ter.enabled=true AND ter.expEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) " +
     "AND te.enabled=true AND te.expEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
 @JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
@@ -59,7 +59,7 @@ public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
 
-    public static final String FIND_ALL_BY_TYPE_NAMED_QUERY = "TrackedEntityRule.findAllByType";
+    public static final String FIND_ALL_EXP_BY_TYPE_NAMED_QUERY = "TrackedEntityRule.findAllExpByType";
 
     @NotNull
     private MappedTrackedEntity trackedEntity;

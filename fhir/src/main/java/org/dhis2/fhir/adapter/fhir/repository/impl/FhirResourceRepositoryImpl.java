@@ -369,6 +369,12 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
     @Nonnull
     protected Optional<IBaseResource> findByToken( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nonnull ClientFhirEndpoint fhirEndpoint, @Nonnull String resourceType, @Nonnull String field, @Nonnull SystemCodeValue identifier )
     {
+        if ( !fhirEndpoint.isUseRemote() )
+        {
+            logger.debug( "Remote for FHIR client {} should not be used. Finding by token will not be performed.", fhirClientId );
+            return Optional.empty();
+        }
+
         final FhirContext fhirContext = fhirContexts.get( fhirVersion );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirEndpoint );
         final AbstractFhirResourceRepositorySupport support = supports.get( fhirVersion );

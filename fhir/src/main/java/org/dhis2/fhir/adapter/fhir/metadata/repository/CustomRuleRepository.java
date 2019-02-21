@@ -51,9 +51,9 @@ public interface CustomRuleRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    Optional<RuleInfo<? extends AbstractRule>> findOneByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId );
+    Optional<RuleInfo<? extends AbstractRule>> findOneImpByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId );
 
     @RestResource( exported = false )
     @Nonnull
-    List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
+    List<RuleInfo<? extends AbstractRule>> findAllImpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues );
 }

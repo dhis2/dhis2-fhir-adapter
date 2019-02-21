@@ -40,6 +40,9 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
@@ -48,6 +51,8 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.model.ImmutableDhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.WritableDhisRequest;
 import org.dhis2.fhir.adapter.lock.LockContext;
 import org.dhis2.fhir.adapter.lock.LockManager;
@@ -59,10 +64,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Implementation of {@link DhisRepository}.
@@ -114,7 +122,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
     }
 
-    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, MissingDhisResourceException.class } )
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public void save( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )
@@ -130,6 +138,37 @@ public class DhisRepositoryImpl implements DhisRepository
         }
     }
 
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
+    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    @Override
+    @Nonnull
+    public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisFhirResourceId dhisFhirResourceId )
+    {
+        return new OneDhisResourceReader()
+        {
+            @Nonnull
+            @Override
+            protected UUID getRuleId()
+            {
+                return dhisFhirResourceId.getRuleId();
+            }
+
+            @Nullable
+            @Override
+            protected DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType )
+            {
+                return dhisToFhirTransformerService.createTransformerRequest( fhirClient, dhisRequest, dhisResource, fhirResourceType, dhisFhirResourceId.getRuleId() );
+            }
+
+            @Nullable
+            @Override
+            protected DhisResource getDhisResource()
+            {
+                return dhisResourceRepository.findRefreshed( dhisFhirResourceId.getDhisResourceId() ).orElse( null );
+            }
+        }.read( fhirClient, fhirResourceType );
+    }
+
     protected boolean saveInternallyWithMissingDhisResources( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource, @Nonnull Set<DhisResourceId> missingDhisResourceIds, boolean initial )
     {
         boolean result = false;
@@ -138,7 +177,7 @@ public class DhisRepositoryImpl implements DhisRepository
         {
             try
             {
-                result = saveInternally( syncGroup, resource );
+                result = saveInternally( resource );
                 saved = true;
             }
             catch ( MissingDhisResourceException e )
@@ -184,13 +223,13 @@ public class DhisRepositoryImpl implements DhisRepository
             Objects.requireNonNull( resource.getLastUpdated() ).toInstant(), resource.isDeleted() );
     }
 
-    protected boolean saveInternally( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )
+    protected boolean saveInternally( @Nonnull DhisResource resource )
     {
-        final WritableDhisRequest dhisRequest = new WritableDhisRequest();
+        final WritableDhisRequest dhisRequest = new WritableDhisRequest( false, true, true );
         dhisRequest.setResourceType( resource.getResourceType() );
         dhisRequest.setLastUpdated( resource.getLastUpdated() );
 
-        DhisToFhirTransformerRequest transformerRequest = dhisToFhirTransformerService.createTransformerRequest( dhisRequest, resource );
+        DhisToFhirTransformerRequest transformerRequest = dhisToFhirTransformerService.createTransformerRequest( new ImmutableDhisRequest( dhisRequest ), resource );
         if ( transformerRequest == null )
         {
             return false;
@@ -240,5 +279,76 @@ public class DhisRepositoryImpl implements DhisRepository
         }
         while ( transformerRequest != null );
         return saved;
+    }
+
+    protected abstract class OneDhisResourceReader
+    {
+        @Nonnull
+        public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType )
+        {
+            IBaseResource resource = null;
+            authorizationContext.setAuthorization( systemDhis2Authorization );
+            try
+            {
+                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+                {
+                    final DhisResource dhisResource = getDhisResource();
+                    if ( dhisResource == null )
+                    {
+                        logger.debug( "DHIS resource could not be found." );
+                        return Optional.empty();
+                    }
+
+                    final WritableDhisRequest dhisRequest = new WritableDhisRequest( true, true, true );
+                    dhisRequest.setResourceType( dhisResource.getResourceType() );
+                    dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
+
+                    DhisToFhirTransformerRequest transformerRequest = createTransformerRequest( new ImmutableDhisRequest( dhisRequest ), dhisResource, fhirResourceType );
+                    if ( transformerRequest == null )
+                    {
+                        logger.debug( "No matching rule has been found." );
+                        return Optional.empty();
+                    }
+
+                    final UUID ruleId = getRuleId();
+                    do
+                    {
+                        final boolean matchingRule = (ruleId == null) || ruleId.equals( transformerRequest.getRuleId() );
+                        dhisRequest.setCompleteTransformation( matchingRule );
+                        dhisRequest.setIncludeReferences( matchingRule );
+
+                        final DhisToFhirTransformOutcome<? extends IBaseResource> outcome =
+                            dhisToFhirTransformerService.transform( transformerRequest );
+                        if ( outcome == null )
+                        {
+                            transformerRequest = null;
+                        }
+                        else
+                        {
+                            if ( matchingRule && (resource == null) && (outcome.getResource() != null) )
+                            {
+                                resource = outcome.getResource();
+                            }
+                            transformerRequest = outcome.getNextTransformerRequest();
+                        }
+                    }
+                    while ( transformerRequest != null );
+                }
+            }
+            finally
+            {
+                authorizationContext.resetAuthorization();
+            }
+            return Optional.ofNullable( resource );
+        }
+
+        @Nullable
+        protected abstract UUID getRuleId();
+
+        @Nullable
+        protected abstract DhisResource getDhisResource();
+
+        @Nullable
+        protected abstract DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType );
     }
 }

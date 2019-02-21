@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -58,13 +59,17 @@ public class ValidatorEventConfig implements InitializingBean
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
-        final List<String> events = Arrays.asList( "beforeCreate", "beforeSave" );
+        final List<String> beforeCreateSaveEvents = Arrays.asList( "beforeCreate", "beforeSave" );
+        final List<String> beforeDeleteEvents = Collections.singletonList( "beforeDelete" );
         for ( Map.Entry<String, Validator> entry : validators.entrySet() )
         {
-            events.stream()
+            beforeCreateSaveEvents.stream()
                 .filter( p -> entry.getKey().startsWith( "beforeCreateSave" ) )
+                .forEach( p -> validatingRepositoryEventListener.addValidator( p, entry.getValue() ) );
+            beforeDeleteEvents.stream()
+                .filter( p -> entry.getKey().startsWith( "beforeDelete" ) )
                 .forEach( p -> validatingRepositoryEventListener.addValidator( p, entry.getValue() ) );
         }
     }

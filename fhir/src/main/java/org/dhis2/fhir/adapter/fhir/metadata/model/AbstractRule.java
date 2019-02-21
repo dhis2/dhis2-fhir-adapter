@@ -74,15 +74,17 @@ import java.util.List;
 @Inheritance( strategy = InheritanceType.JOINED )
 @DiscriminatorColumn( name = "dhis_resource_type", discriminatorType = DiscriminatorType.STRING )
 @NamedQueries( {
-    @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
+    @NamedQuery( name = AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY, query = "SELECT r FROM AbstractRule r " +
         "WHERE r.fhirResourceType=:fhirResourceType AND r.applicableCodeSet IS NULL AND r.enabled=true AND r.impEnabled=true" ),
-    @NamedQuery( name = AbstractRule.FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, query =
+    @NamedQuery( name = AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, query =
         "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true " +
             "AND r.impEnabled=true AND (r.applicableCodeSet IS NULL OR (r.applicableCodeSet IS NOT NULL AND EXISTS " +
             "(SELECT 1 FROM CodeSetValue csv JOIN csv.code c ON c.enabled=true JOIN c.systemCodes sc ON sc.enabled=true AND " +
             "sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true WHERE csv.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ),
-    @NamedQuery( name = AbstractRule.FIND_RULE_BY_RULE_NAMED_QUERY, query =
-        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.id=:ruleId AND r.enabled=true AND r.impEnabled=true" ) } )
+    @NamedQuery( name = AbstractRule.FIND_IMP_RULE_BY_ID_NAMED_QUERY, query =
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.impEnabled=true" ),
+    @NamedQuery( name = AbstractRule.FIND_EXP_RULE_BY_ID_NAMED_QUERY, query =
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.expEnabled=true" ) } )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
@@ -94,11 +96,13 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
-    public static final String FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY = "AbstractRule.findByFhirType";
+    public static final String FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY = "AbstractRule.findImpByFhirType";
 
-    public static final String FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY = "AbstractRule.findByFhirTypeAndCodes";
+    public static final String FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY = "AbstractRule.findImpByFhirTypeAndCodes";
 
-    public static final String FIND_RULE_BY_RULE_NAMED_QUERY = "AbstractRule.findByRule";
+    public static final String FIND_IMP_RULE_BY_ID_NAMED_QUERY = "AbstractRule.findImpById";
+
+    public static final String FIND_EXP_RULE_BY_ID_NAMED_QUERY = "AbstractRule.findExpById";
 
     public static final int MAX_NAME_LENGTH = 230;
 
@@ -143,6 +147,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     private ExecutableScript transformExpScript;
 
     private boolean containedAllowed;
+
+    private boolean grouping;
 
     private List<RuleDhisDataReference> dhisDataReferences;
 
@@ -370,6 +376,17 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setContainedAllowed( boolean containedAllowed )
     {
         this.containedAllowed = containedAllowed;
+    }
+
+    @Column( name = "grouping", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isGrouping()
+    {
+        return grouping;
+    }
+
+    public void setGrouping( boolean grouping )
+    {
+        this.grouping = grouping;
     }
 
     @JsonCacheIgnore

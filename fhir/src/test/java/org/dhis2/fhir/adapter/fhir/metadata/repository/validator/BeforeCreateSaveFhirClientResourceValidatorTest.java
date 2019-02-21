@@ -87,6 +87,15 @@ public class BeforeCreateSaveFhirClientResourceValidatorTest extends AbstractJpa
     }
 
     @Test
+    public void testReservedId() throws Exception
+    {
+        mockMvc.perform( patch( RESOURCE_PATH + "/f3491bb6-9279-4fb7-a275-60c217f88a6a" )
+            .header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.parseMediaType( "application/merge-patch+json" ) ).content( "{}" ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirResourceType" ) ) );
+    }
+
+    @Test
     public void testCriteriaParametersLength() throws Exception
     {
         entity.setFhirCriteriaParameters( StringUtils.repeat( 'a', FhirClientResource.MAX_CRITERIA_PARAMETERS_LENGTH + 1 ) );

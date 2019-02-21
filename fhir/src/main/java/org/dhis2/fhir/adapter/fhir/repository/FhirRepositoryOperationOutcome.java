@@ -47,6 +47,7 @@ public class FhirRepositoryOperationOutcome implements Serializable
         this.id = id;
     }
 
+    @Nonnull
     public String getId()
     {
         return id;

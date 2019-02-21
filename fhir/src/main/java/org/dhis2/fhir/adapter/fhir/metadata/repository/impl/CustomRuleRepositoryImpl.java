@@ -31,7 +31,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.hibernate.Hibernate;
@@ -75,26 +78,11 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Transactional( readOnly = true )
     @Nonnull
     @Override
-    public Optional<RuleInfo<? extends AbstractRule>> findOneByDhisFhirInputData(
+    public Optional<RuleInfo<? extends AbstractRule>> findOneImpByDhisFhirInputData(
         @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId )
     {
-        final List<AbstractRule> rules = new ArrayList<>(
-            entityManager.createNamedQuery( AbstractRule.FIND_RULE_BY_RULE_NAMED_QUERY, AbstractRule.class )
-                .setParameter( "fhirResourceType", fhirResourceType )
-                .setParameter( "ruleId", ruleId ).getResultList() );
-        if ( rules.isEmpty() )
-        {
-            return Optional.empty();
-        }
-
-        final AbstractRule rule = rules.get( 0 );
-        if ( rule.getDhisResourceType() != dhisResourceType )
-        {
-            return Optional.empty();
-        }
-
-        Hibernate.initialize( rule.getDhisDataReferences() );
-        return Optional.of( new RuleInfo<>( rule, rule.getDhisDataReferences() ) );
+        return findOneByDhisFhirInputData( AbstractRule.FIND_IMP_RULE_BY_ID_NAMED_QUERY,
+            fhirResourceType, dhisResourceType, ruleId );
     }
 
     @Override
@@ -102,20 +90,20 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Cacheable( keyGenerator = "ruleFindAllByInputDataKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
     @Transactional( readOnly = true )
     @Nonnull
-    public List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
+    public List<RuleInfo<? extends AbstractRule>> findAllImpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
         final List<AbstractRule> rules;
         if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
         {
             rules = new ArrayList<>(
-                entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
+                entityManager.createNamedQuery( AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
                     .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
         }
         else
         {
             final Set<String> systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
                 .collect( Collectors.toCollection( TreeSet::new ) );
-            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
+            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
                 .setParameter( "fhirResourceType", fhirResourceType )
                 .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }
@@ -124,5 +112,39 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
             Hibernate.initialize( r.getDhisDataReferences() );
             return new RuleInfo<>( r, r.getDhisDataReferences() );
         } ).collect( Collectors.toList() );
+    }
+
+    protected Optional<RuleInfo<? extends AbstractRule>> findOneByDhisFhirInputData( @Nonnull String namedQuery,
+        @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisResourceType dhisResourceType, @Nonnull UUID ruleId )
+    {
+        final List<AbstractRule> rules = new ArrayList<>(
+            entityManager.createNamedQuery( namedQuery, AbstractRule.class )
+                .setParameter( "fhirResourceType", fhirResourceType )
+                .setParameter( "dhisResourceType", getRuleClass( dhisResourceType ) )
+                .setParameter( "ruleId", ruleId ).getResultList() );
+        if ( rules.isEmpty() )
+        {
+            return Optional.empty();
+        }
+
+        final AbstractRule rule = rules.get( 0 );
+        Hibernate.initialize( rule.getDhisDataReferences() );
+        return Optional.of( new RuleInfo<>( rule, rule.getDhisDataReferences() ) );
+    }
+
+    @Nonnull
+    protected static Class<? extends AbstractRule> getRuleClass( @Nonnull DhisResourceType dhisResourceType )
+    {
+        switch ( dhisResourceType )
+        {
+            case TRACKED_ENTITY:
+                return TrackedEntityRule.class;
+            case PROGRAM_STAGE_EVENT:
+                return ProgramStageRule.class;
+            case ORGANIZATION_UNIT:
+                return OrganizationUnitRule.class;
+            default:
+                throw new AssertionError( "Unhandled DHIS Resource Type: " + dhisResourceType );
+        }
     }
 }

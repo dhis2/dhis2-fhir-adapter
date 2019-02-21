@@ -37,15 +37,18 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -88,9 +91,28 @@ public interface DhisToFhirTransformerContext extends TransformerContext
     @Nonnull
     Optional<AvailableFhirClientResource> getOptionalAvailableResource( @Nonnull FhirResourceType resourceType );
 
+    @ScriptMethod( description = "Returns the DHIS FHIR resource reference for the specified DHIS resource. Optionally the FHIR resource types can be limited to the specified FHIR resource types.",
+        args = {
+            @ScriptMethodArg( value = "dhisResource", description = "The DHIS resource for which a FHIR resource reference should be returned." ),
+            @ScriptMethodArg( value = "fhirResourceTypes", description = "Zero or more FHIR resource types of the returned reference. If no resource type is specified any FHIR resource type may be returned in the reference." )
+        }, returnDescription = "Returns the DHIS FHIR resource reference for the DHIS resource or null if no matching rule can be found." )
+    @Nullable
+    IBaseReference getDhisFhirResourceReference( @Nullable ScriptedDhisResource dhisResource, Object... fhirResourceTypes );
+
+    @ScriptMethod( description = "Returns the DHIS FHIR resource references for the specified DHIS resource. Optionally the FHIR resource types can be limited to the specified FHIR resource types.",
+        args = {
+            @ScriptMethodArg( value = "dhisResource", description = "The DHIS resource for which a FHIR resource reference should be returned." ),
+            @ScriptMethodArg( value = "fhirResourceTypes", description = "Zero or more FHIR resource types of the returned reference. If no resource type is specified any FHIR resource type may be returned in the reference." )
+        }, returnDescription = "Returns the DHIS FHIR resource references for the DHIS resource or an empty list if no matching rule can be found." )
+    @Nonnull
+    List<IBaseReference> getDhisFhirResourceReferences( @Nullable ScriptedDhisResource dhisResource, Object... fhirResourceTypes );
+
     @Nonnull
     @ScriptMethod( description = "Returns the current timestamp as date/time.", returnDescription = "The current timestamp as date/time." )
     ZonedDateTime now();
+
+    @ScriptMethod( description = "Returns if the current transformation groups FHIR resources." )
+    boolean isGrouping();
 
     @ScriptMethod( description = "Causes that the current transformation will fail due to the specified missing resource. It will be tried to create the missing resource.",
         args = @ScriptMethodArg( value = "dhisResourceId", description = "The DHIS resource ID that is missing." ) )

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,15 @@ public class BeforeCreateSaveSystemValidatorTest extends AbstractJpaRepositoryTe
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( objectMapper.writeValueAsString( entity ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirDisplayName" ) ) );
+    }
+
+    @Test
+    public void testReservedCode() throws Exception
+    {
+        entity.setCode( System.DHIS2_FHIR_ADAPTER_CODE_PREFIX + "ABC" );
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( objectMapper.writeValueAsString( entity ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "code" ) ) );
     }
 
     @Test

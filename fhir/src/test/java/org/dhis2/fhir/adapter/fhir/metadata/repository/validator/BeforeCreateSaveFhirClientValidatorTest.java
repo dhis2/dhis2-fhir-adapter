@@ -90,6 +90,16 @@ public class BeforeCreateSaveFhirClientValidatorTest extends AbstractJpaReposito
     }
 
     @Test
+    public void testReservedId() throws Exception
+    {
+        mockMvc.perform( put( RESOURCE_PATH + "/" + FhirClient.FHIR_REST_INTERFACE_DSTU3_ID )
+            .header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "dhisEndpoint/password", null, "district" ) ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "code" ) ) );
+    }
+
+    @Test
     public void testNameBlank() throws Exception
     {
         entity.setName( "    " );

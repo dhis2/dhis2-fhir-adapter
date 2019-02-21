@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.cache;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,30 @@ package org.dhis2.fhir.adapter.cache;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.fhir.AbstractJpaRepositoryTest;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Provides access to one or more request scope cache managers.
+ * Validator tests for the corresponding repository.
  *
  * @author volsch
  */
-public interface RequestCacheService
+public class BeforeDeleteFhirClientValidatorTest extends AbstractJpaRepositoryTest
 {
-    @Nonnull
-    RequestCacheContext createRequestCacheContext( boolean useExisting );
+    public static final String RESOURCE_PATH = "/api/fhirClients";
 
-    @Nonnull
-    RequestCacheContext createRequestCacheContext();
+    public static final String AUTHORIZATION_HEADER_VALUE = CODE_MAPPING_AUTHORIZATION_HEADER_VALUE;
 
-    @Nullable
-    RequestCacheContext getCurrentRequestCacheContext();
+    @Test
+    public void testReservedId() throws Exception
+    {
+        mockMvc.perform( delete( RESOURCE_PATH + "/" + FhirClient.FHIR_REST_INTERFACE_DSTU3_ID )
+            .header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "code" ) ) );
+    }
 }

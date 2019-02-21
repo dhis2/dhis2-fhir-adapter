@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2004-2018, University of Oslo
+  ~ Copyright (c) 2004-2019, University of Oslo
   ~ All rights reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@
   <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="error" />
   <logger name="org.springframework.data.repository.config.RepositoryConfigurationDelegate" level="warn" />
   <logger name="org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport" level="warn" />
+  <logger name="ca.uhn.fhir.rest.server.interceptor.ExceptionHandlingInterceptor" level="error" />
 
   <springProfile name="dev">
     <root level="INFO">

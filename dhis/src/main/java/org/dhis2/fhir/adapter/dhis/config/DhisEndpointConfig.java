@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.config;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.config;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.auth.WwwAuthenticate;
 import org.dhis2.fhir.adapter.model.UsernamePassword;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -42,6 +43,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Contains the endpoint configuration of the DHIS2 endpoint. This configuration
@@ -79,6 +82,9 @@ public class DhisEndpointConfig implements Serializable
 
     @Positive
     private int readTimeout = DEFAULT_READ_TIMEOUT;
+
+    @NotNull
+    private List<WwwAuthenticate> wwwAuthenticates = new ArrayList<>();
 
     public String getUrl()
     {
@@ -129,5 +135,15 @@ public class DhisEndpointConfig implements Serializable
     public void setReadTimeout( int readTimeout )
     {
         this.readTimeout = readTimeout;
+    }
+
+    public List<WwwAuthenticate> getWwwAuthenticates()
+    {
+        return wwwAuthenticates;
+    }
+
+    public void setWwwAuthenticates( List<WwwAuthenticate> wwwAuthenticates )
+    {
+        this.wwwAuthenticates = wwwAuthenticates;
     }
 }

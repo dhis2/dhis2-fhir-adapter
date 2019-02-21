@@ -117,7 +117,7 @@ public class DhisConfig
         return builder.requestFactory( () -> clientHttpRequestFactory )
             .rootUri( getRootUri( endpointConfig, false ) )
             .setConnectTimeout( endpointConfig.getConnectTimeout() ).setReadTimeout( endpointConfig.getReadTimeout() )
-            .configure( new AuthorizedRestTemplate( authorizationContext, cookieStore ) );
+            .configure( new AuthorizedRestTemplate( authorizationContext, endpointConfig.getWwwAuthenticates(), cookieStore ) );
     }
 
     /**

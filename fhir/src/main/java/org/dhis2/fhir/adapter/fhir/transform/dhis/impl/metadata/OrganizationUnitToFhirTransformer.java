@@ -126,7 +126,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
             return null;
         }
 
-        if ( equalsDeep( context, variables, resource, modifiedResource ) )
+        if ( evaluateNotModified( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
             return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
@@ -147,10 +147,13 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final ScriptedOrganizationUnit scriptedOrganizationUnit =
-            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedOrganizationUnit.class );
-        getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
-            .lock( "out-ou:" + scriptedOrganizationUnit.getId() );
+        if ( !context.getDhisRequest().isDhisFhirId() )
+        {
+            final ScriptedOrganizationUnit scriptedOrganizationUnit =
+                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedOrganizationUnit.class );
+            getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
+                .lock( "out-ou:" + scriptedOrganizationUnit.getId() );
+        }
     }
 
     @Override

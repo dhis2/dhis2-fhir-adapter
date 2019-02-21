@@ -43,7 +43,6 @@ import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +52,8 @@ import java.util.Map;
  *
  * @author volsch
  */
-public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext, Serializable
+public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerContext
 {
-    private static final long serialVersionUID = -3205126998737677714L;
-
     private final FhirRequest fhirRequest;
 
     private final boolean creationDisabled;

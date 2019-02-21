@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.cache;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,22 @@ package org.dhis2.fhir.adapter.cache;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Provides access to one or more request scope cache managers.
+ * Resolves the FHIR references for DHIS2 resources.
  *
  * @author volsch
  */
-public interface RequestCacheService
+public interface FhirReferenceResolver
 {
     @Nonnull
-    RequestCacheContext createRequestCacheContext( boolean useExisting );
-
-    @Nonnull
-    RequestCacheContext createRequestCacheContext();
-
-    @Nullable
-    RequestCacheContext getCurrentRequestCacheContext();
+    List<IBaseReference> resolveFhirReferences( @Nonnull FhirClient fhirClient, @Nonnull ScriptedDhisResource dhisResource, @Nullable Set<FhirResourceType> fhirResourceTypes, int max );
 }

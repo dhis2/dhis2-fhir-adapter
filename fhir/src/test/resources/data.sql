@@ -433,3 +433,80 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code, descript
 VALUES ('5f1b7d9848ad4df4bdb223e7de8f0fc1', 0, '20e1ac3ff49c4fa893e2b5e18c5f9665',
 'Vital Signs New Program Stage', 'VITAL_SIGN_NEW_PS', 'Decides about creation of a new program stage for vital signs.');
 
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('c8ca1fbd4d954911b16ea2310af3533f', 0, 'DHIS2 FHIR Adapter Patient Identifier', 'SYSTEM_DHIS2_FHIR_PATIENT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/patientidentifier',
+        'DHIS2 FHIR Adapter Patient Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('cc46b8acaced4bd2b10403a7d34da438', 0, 'DHIS2 FHIR Adapter Location Identifier', 'SYSTEM_DHIS2_FHIR_LOCATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/locationidentifier',
+        'DHIS2 FHIR Adapter Location Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('db955a8aca584263bc56faa99085df93', 0, 'DHIS2 FHIR Adapter Organization Identifier', 'SYSTEM_DHIS2_FHIR_ORGANIZATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/organizationidentifier',
+        'DHIS2 FHIR Adapter Organization Identifier.');
+
+INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
+remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
+VALUES ('a5a6a64215a24f279cee55a26a86d062', 0, 'FHIR REST Interfaces DSTU3', 'FHIR_RI_DSTU3', 'Used by the FHIR REST Interfaces for DSTU3.', 'DSTU3',
+'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
+'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', TRUE, FALSE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('1de5bc4cb55e4be8b96ada239cfa2cf6', 0, 'a5a6a64215a24f279cee55a26a86d062', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('be9a7d61d5cd451a89f93e36cf213299', 0, 'a5a6a64215a24f279cee55a26a86d062', 'DIAGNOSTIC_REPORT', NULL, 'FHIR Diagnostic Report Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('edfde6aa8de9440bab7284a0f9be01e2', 0, 'a5a6a64215a24f279cee55a26a86d062', 'ENCOUNTER', NULL, 'FHIR Encounter Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('3e8719c1aef14728b6aab208dea629e2', 0, 'a5a6a64215a24f279cee55a26a86d062', 'IMMUNIZATION', NULL, 'FHIR Immunization Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('8c4dc1b9d1da40698e8cab8409a3daf5', 0, 'a5a6a64215a24f279cee55a26a86d062', 'LOCATION', NULL, 'FHIR Location Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('00716d5d1c1e4ab9b860fcaccd7dad1d', 0, 'a5a6a64215a24f279cee55a26a86d062', 'MEDICATION_REQUEST', NULL, 'FHIR Medication Request Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('fade2919c46f472ab24de6e5bb99d5a6', 0, 'a5a6a64215a24f279cee55a26a86d062', 'OBSERVATION', NULL, 'FHIR Observation Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('7109e75f9ece47739ca56c8774827032', 0, 'a5a6a64215a24f279cee55a26a86d062', 'ORGANIZATION', NULL, 'FHIR Organization Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('080f368d356649ddbedf6bb6026bdd28', 0, 'a5a6a64215a24f279cee55a26a86d062', 'PATIENT', NULL, 'FHIR Patient Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('3165533a0df143db8dd5ac57da8fb516', 0, 'a5a6a64215a24f279cee55a26a86d062', 'RELATED_PERSON', NULL, 'FHIR Related Person Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('c9ae7ad7ed40416080ca2964755b36ea', 0, 'a5a6a64215a24f279cee55a26a86d062', 'PRACTITIONER', NULL, 'FHIR Practitioner Resource.', TRUE);
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('99e36c20e8ef48d18d1fe80572384281', 0, 'a5a6a64215a24f279cee55a26a86d062', 'PATIENT', 'c8ca1fbd4d954911b16ea2310af3533f');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('bdf7381916934177bf6bca7a0c2c4ea9', 0, 'a5a6a64215a24f279cee55a26a86d062', 'LOCATION', 'cc46b8acaced4bd2b10403a7d34da438');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('2e56fc2b576a46caaa6d4485c75c6f5b', 0, 'a5a6a64215a24f279cee55a26a86d062', 'ORGANIZATION', 'db955a8aca584263bc56faa99085df93');
+
+INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
+remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
+VALUES ('46f0af46365440b38d4c7a633332c3b3', 0, 'FHIR REST Interfaces R4', 'FHIR_RI_R4', 'Used by the FHIR REST Interfaces for R4.', 'R4',
+'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
+'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', FALSE, TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('fedf63ac80f04f24a8e9595767f0983a', 0, '46f0af46365440b38d4c7a633332c3b3', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('bf745a0b81a446299434c5715605d8e4', 0, '46f0af46365440b38d4c7a633332c3b3', 'DIAGNOSTIC_REPORT', NULL, 'FHIR Diagnostic Report Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('ef22502237624480a2ee702fa47283bc', 0, '46f0af46365440b38d4c7a633332c3b3', 'ENCOUNTER', NULL, 'FHIR Encounter Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('3ac34328e80e465b893bdf5afe7aa527', 0, '46f0af46365440b38d4c7a633332c3b3', 'IMMUNIZATION', NULL, 'FHIR Immunization Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('2dc28bd3802d4cc18352e3b9277fd280', 0, '46f0af46365440b38d4c7a633332c3b3', 'LOCATION', NULL, 'FHIR Location Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('0e89f64e04af480e9c41e8423eb5c602', 0, '46f0af46365440b38d4c7a633332c3b3', 'MEDICATION_REQUEST', NULL, 'FHIR Medication Request Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('b8eccfd34ded45d7ab84dc8467541902', 0, '46f0af46365440b38d4c7a633332c3b3', 'OBSERVATION', NULL, 'FHIR Observation Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('f3491bb692794fb7a27560c217f88a6a', 0, '46f0af46365440b38d4c7a633332c3b3', 'ORGANIZATION', NULL, 'FHIR Organization Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('6236c52d99614b9988f5d6e692021a7f', 0, '46f0af46365440b38d4c7a633332c3b3', 'PATIENT', NULL, 'FHIR Patient Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('c8d4991fc1004b9591c47b975ac636fd', 0, '46f0af46365440b38d4c7a633332c3b3', 'RELATED_PERSON', NULL, 'FHIR Related Person Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('26526d56224e46ecbc04827711f2b345', 0, '46f0af46365440b38d4c7a633332c3b3', 'PRACTITIONER', NULL, 'FHIR Practitioner Resource.', TRUE);
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('070a6e464dfb452e90c5475021532dc0', 0, '46f0af46365440b38d4c7a633332c3b3', 'PATIENT', 'c8ca1fbd4d954911b16ea2310af3533f');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('47fd1b287558429b85abc5f5fcc3d00f', 0, '46f0af46365440b38d4c7a633332c3b3', 'LOCATION', 'cc46b8acaced4bd2b10403a7d34da438');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('e2cdcfd609f044fe9dd2c3e97540ea22', 0, '46f0af46365440b38d4c7a633332c3b3', 'ORGANIZATION', 'db955a8aca584263bc56faa99085df93');

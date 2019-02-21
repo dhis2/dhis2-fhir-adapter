@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.annotation.IdParam;
+import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
@@ -45,6 +47,7 @@ import org.hl7.fhir.instance.model.api.IIdType;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -90,6 +93,13 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
     public Class<? extends IBaseResource> getResourceType()
     {
         return resourceClass;
+    }
+
+    @Read
+    @Nullable
+    public T getResourceById( @IdParam IIdType id )
+    {
+        return executeInSecurityContext( () -> resourceClass.cast( getDhisRepository().read( getFhirClientResource().getFhirClient(), getFhirResourceType(), extractDhisFhirResourceId( id ) ).orElse( null ) ) );
     }
 
     @Nonnull

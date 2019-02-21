@@ -35,33 +35,42 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.FhirReferenceResolver;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Implementation of {@link DhisToFhirTransformerContext}.
  *
  * @author volsch
  */
-public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerContext, Serializable
+public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerContext
 {
-    private static final long serialVersionUID = -3205126998737677714L;
+    private final boolean grouping;
 
     private final DhisRequest dhisRequest;
 
     private final FhirClient fhirClient;
+
+    private final FhirReferenceResolver fhirReferenceResolver;
 
     private final Map<FhirResourceType, AvailableFhirClientResource> availableResourcesByType;
 
@@ -69,11 +78,13 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
 
     private final Map<String, Object> attributes = new HashMap<>();
 
-    public DhisToFhirTransformerContextImpl( @Nonnull DhisRequest dhisRequest, @Nonnull FhirClient fhirClient,
+    public DhisToFhirTransformerContextImpl( boolean grouping, @Nonnull DhisRequest dhisRequest, @Nonnull FhirClient fhirClient, @Nonnull FhirReferenceResolver fhirReferenceResolver,
         @Nonnull Map<FhirResourceType, ResourceSystem> resourceSystemsByType, @Nonnull Collection<AvailableFhirClientResource> availableResources )
     {
+        this.grouping = grouping;
         this.dhisRequest = dhisRequest;
         this.fhirClient = fhirClient;
+        this.fhirReferenceResolver = fhirReferenceResolver;
         this.resourceSystemsByType = resourceSystemsByType;
         this.availableResourcesByType = availableResources.stream().collect( Collectors.toMap( AvailableFhirClientResource::getResourceType, a -> a ) );
     }
@@ -111,6 +122,12 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public ZonedDateTime now()
     {
         return ZonedDateTime.now();
+    }
+
+    @Override
+    public boolean isGrouping()
+    {
+        return grouping;
     }
 
     @Nonnull
@@ -184,5 +201,43 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public Object getAttribute( @Nonnull String name )
     {
         return attributes.get( name );
+    }
+
+    @Nullable
+    @Override
+    public IBaseReference getDhisFhirResourceReference( @Nullable ScriptedDhisResource dhisResource, Object... fhirResourceTypes )
+    {
+        final List<IBaseReference> references = getDhisFhirResourceReferencesLimited( dhisResource, 1, fhirResourceTypes );
+        if ( references.isEmpty() )
+        {
+            return null;
+        }
+        return references.get( 0 );
+    }
+
+    @Nonnull
+    @Override
+    public List<IBaseReference> getDhisFhirResourceReferences( @Nullable ScriptedDhisResource dhisResource, Object... fhirResourceTypes )
+    {
+        return getDhisFhirResourceReferencesLimited( dhisResource, Integer.MAX_VALUE, fhirResourceTypes );
+    }
+
+    @Nonnull
+    protected List<IBaseReference> getDhisFhirResourceReferencesLimited( @Nullable ScriptedDhisResource dhisResource, int max, Object... fhirResourceTypes )
+    {
+        if ( dhisResource == null )
+        {
+            return Collections.emptyList();
+        }
+        return fhirReferenceResolver.resolveFhirReferences( fhirClient, dhisResource, Stream.of( fhirResourceTypes ).map( frt -> {
+            try
+            {
+                return NameUtils.toEnumValue( FhirResourceType.class, frt );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                throw new TransformerMappingException( "Undefined FHIR resource type: " + frt, e );
+            }
+        } ).collect( Collectors.toSet() ), max );
     }
 }

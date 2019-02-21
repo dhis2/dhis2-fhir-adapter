@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,24 @@ public class ImmutableDhisRequest implements DhisRequest, Serializable
     public ImmutableDhisRequest( @Nonnull DhisRequest delegate )
     {
         this.delegate = delegate;
+    }
+
+    @Override
+    public boolean isDhisFhirId()
+    {
+        return delegate.isDhisFhirId();
+    }
+
+    @Override
+    public boolean isCompleteTransformation()
+    {
+        return delegate.isCompleteTransformation();
+    }
+
+    @Override
+    public boolean isIncludeReferences()
+    {
+        return delegate.isIncludeReferences();
     }
 
     @Override
