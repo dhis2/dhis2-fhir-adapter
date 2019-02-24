@@ -361,7 +361,6 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         {
             Cache transformerRequestCache = null;
             TransformerRequestKey transformerRequestKey = null;
-
             if ( transformerRequestImpl.isSingleRule() )
             {
                 final RequestCacheContext cacheContext = requestCacheService.getCurrentRequestCacheContext();
@@ -369,7 +368,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                 {
                     transformerRequestCache = Objects.requireNonNull( cacheContext.getCacheManager( TRANSFORMER_REQUEST_CACHE_MANAGER_NAME ).getCache( TRANSFORMER_REQUEST_CACHE_NAME ) );
                     transformerRequestKey = new TransformerRequestKey( ruleInfo.getRule().getId(), Objects.requireNonNull( transformerRequestImpl.getInput().getResourceId() ) );
-                    final IBaseResource cachedOutcomeResource = (IBaseResource) transformerRequestCache.get( transformerRequestKey );
+                    final IBaseResource cachedOutcomeResource = transformerRequestCache.get( transformerRequestKey, IBaseResource.class );
                     if ( cachedOutcomeResource != null )
                     {
                         logger.debug( "Re-used transformer outcome for key {}.", transformerRequestKey );
