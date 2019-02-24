@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@ import org.dhis2.fhir.adapter.converter.ZonedDateTimeToDateConverter;
 import org.dhis2.fhir.adapter.fhir.data.DataBasePackage;
 import org.dhis2.fhir.adapter.fhir.metadata.MetadataBasePackage;
 import org.dhis2.fhir.adapter.rest.RestBasePackage;
-import org.dhis2.fhir.adapter.script.ScriptCompiler;
-import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
+import org.dhis2.fhir.adapter.script.ScriptEvaluator;
+import org.dhis2.fhir.adapter.script.impl.ScriptEvaluatorImpl;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.dhis2.fhir.adapter.validator.EnumValueValidator;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -74,9 +74,9 @@ public class MockMvcTestConfig
 {
     @Nonnull
     @Bean
-    protected ScriptCompiler scriptCompiler()
+    protected ScriptEvaluator scriptEvaluator()
     {
-        return new ScriptCompilerImpl( "nashorn" );
+        return new ScriptEvaluatorImpl( "nashorn", 3600, 1000 );
     }
 
     @Bean

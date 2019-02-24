@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.config;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,18 +33,17 @@ import org.dhis2.fhir.adapter.fhir.FhirBasePackage;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.impl.ThreadLocalScriptExecutionContext;
 import org.dhis2.fhir.adapter.geo.GeoBasePackage;
-import org.dhis2.fhir.adapter.script.ScriptCompiler;
-import org.dhis2.fhir.adapter.script.impl.ScriptCompilerImpl;
+import org.dhis2.fhir.adapter.script.ScriptEvaluator;
+import org.dhis2.fhir.adapter.script.impl.ScriptEvaluatorImpl;
 import org.dhis2.fhir.adapter.scriptable.generator.JavaScriptGeneratorConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scripting.ScriptEvaluator;
-import org.springframework.scripting.support.StandardScriptEvaluator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
@@ -59,6 +58,12 @@ public class TransformationConfig implements Serializable
     @NotBlank
     private String scriptEngineName;
 
+    @Min( 1 )
+    private int maxCachedScriptLifetimeSecs = 24 * 60 * 60;
+
+    @Min( 1 )
+    private int maxCachedScripts = 10000;
+
     public String getScriptEngineName()
     {
         return scriptEngineName;
@@ -69,6 +74,26 @@ public class TransformationConfig implements Serializable
         this.scriptEngineName = scriptEngineName;
     }
 
+    public int getMaxCachedScriptLifetimeSecs()
+    {
+        return maxCachedScriptLifetimeSecs;
+    }
+
+    public void setMaxCachedScriptLifetimeSecs( int maxCachedScriptLifetimeSecs )
+    {
+        this.maxCachedScriptLifetimeSecs = maxCachedScriptLifetimeSecs;
+    }
+
+    public int getMaxCachedScripts()
+    {
+        return maxCachedScripts;
+    }
+
+    public void setMaxCachedScripts( int maxCachedScripts )
+    {
+        this.maxCachedScripts = maxCachedScripts;
+    }
+
     @Bean
     @Nonnull
     protected ScriptExecutionContext scriptExecutionContext()
@@ -76,20 +101,12 @@ public class TransformationConfig implements Serializable
         return new ThreadLocalScriptExecutionContext();
     }
 
-    @Bean
-    @Nonnull
-    protected ScriptEvaluator scriptEvaluator()
-    {
-        final StandardScriptEvaluator scriptEvaluator = new StandardScriptEvaluator();
-        scriptEvaluator.setEngineName( getScriptEngineName() );
-        return scriptEvaluator;
-    }
 
     @Bean
     @Nonnull
-    protected ScriptCompiler scriptCompiler()
+    protected ScriptEvaluator scriptCompiler()
     {
-        return new ScriptCompilerImpl( getScriptEngineName() );
+        return new ScriptEvaluatorImpl( getScriptEngineName(), maxCachedScriptLifetimeSecs, maxCachedScripts );
     }
 
     @Bean

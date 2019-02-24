@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArgValue;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
@@ -41,11 +42,10 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.script.ScriptPreparationException;
+import org.dhis2.fhir.adapter.script.ScriptCompilationException;
+import org.dhis2.fhir.adapter.script.ScriptEvaluator;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.scripting.ScriptCompilationException;
-import org.springframework.scripting.ScriptEvaluator;
-import org.springframework.scripting.support.StaticScriptSource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -56,6 +56,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Implementation of {@link ScriptExecutor}.
+ *
+ * @author volsch
+ */
 @Component
 public class ScriptExecutorImpl implements ScriptExecutor
 {
@@ -127,19 +132,20 @@ public class ScriptExecutorImpl implements ScriptExecutor
         final Map<String, Object> scriptVariables = new HashMap<>( variables );
         scriptVariables.put( ARGUMENTS_VARIABLE_NAME, args );
 
+
         final Object result;
+        final ScriptSource scriptSource = executableScriptInfo.getScriptSource();
         final ScriptExecution previousScriptExecution =
             scriptExecutionContext.setScriptExecution( new ScriptExecutionImpl( scriptVariables, contextVariables ) );
         try
         {
-            result = convertSimpleReturnValue( scriptEvaluator.evaluate( new StaticScriptSource(
-                    executableScriptInfo.getScriptSource().getSourceText() ), scriptVariables ),
-                executableScriptInfo.getScript().getReturnType() );
+            result = convertSimpleReturnValue( scriptEvaluator.eval( new ScriptKey( scriptSource ),
+                scriptSource.getSourceText(), scriptVariables ), executableScriptInfo.getScript().getReturnType() );
         }
         catch ( ScriptCompilationException | ScriptExecutionException e )
         {
             throw new ScriptExecutionException( "Error while executing script \"" + executableScriptInfo.getScript().getName() +
-                "\" (" + executableScriptInfo.getExecutableScript().getId() + "): " + e.getMessage(), e );
+                "\" (" + executableScriptInfo.getExecutableScript().getId() + "): " + e.getMessage(), e.getCause() );
         }
         finally
         {

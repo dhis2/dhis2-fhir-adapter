@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
 import org.dhis2.fhir.adapter.script.ScriptCompilationException;
-import org.dhis2.fhir.adapter.script.ScriptCompiler;
+import org.dhis2.fhir.adapter.script.ScriptEvaluator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -46,11 +46,11 @@ import javax.annotation.Nonnull;
 @Component
 public class BeforeCreateSaveScriptSourceValidator implements Validator
 {
-    private final ScriptCompiler scriptCompiler;
+    private final ScriptEvaluator scriptEvaluator;
 
-    public BeforeCreateSaveScriptSourceValidator( @Nonnull ScriptCompiler scriptCompiler )
+    public BeforeCreateSaveScriptSourceValidator( @Nonnull ScriptEvaluator scriptEvaluator )
     {
-        this.scriptCompiler = scriptCompiler;
+        this.scriptEvaluator = scriptEvaluator;
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BeforeCreateSaveScriptSourceValidator implements Validator
         {
             try
             {
-                scriptCompiler.compile( scriptSource.getSourceText() );
+                scriptEvaluator.compile( scriptSource.getSourceText() );
             }
             catch ( ScriptCompilationException e )
             {
