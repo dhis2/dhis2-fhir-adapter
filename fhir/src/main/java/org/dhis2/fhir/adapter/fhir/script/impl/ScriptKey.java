@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.script;
+package org.dhis2.fhir.adapter.fhir.script.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,24 +28,58 @@ package org.dhis2.fhir.adapter.script;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSource;
+
 import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Compiles a script with a specific script engine. The sole purpose of this is
- * to check for errors in the script.
+ * The unique key of a script that is used to cache compiled scripts. If the
+ * script source code changes also the key must change.
  *
  * @author volsch
  */
-public interface ScriptCompiler
+public class ScriptKey implements Serializable
 {
-    /**
-     * Compiles the script. Compiling scripts may not be supported.
-     *
-     * @param script the script that should be compiled.
-     * @return <code>true</code> if the script has been compiled and no error has
-     * been detected, <code>false</code> if script compilation is not supported.
-     * @throws ScriptCompilationException thrown if the script has syntactical errors
-     *                                    or cannot be compiled due to other issues.
-     */
-    boolean compile( @Nonnull String script ) throws ScriptCompilationException;
+    private static final long serialVersionUID = 5168674717166721759L;
+
+    private final UUID id;
+
+    private final long version;
+
+    private final Instant lastUpdatedAt;
+
+    public ScriptKey( @Nonnull ScriptSource scriptSource )
+    {
+        this.id = scriptSource.getId();
+        this.version = scriptSource.getVersion();
+        this.lastUpdatedAt = scriptSource.getLastUpdatedAt();
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        ScriptKey scriptKey = (ScriptKey) o;
+        return version == scriptKey.version &&
+            Objects.equals( id, scriptKey.id ) &&
+            Objects.equals( lastUpdatedAt, scriptKey.lastUpdatedAt );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( id, version, lastUpdatedAt );
+    }
+
+    @Override
+    @Nonnull
+    public String toString()
+    {
+        return "[id=" + id + ", version=" + version + ", lastUpdatedAt=" + lastUpdatedAt + ']';
+    }
 }

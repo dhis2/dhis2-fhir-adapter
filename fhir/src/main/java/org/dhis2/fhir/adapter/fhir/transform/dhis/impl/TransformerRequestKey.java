@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.script;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,52 @@ package org.dhis2.fhir.adapter.script;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
+
 /**
- * Thrown if the script could not be compiled due to syntactically errors.
+ * Key to store transformer outcomes for single rule transformer requests.
  *
  * @author volsch
  */
-public class ScriptCompilationException extends RuntimeException
+public class TransformerRequestKey implements Serializable
 {
-    private static final long serialVersionUID = -3544954549662369603L;
+    private static final long serialVersionUID = -2361879658238098797L;
 
-    public ScriptCompilationException( Throwable cause )
+    private final UUID ruleId;
+
+    private final DhisResourceId dhisResourceId;
+
+    public TransformerRequestKey( @Nonnull UUID ruleId, @Nonnull DhisResourceId dhisResourceId )
     {
-        super( cause );
+        this.ruleId = ruleId;
+        this.dhisResourceId = dhisResourceId;
     }
 
-    public ScriptCompilationException( String message, Throwable cause )
+    @Override
+    public boolean equals( Object o )
     {
-        super( message, cause );
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        TransformerRequestKey that = (TransformerRequestKey) o;
+        return ruleId.equals( that.ruleId ) &&
+            dhisResourceId.equals( that.dhisResourceId );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( ruleId, dhisResourceId );
+    }
+
+    @Override
+    @Nonnull
+    public String toString()
+    {
+        return "[ruleId=" + ruleId + ", dhisResourceId=" + dhisResourceId + ']';
     }
 }

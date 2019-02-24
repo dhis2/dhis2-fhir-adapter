@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.common.scriptabe.generator;
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.script.ScriptCompiler;
+import org.dhis2.fhir.adapter.script.ScriptEvaluator;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
 {
     @Autowired
-    private ScriptCompiler scriptCompiler;
+    private ScriptEvaluator scriptEvaluator;
 
     @Nonnull
     @Override
@@ -67,7 +67,7 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
             .andExpect( content().string( not( containsString( "var genderUtils = new GenderUtils();" ) ) ) )
             .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
-        scriptCompiler.compile( script );
+        scriptEvaluator.compile( script );
     }
 
     @Test
@@ -78,6 +78,6 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
             .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
             .andExpect( content().string( containsString( "var genderUtils = new GenderUtils();" ) ) )
             .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
-        scriptCompiler.compile( script );
+        scriptEvaluator.compile( script );
     }
 }

@@ -395,3 +395,8 @@ dhis2.fhir-adapter:
     # This value should not be changed normally. After changing this value, rules,
     # mappings and transformations must be retested.
     script-engine-name: nashorn
+    # The maximum number of seconds a compiled script will remain in the cache after its
+    # last access before it is discarded from the cache and needs to be re-compiled.
+    max-cached-script-lifetime-secs: 86400
+    # The maximum number of compiled scripts that will be cached.
+    max-cached-scripts: 10000

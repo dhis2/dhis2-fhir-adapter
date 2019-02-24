@@ -29,21 +29,16 @@ package org.dhis2.fhir.adapter.script;
  */
 
 /**
- * Thrown if the script could not be compiled due to syntactically errors.
+ * Thrown if an error occured while executing the script.
  *
  * @author volsch
  */
-public class ScriptCompilationException extends RuntimeException
+public class ScriptExecutionException extends RuntimeException
 {
     private static final long serialVersionUID = -3544954549662369603L;
 
-    public ScriptCompilationException( Throwable cause )
+    public ScriptExecutionException( Throwable cause )
     {
         super( cause );
-    }
-
-    public ScriptCompilationException( String message, Throwable cause )
-    {
-        super( message, cause );
     }
 }

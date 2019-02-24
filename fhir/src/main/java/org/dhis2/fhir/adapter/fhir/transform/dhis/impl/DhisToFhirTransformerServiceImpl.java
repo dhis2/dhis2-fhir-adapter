@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -75,6 +77,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
@@ -103,6 +106,10 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    public static final String TRANSFORMER_REQUEST_CACHE_MANAGER_NAME = "transformerRequest";
+
+    public static final String TRANSFORMER_REQUEST_CACHE_NAME = "dhisFhirTransformerRequest";
+
     private final LockManager lockManager;
 
     private final FhirClientResourceRepository fhirClientResourceRepository;
@@ -112,6 +119,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     private final OrganizationUnitService organizationUnitService;
 
     private final RuleRepository ruleRepository;
+
+    private final RequestCacheService requestCacheService;
 
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
@@ -126,6 +135,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull RuleRepository ruleRepository,
+        @Nonnull RequestCacheService requestCacheService,
         @Nonnull ObjectProvider<List<DhisToFhirRequestResolver>> requestResolvers,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<DhisToFhirTransformerUtils>> transformUtilsProvider,
@@ -136,6 +146,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.organizationUnitService = organizationUnitService;
         this.ruleRepository = ruleRepository;
+        this.requestCacheService = requestCacheService;
         this.scriptExecutor = scriptExecutor;
 
         requestResolvers.ifAvailable( resolvers ->
@@ -348,6 +359,25 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         RuleInfo<? extends AbstractRule> ruleInfo;
         while ( (ruleInfo = transformerRequestImpl.nextRule()) != null )
         {
+            Cache transformerRequestCache = null;
+            TransformerRequestKey transformerRequestKey = null;
+
+            if ( transformerRequestImpl.isSingleRule() )
+            {
+                final RequestCacheContext cacheContext = requestCacheService.getCurrentRequestCacheContext();
+                if ( cacheContext != null )
+                {
+                    transformerRequestCache = Objects.requireNonNull( cacheContext.getCacheManager( TRANSFORMER_REQUEST_CACHE_MANAGER_NAME ).getCache( TRANSFORMER_REQUEST_CACHE_NAME ) );
+                    transformerRequestKey = new TransformerRequestKey( ruleInfo.getRule().getId(), Objects.requireNonNull( transformerRequestImpl.getInput().getResourceId() ) );
+                    final IBaseResource cachedOutcomeResource = (IBaseResource) transformerRequestCache.get( transformerRequestKey );
+                    if ( cachedOutcomeResource != null )
+                    {
+                        logger.debug( "Re-used transformer outcome for key {}.", transformerRequestKey );
+                        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), cachedOutcomeResource );
+                    }
+                }
+            }
+
             final DhisToFhirTransformer<?, ?> transformer = this.transformers.get(
                 new FhirVersionedValue<>( transformerRequestImpl.getContext().getVersion(), ruleInfo.getRule().getDhisResourceType() ) );
             if ( transformer == null )
@@ -370,6 +400,10 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                 {
                     logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
                         ruleInfo, transformerRequestImpl.getInput().getResourceId(), ruleInfo.getRule().isStop() );
+                    if ( (transformerRequestKey != null) && !outcome.isDelete() )
+                    {
+                        transformerRequestCache.put( transformerRequestKey, outcome.getResource() );
+                    }
                     return new DhisToFhirTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back

@@ -127,14 +127,19 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         return rules.get( ruleIndex ).getRule().getId();
     }
 
-    public boolean isFirstRule()
+    public final boolean isFirstRule()
     {
         return (ruleIndex == 0);
     }
 
-    public boolean isLastRule()
+    public final boolean isLastRule()
     {
         return (ruleIndex >= rules.size());
+    }
+
+    public final boolean isSingleRule()
+    {
+        return (rules.size() == 1);
     }
 
     @Nullable
