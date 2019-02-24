@@ -45,7 +45,9 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 @Configuration
 @Component
@@ -57,6 +59,9 @@ public class TransformationConfig implements Serializable
 
     @NotBlank
     private String scriptEngineName;
+
+    @NotNull
+    private List<String> scriptEngineArgs;
 
     @Min( 1 )
     private int maxCachedScriptLifetimeSecs = 24 * 60 * 60;
@@ -72,6 +77,16 @@ public class TransformationConfig implements Serializable
     public void setScriptEngineName( String scriptEngineName )
     {
         this.scriptEngineName = scriptEngineName;
+    }
+
+    public List<String> getScriptEngineArgs()
+    {
+        return scriptEngineArgs;
+    }
+
+    public void setScriptEngineArgs( List<String> scriptEngineArgs )
+    {
+        this.scriptEngineArgs = scriptEngineArgs;
     }
 
     public int getMaxCachedScriptLifetimeSecs()
@@ -101,12 +116,11 @@ public class TransformationConfig implements Serializable
         return new ThreadLocalScriptExecutionContext();
     }
 
-
     @Bean
     @Nonnull
-    protected ScriptEvaluator scriptCompiler()
+    protected ScriptEvaluator scriptEvaluator()
     {
-        return new ScriptEvaluatorImpl( getScriptEngineName(), maxCachedScriptLifetimeSecs, maxCachedScripts );
+        return new ScriptEvaluatorImpl( getScriptEngineName(), scriptEngineArgs, maxCachedScriptLifetimeSecs, maxCachedScripts );
     }
 
     @Bean

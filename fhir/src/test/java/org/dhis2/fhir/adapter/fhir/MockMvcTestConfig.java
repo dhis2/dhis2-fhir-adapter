@@ -60,6 +60,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -76,7 +77,7 @@ public class MockMvcTestConfig
     @Bean
     protected ScriptEvaluator scriptEvaluator()
     {
-        return new ScriptEvaluatorImpl( "nashorn", 3600, 1000 );
+        return new ScriptEvaluatorImpl( "nashorn", Arrays.asList( "-doe", "--no-java", "--no-syntax-extensions" ), 3600, 1000 );
     }
 
     @Bean

@@ -37,8 +37,6 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.lock.impl.EmbeddedLockManagerImpl;
-import org.dhis2.fhir.adapter.script.ScriptEvaluator;
-import org.dhis2.fhir.adapter.script.impl.ScriptEvaluatorImpl;
 import org.dhis2.fhir.adapter.setup.Setup;
 import org.dhis2.fhir.adapter.setup.SetupResult;
 import org.dhis2.fhir.adapter.setup.SetupService;
@@ -171,13 +169,6 @@ public class TestConfiguration
     protected LockManager embeddedLockManager()
     {
         return new EmbeddedLockManagerImpl();
-    }
-
-    @Nonnull
-    @Bean
-    protected ScriptEvaluator scriptEvaluator( @Value( "${dhis2.fhir-adapter.transformation.script-engine-name}" ) @Nonnull String scriptEngineName )
-    {
-        return new ScriptEvaluatorImpl( scriptEngineName, 3600, 1000 );
     }
 
     @Nonnull

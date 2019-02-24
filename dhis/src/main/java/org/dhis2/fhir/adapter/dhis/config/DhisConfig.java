@@ -82,12 +82,14 @@ public class DhisConfig
 {
     @Bean
     @Nonnull
-    public ClientHttpRequestFactory dhisClientHttpRequestFactory()
+    public ClientHttpRequestFactory dhisClientHttpRequestFactory( @Nonnull DhisEndpointConfig endpointConfig )
     {
         final HttpClient httpClient = HttpClientBuilder.create()
             .useSystemProperties()
             .disableCookieManagement()
             .disableAuthCaching()
+            .setMaxConnTotal( endpointConfig.getMaxPooledConnections() )
+            .setMaxConnPerRoute( endpointConfig.getMaxPooledConnections() )
             .build();
         return new HttpComponentsClientHttpRequestFactory( httpClient );
     }

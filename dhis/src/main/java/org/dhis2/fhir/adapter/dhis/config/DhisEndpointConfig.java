@@ -66,6 +66,8 @@ public class DhisEndpointConfig implements Serializable
 
     public static final int DEFAULT_READ_TIMEOUT = 30_000;
 
+    public static final int DEFAULT_MAX_POOLED_CONNECTIONS = 10;
+
     @NotBlank
     private String url;
 
@@ -82,6 +84,9 @@ public class DhisEndpointConfig implements Serializable
 
     @Positive
     private int readTimeout = DEFAULT_READ_TIMEOUT;
+
+    @Positive
+    private int maxPooledConnections = DEFAULT_MAX_POOLED_CONNECTIONS;
 
     @NotNull
     private List<WwwAuthenticate> wwwAuthenticates = new ArrayList<>();
@@ -135,6 +140,16 @@ public class DhisEndpointConfig implements Serializable
     public void setReadTimeout( int readTimeout )
     {
         this.readTimeout = readTimeout;
+    }
+
+    public int getMaxPooledConnections()
+    {
+        return maxPooledConnections;
+    }
+
+    public void setMaxPooledConnections( int maxPooledConnections )
+    {
+        this.maxPooledConnections = maxPooledConnections;
     }
 
     public List<WwwAuthenticate> getWwwAuthenticates()

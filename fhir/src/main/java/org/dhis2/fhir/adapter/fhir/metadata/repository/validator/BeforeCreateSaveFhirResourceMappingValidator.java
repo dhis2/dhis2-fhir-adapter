@@ -64,6 +64,10 @@ public class BeforeCreateSaveFhirResourceMappingValidator implements Validator
         {
             errors.rejectValue( "fhirResourceType", "FhirResourceMapping.fhirResourceType.null", "FHIR Resource Type is mandatory." );
         }
+        if ( fhirResourceMapping.getTrackedEntityFhirResourceType() == null )
+        {
+            errors.rejectValue( "trackedEntityFhirResourceType", "FhirResourceMapping.trackedEntityFhirResourceType.null", "Tracked Entity FHIR Resource Type is mandatory." );
+        }
         if ( fhirResourceMapping.getFhirResourceType() != null )
         {
             checkValidTeiLookupScript( errors, "impTeiLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpTeiLookupScript() );

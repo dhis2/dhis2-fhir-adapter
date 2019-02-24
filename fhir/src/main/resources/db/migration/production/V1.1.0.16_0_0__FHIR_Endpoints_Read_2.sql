@@ -86,3 +86,10 @@ INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, 
 VALUES('5ae99120-6dd2-483a-8e64-17858803f4e1', 0, '46f0af46-3654-40b3-8d4c-7a633332c3b3', 'RELATED_PERSON', '64beefd5-3240-4bcb-a40d-f1b61a62d27b');
 INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
 VALUES('ccd13c8f-2d79-4965-b7be-36d59561451d', 0, '46f0af46-3654-40b3-8d4c-7a633332c3b3', 'PRACTITIONER', '77fd2a92-4761-420b-9db0-5b3999d8ef30');
+
+ALTER TABLE fhir_resource_mapping
+  ADD COLUMN tracked_entity_fhir_resource_type VARCHAR(30) DEFAULT 'PATIENT' NOT NULL,
+  ADD CONSTRAINT fhir_resource_mapping_fk17 FOREIGN KEY (tracked_entity_fhir_resource_type) REFERENCES fhir_resource_type_enum(value);
+COMMENT ON COLUMN fhir_resource_mapping.tracked_entity_fhir_resource_type IS 'The FHIR resource type of the DHIS tracked entity type.';
+ALTER TABLE fhir_resource_mapping DROP CONSTRAINT fhir_resource_mapping_uk_fhir;
+ALTER TABLE fhir_resource_mapping ADD CONSTRAINT fhir_resource_mapping_uk_fhir UNIQUE (fhir_resource_type, tracked_entity_fhir_resource_type);

@@ -130,6 +130,23 @@ public class BeforeCreateSaveFhirResourceMappingValidatorTest extends AbstractJp
     }
 
     @Test
+    public void testTrackedEntityFhirResourceTypeNull() throws Exception
+    {
+        entity.setTrackedEntityFhirResourceType( null );
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "impEffectiveDateLookupScript", "executableScripts", impEffectiveDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEnrollmentDateLookupScript", "executableScripts", impEnrollmentDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEventDateLookupScript", "executableScripts", impEventDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impTeiLookupScript", "executableScripts", impTeiLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEnrollmentOrgLookupScript", "executableScripts", impEnrollmentOrgLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEventOrgLookupScript", "executableScripts", impEventOrgLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEnrollmentGeoLookupScript", "executableScripts", impEnrollmentGeoLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEventGeoLookupScript", "executableScripts", impEventGeoLookupScript.getId().toString() ) ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "trackedEntityFhirResourceType" ) ) );
+    }
+
+    @Test
     public void testImpEffectiveDateLookupScriptNull() throws Exception
     {
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )

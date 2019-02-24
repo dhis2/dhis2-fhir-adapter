@@ -140,9 +140,11 @@ dhis2.fhir-adapter:
       # The password that is used to connect to DHIS2 to access the metadata.
       password: @dhis2.password@
     # The connect timeout when accessing DHIS2 in milli-seconds.
-    connectTimeout: 5000
+    connect-timeout: 5000
     # The read timeout when accessing DHIS2 in milli-seconds.
-    readTimeout: 30000
+    read-timeout: 30000
+    # Maximum number of pooled connections that are used to exchange data.
+    max-pooled-connections: 5
     # The WWW-Authenticate headers that are returned to the FHIR REST client
     # in case of an authentication error.
     wwwAuthenticates:
@@ -395,6 +397,14 @@ dhis2.fhir-adapter:
     # This value should not be changed normally. After changing this value, rules,
     # mappings and transformations must be retested.
     script-engine-name: nashorn
+    # The arguments that are passed to the script engine. By default java support
+    # (direct access to Java classes) and non-standard script extensions are disabled.
+    # This increases the security of the scripts and should guarantee that scripts can
+    # still be run with a different script engine.
+    script-engine-args:
+      - -doe
+      - --no-java
+      - --no-syntax-extensions
     # The maximum number of seconds a compiled script will remain in the cache after its
     # last access before it is discarded from the cache and needs to be re-compiled.
     max-cached-script-lifetime-secs: 86400

@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -59,7 +60,8 @@ public interface FhirResourceMappingRepository extends JpaRepository<FhirResourc
     @RestResource( exported = false )
     @Nonnull
     @Cacheable( key = "{#root.methodName, #a0}" )
-    Optional<FhirResourceMapping> findByFhirResourceType( @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
+    @Query( "SELECT rt FROM #{#entityName} rt WHERE rt.fhirResourceType=:fhirResourceType AND rt.trackedEntityFhirResourceType=:trackedEntityFhirResourceType" )
+    Optional<FhirResourceMapping> findOneByFhirResourceType( @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType, @Param( "trackedEntityFhirResourceType" ) @Nonnull FhirResourceType trackedEntityFhirResourceType );
 
     @Override
     @Nonnull

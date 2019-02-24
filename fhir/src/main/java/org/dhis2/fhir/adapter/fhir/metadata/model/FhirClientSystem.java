@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -88,7 +88,7 @@ public class FhirClientSystem extends VersionedBaseMetadata implements Serializa
         this.fhirResourceType = fhirResource;
     }
 
-    @JsonIgnore
+    @JsonCacheIgnore
     @ManyToOne
     @JoinColumn( name = "fhir_client_id", nullable = false )
     public FhirClient getFhirClient()

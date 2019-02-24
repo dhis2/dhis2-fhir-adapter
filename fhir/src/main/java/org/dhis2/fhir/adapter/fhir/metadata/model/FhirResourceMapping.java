@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,8 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private FhirResourceType fhirResourceType;
 
+    private FhirResourceType trackedEntityFhirResourceType = FhirResourceType.PATIENT;
+
     private ExecutableScript impTeiLookupScript;
 
     private ExecutableScript impEnrollmentOrgLookupScript;
@@ -100,6 +102,19 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setFhirResourceType( FhirResourceType fhirResourceType )
     {
         this.fhirResourceType = fhirResourceType;
+    }
+
+    @Basic
+    @Column( name = "tracked_entity_fhir_resource_type", nullable = false, length = 30, columnDefinition = "VARCHAR(30) DEFAULT 'PATIENT' NOT NULL" )
+    @Enumerated( EnumType.STRING )
+    public FhirResourceType getTrackedEntityFhirResourceType()
+    {
+        return trackedEntityFhirResourceType;
+    }
+
+    public void setTrackedEntityFhirResourceType( FhirResourceType trackedEntityResourceType )
+    {
+        this.trackedEntityFhirResourceType = trackedEntityResourceType;
     }
 
     @JsonCacheId

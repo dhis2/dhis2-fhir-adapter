@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.script.impl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.dhis2.fhir.adapter.script.FatalScriptCompilationException;
 import org.dhis2.fhir.adapter.script.ScriptCompilationException;
 import org.dhis2.fhir.adapter.script.ScriptEvaluator;
@@ -42,9 +43,9 @@ import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -67,10 +68,15 @@ public class ScriptEvaluatorImpl implements ScriptEvaluator
 
     private final Cache<Object, CompiledScript> compiledScriptCache;
 
-    public ScriptEvaluatorImpl( @Nonnull String scriptEngineName, int maxCachedScriptLifetimeSecs, int maxCachedScripts )
+    public ScriptEvaluatorImpl( @Nonnull String scriptEngineName, @Nonnull List<String> scriptEngineArgs, int maxCachedScriptLifetimeSecs, int maxCachedScripts )
     {
-        final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        scriptEngine = scriptEngineManager.getEngineByName( scriptEngineName );
+        if ( !"nashorn".equals( scriptEngineName ) )
+        {
+            throw new FatalScriptCompilationException( "Script engine has not been configured: " + scriptEngineName );
+        }
+        final NashornScriptEngineFactory scriptEngineFactory = new NashornScriptEngineFactory();
+
+        scriptEngine = scriptEngineFactory.getScriptEngine( scriptEngineArgs.toArray( new String[0] ) );
         if ( scriptEngine == null )
         {
             throw new FatalScriptCompilationException( "Script engine has not been configured: " + scriptEngineName );

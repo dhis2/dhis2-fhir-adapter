@@ -77,6 +77,7 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
             .andDo( documentationHandler.document( requestFields(
                 attributes( key( "title" ).value( "Fields for FHIR resource mapping creation" ) ),
                 fields.withPath( "fhirResourceType" ).description( "The unique FHIR resource type for which the definition is made." ).type( JsonFieldType.STRING ),
+                fields.withPath( "trackedEntityFhirResourceType" ).description( "The FHIR resource type to which the DHIS tracked entity is mapped." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "deleteWhenAbsent" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "impTeiLookupScript" ).description( "Link to the executable script that returns the FHIR resource for the TEI that is assigned to the evaluated mapped FHIR resource. The return type of the script must be FHIR_RESOURCE." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "impEventOrgLookupScript" ).description( "Link to the executable evaluation script that returns a reference to a DHIS2 organization unit of an event. The return type of the script must be ORG_UNIT_REF." ).type( JsonFieldType.STRING ).optional(),
@@ -134,6 +135,7 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
                     fields.withPath( "lastUpdatedBy" ).description( "The ID of the user that has updated the user the last time or null if the data has been imported to the database directly." ).type( JsonFieldType.STRING ).optional(),
                     fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
                     fields.withPath( "fhirResourceType" ).description( "The unique FHIR resource type for which the definition is made." ).type( JsonFieldType.STRING ),
+                    fields.withPath( "trackedEntityFhirResourceType" ).description( "The FHIR resource type to which the DHIS tracked entity is mapped." ).type( JsonFieldType.STRING ).optional(),
                     fields.withPath( "deleteWhenAbsent" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.BOOLEAN ).optional(),
                     subsectionWithPath( "_links" ).description( "Links to other resources" )
                 ) ) );
