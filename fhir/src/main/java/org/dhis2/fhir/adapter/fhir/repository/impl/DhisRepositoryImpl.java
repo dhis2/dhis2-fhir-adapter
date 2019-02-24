@@ -40,8 +40,10 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
@@ -155,7 +157,7 @@ public class DhisRepositoryImpl implements DhisRepository
 
             @Nullable
             @Override
-            protected DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType )
+            protected DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource )
             {
                 return dhisToFhirTransformerService.createTransformerRequest( fhirClient, dhisRequest, dhisResource, fhirResourceType, dhisFhirResourceId.getRuleId() );
             }
@@ -165,6 +167,42 @@ public class DhisRepositoryImpl implements DhisRepository
             protected DhisResource getDhisResource()
             {
                 return dhisResourceRepository.findRefreshed( dhisFhirResourceId.getDhisResourceId() ).orElse( null );
+            }
+        }.read( fhirClient, fhirResourceType );
+    }
+
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
+    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    @Nonnull
+    @Override
+    public Optional<IBaseResource> readByIdentifier( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull String identifier )
+    {
+        final RuleInfo<? extends AbstractRule> ruleInfo = dhisToFhirTransformerService.findSingleRule( fhirClient, fhirResourceType );
+        if ( ruleInfo == null )
+        {
+            return Optional.empty();
+        }
+        return new OneDhisResourceReader()
+        {
+            @Nonnull
+            @Override
+            protected UUID getRuleId()
+            {
+                return ruleInfo.getRule().getId();
+            }
+
+            @Nullable
+            @Override
+            protected DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource )
+            {
+                return dhisToFhirTransformerService.createTransformerRequest( fhirClient, dhisRequest, ruleInfo, dhisResource );
+            }
+
+            @Nullable
+            @Override
+            protected DhisResource getDhisResource()
+            {
+                return dhisToFhirTransformerService.findDhisResourceByDhisFhirIdentifier( fhirClient, ruleInfo, identifier );
             }
         }.read( fhirClient, fhirResourceType );
     }
@@ -303,7 +341,7 @@ public class DhisRepositoryImpl implements DhisRepository
                     dhisRequest.setResourceType( dhisResource.getResourceType() );
                     dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
 
-                    DhisToFhirTransformerRequest transformerRequest = createTransformerRequest( new ImmutableDhisRequest( dhisRequest ), dhisResource, fhirResourceType );
+                    DhisToFhirTransformerRequest transformerRequest = createTransformerRequest( fhirResourceType, new ImmutableDhisRequest( dhisRequest ), dhisResource );
                     if ( transformerRequest == null )
                     {
                         logger.debug( "No matching rule has been found." );
@@ -349,6 +387,6 @@ public class DhisRepositoryImpl implements DhisRepository
         protected abstract DhisResource getDhisResource();
 
         @Nullable
-        protected abstract DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType );
+        protected abstract DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource );
     }
 }

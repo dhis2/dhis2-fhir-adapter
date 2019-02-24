@@ -28,7 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -98,6 +101,13 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     public Class<OrganizationUnitRule> getRuleClass()
     {
         return OrganizationUnitRule.class;
+    }
+
+    @Nullable
+    @Override
+    public DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull String identifier )
+    {
+        return organizationUnitService.findOneRefreshedByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
     }
 
     @Nullable

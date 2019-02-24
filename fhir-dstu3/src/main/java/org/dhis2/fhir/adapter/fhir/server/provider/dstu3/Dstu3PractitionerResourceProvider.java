@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.server.provider.dstu3;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
@@ -46,9 +47,10 @@ import javax.annotation.Nonnull;
 @Component
 public class Dstu3PractitionerResourceProvider extends AbstractReadWriteResourceProvider<Practitioner>
 {
-    public Dstu3PractitionerResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
+    public Dstu3PractitionerResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
+        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        super( Practitioner.class, fhirClientResourceRepository, fhirRepository, dhisRepository );
+        super( Practitioner.class, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
     @Nonnull

@@ -29,8 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -46,6 +48,15 @@ import java.util.UUID;
  */
 public interface DhisToFhirTransformerService
 {
+    @Nullable
+    RuleInfo<? extends AbstractRule> findSingleRule( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType );
+
+    @Nullable
+    DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull String identifier );
+
+    @Nullable
+    DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirClient fhirClient, @Nonnull DhisRequest dhisRequest, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull DhisResource resource );
+
     @Nullable
     DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource );
 

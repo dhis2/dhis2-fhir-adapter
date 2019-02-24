@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.server.provider.r4;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
@@ -46,9 +47,10 @@ import javax.annotation.Nonnull;
 @Component
 public class R4RelatedPersonResourceProvider extends AbstractReadWriteResourceProvider<RelatedPerson>
 {
-    public R4RelatedPersonResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
+    public R4RelatedPersonResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
+        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        super( RelatedPerson.class, fhirClientResourceRepository, fhirRepository, dhisRepository );
+        super( RelatedPerson.class, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
     @Nonnull

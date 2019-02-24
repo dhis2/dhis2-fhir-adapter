@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -105,6 +106,14 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     public Class<ProgramStageRule> getRuleClass()
     {
         return ProgramStageRule.class;
+    }
+
+    @Nullable
+    @Override
+    public DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull String identifier )
+    {
+        // finding by identifier is not supported
+        return null;
     }
 
     @Nullable

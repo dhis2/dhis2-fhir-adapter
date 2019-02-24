@@ -67,12 +67,6 @@ public interface FhirClientSystemRepository extends JpaRepository<FhirClientSyst
 
     @RestResource( exported = false )
     @Nonnull
-    @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirClient=:fhirClient AND rss.fhirResourceType=:fhirResourceType" )
-    @Cacheable( key = "{#root.methodName, #a0.id, #a1}" )
-    Optional<FhirClientSystem> findOneByFhirClientResourceType( @Param( "fhirClient" ) @Nonnull FhirClient fhirClient, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
-
-    @RestResource( exported = false )
-    @Nonnull
     @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirClient.id=:fhirClientId AND rss.fhirResourceType=:fhirResourceType" )
     @Cacheable( key = "{#root.methodName, #a0, #a1}" )
     Optional<FhirClientSystem> findOneByFhirClientResourceType( @Param( "fhirClientId" ) @Nonnull UUID fhirClientId, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );

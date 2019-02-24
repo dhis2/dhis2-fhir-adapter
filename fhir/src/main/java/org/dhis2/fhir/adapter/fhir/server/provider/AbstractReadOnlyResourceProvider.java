@@ -30,13 +30,19 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
 
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
+import ca.uhn.fhir.rest.annotation.RequiredParam;
+import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
@@ -48,6 +54,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -60,6 +68,8 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> implements IResourceProvider, SingleFhirVersionRestricted
 {
+    public static final String SP_IDENTIFIER = "identifier";
+
     private final Class<T> resourceClass;
 
     private final FhirRepository fhirRepository;
@@ -68,16 +78,22 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
 
     private final FhirClientResourceRepository fhirClientResourceRepository;
 
+    private final FhirClientSystemRepository fhirClientSystemRepository;
+
     private final FhirResourceType fhirResourceType;
 
     private volatile FhirClientResource fhirClientResource;
 
+    private volatile FhirClientSystem fhirClientSystem;
+
     public AbstractReadOnlyResourceProvider( @Nonnull Class<T> resourceClass,
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
+        @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
         this.resourceClass = resourceClass;
         this.fhirClientResourceRepository = fhirClientResourceRepository;
+        this.fhirClientSystemRepository = fhirClientSystemRepository;
         this.fhirRepository = fhirRepository;
         this.dhisRepository = dhisRepository;
         this.fhirResourceType = FhirResourceType.getByResourceType( resourceClass );
@@ -99,7 +115,25 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
     @Nullable
     public T getResourceById( @IdParam IIdType id )
     {
-        return executeInSecurityContext( () -> resourceClass.cast( getDhisRepository().read( getFhirClientResource().getFhirClient(), getFhirResourceType(), extractDhisFhirResourceId( id ) ).orElse( null ) ) );
+        return executeInSecurityContext( () -> resourceClass.cast( getDhisRepository().read(
+            getFhirClientResource().getFhirClient(), getFhirResourceType(), extractDhisFhirResourceId( id ) ).orElse( null ) ) );
+    }
+
+    @Search
+    @Nonnull
+    public List<T> searchByIdentifier( @Nonnull @RequiredParam( name = SP_IDENTIFIER ) TokenParam identifierParam )
+    {
+        return executeInSecurityContext( () -> {
+            final FhirClientSystem fhirClientSystem = getFhirClientSystem();
+            if ( !fhirClientSystem.getSystem().getSystemUri().equals( identifierParam.getSystem() ) ||
+                StringUtils.isBlank( identifierParam.getValue() ) )
+            {
+                return Collections.emptyList();
+            }
+            final T result = resourceClass.cast( getDhisRepository().readByIdentifier(
+                getFhirClientResource().getFhirClient(), getFhirResourceType(), identifierParam.getValue() ).orElse( null ) );
+            return (result == null) ? Collections.emptyList() : Collections.singletonList( result );
+        } );
     }
 
     @Nonnull
@@ -152,7 +186,20 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
         return fhirClientResource;
     }
 
-    protected final <T> T executeInSecurityContext( @Nonnull Supplier<T> supplier )
+    @Nonnull
+    protected FhirClientSystem getFhirClientSystem()
+    {
+        if ( fhirClientSystem == null )
+        {
+            final UUID fhirClientId = FhirClient.getIdByFhirVersion( getFhirVersion() );
+            fhirClientSystem = fhirClientSystemRepository.findOneByFhirClientResourceType( fhirClientId, fhirResourceType )
+                .orElseThrow( () -> new InvalidRequestException( "FHIR resource " + fhirResourceType +
+                    " has not assigned system URI for FHIR version " + getFhirVersion() + "." ) );
+        }
+        return fhirClientSystem;
+    }
+
+    protected final <R> R executeInSecurityContext( @Nonnull Supplier<R> supplier )
     {
         SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
         try

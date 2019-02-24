@@ -557,3 +557,62 @@ INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, 
 VALUES('47fd1b287558429b85abc5f5fcc3d00f', 0, '46f0af46365440b38d4c7a633332c3b3', 'LOCATION', 'cc46b8acaced4bd2b10403a7d34da438');
 INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
 VALUES('e2cdcfd609f044fe9dd2c3e97540ea22', 0, '46f0af46365440b38d4c7a633332c3b3', 'ORGANIZATION', 'db955a8aca584263bc56faa99085df93');
+
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('dbc68848371346f78c5b5d0f12f091b9', 0, 'DHIS2 FHIR Adapter Condition Identifier', 'SYSTEM_DHIS2_FHIR_CONDITION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/conditionidentifier',
+        'DHIS2 FHIR Adapter Condition Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('06bc5bb6116a4a759b677c64a29f99b8', 0, 'DHIS2 FHIR Adapter Diagnostic Report Identifier', 'SYSTEM_DHIS2_FHIR_DIAGNOSTIC_REPORT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/diagnosticreportidentifier',
+        'DHIS2 FHIR Adapter Diagnostic Report Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('84d4ee666bd24c31a0ead0cb1fcc0837', 0, 'DHIS2 FHIR Adapter Encounter Identifier', 'SYSTEM_DHIS2_FHIR_ENCOUNTER_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/encounteridentifier',
+        'DHIS2 FHIR Adapter Organization Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('ce63a6d6a0054d648d0dd91c93c994fd', 0, 'DHIS2 FHIR Adapter Immunization Identifier', 'SYSTEM_DHIS2_FHIR_IMMUNIZATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/immunizationidentifier',
+        'DHIS2 FHIR Adapter Immunization Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('36bfe5295e5f4f8186d1586e6ae76372', 0, 'DHIS2 FHIR Adapter Medication Request Identifier', 'SYSTEM_DHIS2_FHIR_MEDICATION_REQUEST_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/medicationrequestidentifier',
+        'DHIS2 FHIR Adapter Medication Request Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('e10dca6e11714da1bc2d781ef2764aa8', 0, 'DHIS2 FHIR Adapter Observation Identifier', 'SYSTEM_DHIS2_FHIR_OBSERVATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/observationidentifier',
+        'DHIS2 FHIR Adapter Observation Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('64beefd532404bcba40df1b61a62d27b', 0, 'DHIS2 FHIR Adapter Related Person Identifier', 'SYSTEM_DHIS2_FHIR_RELATED_PERSON_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/relatedpersonidentifier',
+        'DHIS2 FHIR Adapter Related Person Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('77fd2a924761420b9db05b3999d8ef30', 0, 'DHIS2 FHIR Adapter Practitioner Identifier', 'SYSTEM_DHIS2_FHIR_PRACTITIONER_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/practitioneridentifier',
+        'DHIS2 FHIR Adapter Practitioner Identifier.');
+
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('f720eb06864545869510b01f8ce281a0', 0, 'a5a6a64215a24f279cee55a26a86d062', 'CONDITION', 'dbc68848371346f78c5b5d0f12f091b9');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('8f3bede5ca924bcdae3603c52f9aa2da', 0, 'a5a6a64215a24f279cee55a26a86d062', 'DIAGNOSTIC_REPORT', '06bc5bb6116a4a759b677c64a29f99b8');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('b19b210e98d1412db983af75366c2796', 0, 'a5a6a64215a24f279cee55a26a86d062', 'ENCOUNTER', '84d4ee666bd24c31a0ead0cb1fcc0837');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('a52778e9a00d44a7a6293cefd373ce11', 0, 'a5a6a64215a24f279cee55a26a86d062', 'IMMUNIZATION', 'ce63a6d6a0054d648d0dd91c93c994fd');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('92dd859b5933412385508455cd329394', 0, 'a5a6a64215a24f279cee55a26a86d062', 'MEDICATION_REQUEST', '36bfe5295e5f4f8186d1586e6ae76372');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('77d278dc01e1437e99c0e2b2e9bd78cd', 0, 'a5a6a64215a24f279cee55a26a86d062', 'OBSERVATION', 'e10dca6e11714da1bc2d781ef2764aa8');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('c99b20ff9854443bbbd297072e1f9453', 0, 'a5a6a64215a24f279cee55a26a86d062', 'RELATED_PERSON', '64beefd532404bcba40df1b61a62d27b');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('965fdc223b2e4a819762b8f8871ff0ee', 0, 'a5a6a64215a24f279cee55a26a86d062', 'PRACTITIONER', '77fd2a924761420b9db05b3999d8ef30');
+
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('9271ae78a2c74630be2a2e141dbc4e7f', 0, '46f0af46365440b38d4c7a633332c3b3', 'CONDITION', 'dbc68848371346f78c5b5d0f12f091b9');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('d2c407a9d03e4140b4593909500372f4', 0, '46f0af46365440b38d4c7a633332c3b3', 'DIAGNOSTIC_REPORT', '06bc5bb6116a4a759b677c64a29f99b8');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('2dfbc117c31c4b41819de38624d8c262', 0, '46f0af46365440b38d4c7a633332c3b3', 'ENCOUNTER', '84d4ee666bd24c31a0ead0cb1fcc0837');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('c26387c482ac4a80b20ab8882e107590', 0, '46f0af46365440b38d4c7a633332c3b3', 'IMMUNIZATION', 'ce63a6d6a0054d648d0dd91c93c994fd');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('235aaaaa0f6d454a9de532b975329997', 0, '46f0af46365440b38d4c7a633332c3b3', 'MEDICATION_REQUEST', '36bfe5295e5f4f8186d1586e6ae76372');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('feceaac45b004f428e1bdd629f721cc9', 0, '46f0af46365440b38d4c7a633332c3b3', 'OBSERVATION', 'e10dca6e11714da1bc2d781ef2764aa8');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('5ae991206dd2483a8e6417858803f4e1', 0, '46f0af46365440b38d4c7a633332c3b3', 'RELATED_PERSON', '64beefd532404bcba40df1b61a62d27b');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('ccd13c8f2d794965b7be36d59561451d', 0, '46f0af46365440b38d4c7a633332c3b3', 'PRACTITIONER', '77fd2a924761420b9db05b3999d8ef30');

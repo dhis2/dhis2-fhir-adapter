@@ -83,8 +83,9 @@ import java.util.List;
             "sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true WHERE csv.codeSet=r.applicableCodeSet AND csv.enabled=true)))" ),
     @NamedQuery( name = AbstractRule.FIND_IMP_RULE_BY_ID_NAMED_QUERY, query =
         "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.impEnabled=true" ),
-    @NamedQuery( name = AbstractRule.FIND_EXP_RULE_BY_ID_NAMED_QUERY, query =
-        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.expEnabled=true" ) } )
+    @NamedQuery( name = AbstractRule.FIND_EXP_RULE_BY_FHIR_TYPE_NAMED_QUERY, query =
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true AND r.expEnabled=true" ),
+} )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
@@ -102,7 +103,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     public static final String FIND_IMP_RULE_BY_ID_NAMED_QUERY = "AbstractRule.findImpById";
 
-    public static final String FIND_EXP_RULE_BY_ID_NAMED_QUERY = "AbstractRule.findExpById";
+    public static final String FIND_EXP_RULE_BY_FHIR_TYPE_NAMED_QUERY = "AbstractRule.findExpByFhirType";
 
     public static final int MAX_NAME_LENGTH = 230;
 

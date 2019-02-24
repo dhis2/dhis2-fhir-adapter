@@ -28,7 +28,14 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
@@ -40,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
@@ -54,6 +62,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,10 +78,16 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final TrackedEntityMetadataService metadataService;
+
+    private final TrackedEntityService service;
+
     public TrackedEntityToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull TrackedEntityService service )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
+        this.metadataService = metadataService;
+        this.service = service;
     }
 
     @Nonnull
@@ -94,6 +109,24 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
     public Class<TrackedEntityRule> getRuleClass()
     {
         return TrackedEntityRule.class;
+    }
+
+    @Nullable
+    @Override
+    public DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull String identifier )
+    {
+        final TrackedEntityType type = metadataService.findTypeByReference( ruleInfo.getRule().getTrackedEntity().getTrackedEntityReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity type does not exist: " + ruleInfo.getRule().getTrackedEntity().getTrackedEntityReference() ) );
+        final TrackedEntityAttributes trackedEntityAttributes = metadataService.getAttributes();
+        final TrackedEntityAttribute identifierAttribute = trackedEntityAttributes.getOptional( ruleInfo.getRule().getTrackedEntity().getTrackedEntityIdentifierReference() )
+            .orElseThrow( () -> new TransformerMappingException( "Tracked entity identifier attribute does not exist: " + ruleInfo.getRule().getTrackedEntity().getTrackedEntityIdentifierReference() ) );
+
+        final Collection<TrackedEntityInstance> result = service.findByAttrValueRefreshed( type.getId(), identifierAttribute.getId(), identifier, 1 );
+        if ( result.size() > 1 )
+        {
+            return null;
+        }
+        return result.stream().findFirst().orElse( null );
     }
 
     @Nullable

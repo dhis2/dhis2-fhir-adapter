@@ -35,6 +35,7 @@ import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
@@ -55,9 +56,10 @@ public abstract class AbstractReadWriteResourceProvider<T extends IBaseResource>
 {
     public AbstractReadWriteResourceProvider( @Nonnull Class<T> resourceClass,
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
+        @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        super( resourceClass, fhirClientResourceRepository, fhirRepository, dhisRepository );
+        super( resourceClass, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
     @Create

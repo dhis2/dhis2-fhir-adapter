@@ -133,6 +133,25 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     }
 
     @Nonnull
+    @RestResource( exported = false )
+    @Cacheable( key = "{#root.methodName, #a0}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
+    @Override
+    public Optional<RuleInfo<? extends AbstractRule>> findOneExpByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType )
+    {
+        final List<AbstractRule> rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_EXP_RULE_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
+            .setParameter( "fhirResourceType", fhirResourceType ).setMaxResults( 2 ).getResultList() );
+        if ( rules.size() != 1 )
+        {
+            return Optional.empty();
+        }
+
+        final AbstractRule rule = rules.get( 0 );
+        Hibernate.initialize( rule.getDhisDataReferences() );
+        return Optional.of( new RuleInfo<>( rule, rule.getDhisDataReferences() ) );
+    }
+
+    @Nonnull
     protected static Class<? extends AbstractRule> getRuleClass( @Nonnull DhisResourceType dhisResourceType )
     {
         switch ( dhisResourceType )

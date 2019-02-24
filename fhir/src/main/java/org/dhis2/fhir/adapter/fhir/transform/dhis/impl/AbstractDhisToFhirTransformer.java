@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -123,6 +124,13 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.ALL;
+    }
+
+    @Nullable
+    @Override
+    public DhisResource findDhisResourceByDhisFhirIdentifierCasted( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull String identifier )
+    {
+        return findDhisResourceByDhisFhirIdentifier( new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), identifier );
     }
 
     @Nullable
