@@ -40,6 +40,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
@@ -80,17 +81,23 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 @Configuration
 public class DhisConfig
 {
-    @Bean
+    @Bean( destroyMethod = "close" )
     @Nonnull
-    public ClientHttpRequestFactory dhisClientHttpRequestFactory( @Nonnull DhisEndpointConfig endpointConfig )
+    public CloseableHttpClient dhisHttpClient( @Nonnull DhisEndpointConfig endpointConfig )
     {
-        final HttpClient httpClient = HttpClientBuilder.create()
+        return HttpClientBuilder.create()
             .useSystemProperties()
             .disableCookieManagement()
             .disableAuthCaching()
             .setMaxConnTotal( endpointConfig.getMaxPooledConnections() )
             .setMaxConnPerRoute( endpointConfig.getMaxPooledConnections() )
             .build();
+    }
+
+    @Bean
+    @Nonnull
+    public ClientHttpRequestFactory dhisClientHttpRequestFactory( @Nonnull @Qualifier( "dhisHttpClient" ) HttpClient httpClient )
+    {
         return new HttpComponentsClientHttpRequestFactory( httpClient );
     }
 
