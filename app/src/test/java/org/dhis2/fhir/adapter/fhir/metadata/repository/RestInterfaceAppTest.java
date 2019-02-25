@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.common.scriptabe.generator;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -30,28 +30,22 @@ package org.dhis2.fhir.adapter.common.scriptabe.generator;
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.script.ScriptEvaluator;
-import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Tests that the JavaScript generator controller provides the JavaScript.
+ * Tests that the basic operations of application configuration and administration REST interfaces.
  *
  * @author volsch
  */
-public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
+public class RestInterfaceAppTest extends AbstractAppTest
 {
-    @Autowired
-    private ScriptEvaluator scriptEvaluator;
-
     @Nonnull
     @Override
     protected FhirVersion getFhirVersion()
@@ -60,31 +54,12 @@ public class JavaScriptGeneratorControllerAppTest extends AbstractAppTest
     }
 
     @Test
-    public void inScriptAvailable() throws Exception
-    {
-        final String script = mockMvc.perform( get( "/scripts/to-dhis2-all-mapping.js" ) )
-            .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
-            .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
-            .andExpect( content().string( not( containsString( "var genderUtils = new GenderUtils();" ) ) ) )
-            .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
-        scriptEvaluator.compile( script );
-    }
-
-    @Test
-    public void outScriptAvailable() throws Exception
-    {
-        final String script = mockMvc.perform( get( "/scripts/from-dhis2-all-mapping.js" ) )
-            .andExpect( status().isOk() ).andExpect( header().string( "Content-Type", Matchers.containsString( "application/javascript" ) ) )
-            .andExpect( content().string( containsString( "var trackedEntityInstance = new TrackedEntityInstance();" ) ) )
-            .andExpect( content().string( containsString( "var genderUtils = new GenderUtils();" ) ) )
-            .andExpect( content().string( containsString( "Copyright (c)" ) ) ).andReturn().getResponse().getContentAsString();
-        scriptEvaluator.compile( script );
-    }
-
-    @Test
     public void corsAvailable() throws Exception
     {
-        mockMvc.perform( get( "/scripts/from-dhis2-all-mapping.js" ).header( "Origin", "localhost" ) )
+        mockMvc.perform( get( "/api/fhirClients" )
+            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString(
+                "administration:administration_1".getBytes( StandardCharsets.UTF_8 ) ) )
+            .header( "Origin", "localhost" ) )
             .andExpect( status().isOk() ).andExpect( header().string( "Access-Control-Allow-Origin", "localhost" ) );
     }
 }

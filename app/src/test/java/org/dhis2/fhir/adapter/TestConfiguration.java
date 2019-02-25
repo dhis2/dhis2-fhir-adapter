@@ -89,6 +89,10 @@ public class TestConfiguration
 
     public static final String BASE_R4_CONTEXT = "/baseR4";
 
+    public static final String DSTU3_VERSION_PATH = "/dstu3";
+
+    public static final String R4_VERSION_PATH = "/r4";
+
     @Value( "${dhis2.fhir-adapter.endpoint.system-authentication.username}" )
     private String dhis2SystemAuthenticationUsername;
 

@@ -84,4 +84,11 @@ public class Dstu3FhirServerConfig extends AbstractFhirServerConfig
     {
         return fhirAuthorizationResetFilter( fhirServerRegistrationBean, authorizationResetFilter );
     }
+
+    @Bean
+    @Nonnull
+    protected FilterRegistrationBean corsFilterDstu3( @Nonnull @Qualifier( "fhirServerRegistrationBeanDstu3" ) ServletRegistrationBean<RestfulServer> fhirServerRegistrationBean )
+    {
+        return super.corsFilter( fhirServerRegistrationBean );
+    }
 }

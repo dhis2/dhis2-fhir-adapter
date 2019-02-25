@@ -38,6 +38,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -73,10 +74,10 @@ public class AppConfig
             @Override
             public void addCorsMappings( @Nonnull CorsRegistry registry )
             {
-                registry.addMapping( "/api" )
+                registry.addMapping( "/scripts/**" )
                     .allowedOrigins( "*" )
-                    .allowedMethods( HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.HEAD.name(), HttpMethod.OPTIONS.name() )
-                    .allowCredentials( true );
+                    .allowedMethods( HttpMethod.GET.name() )
+                    .exposedHeaders( HttpHeaders.CACHE_CONTROL, HttpHeaders.CONTENT_LANGUAGE, HttpHeaders.CONTENT_TYPE, HttpHeaders.EXPIRES, HttpHeaders.LAST_MODIFIED, HttpHeaders.PRAGMA, HttpHeaders.CONTENT_LENGTH, HttpHeaders.ETAG );
             }
 
             @Override

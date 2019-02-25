@@ -49,6 +49,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpHeaders;
@@ -87,6 +89,12 @@ public abstract class AbstractAppTest
     public static final long MAX_COMPLETED_POLL_TIME = 10 * 60_000;
 
     private static final String RESOURCE_DL_QUEUE_NAME = "jms.queue.remoteFhirResourceDlQueue";
+
+    @LocalServerPort
+    protected int localPort;
+
+    @Autowired
+    protected TestRestTemplate localRestTemplate;
 
     /**
      * The DHIS2 client that is accessed to retrieve metadata.
@@ -166,6 +174,20 @@ public abstract class AbstractAppTest
                 return TestConfiguration.BASE_DSTU3_CONTEXT;
             case R4:
                 return TestConfiguration.BASE_R4_CONTEXT;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
+        }
+    }
+
+    @Nonnull
+    protected String getFhirVersionPath()
+    {
+        switch ( getFhirVersion() )
+        {
+            case DSTU3:
+                return TestConfiguration.DSTU3_VERSION_PATH;
+            case R4:
+                return TestConfiguration.R4_VERSION_PATH;
             default:
                 throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
         }

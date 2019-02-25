@@ -32,8 +32,15 @@ import ca.uhn.fhir.rest.server.RestfulServer;
 import org.dhis2.fhir.adapter.auth.AuthorizationResetFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Provides the configuration to run the FHIR restful client and enables the authorization reset filter for the restful
@@ -66,5 +73,24 @@ public abstract class AbstractFhirServerConfig
         final FilterRegistrationBean<AuthorizationResetFilter> registration = new FilterRegistrationBean<>( authorizationResetFilter, fhirServerRegistrationBean );
         registration.setName( "DHIS2 FHIR Adapter Authorization Reset Filter " + fhirVersionString );
         return registration;
+    }
+
+    @Nonnull
+    protected FilterRegistrationBean corsFilter( @Nonnull ServletRegistrationBean<RestfulServer> fhirServerRegistrationBean )
+    {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins( Collections.singletonList( "*" ) );
+        config.setAllowedMethods( Arrays.asList( HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.HEAD.name(), HttpMethod.OPTIONS.name() ) );
+        config.setAllowedHeaders( Arrays.asList( HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.CACHE_CONTROL, HttpHeaders.ACCEPT, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.CONTENT_LANGUAGE ) );
+        config.setExposedHeaders( Arrays.asList( HttpHeaders.CACHE_CONTROL, HttpHeaders.CONTENT_LANGUAGE, HttpHeaders.CONTENT_TYPE, HttpHeaders.EXPIRES,
+            HttpHeaders.LAST_MODIFIED, HttpHeaders.PRAGMA, HttpHeaders.CONTENT_LENGTH, HttpHeaders.LOCATION, HttpHeaders.ETAG, HttpHeaders.WWW_AUTHENTICATE ) );
+        config.setAllowCredentials( true );
+        source.registerCorsConfiguration( "/**", config );
+
+        final FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>( new CorsFilter( source ), fhirServerRegistrationBean );
+        bean.setName( "DHIS2 FHIR Interfaces CORS Filter " + fhirVersionString );
+        bean.setOrder( 0 );
+        return bean;
     }
 }

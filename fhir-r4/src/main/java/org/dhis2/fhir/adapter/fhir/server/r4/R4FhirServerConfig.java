@@ -84,4 +84,11 @@ public class R4FhirServerConfig extends AbstractFhirServerConfig
     {
         return fhirAuthorizationResetFilter( fhirServerRegistrationBean, authorizationResetFilter );
     }
+
+    @Bean
+    @Nonnull
+    protected FilterRegistrationBean corsFilterR4( @Nonnull @Qualifier( "fhirServerRegistrationBeanR4" ) ServletRegistrationBean<RestfulServer> fhirServerRegistrationBean )
+    {
+        return super.corsFilter( fhirServerRegistrationBean );
+    }
 }
