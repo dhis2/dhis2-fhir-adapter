@@ -59,7 +59,7 @@ public interface FhirResourceMappingRepository extends JpaRepository<FhirResourc
 {
     @RestResource( exported = false )
     @Nonnull
-    @Cacheable( key = "{#root.methodName, #a0}" )
+    @Cacheable( key = "{#root.methodName, #a0, #a1}" )
     @Query( "SELECT rt FROM #{#entityName} rt WHERE rt.fhirResourceType=:fhirResourceType AND rt.trackedEntityFhirResourceType=:trackedEntityFhirResourceType" )
     Optional<FhirResourceMapping> findOneByFhirResourceType( @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType, @Param( "trackedEntityFhirResourceType" ) @Nonnull FhirResourceType trackedEntityFhirResourceType );
 
