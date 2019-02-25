@@ -110,6 +110,7 @@ public class BeforeCreateSaveFhirResourceMappingValidatorTest extends AbstractJp
 
         entity = new FhirResourceMapping();
         entity.setFhirResourceType( FhirResourceType.ENCOUNTER );
+        entity.setTrackedEntityFhirResourceType( FhirResourceType.PATIENT );
     }
 
     @Test

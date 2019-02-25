@@ -1,5 +1,6 @@
 {
   "fhirResourceType": "IMMUNIZATION",
+  "trackedEntityFhirResourceType": "PRACTITIONER",
   "impEventGeoLookupScript": "$executableScriptBaseUri/bb070631-46b3-42ec-83b2-00ea219bcf50",
   "impEffectiveDateLookupScript": "$executableScriptBaseUri/a7b60436-9fa7-4fe4-8bf7-f5e22123a980",
   "impTeiLookupScript": "$executableScriptBaseUri/1b6a2f75-cb4a-47b1-8e90-3dfb4db07d36",

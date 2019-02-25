@@ -57,7 +57,7 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private FhirResourceType fhirResourceType;
 
-    private FhirResourceType trackedEntityFhirResourceType = FhirResourceType.PATIENT;
+    private FhirResourceType trackedEntityFhirResourceType;
 
     private ExecutableScript impTeiLookupScript;
 
