@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,8 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
- * The mapping between FHIR and DHIS2 code.
+ * The mapping between FHIR and DHIS2 code. The setup contains example or default values
+ * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */

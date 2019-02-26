@@ -59,6 +59,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -141,15 +142,21 @@ public class SetupService
     @Transactional
     public SetupResult apply( @Nonnull Setup setup, boolean createSubscriptions )
     {
-        final System organizationSystem = findOrCreateSystem(
-            setup.getFhirClientSetup().getSystemUriSetup().getOrganizationSystemUri(),
-            "Default DHIS2 Organization Units", "DEFAULT_DHIS2_ORG_UNIT", "National Organization ID", "Default DHIS2 organization unit system URI." );
-        final System patientSystem = findOrCreateSystem(
-            setup.getFhirClientSetup().getSystemUriSetup().getPatientSystemUri(),
-            "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT", "National Patient ID", "Default DHIS2 patient system URI." );
+        SetupResult setupResult = null;
+        if ( !setup.isFhirRestInterfaceOnly() )
+        {
+            final System organizationSystem = findOrCreateSystem(
+                setup.getFhirClientSetup().getSystemUriSetup().getOrganizationSystemUri(),
+                "Default DHIS2 Organization Units", "DEFAULT_DHIS2_ORG_UNIT",
+                "National Organization ID", "Default DHIS2 organization unit system URI." );
+            final System patientSystem = findOrCreateSystem(
+                setup.getFhirClientSetup().getSystemUriSetup().getPatientSystemUri(),
+                "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT",
+                "National Patient ID", "Default DHIS2 patient system URI." );
 
-        final SetupResult setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem, createSubscriptions );
-        createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
+            setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem, createSubscriptions );
+            createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
+        }
         updateTrackedEntity( setup.getTrackedEntitySetup() );
         return setupResult;
     }
@@ -359,7 +366,7 @@ public class SetupService
     {
         MappedTrackedEntity trackedEntity = new MappedTrackedEntity();
         trackedEntity.setName( name );
-        trackedEntity = trackedEntityRepository.findAll( Example.of( trackedEntity ) )
+        trackedEntity = trackedEntityRepository.findAll( Example.of( trackedEntity, ExampleMatcher.matching().withIgnorePaths( "expEnabled" ) ) )
             .stream().findFirst().orElseThrow( () -> new SetupException( "Tracked entity with name " + name + " does not exist." ) );
         return trackedEntity;
     }

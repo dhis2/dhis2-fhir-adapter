@@ -67,7 +67,7 @@ spring:
       # runs in a clustered environment the embedded client must not be enabled
       # and host, port, username and password for the Artemis broker must be
       # specified.
-      enabled: true
+      enabled: false
       # The ID of the embedded client (should not be changed).
       server-id: 1
       # Specifies if the queue data should be persisted or just hold in memory.
@@ -91,6 +91,12 @@ spring:
     # be disabled and should not be changed.
     show-sql: false
 
+management:
+  health:
+    jms:
+      # JMS health check can be enabled when Artemis queue is available.
+      enabled: false
+
 # Specifies the default settings of the circuit breaker. The circuit
 # breaker settings do not need to be adjusted normally.
 hystrix:
@@ -111,7 +117,7 @@ hystrix:
 # Configuration of the DHIS2 FHIR adapter.
 dhis2.fhir-adapter:
   # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
-  import-enabled: true
+  import-enabled: false
   # Specifies if the automatic export of DHIS2 resources to FHIR resources is enabled.
   # Important note: This is an experimental feature currently.
   export-enabled: false

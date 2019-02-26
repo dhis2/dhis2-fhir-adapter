@@ -32,7 +32,8 @@ import javax.validation.Valid;
 import java.io.Serializable;
 
 /**
- * The setup of the FHIR client.
+ * The setup of the FHIR client. The setup contains example or default values
+ * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */
@@ -41,16 +42,29 @@ public class FhirClientSetup implements Serializable
     private static final long serialVersionUID = 7653552278753840057L;
 
     @Valid
-    private FhirClientDhisSetup dhisSetup = new FhirClientDhisSetup();
+    private FhirClientDhisSetup dhisSetup;
 
     @Valid
-    private FhirClientAdapterSetup adapterSetup = new FhirClientAdapterSetup();
+    private FhirClientAdapterSetup adapterSetup;
 
     @Valid
-    private FhirSetup fhirSetup = new FhirSetup();
+    private FhirSetup fhirSetup;
 
     @Valid
-    private SystemUriSetup systemUriSetup = new SystemUriSetup();
+    private SystemUriSetup systemUriSetup;
+
+    public FhirClientSetup()
+    {
+        this( true );
+    }
+
+    public FhirClientSetup( boolean example )
+    {
+        dhisSetup = new FhirClientDhisSetup( example );
+        adapterSetup = new FhirClientAdapterSetup( example );
+        fhirSetup = new FhirSetup( example );
+        systemUriSetup = new SystemUriSetup( example );
+    }
 
     public FhirClientDhisSetup getDhisSetup()
     {

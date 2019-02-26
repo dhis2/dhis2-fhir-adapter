@@ -32,6 +32,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.dhis2.fhir.adapter.rest.RestResponseEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -47,6 +48,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
 
+/**
+ * Controller that is used to setup the application. The controller is disabled
+ * by default unless the property "adapter-setup" has been set.
+ *
+ * @author volsch
+ */
 @Controller
 @ConditionalOnProperty( "adapter-setup" )
 @PreAuthorize( "hasRole('ALL')" )
@@ -57,6 +64,9 @@ public class SetupController
     protected static final int BEARER_TOKEN_BYTES = 40;
 
     private final SetupService setupService;
+
+    @Value( "${dhis2.fhir-adapter.import-enabled}" )
+    private boolean importEnabled;
 
     public SetupController( @Nonnull SetupService setupService )
     {
@@ -70,12 +80,12 @@ public class SetupController
         if ( !completedSetup )
         {
             final Setup setup = new Setup();
-            setup.getFhirClientSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
-            setup.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
-
+            setup.setFhirRestInterfaceOnly( true );
+            updateFhirImportData( servletRequest, setup );
             model.addAttribute( "setup", setup );
         }
 
+        updateModel( model );
         model.addAttribute( "completedSetup", completedSetup );
         return "setup";
     }
@@ -83,8 +93,13 @@ public class SetupController
     @PostMapping( "/setup" )
     public String submit( @Valid Setup setup, @Nonnull BindingResult bindingResult, @Nonnull Model model, @Nonnull HttpServletRequest servletRequest )
     {
+        updateModel( model );
         if ( bindingResult.hasErrors() )
         {
+            if ( setup.isFhirRestInterfaceOnly() )
+            {
+                updateFhirImportData( servletRequest, setup );
+            }
             model.addAttribute( "completedSetup", false );
             return "setup";
         }
@@ -107,6 +122,19 @@ public class SetupController
         }
 
         return "setup-completed";
+    }
+
+    private void updateFhirImportData( @Nonnull HttpServletRequest servletRequest, @Nonnull Setup setup )
+    {
+        setup.setFhirClientSetup( new FhirClientSetup( false ) );
+        setup.getFhirClientSetup().getAdapterSetup().setBaseUrl( getAdapterBaseUrl( servletRequest ) );
+        setup.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( createBearerTokenHeaderValue( servletRequest ) );
+        setup.setOrganizationCodeSetup( new OrganizationCodeSetup() );
+    }
+
+    protected void updateModel( @Nonnull Model model )
+    {
+        model.addAttribute( "importEnabled", importEnabled );
     }
 
     @Nonnull

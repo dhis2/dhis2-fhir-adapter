@@ -35,7 +35,8 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * The setup of the FHIR client for DHIS2.
+ * The setup of the FHIR client for DHIS2. The setup contains example or default values
+ * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */
@@ -50,6 +51,20 @@ public class FhirClientDhisSetup implements Serializable
     @NotBlank( message = "Password must not be blank." )
     @Size( max = SubscriptionDhisEndpoint.MAX_PASSWORD_LENGTH, message = "Password must not be longer than {max} characters." )
     private String password;
+
+    public FhirClientDhisSetup()
+    {
+        this( true );
+    }
+
+    public FhirClientDhisSetup( boolean example )
+    {
+        if ( example )
+        {
+            setUsername( "admin" );
+            setPassword( "district" );
+        }
+    }
 
     public String getUsername()
     {

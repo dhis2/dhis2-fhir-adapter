@@ -31,162 +31,359 @@
 <head>
   <title>DHIS2 FHIR Adapter - Initial Setup</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta http-equiv="cache-control" content="max-age=0"/>
+  <meta http-equiv="cache-control" content="no-cache"/>
+  <meta http-equiv="expires" content="0"/>
+  <meta http-equiv="pragma" content="no-cache"/>
+  <meta name="viewport" content="initial-scale=1, minimum-scale=1, width=device-width">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <style>
+    body {
+      font-family : 'Open Sans', Tahoma, Arial, sans-serif;
+      margin      : 0;
+    }
+    #topBar {
+      z-index          : -1;
+      margin           : 0;
+      top              : 0;
+      width            : 100%;
+      height           : 80px;
+      position         : absolute;
+      background-color : #f7f7f7;
+    }
+    #container {
+      max-width   : 48em;
+      margin      : 26px auto;
+      line-height : 1.6em;
+      color       : #666;
+    }
+    h2 {
+      color     : #222;
+      font-size : 1.7em;
+    }
+    h3 {
+      color     : #222;
+      font-size : 1.3em;
+    }
+    h4 {
+      color     : #666;
+      font-size : 1.1em;
+    }
+    table {
+      border-collapse : collapse;
+    }
+    table th {
+      color : #333;
+    }
+    table th, td {
+      border  : 1px solid #eee;
+      padding : 7px 10px;
+    }
+    table th {
+      background-color : #f7f7f7;
+    }
+    .intro {
+      padding : 50px 0 30px 0;
+    }
+    a {
+      text-decoration : none;
+      color           : #0053AF;
+    }
+    @media (max-width : 770px) {
+      #container {
+        max-width    : 100%;
+        width        : auto;
+        margin-left  : 6px;
+        margin-right : 6px;
+      }
+    }
     br {
       line-height : 150%;
     }
-
     label {
-      display : inline-block;
-      width   : 150px;
+      display     : inline-block;
+      width       : 12.0em;
+      font-size   : 0.7em;
+      font-weight : bold;
+      line-height : 1.0em;
     }
-
+    input {
+      font-size : 0.8em;
+    }
     textarea {
+      font-size      : 0.8em;
       vertical-align : top;
     }
-
     .value {
       margin-top : 5px;
     }
-
+    .value-input {
+      line-height : 0.8em;
+    }
+    .value-input p {
+      margin : 2px 0;
+    }
+    .example {
+      font-size   : 0.8em;
+      font-style  : italic;
+      line-height : 1.0em;
+    }
+    .example br {
+      line-height : 1.0em;
+    }
     .error {
+      font-size   : 0.8em;
       color       : red;
       font-weight : bolder;
     }
+    .config-switch {
+      font-size    : 0.8em;
+      margin-right : 2em;
+    }
   </style>
+  <script type="text/javascript">
+    <!--
+    function enableFhirImport(enabled) {
+      var matches = document.querySelectorAll( '#fhirRestInterfaceOnlyDiv input' );
+      for ( var i = 0; i < matches.length; i++ ) {
+        matches[i].disabled = !enabled;
+      }
+    }
+
+    function updateTrackedEntityAttr(name, enabled, refType, refValue) {
+      var form = document.forms['setup'];
+      form.elements['trackedEntitySetup.' + name + '.enabled'].checked = enabled;
+      var referenceTypes = form.elements['trackedEntitySetup.' + name + '.referenceType'];
+      for ( var i = 0; i < referenceTypes.options.length; i++ ) {
+        if ( referenceTypes.options[i].value === refType ) {
+          referenceTypes.selectedIndex = i;
+          break;
+        }
+      }
+      form.elements['trackedEntitySetup.' + name + '.referenceValue'].value = refValue;
+    }
+
+    function displayCustomTrackedEntityType() {
+      updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
+      updateTrackedEntityAttr( 'uniqueId', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'patientId', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'firstName', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'lastName', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'birthDate', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'gender', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'villageName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'caregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'caregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'caregiverPhone', false, 'NAME', '' );
+    }
+
+    function displayDefaultTrackedEntityType() {
+      updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
+      updateTrackedEntityAttr( 'uniqueId', true, 'ID', 'KSr2yTdu1AI' );
+      updateTrackedEntityAttr( 'patientId', true, 'ID', 'Ewi7FUfcHAD' );
+      updateTrackedEntityAttr( 'firstName', true, 'ID', 'TfdH5KvFmMy' );
+      updateTrackedEntityAttr( 'lastName', true, 'ID', 'aW66s2QSosT' );
+      updateTrackedEntityAttr( 'birthDate', true, 'ID', 'BiTsLcJQ95V' );
+      updateTrackedEntityAttr( 'gender', true, 'ID', 'CklPZdOd6H1' );
+      updateTrackedEntityAttr( 'villageName', true, 'ID', 'Y0i71Y6CVdy' );
+      updateTrackedEntityAttr( 'caregiverFirstName', true, 'ID', 'ftFBu8mHZ4H' );
+      updateTrackedEntityAttr( 'caregiverLastName', true, 'ID', 'EpbquVl5OD6' );
+      updateTrackedEntityAttr( 'caregiverPhone', true, 'ID', 'pjexi5YaAPa' );
+    }
+
+    function displaySierraLeoneDemoTrackedEntityType() {
+      updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
+      updateTrackedEntityAttr( 'uniqueId', true, 'CODE', 'MMD_PER_ID' );
+      updateTrackedEntityAttr( 'patientId', true, 'NAME', 'National identifier' );
+      updateTrackedEntityAttr( 'firstName', true, 'CODE', 'MMD_PER_NAM' );
+      updateTrackedEntityAttr( 'lastName', true, 'NAME', 'Last name' );
+      updateTrackedEntityAttr( 'birthDate', true, 'CODE', 'MMD_PER_DOB' );
+      updateTrackedEntityAttr( 'gender', true, 'NAME', 'Gender' );
+      updateTrackedEntityAttr( 'villageName', true, 'CODE', 'MMD_PER_ADR1' );
+      updateTrackedEntityAttr( 'caregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'caregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'caregiverPhone', false, 'NAME', '' );
+    }
+    //-->
+  </script>
 </head>
 <body>
-<h1>DHIS2 FHIR Adapter - Initial Setup</h1>
-<div th:if="${completedSetup}">
-  <p>The initial setup has already been completed and cannot be applied anymore. Please, use the REST API of the Adapter to apply any further configuration changes.</p>
+<div id="topBar"></div>
+<div id="container">
+  <h2>DHIS2 FHIR Adapter - Initial Setup</h2>
+  <div class="intro" th:if="${completedSetup}">
+    The initial setup has already been completed and cannot be applied anymore. Please, use the REST API of the Adapter to apply any further configuration changes.
 </div>
 <div th:unless="${completedSetup}">
-  <p>In the following sections you can enter the initial setup data of the Adapter. All further adjustments must be applied by using the REST API of the Adapter.</p>
-  <form action="#" th:action="@{/setup}" th:object="${setup}" method="post">
+  <div class="intro">In the following sections you can enter the initial setup data of the Adapter. All further adjustments must be applied by using the REST API of the Adapter.</div>
+  <form action="#" th:action="@{/setup}" th:object="${setup}" method="post" name="setup">
     <div th:if="${#fields.hasGlobalErrors()}" style="margin-top: 10px; margin-bottom: 10px">
       <ul>
         <li th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error"></li>
       </ul>
     </div>
-    <h2>FHIR Subscriptions</h2>
-    <p>This section contains the data that is used to setup the FHIR subscriptions.</p>
-    <h3>DHIS2 Setup</h3>
-    <p>This sub-section contains the data of DHIS2 that is required when storing mapped and transformed FHIR data on DHIS2. Even if the entered user has ALL authority on DHIS2, the user must have least one "Data capture and maintenance organisation units"
-      selected.</p>
-    <div class="value">
-      <p>The username and password of the user that is used to connect to DHIS2 and that creates and updates data on DHIS2. This user must have privileges to create and update tracked entity instances,
-        create and update Tracker program instances and create and update tracker program stage instances.</p>
-      <p><label for="dhisUsername">Username:</label><input id="dhisUsername" type="text" th:field="*{fhirClientSetup.dhisSetup.username}"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.username')}" th:errors="*{fhirClientSetup.dhisSetup.username}" class="error">DHIS2 Username</p>
-      <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:name="fhirClientSetup.dhisSetup.password" th:value="*{fhirClientSetup.dhisSetup.password}"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.password')}" th:errors="*{fhirClientSetup.dhisSetup.password}" class="error">DHIS2 Password</p>
+    <div class="value" style="margin-bottom: 2em">
+      <p>Please uncheck the following box when you would like to use FHIR subscriptions to import data from another system. If you just want to use FHIR REST interfaces, you must leave the following box checked.</p>
+      <div class="value-input">
+        <p><label for="fhirRelatedPersonSubscription">Only FHIR REST Interfaces :</label>
+          <input id="fhirRestInterfaceOnly" type="checkbox" th:field="*{fhirRestInterfaceOnly}"
+                 onclick="document.getElementById('fhirRestInterfaceOnlyDiv').style.display = this.checked ? 'none' : 'block'; enableFhirImport(!this.checked)"/></p>
+      </div>
     </div>
+    <div id="fhirRestInterfaceOnlyDiv" th:style="${setup.fhirRestInterfaceOnly} ? 'display:none' : 'display:block'">
+      <h3>FHIR Subscriptions</h3>
+      <p>This section contains the data that is used to setup the FHIR subscriptions.</p>
+      <p th:if="${not importEnabled}" class="error">Using FHIR subscriptions requires that import has been enabled by configuration. Configuration property "dhis2.fhir-adapter.import-enabled" has not been set to true. Please, enable the import in order to
+        use FHIR subscriptions.</p>
+      <h4>DHIS2 Setup</h4>
+      <p>This sub-section contains the data of DHIS2 that is required when storing mapped and transformed FHIR data on DHIS2. Even if the entered user has ALL authority on DHIS2, the user must have least one "Data capture and maintenance organisation units"
+        selected.</p>
+      <div class="value">
+        <p>The username and password of the user that is used to connect to DHIS2 and that creates and updates data on DHIS2. This user must have privileges to create and update tracked entity instances,
+          create and update Tracker program instances and create and update tracker program stage instances.</p>
+        <div class="value-input">
+          <p><label for="dhisUsername">Username:</label><input id="dhisUsername" type="text" th:field="*{fhirClientSetup.dhisSetup.username}"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.username')}" th:errors="*{fhirClientSetup.dhisSetup.username}" class="error">DHIS2 Username</p>
+          <p><label for="dhisPassword">Password:</label><input id="dhisPassword" type="password" th:name="fhirClientSetup.dhisSetup.password" th:value="*{fhirClientSetup.dhisSetup.password}"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.dhisSetup.password')}" th:errors="*{fhirClientSetup.dhisSetup.password}" class="error">DHIS2 Password</p>
+        </div>
+      </div>
 
-    <h3>Adapter Setup</h3>
-    <p>This sub-section contains the data of the Adapter that is required to setup the FHIR subscriptions.</p>
-    <div class="value">
-      <p>The base URL of the adapter that is used by the FHIR server to send subscription notifications. If the FHIR server does not run on the same machine like the Adapter, the URL <b>must not include localhost</b>.<br/>
-        Example: http://localhost:8081</p>
-      <p><label for="adapterBaseUrl">Base URL:</label><input id="adapterBaseUrl" type="text" th:field="*{fhirClientSetup.adapterSetup.baseUrl}" size="80"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.baseUrl')}" th:errors="*{fhirClientSetup.adapterSetup.baseUrl}" class="error">Adapter Base URL</p>
-    </div>
-    <div class="value">
-      <p>The authorization header value that is used by the FHIR server to authenticate at the Adapter. The already entered value can be taken for this purpose and does not need to be changed normally.<br/>
-        Example: Bearer 88e26f25fcd81027f5955941e456223cd9c226fcb3e7d628b0</p>
-      <p><label for="adapterAuthorizationHeaderValue">Authorization Header:</label><input id="adapterAuthorizationHeaderValue" type="text" th:field="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" size="100"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.authorizationHeaderValue')}" th:errors="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" class="error">Adapter Authorization Header Value</p>
-    </div>
+      <h4>Adapter Setup</h4>
+      <p>This sub-section contains the data of the Adapter that is required to setup the FHIR subscriptions.</p>
+      <div class="value">
+        <p>The base URL of the adapter that is used by the FHIR server to send subscription notifications. If the FHIR server does not run on the same machine like the Adapter, the URL <b>must not include localhost</b>.<br/>
+          <span class="example">Example: http://localhost:8081</span></p>
+        <div class="value-input">
+          <p><label for="adapterBaseUrl">Base URL:</label><input id="adapterBaseUrl" type="text" th:field="*{fhirClientSetup.adapterSetup.baseUrl}" size="80"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.baseUrl')}" th:errors="*{fhirClientSetup.adapterSetup.baseUrl}" class="error">Adapter Base URL</p>
+        </div>
+      </div>
+      <div class="value">
+        <p>The authorization header value that is used by the FHIR server to authenticate at the Adapter. The already entered value can be taken for this purpose and does not need to be changed normally.<br/>
+          <span class="example">Example: Bearer 88e26f25fcd81027f5955941e456223cd9c226fcb3e7d628b0</span></p>
+        <div class="value-input">
+          <p><label for="adapterAuthorizationHeaderValue">Authorization Header:</label><input id="adapterAuthorizationHeaderValue" type="text" th:field="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" size="90"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.adapterSetup.authorizationHeaderValue')}" th:errors="*{fhirClientSetup.adapterSetup.authorizationHeaderValue}" class="error">Adapter Authorization Header Value</p>
+        </div>
+      </div>
 
-    <h3>FHIR Setup</h3>
-    <p>This sub-section contains the data of the FHIR server that is required by the Adapter to access the FHIR server and to create the FHIR subscriptions. When this form is submitted the Adapter will create a subscription for FHIR resource Patient on FHIR
-      server. A subscription can also created manually. In this case the adapter context relative REST hook endpoint URL will be /remote-fhir-rest-hook/{fhirClientId}/{fhirClientResourceId}.</p>
-    <div class="value">
-      <p>The base URL of the FHIR endpoints that support version DSTU3.<br/>
-        Example: http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3</p>
-      <p><label for="fhirBaseUrl">Base URL:</label><input id="fhirBaseUrl" type="text" th:field="*{fhirClientSetup.fhirSetup.baseUrl}" size="80"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.baseUrl')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Base URL</p>
-    </div>
-    <div class="value">
-      <p>The header name and header value to be set when accessing the FHIR endpoints. The server may require for example a authorization header with Basic or Bearer Token authorization.
-        If any if the input fields contain a blank value, no header will be sent.<br/>
-        Example Name (first input field): Authorization<br/>
-        Example Value (second input field): Bearer 9b2f-9a14-cac3-e82c-01d0-a9168c</p>
-      <p><label for="fhirHeaderName">Header:</label><input id="fhirHeaderName" type="text" th:field="*{fhirClientSetup.fhirSetup.headerName}" size="20" title="Header Name"/>
-        <input type="text" th:field="*{fhirClientSetup.fhirSetup.headerValue}" size="60" style="margin-left: 2px" title="Header Value"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerName')}" th:errors="*{fhirClientSetup.fhirSetup.headerName}" class="error">FHIR Header Name</p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerValue')}" th:errors="*{fhirClientSetup.fhirSetup.headerValue}" class="error">FHIR Header Value</p>
-    </div>
-    <div class="value">
-      <p>The type of subscription that is used. Even if the Adapter requests data based on the last updated timestamp of the resources when it receives a notification about created or updated data on the FHIR server, it also supports notifications that
-        contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.6.0 (and may be later versions as well) are used, the
-        subscription that uses a payload must be selected (preselected below already). If the FHIR server has no known issues with a subscription without a payload, this type of subscription should be selected since it requires less resources on the FHIR
-        server.</p>
-      <p><label for="fhirSubscriptionType">Subscription Type:</label><select id="fhirSubscriptionType" th:field="*{fhirClientSetup.fhirSetup.subscriptionType}">
-        <option th:value="'REST_HOOK'" th:text="'REST Hook without Payload'"></option>
-        <option th:value="'REST_HOOK_WITH_JSON_PAYLOAD'" th:text="'REST Hook with Payload'"></option>
-      </select>
-      </p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.subscriptionType')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Subscription Type</p>
-    </div>
-    <div class="value">
-      <p>The data from FHIR servers is retrieved based on its last update timestamp. The clocks on all servers should be synchronized. Due to clock inaccuracies and concurrent updates that might not yet been visible, at least 5 additional overlapping seconds
-        should be given when retrieving the data.</p>
-      <p><label for="fhirToleranceMillis">Tolerance Time:</label><input id="fhirToleranceMillis" type="text" th:field="*{fhirClientSetup.fhirSetup.toleranceMillis}"/> ms</p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.toleranceMillis')}" th:errors="*{fhirClientSetup.fhirSetup.toleranceMillis}" class="error">Tolerance Millis Errors</p>
-    </div>
-    <div class="value">
-      <p>If your FHIR service has support for related persons of patients and also supports subscriptions for related persons (not only support for contained related persons), then you should mark the following checkbox.</p>
-      <p><label for="fhirRelatedPersonSubscription">Related Person Subscription:</label><input id="fhirRelatedPersonSubscription" type="checkbox" th:field="*{fhirClientSetup.fhirSetup.supportsRelatedPerson}"/></p>
-    </div>
+      <h4>FHIR Setup</h4>
+      <p>This sub-section contains the data of the FHIR server that is required by the Adapter to access the FHIR server and to create the FHIR subscriptions. When this form is submitted the Adapter will create a subscription for FHIR resource Patient on FHIR
+        server. A subscription can also created manually. In this case the adapter context relative REST hook endpoint URL will be /remote-fhir-rest-hook/{fhirClientId}/{fhirClientResourceId}.</p>
+      <div class="value">
+        <p>The base URL of the FHIR endpoints that support version DSTU3.<br/>
+          <span class="example">Example: http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3</span></p>
+        <p><label for="fhirBaseUrl">Base URL:</label><input id="fhirBaseUrl" type="text" th:field="*{fhirClientSetup.fhirSetup.baseUrl}" size="80"/></p>
+        <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.baseUrl')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Base URL</p>
+      </div>
+      <div class="value">
+        <p>The header name and header value to be set when accessing the FHIR endpoints. The server may require for example a authorization header with Basic or Bearer Token authorization.
+          If any if the input fields contain a blank value, no header will be sent.<br/>
+          <span class="example">Example Name (first input field): Authorization<br/>
+            Example Value (second input field): Bearer 9b2f-9a14-cac3-e82c-01d0-a9168c</span></p>
+        <div class="value-input">
+          <p><label for="fhirHeaderName">Header:</label><input id="fhirHeaderName" type="text" th:field="*{fhirClientSetup.fhirSetup.headerName}" size="20" title="Header Name"/>
+            <input type="text" th:field="*{fhirClientSetup.fhirSetup.headerValue}" size="60" style="margin-left: 2px" title="Header Value"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerName')}" th:errors="*{fhirClientSetup.fhirSetup.headerName}" class="error">FHIR Header Name</p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.headerValue')}" th:errors="*{fhirClientSetup.fhirSetup.headerValue}" class="error">FHIR Header Value</p>
+        </div>
+      </div>
+      <div class="value">
+        <p>The type of subscription that is used. Even if the Adapter requests data based on the last updated timestamp of the resources when it receives a notification about created or updated data on the FHIR server, it also supports notifications that
+          contain a payload. If there is any issue with the subscription notification that does not include a payload, the notification that includes a payload should be used. If HAPI FHIR JPA Server 3.6.0 (and may be later versions as well) are used, the
+          subscription that uses a payload must be selected (preselected below already). If the FHIR server has no known issues with a subscription without a payload, this type of subscription should be selected since it requires less resources on the FHIR
+          server.</p>
+        <div class="value-input">
+          <p><label for="fhirSubscriptionType">Subscription Type:</label><select id="fhirSubscriptionType" th:field="*{fhirClientSetup.fhirSetup.subscriptionType}">
+            <option th:value="'REST_HOOK'" th:text="'REST Hook without Payload'"></option>
+            <option th:value="'REST_HOOK_WITH_JSON_PAYLOAD'" th:text="'REST Hook with Payload'"></option>
+          </select>
+          </p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.subscriptionType')}" th:errors="*{fhirClientSetup.fhirSetup.baseUrl}" class="error">FHIR Subscription Type</p>
+        </div>
+      </div>
+      <div class="value">
+        <p>The data from FHIR servers is retrieved based on its last update timestamp. The clocks on all servers should be synchronized. Due to clock inaccuracies and concurrent updates that might not yet been visible, at least 5 additional overlapping seconds
+          should be given when retrieving the data.</p>
+        <div class="value-input">
+          <p><label for="fhirToleranceMillis">Tolerance Time:</label><input id="fhirToleranceMillis" type="text" th:field="*{fhirClientSetup.fhirSetup.toleranceMillis}"/> ms</p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.fhirSetup.toleranceMillis')}" th:errors="*{fhirClientSetup.fhirSetup.toleranceMillis}" class="error">Tolerance Millis Errors</p>
+        </div>
+      </div>
+      <div class="value">
+        <p>If your FHIR service has support for related persons of patients and also supports subscriptions for related persons (not only support for contained related persons), then you should mark the following checkbox.</p>
+        <div class="value-input">
+          <p><label for="fhirRelatedPersonSubscription">Related Person Subscription:</label><input id="fhirRelatedPersonSubscription" type="checkbox" th:field="*{fhirClientSetup.fhirSetup.supportsRelatedPerson}"/></p>
+        </div>
+      </div>
 
-    <h3>System URI Setup</h3>
-    <p>To identify FHIR organization and FHIR patient resources they must have a unique business identifier (FHIR identifier property). These unique business identifiers are defined for a specific system URI. If several FHIR servers are connected to the
-      adapter, these URIs may differ for each connected FHIR server. This basic setup page allows only to connect one FHIR server.<br/>
-      Optionally a code prefix can be specified (second input field) that contains the prefix for the value in DHIS2.
-      E.g. if the FHIR business identifier is 4711 and the code prefix is OU_ then the organization unit code OU_4711 will match on DHIS2.</p>
-    <div class="value">
-      <p>The following system URI is used to extract the business identifier from FHIR organization resources.<br/>
-        Example: http://example.sl/organizations</p>
-      <p><label for="fhirOrganizationSystemUri" style="width: 180px">Organization System URI:</label><input id="fhirOrganizationSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" size="60" title="System URI"/>
-        <input type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.organizationSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" class="error">Organization System URI</p>
-    </div>
-    <div class="value">
-      <p>The following system URI is used to extract the business identifier from FHIR patient resources.<br/>
-        Example: http://example.sl/patients</p>
-      <p><label for="fhirPatientSystemUri" style="width: 180px">Patient System URI:</label><input id="fhirPatientSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.patientSystemUri}" size="60" title="System URI"/>
-        <input type="text" th:field="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.patientSystemUri}" class="error">Patient System URI</p>
-      <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientCodePrefix')}" th:errors="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" class="error">Patient Code Prefix</p>
-    </div>
+      <h3>System URI Setup</h3>
+      <p>To identify FHIR organization and FHIR patient resources they must have a unique business identifier (FHIR identifier property). These unique business identifiers are defined for a specific system URI. If several FHIR servers are connected to the
+        adapter, these URIs may differ for each connected FHIR server. This basic setup page allows only to connect one FHIR server.<br/>
+        Optionally a code prefix can be specified (second input field) that contains the prefix for the value in DHIS2.
+        E.g. if the FHIR business identifier is 4711 and the code prefix is OU_ then the organization unit code OU_4711 will match on DHIS2.</p>
+      <div class="value">
+        <p>The following system URI is used to extract the business identifier from FHIR organization resources.<br/>
+          <span class="example">Example: http://example.sl/organizations</span></p>
+        <div class="value-input">
+          <p><label for="fhirOrganizationSystemUri" style="width: 180px">Organization System URI:</label><input id="fhirOrganizationSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" size="60" title="System URI"/>
+            <input type="text" th:field="*{fhirClientSetup.systemUriSetup.organizationCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.organizationSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.organizationSystemUri}" class="error">Organization System URI</p>
+        </div>
+      </div>
+      <div class="value">
+        <p>The following system URI is used to extract the business identifier from FHIR patient resources.<br/>
+          <span class="example">Example: http://example.sl/patients</span></p>
+        <div class="value-input">
+          <p><label for="fhirPatientSystemUri" style="width: 180px">Patient System URI:</label><input id="fhirPatientSystemUri" type="text" th:field="*{fhirClientSetup.systemUriSetup.patientSystemUri}" size="60" title="System URI"/>
+            <input type="text" th:field="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" size="10" style="margin-left: 2px" title="Optional Code Prefix"/></p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientSystemUri')}" th:errors="*{fhirClientSetup.systemUriSetup.patientSystemUri}" class="error">Patient System URI</p>
+          <p th:if="${#fields.hasErrors('fhirClientSetup.systemUriSetup.patientCodePrefix')}" th:errors="*{fhirClientSetup.systemUriSetup.patientCodePrefix}" class="error">Patient Code Prefix</p>
+        </div>
+      </div>
 
-    <h2>Code Mappings</h2>
-    <p>This section contains the data that is used to map codes included in FHIR resources to codes that are used on DHIS2.</p>
-    <h3>FHIR Organization to DHIS2 Organization Unit Mapping</h3>
-    <p>The mapping uses the business identifier code that is defined by the FHIR organization resource and tries to lookup the code in the mapping table that is defined below. If the code cannot be found in the mapping table below, the code is optionally
-      be used used to lookup the DHIS2 organization unit (including the code prefix that has been defined above) as a fallback. If such a DHIS2 organization unit does not exist, the default organization unit is used (when specified). If no existing DHIS2
-      organization unit can be found, the transformation of the input data will be skipped. Normally the mapping must be done for organization units at facility level (e.g. the hospital itself).</p>
-    <p>The mapping table below has two columns. The column values may be separated by spaces, tabulators, commas and semicolons. Every code mapping must be placed in a new line. The first column contains the FHIR business identifier code and the second
-      column contains the DHIS2 organization unit code. The same FHIR identifier code must not be specified more than once. DHIS2 organization unit codes can be specified several times.<br/><br/>
-      Example:</p>
-    <pre>
-      4711 OU_1394
-      8912;OU_6253
-      7352,OU_7262
-    </pre>
-    <p style="vertical-align: top"><label for="orgCodeMappings">Mappings:</label><textarea id="orgCodeMappings" th:field="*{organizationCodeSetup.mappings}" rows="20" cols="40"></textarea></p>
-    <p th:if="${#fields.hasErrors('organizationCodeSetup.codeMappings')}" th:errors="*{organizationCodeSetup.codeMappings}" class="error">Org Code Mappings</p>
-    <p><label for="orgCodeFallback">Use Fallback:</label><input id="orgCodeFallback" type="checkbox" th:field="*{organizationCodeSetup.fallback}"/></p>
-    <p><label for="orgCodeDefault">Default DHIS2 Code:</label><input id="orgCodeDefault" th:field="*{organizationCodeSetup.defaultDhisCode}"/></p>
-    <p th:if="${#fields.hasErrors('organizationCodeSetup.defaultDhisCode')}" th:errors="*{organizationCodeSetup.defaultDhisCode}" class="error">Org Code Default</p>
-
-    <h2>Tracked Entity</h2>
+      <h3>Code Mappings</h3>
+      <p>This section contains the data that is used to map codes included in FHIR resources to codes that are used on DHIS2.</p>
+      <h4>FHIR Organization to DHIS2 Organization Unit Mapping</h4>
+      <p>The mapping uses the business identifier code that is defined by the FHIR organization resource and tries to lookup the code in the mapping table that is defined below. If the code cannot be found in the mapping table below, the code is optionally
+        be used used to lookup the DHIS2 organization unit (including the code prefix that has been defined above) as a fallback. If such a DHIS2 organization unit does not exist, the default organization unit is used (when specified). If no existing DHIS2
+        organization unit can be found, the transformation of the input data will be skipped. Normally the mapping must be done for organization units at facility level (e.g. the hospital itself).</p>
+      <p>The mapping table below has two columns. The column values may be separated by spaces, tabulators, commas and semicolons. Every code mapping must be placed in a new line. The first column contains the FHIR business identifier code and the second
+        column contains the DHIS2 organization unit code. The same FHIR identifier code must not be specified more than once. DHIS2 organization unit codes can be specified several times.<br/><br/>
+        <span class="example">Example:</span></p>
+      <pre>
+        4711 OU_1394
+        8912;OU_6253
+        7352,OU_7262
+      </pre>
+      <div class="value-input">
+        <p style="vertical-align: top"><label for="orgCodeMappings">Mappings:</label><textarea id="orgCodeMappings" th:field="*{organizationCodeSetup.mappings}" rows="20" cols="40"></textarea></p>
+        <p th:if="${#fields.hasErrors('organizationCodeSetup.codeMappings')}" th:errors="*{organizationCodeSetup.codeMappings}" class="error">Org Code Mappings</p>
+        <p><label for="orgCodeFallback">Use Fallback:</label><input id="orgCodeFallback" type="checkbox" th:field="*{organizationCodeSetup.fallback}"/></p>
+        <p><label for="orgCodeDefault">Default DHIS2 Code:</label><input id="orgCodeDefault" th:field="*{organizationCodeSetup.defaultDhisCode}"/></p>
+        <p th:if="${#fields.hasErrors('organizationCodeSetup.defaultDhisCode')}" th:errors="*{organizationCodeSetup.defaultDhisCode}" class="error">Org Code Default</p>
+      </div>
+    </div>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      enableFhirImport( [[${!setup.fhirRestInterfaceOnly}]] );
+      /*]]>*/
+    </script>
+    <h3>Tracked Entity</h3>
     <p>This section contains the setup for the transformation from FHIR Patient to a tracked entity type that has been configured on your DHIS2 installation. At least the patient ID (contains national ID that has been extracted from FHIR identifier), first
-      name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value.The reference to DHIS2 can be made by ID, unique name or unique code (if any). The default configuration below uses the tracked
-      entity attributes that have been configured in the metadata package that can be obtained from this <a th:href="@{/dhis/metadata/person-attribute-metadata.json}" target="_blank">person attribute metadata link</a> and this
+      name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value. The reference to DHIS2 can be made by ID, unique name or unique code (if any).<br/>
+      The default configuration below uses the tracked entity attributes that have been configured in the metadata package that can be obtained from this
+      <a th:href="@{/dhis/metadata/person-attribute-metadata.json}" target="_blank">person attribute metadata link</a> and this
       <a th:href="@{/dhis/metadata/person-metadata.json}" target="_blank">person metadata link</a>. First the attribute metadata must be imported. Afterwards the person metadata must be imported or you can create your own tracked entity type based on the
-      attributes.</p>
-    <div class="value">
+      attributes.<br/>
+      Also the attributes that are defined in the Sierra Leone demo database can be used by clicking the link below.
+    </p>
+    <p><a href="#" onclick="displayCustomTrackedEntityType(); return false" class="config-switch">Custom Tracked Entity Type</a>
+      <a href="#" onclick="displayDefaultTrackedEntityType(); return false" class="config-switch">Default Tracked Entity Type</a>
+      <a href="#" onclick="displaySierraLeoneDemoTrackedEntityType(); return false" class="config-switch">Sierra Leone Demo Database Tracked Entity Type</a></p>
+    <div class="value-input">
       <p><label for="trackedEntityTypeRefValue" style="width: 180px">Tracked entity type:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.type.enabled}" disabled="disabled" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.type.referenceType}" title="Reference Type">
@@ -196,10 +393,9 @@
         </select>
         <input id="trackedEntityTypeRefValue" type="text" th:field="*{trackedEntitySetup.type.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.type')}" th:errors="*{trackedEntitySetup.type}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.type.referenceType')}" th:errors="*{trackedEntitySetup.type.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.type.referenceValue')}" th:errors="*{trackedEntitySetup.type.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityUniqueIdRefValue" style="width: 180px">Person's unique ID:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.uniqueId.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.uniqueId.referenceType}" title="Reference Type">
@@ -209,10 +405,9 @@
         </select>
         <input id="trackedEntityUniqueIdRefValue" type="text" th:field="*{trackedEntitySetup.uniqueId.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId')}" th:errors="*{trackedEntitySetup.uniqueId}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId.referenceType')}" th:errors="*{trackedEntitySetup.uniqueId.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId.referenceValue')}" th:errors="*{trackedEntitySetup.uniqueId.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityPatientIdRefValue" style="width: 180px">Person's patient ID:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.patientId.enabled}" disabled="disabled" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.patientId.referenceType}" title="Reference Type">
@@ -222,10 +417,9 @@
         </select>
         <input id="trackedEntityPatientIdRefValue" type="text" th:field="*{trackedEntitySetup.patientId.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId')}" th:errors="*{trackedEntitySetup.patientId}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId.referenceType')}" th:errors="*{trackedEntitySetup.patientId.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId.referenceValue')}" th:errors="*{trackedEntitySetup.patientId.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityFirstNameRefValue" style="width: 180px">Person's first name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.firstName.enabled}" disabled="disabled" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.firstName.referenceType}" title="Reference Type">
@@ -235,10 +429,9 @@
         </select>
         <input id="trackedEntityFirstNameRefValue" type="text" th:field="*{trackedEntitySetup.firstName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.firstName')}" th:errors="*{trackedEntitySetup.firstName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.firstName.referenceType')}" th:errors="*{trackedEntitySetup.firstName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.firstName.referenceValue')}" th:errors="*{trackedEntitySetup.firstName.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityLastNameRefValue" style="width: 180px">Person's last name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.lastName.enabled}" disabled="disabled" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.lastName.referenceType}" title="Reference Type">
@@ -248,10 +441,9 @@
         </select>
         <input id="trackedEntityLastNameRefValue" type="text" th:field="*{trackedEntitySetup.lastName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName')}" th:errors="*{trackedEntitySetup.lastName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceType')}" th:errors="*{trackedEntitySetup.lastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceValue')}" th:errors="*{trackedEntitySetup.lastName.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityBirthDateRefValue" style="width: 180px">Person's birth date:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.birthDate.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.birthDate.referenceType}" title="Reference Type">
@@ -261,10 +453,9 @@
         </select>
         <input id="trackedEntityBirthDateRefValue" type="text" th:field="*{trackedEntitySetup.birthDate.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.birthDate')}" th:errors="*{trackedEntitySetup.birthDate}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.birthDate.referenceType')}" th:errors="*{trackedEntitySetup.birthDate.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.birthDate.referenceValue')}" th:errors="*{trackedEntitySetup.birthDate.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityGenderRefValue" style="width: 180px">Person's gender:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.gender.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.gender.referenceType}" title="Reference Type">
@@ -274,10 +465,9 @@
         </select>
         <input id="trackedEntityGenderRefValue" type="text" th:field="*{trackedEntitySetup.gender.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.gender')}" th:errors="*{trackedEntitySetup.gender}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.gender.referenceType')}" th:errors="*{trackedEntitySetup.gender.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.gender.referenceValue')}" th:errors="*{trackedEntitySetup.gender.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityVillageNameRefValue" style="width: 180px">Person's village name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.villageName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.villageName.referenceType}" title="Reference Type">
@@ -287,10 +477,9 @@
         </select>
         <input id="trackedEntityVillageNameRefValue" type="text" th:field="*{trackedEntitySetup.villageName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName')}" th:errors="*{trackedEntitySetup.villageName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceType')}" th:errors="*{trackedEntitySetup.villageName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceValue')}" th:errors="*{trackedEntitySetup.villageName.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.caregiverFirstName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.caregiverFirstName.referenceType}" title="Reference Type">
@@ -300,10 +489,9 @@
         </select>
         <input id="trackedEntityCaregiverFirstNameRefValue" type="text" th:field="*{trackedEntitySetup.caregiverFirstName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName')}" th:errors="*{trackedEntitySetup.caregiverFirstName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.caregiverFirstName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverFirstName.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.caregiverLastName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.caregiverLastName.referenceType}" title="Reference Type">
@@ -313,10 +501,9 @@
         </select>
         <input id="trackedEntityCaregiverLastNameRefValue" type="text" th:field="*{trackedEntitySetup.caregiverLastName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName')}" th:errors="*{trackedEntitySetup.caregiverLastName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.caregiverLastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverLastName.referenceValue}" class="error">Error</p>
-    </div>
-    <div class="value">
       <p><label for="trackedEntityCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.caregiverPhone.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.caregiverPhone.referenceType}" title="Reference Type">
@@ -326,6 +513,7 @@
         </select>
         <input id="trackedEntityCaregiverPhoneRefValue" type="text" th:field="*{trackedEntitySetup.caregiverPhone.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone')}" th:errors="*{trackedEntitySetup.caregiverPhone}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone.referenceType')}" th:errors="*{trackedEntitySetup.caregiverPhone.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverPhone.referenceValue}" class="error">Error</p>
     </div>
@@ -334,6 +522,7 @@
       <input type="submit" value="Setup" style="width: 15em; height: 2em"/>
     </div>
   </form>
+</div>
 </div>
 </body>
 </html>

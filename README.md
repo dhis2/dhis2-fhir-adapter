@@ -39,8 +39,8 @@ The application includes a suggested tracked entity type person. The correspondi
  customize the mapping to the tracked entity type for the FHIR resource patient. Currently, the adapter supports text based, number based and date/time based tracked entity attributes.
 
 #### FHIR Service
-A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions is required. HAPI FHIR JPA Server Example 3.6.0 or later (in this case the HAPI-FHIR Starter) can be used. Instructions on how to setup the FHIR Service can be found at 
-http://hapifhir.io/doc_jpa.html.
+A FHIR Service that provides the FHIR Endpoints and also supports FHIR Subscriptions can ben used when needed. In this case the configuration of the Adapter must enable imports (see below). HAPI FHIR JPA Server Example 3.6.0 or later (in this case the 
+ HAPI-FHIR Starter) can be used. Instructions on how to setup the FHIR Service can be found at http://hapifhir.io/doc_jpa.html.
 
 The initial subscription for FHIR Resource Patient is created by the initial setup user interface that is described later in this document. 
 
@@ -87,7 +87,7 @@ In order to build the adapter Java Development Kit 8 and Maven 3.2 or later is r
 The application has its configuration directory below $DHIS2_HOME/services/fhir-adapter. This sub-directory structure must be created below $DHIS2_HOME and a configuration file named application.yml must be placed inside this directory. The Adapter may create 
  further sub-directories below this directory (e.g. directory containing message queue files). The environment variable DHIS2_HOME must have been set when running the Adapter application.
 
-The following example contains the content of configuration file application.yml with default configuration values for a non-clustered environment. These can be customized if needed.
+The following example contains the content of configuration file application.yml with default configuration values for a non-clustered environment without using import by FHIR subscriptions. These configuration values can be customized if needed.
 
     server:
       # The default port on which HTTP connections will be available when starting
@@ -120,6 +120,32 @@ The following example contains the content of configuration file application.yml
           # The password that is used to connect to DHIS2 to access the metadata.
           password: district
 
+In order to enable support of import by FHIR subscriptions, the following items must be added to the resulting configuration file in a non-clustered environment.
+
+    spring:
+      # Settings of the Artemis message queueing system. For a non-clustered
+      # installation the embedded client can be used where the data is stored
+      # on the local file system.
+      artemis:
+        # Settings for the embedded client, that can be used for a non-clustered
+        # installation.
+        embedded:
+          # Specifies of the embedded client should be enabled. If the adapter
+          # runs in a clustered environment the embedded client must not be enabled
+          # and host, port, username and password for the Artemis broker must be
+          # specified.
+          enabled: true
+    
+    management:
+      health:
+        jms:
+          # JMS health check can be enabled when Artemis queue is available.
+          enabled: false
+    
+    dhis2.fhir-adapter:
+      # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
+      import-enabled: true
+
 More changeable settings can be found in the file [default-application.yml](app/src/main/resources/default-application.yml).
 
 ### Running
@@ -136,6 +162,13 @@ For the initial setup of the Adapter a simple user interface is provided. To acc
     
 With the default configuration the initial setup user interface can be accessed in any web browser by using `http://localhost:8081/setup`. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
  successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
+ 
+After successful initial setup the FHIR REST interfaces are accessible under the following base URIs. Basic and OAuth2 authentication and authorization of DHIS 2 is supported.
+
+| FHIR Version | Context relative URI |
+|--------------|----------------------|
+| DSTU3        | /fhir/dstu3          |
+| R4           | /fhir/r4             |
 
 ### API for Administration and Mapping
 The adapter provides REST interfaces for administration and mapping. The documentation is currently generated automatically when building the adapter. Unit test execution must not be skipped in this case when building the adapter. The documentation can be 

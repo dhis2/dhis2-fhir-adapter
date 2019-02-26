@@ -28,62 +28,26 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
-import org.dhis2.fhir.adapter.validator.HttpUrl;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
-import java.io.Serializable;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
- * The setup of the FHIR client for the Adapter. The setup contains example or default values
- * that can be changed by the administrator in the user interface as appropriate.
+ * Checks that the reference setup is valid, i.e. there must be a specified reference
+ * name when the reference has been enabled.
  *
  * @author volsch
  */
-public class FhirClientAdapterSetup implements Serializable
+public class ValidReferenceSetupValidator implements ConstraintValidator<ValidReferenceSetup, ReferenceSetup>
 {
-    private static final long serialVersionUID = 7653552278753840057L;
-
-    @NotBlank( message = "Adapter base URL must not be blank." )
-    @HttpUrl
-    private String baseUrl;
-
-    @NotBlank
-    @Size( max = SubscriptionAdapterEndpoint.MAX_AUTHORIZATION_HEADER_LENGTH, message = "Authorization header value must not be longer than {max} characters." )
-    private String authorizationHeaderValue;
-
-    public FhirClientAdapterSetup()
+    @Override
+    public boolean isValid( ReferenceSetup value, ConstraintValidatorContext context )
     {
-        this( true );
-    }
-
-    public FhirClientAdapterSetup( boolean example )
-    {
-        if ( example )
+        if ( (value == null) || !value.isEnabled() )
         {
-            setBaseUrl( "http://localhost:8081" );
-            setAuthorizationHeaderValue( "Bearer 88e26f25fcd81027f5955941e456223cd9c226fcb3e7d628b0" );
+            return true;
         }
-    }
-
-    public String getBaseUrl()
-    {
-        return baseUrl;
-    }
-
-    public void setBaseUrl( String baseUrl )
-    {
-        this.baseUrl = baseUrl;
-    }
-
-    public String getAuthorizationHeaderValue()
-    {
-        return authorizationHeaderValue;
-    }
-
-    public void setAuthorizationHeaderValue( String authorizationHeaderValue )
-    {
-        this.authorizationHeaderValue = authorizationHeaderValue;
+        return StringUtils.isNotBlank( value.getReferenceValue() );
     }
 }

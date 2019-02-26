@@ -64,6 +64,20 @@ public class SystemUriSetup implements Serializable
     @Pattern( regexp = "[^:]*", message = "Code prefix must not contain colon characters." )
     private String patientCodePrefix;
 
+    public SystemUriSetup()
+    {
+        this( true );
+    }
+
+    public SystemUriSetup( boolean example )
+    {
+        if ( example )
+        {
+            setPatientSystemUri( "http://example.sl/patients" );
+            setOrganizationSystemUri( "http://example.sl/organizations" );
+        }
+    }
+
     public String getOrganizationSystemUri()
     {
         return organizationSystemUri;

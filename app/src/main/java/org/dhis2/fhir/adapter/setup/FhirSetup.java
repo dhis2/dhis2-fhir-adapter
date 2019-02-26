@@ -40,7 +40,8 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * The setup of the FHIR client for FHIR.
+ * The setup of the FHIR client for FHIR. The setup contains example or default values
+ * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */
@@ -66,6 +67,19 @@ public class FhirSetup implements Serializable
     private int toleranceMillis = 2_000;
 
     private boolean supportsRelatedPerson;
+
+    public FhirSetup()
+    {
+        this( true );
+    }
+
+    public FhirSetup( boolean example )
+    {
+        if ( example )
+        {
+            setBaseUrl( "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3" );
+        }
+    }
 
     public String getBaseUrl()
     {

@@ -37,6 +37,8 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.lock.impl.EmbeddedLockManagerImpl;
+import org.dhis2.fhir.adapter.setup.FhirClientSetup;
+import org.dhis2.fhir.adapter.setup.OrganizationCodeSetup;
 import org.dhis2.fhir.adapter.setup.Setup;
 import org.dhis2.fhir.adapter.setup.SetupResult;
 import org.dhis2.fhir.adapter.setup.SetupService;
@@ -194,6 +196,8 @@ public class TestConfiguration
 
         final Setup setup = new Setup();
 
+        setup.setFhirRestInterfaceOnly( false );
+        setup.setFhirClientSetup( new FhirClientSetup( false ) );
         setup.getFhirClientSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
         setup.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
 
@@ -211,6 +215,7 @@ public class TestConfiguration
         setup.getFhirClientSetup().getSystemUriSetup().setPatientSystemUri( "http://example.sl/patients" );
         setup.getFhirClientSetup().getSystemUriSetup().setPatientCodePrefix( "PT_" );
 
+        setup.setOrganizationCodeSetup( new OrganizationCodeSetup() );
         setup.getOrganizationCodeSetup().setFallback( true );
         setup.getOrganizationCodeSetup().setDefaultDhisCode( "OU_4567" );
         setup.getOrganizationCodeSetup().setMappings( "9876 OU_1234 \n  8765, OU_2345" );
@@ -222,6 +227,7 @@ public class TestConfiguration
 
         final Setup setupR4 = new Setup();
 
+        setupR4.setFhirClientSetup( new FhirClientSetup( false ) );
         setupR4.getFhirClientSetup().getAdapterSetup().setBaseUrl( "http://localhost:8081" );
         setupR4.getFhirClientSetup().getAdapterSetup().setAuthorizationHeaderValue( ADAPTER_AUTHORIZATION );
 

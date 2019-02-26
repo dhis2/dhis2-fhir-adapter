@@ -33,7 +33,8 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * The initial setup data of the adapter.
+ * The initial setup data of the adapter. The setup contains example or default values
+ *  * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */
@@ -41,17 +42,27 @@ public class Setup implements Serializable
 {
     private static final long serialVersionUID = -5257148949174992807L;
 
-    @Valid
-    @NotNull
-    private FhirClientSetup fhirClientSetup = new FhirClientSetup();
+    private boolean fhirRestInterfaceOnly;
 
     @Valid
-    @NotNull
-    private OrganizationCodeSetup organizationCodeSetup = new OrganizationCodeSetup();
+    private FhirClientSetup fhirClientSetup;
+
+    @Valid
+    private OrganizationCodeSetup organizationCodeSetup;
 
     @Valid
     @NotNull
     private TrackedEntitySetup trackedEntitySetup = new TrackedEntitySetup();
+
+    public boolean isFhirRestInterfaceOnly()
+    {
+        return fhirRestInterfaceOnly;
+    }
+
+    public void setFhirRestInterfaceOnly( boolean fhirRestInterfaceOnly )
+    {
+        this.fhirRestInterfaceOnly = fhirRestInterfaceOnly;
+    }
 
     public FhirClientSetup getFhirClientSetup()
     {

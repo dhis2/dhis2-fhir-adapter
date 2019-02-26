@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Setup of organization code mapping.
+ * Setup of organization code mapping. The setup contains example or default values
+ *  * that can be changed by the administrator in the user interface as appropriate.
  *
  * @author volsch
  */

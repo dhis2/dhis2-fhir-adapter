@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ import java.io.Serializable;
  *
  * @author volsch
  */
+@ValidReferenceSetup
 public class ReferenceSetup implements Serializable
 {
     private static final long serialVersionUID = 767218823240343127L;
@@ -53,7 +54,6 @@ public class ReferenceSetup implements Serializable
     @NotNull
     private ReferenceType referenceType;
 
-    @NotBlank
     @Size( max = Reference.MAX_VALUE_LENGTH )
     private String referenceValue;
 
