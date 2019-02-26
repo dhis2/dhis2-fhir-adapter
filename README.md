@@ -1,31 +1,32 @@
 # DHIS2 FHIR Adapter
 ## Overview
-This repository contains the source code of the DHIS2 FHIR Adapter (see [presentation](https://docs.google.com/viewer?url=https://github.com/dhis2/dhis2-fhir-adapter/raw/master/docs/DHIS_2_FHIR_Adapter_-_An_Overview.pptx)). The current scope of the Adapter is 
-to import data into DHIS2 Tracker by using FHIR Subscriptions. This approach has been discussed on the [first integration workshop between DHIS2 and HL7-FHIR](http://sil-asia.org/sil-asia-dhis2-fhir-integration-meeting/). Even if the adapter may support more 
-FHIR Resource types at the moment, the initial official support is for FHIR Patient resources that are transformed to DHIS2 Tracked Entity instances. 
+This repository contains the source code of the DHIS2 FHIR Adapter (see [presentation](https://docs.google.com/viewer?url=https://github.com/dhis2/dhis2-fhir-adapter/raw/master/docs/DHIS_2_FHIR_Adapter_-_An_Overview.pptx)). The initial scope of the Adapter 
+ was the import of FHIR Resources into DHIS2 Tracker by using FHIR Subscriptions. This approach has been discussed on the [first integration workshop between DHIS2 and HL7-FHIR](http://sil-asia.org/sil-asia-dhis2-fhir-integration-meeting/).
 
-The import of medical data will be supported officially soon (already available in the current source code). The export of such data has already been implemented and can be seen as an experimental feature at the moment. In order to eliminate the need of a FHIR server, also FHIR interfaces that use the functionality of the import and export will be supported in the future (development has started). This simplifies the integration of the adapter into non FHIR server use cases.  
+The import of clinical data will be supported officially soon (already available in the current source code). The export of such data has already been implemented and can be seen as an experimental feature at the moment. In order to eliminate the need of a 
+ FHIR server, also FHIR interfaces that use the functionality of the existing import and export will be supported. This simplifies the integration of the adapter into non FHIR server use cases.
 
-The import works on the basis of a domain specific business rule engine that decides about transformations of patient related medical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). It is optimized for national FHIR 
-profiles that are based on standard coding systems like LOINC, SNOMED CT, CVX and others or even on national coding systems (e.g. national coding system for immunization). A specific DHIS 2 FHIR profile that allows the mapping of all Tracker Program items 
-is not yet available.
+The import and export of clinical data works on the basis of a domain specific business rule engine that decides about transformations of patient related clinical data to questionnaire-like structures (DHIS2 Tracker Programs and their Program Stages). It is 
+ optimized for national FHIR profiles that are based on standard coding systems like LOINC, SNOMED CT, CVX and others or even on national coding systems (e.g. national coding system for immunization). A specific DHIS 2 FHIR profile that allows the mapping of 
+ all Tracker Program items is not yet available. Even if the standard configuration of the adapter contains just the rules to map a DHIS 2 Tracked Entity Type to a FHIR Patient, the adapter can also be configured to perform a mapping to a different FHIR 
+ Resource (e.g. to FHIR Practitioner).
 
 ![DHIS2 FHIR Adapter High Level Architecture](docs/images/DHIS2_FHIR_Adapter_High_Level_Architecture.png "DHIS2 FHIR Adapter High Level Architecture")
 
-The image above shows the high level architecture of the DHIS2 FHIR Adapter. The image may contain more details than the current official version of the Adapter. Optional components and connections are shown with dashed lines.
+The image above shows the high level architecture of the DHIS2 FHIR Adapter. Optional components and connections are shown with dashed lines.
 
-The Adapter receives FHIR subscription notifications from one or more FHIR services (e.g. HAPI FHIR JPA Server) when there are created or updated resources (currently FHIR patient resources). The Adapter queues the notifications internally and retrieves new 
- data from the FHIR service as soon as possible. The Adapter may retrieve more data from the FHIR service when needed (e.g. FHIR organization resources). To perform transformations to DHIS2 there are configured rules and transformations. Rules and 
- transformations may use reusable Javascript code snippets. In order to identify already created DHIS2 tracked entity instances a national identifier must be provided by the FHIR patient resource.
+The Adapter receives FHIR subscription notifications from one or more FHIR Servers (e.g. HAPI FHIR JPA Server) when there are created or updated resources. The Adapter queues the notifications internally and retrieves new data from the FHIR Server as soon as 
+ possible. The Adapter may retrieve more data from the FHIR Server when needed (e.g. FHIR organization resources). To perform transformations to DHIS2 there are configured rules and transformations. Rules and transformations may use reusable Javascript code 
+ snippets. In order to identify already created DHIS2 tracked entity instances, a kind of national identifier must be provided by the FHIR patient resource (or any other FHIR resource that is mapped to a DHIS2 tracked entity type).
  
-The Adapter uses a database to store mapping data and temporary processing data. In order not to perform conflicting tasks on more than one Adapter instance in a clustered environment, locking is performed by using PostgreSQL Advisory Locks. Since there may
- be more created and updated FHIR resources than the Adapter and the DHIS2 backend (depending on the hardware sizing) can process at the same time, the Adapter queues all FHIR notifications until it is able to process them. The queue is also used to retry 
- failed transformations (e.g. DHIS2 backend could not be reached). In a non-clustered environment the embedded Apache Artemis message queuing system can be used. In a clustered environment an external Apache Artemis message queuing system to which all Adapter 
- instances are connected must be installed. The Adapter supports three different caches (Adapter mapping metadata to avoid database accesses, DHIS2 metadata to avoid DHIS2 backend accesses and FHIR resources to avoid accesses to FHIR endpoints of FHIR 
- service). Each of the three caches can be configured individually. The cache can be disabled, can be stored in memory (Caffeine cache implementation) or on a caching server (Redis cache).
-
-Depending on the country specific use of FHIR organization and location resources, mapping of FHIR organization and location resources to DHIS2 organization units may use data that is stored externally. For this purpose also external micro services that 
- have been developed for country specific use cases may be connected to the Adapter. The same may exist for the mapping of medications (not yet supported by the Adapter and if and when these are supported has not yet been defined).      
+The Adapter uses a database to store mapping data and temporary processing data. In order to avoid conflicting tasks on more than one Adapter instance in a clustered environment (not required when just FHIR REST interfaces are used), locking is performed by 
+ using PostgreSQL Advisory Locks. Since there may be more created and updated FHIR resources than the Adapter and the DHIS2 backend (depending on the hardware sizing) can process at the same time, the Adapter queues all FHIR notifications until it is able 
+ to process them. The queue is also used to retry failed transformations (e.g. DHIS2 backend could not be reached). In a non-clustered environment the embedded Apache Artemis message queuing system can be used (not required when just FHIR REST interfaces are 
+ used). In a clustered environment an external Apache Artemis message queuing system to which all Adapter instances are connected must be installed. The Adapter supports three different caches (Adapter mapping metadata to avoid database accesses, DHIS2 
+ metadata to avoid DHIS2 backend accesses and FHIR resources to avoid accesses to FHIR endpoints of FHIR servers). Each of the three caches can be configured individually. The cache can be disabled, can be stored in memory (Caffeine cache implementation) or 
+ on a caching server (Redis cache).
+     
+The rules that are used for the import are also used for the export of DHIS2 resources to a FHIR server. Also the FHIR REST interfaces provide the data based on these rules.
      
 ## Running the Adapter
 ### Dependent Software Components
