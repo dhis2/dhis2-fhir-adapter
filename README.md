@@ -1,6 +1,6 @@
 # DHIS2 FHIR Adapter
 ## Overview
-This repository contains the source code of the DHIS2 FHIR Adapter (see [presentation](https://docs.google.com/viewer?url=https://github.com/dhis2/dhis2-fhir-adapter/raw/master/docs/DHIS_2_FHIR_Adapter_-_An_Overview.pptx)). The initial scope of the Adapter 
+This repository contains the source code of the DHIS2 FHIR Adapter (see [presentation](https://docs.google.com/presentation/d/15hJN8GhEbPPHA6-xuS33zdWYtKMdH76P126DGCZRddw/edit#slide=id.p)). The initial scope of the Adapter 
  was the import of FHIR Resources into DHIS2 Tracker by using FHIR Subscriptions. This approach has been discussed on the [first integration workshop between DHIS2 and HL7-FHIR](http://sil-asia.org/sil-asia-dhis2-fhir-integration-meeting/).
 
 The import of clinical data will be supported officially soon (already available in the current source code). The export of such data has already been implemented and can be seen as an experimental feature at the moment. In order to eliminate the need of a 
