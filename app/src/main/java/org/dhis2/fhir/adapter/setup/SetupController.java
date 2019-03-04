@@ -106,7 +106,7 @@ public class SetupController
 
         try
         {
-            setupService.apply( setup, true );
+            setupService.apply( setup, true, true );
         }
         catch ( SetupException | RestResponseEntityException e )
         {

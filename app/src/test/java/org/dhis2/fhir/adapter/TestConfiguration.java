@@ -251,7 +251,7 @@ public class TestConfiguration
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
-            setupResult = setupService.apply( setup, false );
+            setupResult = setupService.apply( setup, false, false );
             setupResultR4 = setupService.createFhirClient( setupR4.getFhirClientSetup(), FhirVersion.R4, "_R4",
                 setupResult.getOrganizationSystem(), setupResult.getPatientSystem(), false );
             Assert.assertTrue( setupService.hasCompletedSetup() );

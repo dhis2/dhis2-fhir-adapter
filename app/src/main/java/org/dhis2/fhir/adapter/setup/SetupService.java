@@ -146,7 +146,7 @@ public class SetupService
     }
 
     @Transactional
-    public SetupResult apply( @Nonnull Setup setup, boolean createSubscriptions )
+    public SetupResult apply( @Nonnull Setup setup, boolean createSubscriptions, boolean verifyDhis )
     {
         SetupResult setupResult = null;
         if ( !setup.isFhirRestInterfaceOnly() )
@@ -163,7 +163,7 @@ public class SetupService
             setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem, createSubscriptions );
             createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         }
-        updateTrackedEntity( setup.getTrackedEntitySetup() );
+        updateTrackedEntity( setup.getTrackedEntitySetup(), verifyDhis );
         return setupResult;
     }
 
@@ -302,13 +302,16 @@ public class SetupService
         executableScriptArgRepository.save( scriptArg );
     }
 
-    private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup )
+    private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup, boolean verifyDhis )
     {
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( trackedEntitySetup.getType().getReference() )
-            .orElseThrow( () -> new SetupException( "Tracked entity type '" + trackedEntitySetup.getType().getReference() + "' does not exist." ) );
-        trackedEntitySetup.getEnabledReferenceSetups().forEach( r -> trackedEntityType.getOptionalTypeAttribute( r )
-            .orElseThrow( () -> new SetupException( "Tracked entity attribute '" + r + "' has not been assigned to tracked entity type '" +
-                trackedEntitySetup.getType().getReference() + "'." ) ) );
+        if ( verifyDhis )
+        {
+            final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( trackedEntitySetup.getType().getReference() )
+                .orElseThrow( () -> new SetupException( "Tracked entity type '" + trackedEntitySetup.getType().getReference() + "' does not exist." ) );
+            trackedEntitySetup.getEnabledReferenceSetups().forEach( r -> trackedEntityType.getOptionalTypeAttribute( r )
+                .orElseThrow( () -> new SetupException( "Tracked entity attribute '" + r + "' has not been assigned to tracked entity type '" +
+                    trackedEntitySetup.getType().getReference() + "'." ) ) );
+        }
 
         final MappedTrackedEntity trackedEntity = findTrackedEntity( "Person" );
         trackedEntity.setTrackedEntityReference( trackedEntitySetup.getType().getReference() );
