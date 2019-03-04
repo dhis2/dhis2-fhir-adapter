@@ -166,7 +166,7 @@
 
     function displayCustomTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
-      updateTrackedEntityAttr( 'uniqueId', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'uniqueId', false, 'NAME', '' );
       updateTrackedEntityAttr( 'patientId', true, 'NAME', '' );
       updateTrackedEntityAttr( 'firstName', true, 'NAME', '' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', '' );
@@ -194,7 +194,7 @@
 
     function displaySierraLeoneDemoTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
-      updateTrackedEntityAttr( 'uniqueId', true, 'CODE', 'MMD_PER_ID' );
+      updateTrackedEntityAttr( 'uniqueId', false, 'CODE', '' );
       updateTrackedEntityAttr( 'patientId', true, 'NAME', 'National identifier' );
       updateTrackedEntityAttr( 'firstName', true, 'CODE', 'MMD_PER_NAM' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', 'Last name' );

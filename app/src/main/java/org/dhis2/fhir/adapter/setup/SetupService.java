@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.setup;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AuthenticationMethod;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ClientFhirEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
@@ -94,6 +96,8 @@ public class SetupService
 
     public static final String ORG_UNIT_CODE_DEFAULT_CODE_ARG_NAME = "defaultCode";
 
+    private final TrackedEntityMetadataService trackedEntityMetadataService;
+
     private final CodeCategoryRepository codeCategoryRepository;
 
     private final CodeRepository codeRepository;
@@ -110,11 +114,13 @@ public class SetupService
 
     private final ScriptRepository scriptRepository;
 
-    public SetupService( @Nonnull CodeCategoryRepository codeCategoryRepository, @Nonnull CodeRepository codeRepository,
+    public SetupService( @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
+        @Nonnull CodeCategoryRepository codeCategoryRepository, @Nonnull CodeRepository codeRepository,
         @Nonnull SystemRepository systemRepository, @Nonnull SystemCodeRepository systemCodeRepository,
         @Nonnull ExecutableScriptArgRepository executableScriptArgRepository, @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull ScriptRepository scriptRepository, @Nonnull MappedTrackedEntityRepository trackedEntityRepository )
     {
+        this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.codeCategoryRepository = codeCategoryRepository;
         this.codeRepository = codeRepository;
         this.systemRepository = systemRepository;
@@ -298,6 +304,12 @@ public class SetupService
 
     private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup )
     {
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( trackedEntitySetup.getType().getReference() )
+            .orElseThrow( () -> new SetupException( "Tracked entity type '" + trackedEntitySetup.getType().getReference() + "' does not exist." ) );
+        trackedEntitySetup.getEnabledReferenceSetups().forEach( r -> trackedEntityType.getOptionalTypeAttribute( r )
+            .orElseThrow( () -> new SetupException( "Tracked entity attribute '" + r + "' has not been assigned to tracked entity type '" +
+                trackedEntitySetup.getType().getReference() + "'." ) ) );
+
         final MappedTrackedEntity trackedEntity = findTrackedEntity( "Person" );
         trackedEntity.setTrackedEntityReference( trackedEntitySetup.getType().getReference() );
         trackedEntity.setTrackedEntityIdentifierReference( trackedEntitySetup.getPatientId().getReference() );

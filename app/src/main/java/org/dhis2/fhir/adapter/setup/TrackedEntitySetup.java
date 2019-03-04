@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.setup;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,16 @@ package org.dhis2.fhir.adapter.setup;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 
+import javax.annotation.Nonnull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Contains the setup for the tracked entity.
@@ -195,5 +200,52 @@ public class TrackedEntitySetup implements Serializable
     public void setCaregiverPhone( ReferenceSetup caregiverPhone )
     {
         this.caregiverPhone = caregiverPhone;
+    }
+
+    @Nonnull
+    public Collection<Reference> getEnabledReferenceSetups()
+    {
+        final List<Reference> setups = new ArrayList<>();
+        if ( uniqueId.isEnabled() )
+        {
+            setups.add( uniqueId.getReference() );
+        }
+        if ( patientId.isEnabled() )
+        {
+            setups.add( patientId.getReference() );
+        }
+        if ( firstName.isEnabled() )
+        {
+            setups.add( firstName.getReference() );
+        }
+        if ( lastName.isEnabled() )
+        {
+            setups.add( lastName.getReference() );
+        }
+        if ( birthDate.isEnabled() )
+        {
+            setups.add( birthDate.getReference() );
+        }
+        if ( gender.isEnabled() )
+        {
+            setups.add( gender.getReference() );
+        }
+        if ( villageName.isEnabled() )
+        {
+            setups.add( villageName.getReference() );
+        }
+        if ( caregiverFirstName.isEnabled() )
+        {
+            setups.add( caregiverFirstName.getReference() );
+        }
+        if ( caregiverLastName.isEnabled() )
+        {
+            setups.add( caregiverLastName.getReference() );
+        }
+        if ( caregiverPhone.isEnabled() )
+        {
+            setups.add( caregiverPhone.getReference() );
+        }
+        return setups;
     }
 }

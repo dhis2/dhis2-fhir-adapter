@@ -89,62 +89,66 @@ The application has its configuration directory below $DHIS2_HOME/services/fhir-
 
 The following example contains the content of configuration file application.yml with default configuration values for a non-clustered environment without using import by FHIR subscriptions. These configuration values can be customized if needed.
 
-    server:
-      # The default port on which HTTP connections will be available when starting
-      # the Adapter as a standalone application.
-      port: 8081
+```yaml
+server:
+  # The default port on which HTTP connections will be available when starting
+  # the Adapter as a standalone application.
+  port: 8081
 
-    spring:
-      datasource:
-        # The JDBC URL of the database in which the Adapter tables are located.
-        url: jdbc:postgresql://localhost/dhis2-fhir
-        # The username that is required to connect to the database.
-        username: dhis-fhir
-        # The password that is required to connect to the database.
-        password: dhis-fhir
-    
-    dhis2.fhir-adapter:
-      # Configuration of DHIS2 endpoint that is accessed by the adapter.
-      endpoint:
-        # The base URL of the DHIS2 installation.
-        url: http://localhost:8080
-        # The API version that should be accessed on the DHIS2 installation.
-        api-version: 30
-        # Authentication data to access metadata on DHIS2 installation.
-        # The complete metadata (organization units, tracked entity types, 
-        # tracked entity attributes, tracker programs, tracker program stages) 
-        # must be accessible.
-        system-authentication:
-          # The username that is used to connect to DHIS2 to access the metadata.
-          username: admin
-          # The password that is used to connect to DHIS2 to access the metadata.
-          password: district
+spring:
+  datasource:
+    # The JDBC URL of the database in which the Adapter tables are located.
+    url: jdbc:postgresql://localhost/dhis2-fhir
+    # The username that is required to connect to the database.
+    username: dhis-fhir
+    # The password that is required to connect to the database.
+    password: dhis-fhir
+
+dhis2.fhir-adapter:
+  # Configuration of DHIS2 endpoint that is accessed by the adapter.
+  endpoint:
+    # The base URL of the DHIS2 installation.
+    url: http://localhost:8080
+    # The API version that should be accessed on the DHIS2 installation.
+    api-version: 30
+    # Authentication data to access metadata on DHIS2 installation.
+    # The complete metadata (organization units, tracked entity types, 
+    # tracked entity attributes, tracker programs, tracker program stages) 
+    # must be accessible.
+    system-authentication:
+      # The username that is used to connect to DHIS2 to access the metadata.
+      username: admin
+      # The password that is used to connect to DHIS2 to access the metadata.
+      password: district
+```
 
 In order to enable support of import by FHIR subscriptions, the following items must be added to the resulting configuration file in a non-clustered environment.
 
-    spring:
-      # Settings of the Artemis message queueing system. For a non-clustered
-      # installation the embedded client can be used where the data is stored
-      # on the local file system.
-      artemis:
-        # Settings for the embedded client, that can be used for a non-clustered
-        # installation.
-        embedded:
-          # Specifies of the embedded client should be enabled. If the adapter
-          # runs in a clustered environment the embedded client must not be enabled
-          # and host, port, username and password for the Artemis broker must be
-          # specified.
-          enabled: true
-    
-    management:
-      health:
-        jms:
-          # JMS health check can be enabled when Artemis queue is available.
-          enabled: false
-    
-    dhis2.fhir-adapter:
-      # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
-      import-enabled: true
+```yaml
+spring:
+  # Settings of the Artemis message queueing system. For a non-clustered
+  # installation the embedded client can be used where the data is stored
+  # on the local file system.
+  artemis:
+    # Settings for the embedded client, that can be used for a non-clustered
+    # installation.
+    embedded:
+      # Specifies of the embedded client should be enabled. If the adapter
+      # runs in a clustered environment the embedded client must not be enabled
+      # and host, port, username and password for the Artemis broker must be
+      # specified.
+      enabled: true
+
+management:
+  health:
+    jms:
+      # JMS health check can be enabled when Artemis queue is available.
+      enabled: false
+
+dhis2.fhir-adapter:
+  # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
+  import-enabled: true
+```
 
 More changeable settings can be found in the file [default-application.yml](app/src/main/resources/default-application.yml).
 

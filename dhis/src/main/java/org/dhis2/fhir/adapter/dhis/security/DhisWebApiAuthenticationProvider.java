@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.dhis.security;
 
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.config.DhisEndpointConfig;
-import org.dhis2.fhir.adapter.model.Id;
 import org.dhis2.fhir.adapter.rest.AbstractSessionCookieRestTemplate;
 import org.dhis2.fhir.adapter.rest.RestTemplateCookieStore;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,7 +64,7 @@ import java.util.Set;
  */
 public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider
 {
-    protected static final String USER_ACCOUNT_URL = "/me/user-account.json";
+    protected static final String ME_URL = "/me.json?id,authorities";
 
     protected static final String AUTHORIZATION_URL = "/me/authorization.json";
 
@@ -103,14 +102,17 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
                 return DhisConfig.createBasicAuthHeaderValue( username, String.valueOf( authentication.getCredentials() ) );
             }
         } );
-        final ResponseEntity<Id> idResponse;
-        final ResponseEntity<List<String>> authorizationResponse;
+        final ResponseEntity<DhisWebApiMe> meResponse;
+        ResponseEntity<List<String>> authorizationResponse = null;
         try
         {
-            idResponse = restTemplate.getForEntity( USER_ACCOUNT_URL, Id.class );
-            authorizationResponse = restTemplate.exchange( AUTHORIZATION_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>()
+            meResponse = restTemplate.getForEntity( ME_URL, DhisWebApiMe.class );
+            if ( (Objects.requireNonNull( meResponse.getBody() )).getAuthorities() == null )
             {
-            } );
+                authorizationResponse = restTemplate.exchange( AUTHORIZATION_URL, HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>()
+                {
+                } );
+            }
         }
         catch ( HttpClientErrorException e )
         {
@@ -125,8 +127,16 @@ public class DhisWebApiAuthenticationProvider extends AbstractUserDetailsAuthent
             throw new AuthenticationServiceException( "An error has occurred when authenticating the user.", e );
         }
 
-        final Set<String> dhisAuthorities = new HashSet<>( Objects.requireNonNull( authorizationResponse.getBody() ) );
+        final Set<String> dhisAuthorities;
+        if ( authorizationResponse == null )
+        {
+            dhisAuthorities = new HashSet<>( Objects.requireNonNull( meResponse.getBody() ).getAuthorities() );
+        }
+        else
+        {
+            dhisAuthorities = new HashSet<>( Objects.requireNonNull( authorizationResponse.getBody() ) );
+        }
         final Set<GrantedAuthority> grantedAuthorities = securityConfig.createGrantedAuthorities( dhisAuthorities );
-        return new AdapterUser( Objects.requireNonNull( idResponse.getBody() ).getId(), username, grantedAuthorities );
+        return new AdapterUser( Objects.requireNonNull( meResponse.getBody() ).getId(), username, grantedAuthorities );
     }
 }
