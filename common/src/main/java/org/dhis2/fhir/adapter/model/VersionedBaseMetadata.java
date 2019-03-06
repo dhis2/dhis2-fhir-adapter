@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,8 +61,8 @@ public class VersionedBaseMetadata implements Serializable, UuidIdentifiable, Me
     private Instant lastUpdatedAt;
 
     @Override
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
+    @GeneratedValue( generator = "custom-uuid2" )
+    @GenericGenerator( name = "custom-uuid2", strategy = "org.dhis2.fhir.adapter.hibernate.CustomUuidGenerator" )
     @Id
     @Column( name = "id", nullable = false )
     public UUID getId()

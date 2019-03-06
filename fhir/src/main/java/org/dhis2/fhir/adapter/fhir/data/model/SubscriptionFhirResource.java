@@ -75,8 +75,8 @@ public class SubscriptionFhirResource implements Serializable
 
     private String fhirResource;
 
-    @GeneratedValue( generator = "uuid2" )
-    @GenericGenerator( name = "uuid2", strategy = "uuid2" )
+    @GeneratedValue( generator = "custom-uuid2" )
+    @GenericGenerator( name = "custom-uuid2", strategy = "org.dhis2.fhir.adapter.hibernate.CustomUuidGenerator" )
     @Id
     @Column( name = "id", nullable = false )
     public UUID getId()
