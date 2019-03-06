@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -144,7 +144,7 @@ public class BeforeCreateSaveCodeSetValidatorTest extends AbstractJpaRepositoryT
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "codeCategory", "codeCategories", codeCategory.getId().toString() ),
                 JsonEntityValue.create( "codeSetValues/code", "codes", code.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "codeSetValues[1].code" ) ) );
+            .andExpect( status().isCreated() );
     }
 
     @Test

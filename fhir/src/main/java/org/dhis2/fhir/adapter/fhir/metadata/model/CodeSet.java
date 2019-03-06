@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -133,6 +135,7 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
     }
 
     @JsonCacheIgnore
+    @Access( AccessType.PROPERTY )
     @OneToMany( orphanRemoval = true, mappedBy = "codeSet", cascade = CascadeType.ALL )
     @OrderBy( "id" )
     public List<CodeSetValue> getCodeSetValues()
@@ -147,7 +150,25 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
             codeSetValues.stream().filter( csv -> (csv.getCodeSet() == null) )
                 .forEach( csv -> csv.setCodeSet( this ) );
         }
-        this.codeSetValues = codeSetValues;
+
+        if ( this.codeSetValues == null )
+        {
+            this.codeSetValues = codeSetValues;
+        }
+        else if ( codeSetValues == null )
+        {
+            this.codeSetValues.clear();
+        }
+        else
+        {
+            this.codeSetValues.retainAll( codeSetValues );
+            codeSetValues.forEach( oa -> {
+                if ( !this.codeSetValues.contains( oa ) )
+                {
+                    this.codeSetValues.add( oa );
+                }
+            } );
+        }
     }
 
     @Override

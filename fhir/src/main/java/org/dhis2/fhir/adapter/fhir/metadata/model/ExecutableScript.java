@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -82,6 +84,11 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     private List<ExecutableScriptArg> overrideArguments;
 
     private ExecutableScript baseExecutableScript;
+
+    public ExecutableScript()
+    {
+        super();
+    }
 
     @JsonCacheIgnore
     @ManyToOne
@@ -133,6 +140,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     }
 
     @JsonCacheIgnore
+    @Access( AccessType.PROPERTY )
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
     public List<ExecutableScriptArg> getOverrideArguments()
@@ -142,7 +150,24 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
 
     public void setOverrideArguments( List<ExecutableScriptArg> overrideArguments )
     {
-        this.overrideArguments = overrideArguments;
+        if ( this.overrideArguments == null )
+        {
+            this.overrideArguments = overrideArguments;
+        }
+        else if ( overrideArguments == null )
+        {
+            this.overrideArguments.clear();
+        }
+        else
+        {
+            this.overrideArguments.retainAll( overrideArguments );
+            overrideArguments.forEach( oa -> {
+                if ( !this.overrideArguments.contains( oa ) )
+                {
+                    this.overrideArguments.add( oa );
+                }
+            } );
+        }
     }
 
     @JsonCacheIgnore
