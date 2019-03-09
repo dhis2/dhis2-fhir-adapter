@@ -127,6 +127,10 @@ dhis2.fhir-adapter:
     dstu3-enabled: true
     # Specifies if R4 FHIR interfaces should be enabled.
     r4-enabled: true
+    # The default search count that is used when none is specified.
+    default-search-count: 10
+    # The maximum number of resources to be returned on a search.
+    max-search-count: 10000
   # Configuration of DHIS2 endpoint that is accessed by the adapter.
   endpoint:
     # The base URL of the DHIS2 installation.

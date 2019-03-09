@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.orgunit;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
 
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
@@ -51,6 +52,9 @@ public interface OrganizationUnitService
 
     @Nonnull
     Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
+
+    @Nonnull
+    DhisResourceResult<OrganizationUnit> find( int from, int max );
 
     @Nonnull
     Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,

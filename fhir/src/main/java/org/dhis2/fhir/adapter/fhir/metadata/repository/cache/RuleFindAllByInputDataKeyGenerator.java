@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.cache;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository#findAllByInputData(FhirResourceType, Collection)}.
+ * Key generator for {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository#findAllImpByInputData(FhirResourceType, Collection)}
+ * and {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository#findAllExpByInputData(FhirResourceType, Collection)}.
  * Since cache may be serialized to external storage, cache is automatically a string representation.
  *
  * @author volsch
@@ -65,7 +66,8 @@ public class RuleFindAllByInputDataKeyGenerator implements KeyGenerator
             systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
                 .collect( Collectors.toCollection( TreeSet::new ) );
         }
-        final StringBuilder sb = new StringBuilder( "findAllByInputData," );
+        final StringBuilder sb = new StringBuilder( method.getName() );
+        sb.append( ',' );
         sb.append( params[0] );
         // codes must have same order every time
         for ( final String systemCode : systemCodes )

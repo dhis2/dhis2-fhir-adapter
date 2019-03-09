@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,46 +28,49 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
- * Service that allows to create, read and update tracked entity instances.
+ * Abstract implementation of {@link PreparedDhisToFhirSearch}.
  *
+ * @param <T> the concrete type of the rule.
  * @author volsch
  */
-public interface TrackedEntityService
+public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> implements PreparedDhisToFhirSearch
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private final List<RuleInfo<T>> ruleInfos;
+
+    private final Map<String, Object> filter;
+
+    private final int count;
+
+    protected AbstractPreparedDhisToFhirSearch( @Nonnull List<RuleInfo<T>> ruleInfos, @Nonnull Map<String, Object> filter, int count )
+    {
+        this.ruleInfos = ruleInfos;
+        this.filter = filter;
+        this.count = count;
+    }
 
     @Nonnull
-    Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
+    public List<RuleInfo<T>> getRuleInfos()
+    {
+        return ruleInfos;
+    }
 
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    public Map<String, Object> getFilter()
+    {
+        return filter;
+    }
 
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
-
-    @Nonnull
-    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    public int getCount()
+    {
+        return count;
+    }
 }

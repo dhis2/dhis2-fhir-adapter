@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.Pager;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 
 import javax.annotation.Nonnull;
@@ -45,8 +46,20 @@ public class DhisOrganizationUnits implements Serializable
 {
     private static final long serialVersionUID = -671810199580040339L;
 
+    private Pager pager;
+
     @JsonProperty( "organisationUnits" )
     private List<OrganizationUnit> organizationUnits;
+
+    public Pager getPager()
+    {
+        return pager;
+    }
+
+    public void setPager( Pager pager )
+    {
+        this.pager = pager;
+    }
 
     @Nonnull
     public List<OrganizationUnit> getOrganizationUnits()

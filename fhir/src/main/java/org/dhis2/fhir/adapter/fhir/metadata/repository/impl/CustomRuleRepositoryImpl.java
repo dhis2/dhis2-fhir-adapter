@@ -92,18 +92,35 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Nonnull
     public List<RuleInfo<? extends AbstractRule>> findAllImpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
+        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY );
+    }
+
+    @Override
+    @RestResource( exported = false )
+    @Cacheable( keyGenerator = "ruleFindAllByInputDataKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
+    @Nonnull
+    public List<RuleInfo<? extends AbstractRule>> findAllExpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
+    {
+        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY );
+    }
+
+    @Nonnull
+    protected List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues,
+        @Nonnull String findByFhirTypeQueryName, @Nonnull String findBySystemCodeQueryName )
+    {
         final List<AbstractRule> rules;
         if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
         {
             rules = new ArrayList<>(
-                entityManager.createNamedQuery( AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
+                entityManager.createNamedQuery( findByFhirTypeQueryName, AbstractRule.class )
                     .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
         }
         else
         {
             final Set<String> systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
                 .collect( Collectors.toCollection( TreeSet::new ) );
-            rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.class )
+            rules = new ArrayList<>( entityManager.createNamedQuery( findBySystemCodeQueryName, AbstractRule.class )
                 .setParameter( "fhirResourceType", fhirResourceType )
                 .setParameter( "systemCodeValues", systemCodes ).getResultList() );
         }
@@ -139,7 +156,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Override
     public Optional<RuleInfo<? extends AbstractRule>> findOneExpByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType )
     {
-        final List<AbstractRule> rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_EXP_RULE_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
+        final List<AbstractRule> rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
             .setParameter( "fhirResourceType", fhirResourceType ).setMaxResults( 2 ).getResultList() );
         if ( rules.size() != 1 )
         {

@@ -29,36 +29,44 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Abstract implementation of data provider for specific DHIS resources.
  *
+ * @param <R> the concrete type of the rule.
  * @author volsch
  */
-public interface DhisToFhirRequestResolver
+public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> implements DhisToFhirDataProvider<R>
 {
     @Nonnull
-    DhisResourceType getDhisResourceType();
+    protected abstract Class<R> getRuleClass();
+
+    @Nullable
+    @Override
+    public DhisResource findByDhisFhirIdentifierCasted( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull String identifier )
+    {
+        return findByDhisFhirIdentifier( fhirClient, new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), identifier );
+    }
 
     @Nonnull
-    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
-
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
-
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
-
-    @Nonnull
-    Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource );
+    @Override
+    public PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException
+    {
+        final Class<R> ruleClass = getRuleClass();
+        final List<RuleInfo<R>> castedRuleInfos =
+            ruleInfos.stream().map( r -> new RuleInfo<>( getRuleClass().cast( r.getRule() ), r.getDhisDataReferences() ) ).collect( Collectors.toList() );
+        return prepareSearch( castedRuleInfos, filter, count );
+    }
 }

@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -59,6 +60,9 @@ public interface EventService
 
     @Nonnull
     Event createOrMinimalUpdate( @Nonnull Event event );
+
+    @Nonnull
+    DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, int from, int max );
 
     @Nonnull
     Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,

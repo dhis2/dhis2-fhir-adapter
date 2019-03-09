@@ -35,10 +35,13 @@ import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +52,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -215,6 +219,22 @@ public class EventServiceImpl implements EventService
                 result.getStatus() );
         }
         return event;
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, int from, int max )
+    {
+        final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
+        final String uri = UriComponentsBuilder.newInstance().path( "/events.json" )
+            .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
+            .queryParam( "program", programId ).queryParam( "programStage", programStageId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", FIELDS ).toUriString();
+        final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( uri, DhisEvents.class );
+        final DhisEvents events = Objects.requireNonNull( result.getBody() );
+
+        return new DhisResourceResult<>( (events.getEvents().size() > pagingQuery.getResultOffset()) ?
+            events.getEvents().subList( pagingQuery.getResultOffset(), events.getEvents().size() ) : Collections.emptyList(),
+            (events.getEvents().size() >= pagingQuery.getPageSize()) );
     }
 
     protected void update( @Nonnull MinimalEvent event )

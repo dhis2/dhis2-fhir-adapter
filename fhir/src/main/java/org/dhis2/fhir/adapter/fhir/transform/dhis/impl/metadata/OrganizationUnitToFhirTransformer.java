@@ -28,10 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -105,13 +102,6 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
 
     @Nullable
     @Override
-    public DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull String identifier )
-    {
-        return organizationUnitService.findOneRefreshedByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
-    }
-
-    @Nullable
-    @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
         @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
@@ -171,6 +161,10 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
         @Nonnull Map<String, Object> scriptVariables )
     {
+        if ( context.getDhisRequest().isDhisFhirId() )
+        {
+            return scriptedOrganizationUnit.getCode();
+        }
         return executeScript( context, ruleInfo, (identifierLookupScript == null) ? ruleInfo.getRule().getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
     }
 }
