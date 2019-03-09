@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -124,13 +123,6 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.ALL;
-    }
-
-    @Nullable
-    @Override
-    public DhisResource findDhisResourceByDhisFhirIdentifierCasted( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull String identifier )
-    {
-        return findDhisResourceByDhisFhirIdentifier( new RuleInfo<>( getRuleClass().cast( ruleInfo.getRule() ), ruleInfo.getDhisDataReferences() ), identifier );
     }
 
     @Nullable
@@ -358,21 +350,23 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             final String identifierValue = getIdentifierValue( context, ruleInfo, null, scriptedDhisResource, scriptVariables );
             if ( identifierValue == null )
             {
-                logger.info( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", ruleInfo.getRule().getFhirResourceType() );
-                return false;
+                logger.debug( "FHIR resource type {} defines resource system, but tracked entity does not include an identifier.", ruleInfo.getRule().getFhirResourceType() );
             }
-            if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+            else
             {
-                logger.info( "Tracked entity identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
-                    identifierValue, resourceSystem.getCodePrefix(), ruleInfo.getRule().getFhirResourceType() );
-                return false;
+                if ( StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && (!identifierValue.startsWith( resourceSystem.getCodePrefix() ) || identifierValue.equals( resourceSystem.getCodePrefix() )) )
+                {
+                    logger.info( "Tracked entity identifier \"{}\" does not start with required prefix \"{}\" for resource type {}.",
+                        identifierValue, resourceSystem.getCodePrefix(), ruleInfo.getRule().getFhirResourceType() );
+                    return false;
+                }
+                final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+                if ( sync )
+                {
+                    lockFhirIdentifier( context, identifier );
+                }
+                identifierUtils.addOrUpdateIdentifier( resource, identifier, resourceSystem.getFhirDisplayName() );
             }
-            final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
-            if ( sync )
-            {
-                lockFhirIdentifier( context, identifier );
-            }
-            identifierUtils.addOrUpdateIdentifier( resource, identifier, resourceSystem.getFhirDisplayName() );
         }
 
         if ( context.isUseAdapterIdentifier() )

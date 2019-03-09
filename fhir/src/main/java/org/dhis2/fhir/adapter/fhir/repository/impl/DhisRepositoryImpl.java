@@ -28,15 +28,20 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.auth.ForbiddenException;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
@@ -44,15 +49,22 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.config.FhirRestInterfaceConfig;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchResult;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerService;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.ImmutableDhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.WritableDhisRequest;
@@ -68,11 +80,17 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link DhisRepository}.
@@ -102,6 +120,8 @@ public class DhisRepositoryImpl implements DhisRepository
 
     private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
 
+    private final FhirRestInterfaceConfig fhirRestInterfaceConfig;
+
     public DhisRepositoryImpl(
         @Nonnull AuthorizationContext authorizationContext,
         @Nonnull Authorization systemDhis2Authorization,
@@ -111,7 +131,8 @@ public class DhisRepositoryImpl implements DhisRepository
         @Nonnull DhisResourceRepository dhisResourceRepository,
         @Nonnull DhisToFhirTransformerService dhisToFhirTransformerService,
         @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository,
+        @Nonnull FhirRestInterfaceConfig fhirRestInterfaceConfig )
     {
         this.authorizationContext = authorizationContext;
         this.systemDhis2Authorization = systemDhis2Authorization;
@@ -122,6 +143,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.dhisToFhirTransformerService = dhisToFhirTransformerService;
         this.fhirResourceRepository = fhirResourceRepository;
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
+        this.fhirRestInterfaceConfig = fhirRestInterfaceConfig;
     }
 
     @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
@@ -140,8 +162,7 @@ public class DhisRepositoryImpl implements DhisRepository
         }
     }
 
-    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
-    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, UnauthorizedException.class, ForbiddenException.class } )
     @Override
     @Nonnull
     public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisFhirResourceId dhisFhirResourceId )
@@ -171,8 +192,7 @@ public class DhisRepositoryImpl implements DhisRepository
         }.read( fhirClient, fhirResourceType );
     }
 
-    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
-    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, UnauthorizedException.class, ForbiddenException.class } )
     @Nonnull
     @Override
     public Optional<IBaseResource> readByIdentifier( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull String identifier )
@@ -202,9 +222,111 @@ public class DhisRepositoryImpl implements DhisRepository
             @Override
             protected DhisResource getDhisResource()
             {
-                return dhisToFhirTransformerService.findDhisResourceByDhisFhirIdentifier( fhirClient, ruleInfo, identifier );
+                return dhisToFhirTransformerService.getDataProvider( ruleInfo.getRule().getDhisResourceType() )
+                    .findByDhisFhirIdentifierCasted( fhirClient, ruleInfo, identifier );
             }
         }.read( fhirClient, fhirResourceType );
+    }
+
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, DhisToFhirDataProviderException.class, UnauthorizedException.class, ForbiddenException.class } )
+    @Nonnull
+    @Override
+    public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Set<SystemCodeValue> filteredCodes, @Nonnull Map<String, Object> filter, Integer count ) throws DhisToFhirDataProviderException
+    {
+        final int resultingCount;
+        if ( count == null )
+        {
+            resultingCount = fhirRestInterfaceConfig.getDefaultSearchCount();
+        }
+        else
+        {
+            resultingCount = Math.min( count, fhirRestInterfaceConfig.getMaxSearchCount() );
+        }
+
+        List<IBaseResource> result = Collections.emptyList();
+        authorizationContext.setAuthorization( systemDhis2Authorization );
+        try
+        {
+            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+            {
+                final List<RuleInfo<? extends AbstractRule>> rules = dhisToFhirTransformerService.findAllRules( fhirClient, fhirResourceType, filteredCodes );
+                final Set<DhisResourceType> dhisResourceTypes = rules.stream().map( r -> r.getRule().getDhisResourceType() ).collect( Collectors.toSet() );
+                if ( dhisResourceTypes.isEmpty() )
+                {
+                    logger.debug( "No matching rules for FHIR resource {} and codes {}.", fhirResourceType, filteredCodes );
+                }
+                else if ( dhisResourceTypes.size() > 1 )
+                {
+                    logger.debug( "More than one matching DHIS resource type ({}) for FHIR resource {} and codes {}. " +
+                        "Search is not supported in this case.", dhisResourceTypes, fhirResourceType, filteredCodes );
+                }
+                else
+                {
+                    result = search( fhirClient, fhirResourceType, filteredCodes, filter, dhisResourceTypes.stream().findFirst().get(), rules, resultingCount );
+                }
+            }
+        }
+        finally
+        {
+            authorizationContext.resetAuthorization();
+        }
+        return new SimpleBundleProvider( result ).setSize( (result.size() < resultingCount) ? result.size() : null );
+    }
+
+    @Nonnull
+    protected List<IBaseResource> search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Set<SystemCodeValue> filteredCodes, @Nonnull Map<String, Object> filter,
+        @Nonnull DhisResourceType dhisResourceType, @Nonnull List<RuleInfo<? extends AbstractRule>> rules, int count )
+    {
+        if ( count == 0 )
+        {
+            return Collections.emptyList();
+        }
+
+        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dhisToFhirTransformerService.getDataProvider( dhisResourceType );
+        final PreparedDhisToFhirSearch preparedSearch = dataProvider.prepareSearchCasted( rules, filter, count );
+
+        final LinkedList<DhisResource> dhisResources = new LinkedList<>();
+        final List<IBaseResource> result = new ArrayList<>();
+        DhisToFhirSearchState searchState = null;
+        do
+        {
+            if ( dhisResources.isEmpty() )
+            {
+                final DhisToFhirSearchResult<? extends DhisResource> searchResult = dataProvider.search( preparedSearch, searchState, count - result.size() );
+                if ( searchResult == null )
+                {
+                    return result;
+                }
+                searchState = searchResult.getState();
+                dhisResources.addAll( searchResult.getResult() );
+            }
+
+            final DhisResource dhisResource = Objects.requireNonNull( dhisResources.poll() );
+            final WritableDhisRequest dhisRequest = new WritableDhisRequest( true, true, true );
+            dhisRequest.setResourceType( dhisResource.getResourceType() );
+            dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
+
+            DhisToFhirTransformerRequest transformerRequest =
+                dhisToFhirTransformerService.createTransformerRequest( fhirClient, new ImmutableDhisRequest( dhisRequest ), dhisResource, rules );
+            while ( (transformerRequest != null) && (result.size() < count) )
+            {
+                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = dhisToFhirTransformerService.transform( transformerRequest );
+                if ( outcome == null )
+                {
+                    transformerRequest = null;
+                }
+                else
+                {
+                    if ( outcome.getResource() != null )
+                    {
+                        result.add( outcome.getResource() );
+                    }
+                    transformerRequest = outcome.getNextTransformerRequest();
+                }
+            }
+        }
+        while ( result.size() < count );
+        return result;
     }
 
     protected boolean saveInternallyWithMissingDhisResources( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource, @Nonnull Set<DhisResourceId> missingDhisResourceIds, boolean initial )

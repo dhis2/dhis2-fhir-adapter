@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,17 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Optional;
-
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Thrown if the query is invalid.
  *
  * @author volsch
  */
-public interface DhisToFhirRequestResolver
+public class DhisToFhirDataProviderException extends RuntimeException
 {
-    @Nonnull
-    DhisResourceType getDhisResourceType();
+    private static final long serialVersionUID = 565765406720494135L;
 
-    @Nonnull
-    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
-
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
-
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
-
-    @Nonnull
-    Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource );
+    public DhisToFhirDataProviderException( String message )
+    {
+        super( message );
+    }
 }

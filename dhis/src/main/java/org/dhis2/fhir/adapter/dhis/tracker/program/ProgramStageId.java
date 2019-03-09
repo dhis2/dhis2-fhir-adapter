@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,46 +28,65 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * Service that allows to create, read and update tracked entity instances.
+ * Contains the ID of the program stage and its program.
  *
  * @author volsch
  */
-public interface TrackedEntityService
+public class ProgramStageId implements Comparable<ProgramStageId>, Serializable
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private static final long serialVersionUID = 6571859445969896545L;
+
+    private final String programId;
+
+    private final String programStageId;
+
+    public ProgramStageId( @Nonnull String programId, @Nonnull String programStageId )
+    {
+        this.programId = programId;
+        this.programStageId = programStageId;
+    }
 
     @Nonnull
-    Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
+    public String getProgramId()
+    {
+        return programId;
+    }
 
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    public String getProgramStageId()
+    {
+        return programStageId;
+    }
 
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o ) return true;
+        if ( o == null || getClass() != o.getClass() ) return false;
+        ProgramStageId that = (ProgramStageId) o;
+        return getProgramId().equals( that.getProgramId() ) &&
+            getProgramStageId().equals( that.getProgramStageId() );
+    }
 
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( getProgramId(), getProgramStageId() );
+    }
 
-    @Nonnull
-    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    @Override
+    public int compareTo( @Nonnull ProgramStageId o )
+    {
+        int value = programId.compareTo( o.programId );
+        if ( value != 0 )
+        {
+            return value;
+        }
+        return programStageId.compareTo( o.programStageId );
+    }
 }

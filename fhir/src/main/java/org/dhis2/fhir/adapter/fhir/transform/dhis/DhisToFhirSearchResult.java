@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,46 +28,42 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.io.Serializable;
+import java.util.List;
 
 /**
- * Service that allows to create, read and update tracked entity instances.
+ * Result of a single fetch. The result contains the state that is used to retrieve
+ * the next result. If the included result is empty there will be no more result.
  *
+ * @param <R> the concrete type of the DHIS resource.
  * @author volsch
  */
-public interface TrackedEntityService
+public class DhisToFhirSearchResult<R extends DhisResource> implements Serializable
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private static final long serialVersionUID = -5542889168407023343L;
+
+    private final List<R> result;
+
+    private final DhisToFhirSearchState state;
+
+    public DhisToFhirSearchResult( @Nonnull List<R> result, @Nonnull DhisToFhirSearchState state )
+    {
+        this.result = result;
+        this.state = state;
+    }
 
     @Nonnull
-    Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
+    public List<R> getResult()
+    {
+        return result;
+    }
 
     @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
-
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
-
-    @Nonnull
-    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    public DhisToFhirSearchState getState()
+    {
+        return state;
+    }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.config;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,38 +28,74 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
- * The pager that is used by DHIS resources.
+ * Configuration of FHIR REST interfaces.
  *
  * @author volsch
  */
-public class Pager implements Serializable
+@Configuration
+@Component
+@ConfigurationProperties( "dhis2.fhir-adapter.fhir-rest-interfaces" )
+@Validated
+public class FhirRestInterfaceConfig implements Serializable
 {
-    private static final long serialVersionUID = -4913400248379771841L;
+    private static final long serialVersionUID = 750804373583103217L;
 
-    private int page;
+    private boolean dstu3Enabled;
 
-    private String nextPage;
+    private boolean r4Enabled;
 
-    public int getPage()
+    @Min( 1 )
+    private int defaultSearchCount = 10;
+
+    @Min( 1 )
+    private int maxSearchCount = 10_000;
+
+    public boolean isDstu3Enabled()
     {
-        return page;
+        return dstu3Enabled;
     }
 
-    public void setPage( int page )
+    public void setDstu3Enabled( boolean dstu3Enabled )
     {
-        this.page = page;
+        this.dstu3Enabled = dstu3Enabled;
     }
 
-    public String getNextPage()
+    public boolean isR4Enabled()
     {
-        return nextPage;
+        return r4Enabled;
     }
 
-    public void setNextPage( String nextPage )
+    public void setR4Enabled( boolean r4Enabled )
     {
-        this.nextPage = nextPage;
+        this.r4Enabled = r4Enabled;
+    }
+
+    public int getDefaultSearchCount()
+    {
+        return defaultSearchCount;
+    }
+
+    public void setDefaultSearchCount( int defaultSearchCount )
+    {
+        this.defaultSearchCount = defaultSearchCount;
+    }
+
+    public int getMaxSearchCount()
+    {
+        return maxSearchCount;
+    }
+
+    public void setMaxSearchCount( int maxSearchCount )
+    {
+        this.maxSearchCount = maxSearchCount;
     }
 }

@@ -35,6 +35,7 @@ import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.util.ExceptionUtils;
 import org.slf4j.Logger;
@@ -60,7 +61,8 @@ public class RepositoryExceptionInterceptor extends InterceptorAdapter
     public BaseServerResponseException preProcessOutgoingException( RequestDetails theRequestDetails, Throwable theException, HttpServletRequest theServletRequest )
     {
         final BaseServerResponseException result;
-        final Throwable unprocessableEntityException = ExceptionUtils.findCause( theException, DhisConflictException.class, TransformerDataException.class, TrackedEntityInstanceNotFoundException.class );
+        final Throwable unprocessableEntityException = ExceptionUtils.findCause( theException, DhisConflictException.class,
+            TransformerDataException.class, TrackedEntityInstanceNotFoundException.class, DhisToFhirDataProviderException.class );
         if ( unprocessableEntityException != null )
         {
             log.info( "Request could not be processed because of an error: {}", unprocessableEntityException.getMessage() );

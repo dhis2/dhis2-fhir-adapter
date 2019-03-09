@@ -52,11 +52,11 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Component
-public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhirRequestResolver
+public class OrganizationUnitToFhirRequestResolver extends AbstractDhisToFhirRequestResolver
 {
     private final OrganizationUnitRuleRepository ruleRepository;
 
-    public DhisToFhirOrganizationUnitRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, OrganizationUnitRuleRepository ruleRepository )
+    public OrganizationUnitToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, OrganizationUnitRuleRepository ruleRepository )
     {
         super( fhirClientRepository );
         this.ruleRepository = ruleRepository;
@@ -74,6 +74,13 @@ public class DhisToFhirOrganizationUnitRequestResolver extends AbstractDhisToFhi
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
+    }
+
+    @Nonnull
+    @Override
+    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    {
+        return rules.stream().sorted().collect( Collectors.toList() );
     }
 
     @Nonnull

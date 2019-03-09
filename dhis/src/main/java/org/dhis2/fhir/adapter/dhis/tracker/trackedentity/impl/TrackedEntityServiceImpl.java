@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.DhisResourceException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
@@ -46,6 +47,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,6 +211,22 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max )
+    {
+        final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
+        final String uri = UriComponentsBuilder.newInstance().path( "/trackedEntityInstances.json" )
+            .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
+            .queryParam( "trackedEntityType", trackedEntityTypeId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", TEI_FIELDS ).toUriString();
+        final ResponseEntity<TrackedEntityInstances> result = restTemplate.getForEntity( uri, TrackedEntityInstances.class );
+        final TrackedEntityInstances instances = Objects.requireNonNull( result.getBody() );
+
+        return new DhisResourceResult<>( (instances.getTrackedEntityInstances().size() > pagingQuery.getResultOffset()) ?
+            instances.getTrackedEntityInstances().subList( pagingQuery.getResultOffset(), instances.getTrackedEntityInstances().size() ) : Collections.emptyList(),
+            (instances.getTrackedEntityInstances().size() >= pagingQuery.getPageSize()) );
     }
 
     @Nonnull

@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseElement;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -98,6 +99,9 @@ public abstract class AbstractFhirResourceDhisToFhirTransformerUtils extends Abs
             @ScriptMethodArg( value = "resource", description = "The FHIR Resource for which the reference should be created." )
         } )
     public abstract IBaseReference createReference( @Nonnull IBaseResource resource );
+
+    @Nonnull
+    public abstract IBaseBundle createBundle( @Nonnull List<IBaseResource> result );
 
     @ScriptMethod( description = "Returns if the specified string value is included in the specified string type list.",
         args = {

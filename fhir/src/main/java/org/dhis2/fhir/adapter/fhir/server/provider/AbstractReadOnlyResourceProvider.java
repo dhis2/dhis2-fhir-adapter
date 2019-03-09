@@ -28,10 +28,12 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
@@ -134,6 +136,15 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
                 getFhirClientResource().getFhirClient(), getFhirResourceType(), identifierParam.getValue() ).orElse( null ) );
             return (result == null) ? Collections.emptyList() : Collections.singletonList( result );
         } );
+    }
+
+    @Search
+    @Nonnull
+    public IBundleProvider search( @Count Integer count )
+    {
+        return executeInSecurityContext( () ->
+            getDhisRepository().search( getFhirClientResource().getFhirClient(), getFhirResourceType(),
+                null, Collections.emptyMap(), count ) );
     }
 
     @Nonnull

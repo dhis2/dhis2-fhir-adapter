@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.server;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.PreferReturnEnum;
 import ca.uhn.fhir.rest.server.ETagSupportEnum;
+import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
@@ -59,9 +60,12 @@ public class FhirRestfulServer extends RestfulServer
 
     private final List<IServerInterceptor> interceptors;
 
+    private final IPagingProvider pagingProvider;
+
     public FhirRestfulServer( @Nonnull FhirContext fhirContext,
         @Nonnull ObjectProvider<List<IResourceProvider>> resourceProviders,
-        @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors )
+        @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors,
+        @Nonnull IPagingProvider pagingProvider )
     {
         super( fhirContext );
         final FhirVersion fhirVersion = FhirVersion.get( fhirContext.getVersion().getVersion() );
@@ -76,6 +80,7 @@ public class FhirRestfulServer extends RestfulServer
             .collect( Collectors.toList() );
         this.interceptors = sortByOrderAnnotation(
             interceptors.getIfAvailable( Collections::emptyList ) );
+        this.pagingProvider = pagingProvider;
     }
 
     @Override
@@ -86,6 +91,7 @@ public class FhirRestfulServer extends RestfulServer
 
         setResourceProviders( resourceProviders );
         setInterceptors( interceptors );
+        setPagingProvider( pagingProvider );
     }
 
     @Nullable

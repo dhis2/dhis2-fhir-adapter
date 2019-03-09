@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResource
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.dstu3.model.Base;
+import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
@@ -42,6 +43,7 @@ import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseElement;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -51,8 +53,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * DSTU3 specific implementation of {@link AbstractFhirResourceDhisToFhirTransformerUtils}.
@@ -101,6 +105,18 @@ public class Dstu3FhirResourceDhisToFhirTransformerUtils extends AbstractFhirRes
         {
             throw new FhirRepositoryException( "Unknown FHIR type: " + fhirType, e );
         }
+    }
+
+    @Nonnull
+    @Override
+    public IBaseBundle createBundle( @Nonnull List<IBaseResource> result )
+    {
+        final Bundle bundle = new Bundle();
+        bundle.setId( UUID.randomUUID().toString() );
+        bundle.getMeta().setLastUpdated( new Date() );
+        bundle.setType( Bundle.BundleType.SEARCHSET );
+        result.forEach( r -> bundle.addEntry().setResource( (Resource) r ) );
+        return bundle;
     }
 
     @Nonnull

@@ -47,6 +47,7 @@
   <logger name="org.springframework.data.repository.config.RepositoryConfigurationDelegate" level="warn" />
   <logger name="org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport" level="warn" />
   <logger name="ca.uhn.fhir.rest.server.interceptor.ExceptionHandlingInterceptor" level="error" />
+  <logger name="ca.uhn.fhir.rest.client.method.BaseResourceReturningMethodBinding" level="warn" />
 
   <springProfile name="dev">
     <root level="INFO">

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.dhis.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,42 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serializable;
 
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Contains the query parameters for paging.
  *
  * @author volsch
  */
-public interface DhisToFhirRequestResolver
+public class DhisPagingQuery implements Serializable
 {
-    @Nonnull
-    DhisResourceType getDhisResourceType();
+    private static final long serialVersionUID = -8609570650954119636L;
 
-    @Nonnull
-    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
+    private final int page;
 
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
+    private final int pageSize;
 
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
+    private final int resultOffset;
 
-    @Nonnull
-    Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource );
+    public DhisPagingQuery( int page, int pageSize, int resultOffset )
+    {
+        this.page = page;
+        this.pageSize = pageSize;
+        this.resultOffset = resultOffset;
+    }
+
+    public int getPage()
+    {
+        return page;
+    }
+
+    public int getPageSize()
+    {
+        return pageSize;
+    }
+
+    public int getResultOffset()
+    {
+        return resultOffset;
+    }
 }

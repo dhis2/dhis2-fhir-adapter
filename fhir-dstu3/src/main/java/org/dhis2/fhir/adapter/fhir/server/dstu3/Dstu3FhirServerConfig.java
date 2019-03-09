@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.server.dstu3;
  */
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
@@ -64,9 +65,10 @@ public class Dstu3FhirServerConfig extends AbstractFhirServerConfig
     @Nonnull
     protected FhirRestfulServer fhirRestfulServerDstu3( @Nonnull @Qualifier( "fhirContextDstu3" ) FhirContext fhirContext,
         @Nonnull ObjectProvider<List<IResourceProvider>> resourceProviders,
-        @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors )
+        @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors,
+        @Nonnull IPagingProvider pagingProvider )
     {
-        return new FhirRestfulServer( fhirContext, resourceProviders, interceptors );
+        return new FhirRestfulServer( fhirContext, resourceProviders, interceptors, pagingProvider );
     }
 
     @Bean

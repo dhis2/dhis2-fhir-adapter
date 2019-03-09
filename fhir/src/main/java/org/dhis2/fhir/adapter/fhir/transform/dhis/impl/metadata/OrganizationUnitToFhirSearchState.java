@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,32 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Optional;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Implementation of {@link DhisToFhirSearchState} for organization units.
  *
  * @author volsch
  */
-public interface DhisToFhirRequestResolver
+public class OrganizationUnitToFhirSearchState implements DhisToFhirSearchState
 {
-    @Nonnull
-    DhisResourceType getDhisResourceType();
+    private final int from;
 
-    @Nonnull
-    ScriptedDhisResource convert( @Nonnull DhisResource dhisResource );
+    private final boolean more;
 
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
+    public OrganizationUnitToFhirSearchState( int from, boolean more )
+    {
+        this.from = from;
+        this.more = more;
+    }
 
-    @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
+    public int getFrom()
+    {
+        return from;
+    }
 
-    @Nonnull
-    Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource );
+    public boolean isMore()
+    {
+        return more;
+    }
 }

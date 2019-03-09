@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
@@ -61,12 +60,6 @@ public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends
 
     @Nonnull
     Class<U> getRuleClass();
-
-    @Nullable
-    DhisResource findDhisResourceByDhisFhirIdentifier( @Nonnull RuleInfo<U> ruleInfo, @Nonnull String identifier );
-
-    @Nullable
-    DhisResource findDhisResourceByDhisFhirIdentifierCasted( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull String identifier );
 
     @Nullable
     DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,

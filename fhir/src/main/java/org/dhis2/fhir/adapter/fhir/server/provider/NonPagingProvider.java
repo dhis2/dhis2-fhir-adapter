@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
+package org.dhis2.fhir.adapter.fhir.server.provider;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,46 +28,51 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.server.IPagingProvider;
+import org.dhis2.fhir.adapter.fhir.transform.config.FhirRestInterfaceConfig;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
- * Service that allows to create, read and update tracked entity instances.
+ * A paging provider that do not support paging.
  *
  * @author volsch
  */
-public interface TrackedEntityService
+@Component
+public class NonPagingProvider implements IPagingProvider
 {
-    void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
-        @Nonnull Map<RequiredValueType, String> requiredValues );
+    private final FhirRestInterfaceConfig restInterfaceConfig;
 
-    @Nonnull
-    Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
+    public NonPagingProvider( @Nonnull FhirRestInterfaceConfig restInterfaceConfig )
+    {
+        this.restInterfaceConfig = restInterfaceConfig;
+    }
 
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    @Override
+    public int getDefaultPageSize()
+    {
+        return restInterfaceConfig.getDefaultSearchCount();
+    }
 
-    @Nonnull
-    Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId,
-        @Nonnull String attributeId, @Nonnull String value, int maxResult );
+    @Override
+    public int getMaximumPageSize()
+    {
+        return restInterfaceConfig.getMaxSearchCount();
+    }
 
-    @Nonnull
-    TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
+    @Override
+    public IBundleProvider retrieveResultList( String theSearchId )
+    {
+        // retrieving result list is not supported
+        return null;
+    }
 
-    @Nonnull
-    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    @Override
+    public String storeResultList( IBundleProvider theList )
+    {
+        // storing result list is not supported
+        return null;
+    }
 }
