@@ -145,6 +145,11 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     protected Optional<? extends IBaseResource> getExistingResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( context.getDhisRequest().isDhisFhirId() )
+        {
+            return Optional.empty();
+        }
+
         if ( context.isUseAdapterIdentifier() )
         {
             final IBaseResource resource = getResourceByAdapterIdentifier( fhirClient, context, ruleInfo, scriptVariables ).orElse( null );

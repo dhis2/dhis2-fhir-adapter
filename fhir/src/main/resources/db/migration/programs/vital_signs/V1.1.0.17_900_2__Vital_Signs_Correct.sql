@@ -28,4 +28,5 @@
 
 -- @formatter:off
 
-UPDATE fhir_rule_dhis_data_ref SET rule_id='0035e8b1-99e0-4ced-acf7-726ab26d9483' WHERE id='d2751686-cc9f-4bc6-9f44-068fe6d806f3';
+UPDATE fhir_rule_dhis_data_ref SET rule_id='0035e8b1-99e0-4ced-acf7-726ab26d9483'
+WHERE id='d2751686-cc9f-4bc6-9f44-068fe6d806f3';

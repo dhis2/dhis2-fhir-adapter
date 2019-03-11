@@ -214,7 +214,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     private DhisToFhirTransformOutcome<? extends IBaseResource> handleDataAbsent( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
     {
-        final boolean delete = ruleInfo.getRule().isEffectiveFhirDeleteEnable() &&
+        final boolean delete = !context.getDhisRequest().isDhisFhirId() && ruleInfo.getRule().isEffectiveFhirDeleteEnable() &&
             resourceMapping.isDeleteWhenAbsent();
         if ( !delete && (resourceMapping.getExpAbsentTransformScript() == null) )
         {

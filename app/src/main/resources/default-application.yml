@@ -96,6 +96,11 @@ management:
     jms:
       # JMS health check can be enabled when Artemis queue is available.
       enabled: false
+  metrics:
+    enable:
+      http:
+        client:
+          requests: false
 
 # Specifies the default settings of the circuit breaker. The circuit
 # breaker settings do not need to be adjusted normally.

@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataSe
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
@@ -116,7 +117,15 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     @Override
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
-        return rules.stream().sorted().collect( Collectors.toList() );
+        final ScriptedEvent event = (ScriptedEvent) dhisResource;
+        final Program program = event.getProgram();
+        final ProgramStage programStage = event.getProgramStage();
+        return rules.stream().map( ri -> new RuleInfo<>( (ProgramStageRule) ri.getRule(), ri.getDhisDataReferences() ) )
+            .filter( ri -> program.isReference( ri.getRule().getProgramStage().getProgram().getProgramReference() ) &&
+                programStage.isReference( ri.getRule().getProgramStage().getProgramStageReference() ) &&
+                ri.getRule().getProgramStage().isEnabled() && ri.getRule().getProgramStage().isExpEnabled() &&
+                ri.getRule().getProgramStage().getProgram().isEnabled() && ri.getRule().getProgramStage().getProgram().isExpEnabled() )
+            .sorted().collect( Collectors.toList() );
     }
 
     @Nonnull

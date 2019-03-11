@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -161,5 +161,11 @@ public class ImmutableProgram implements Program, ImmutableDhisObject, Serializa
     public ProgramStage getStageByName( @Nonnull String name )
     {
         return delegate.getStageByName( name );
+    }
+
+    @Override
+    public boolean isReference( @Nonnull Reference reference )
+    {
+        return delegate.isReference( reference );
     }
 }

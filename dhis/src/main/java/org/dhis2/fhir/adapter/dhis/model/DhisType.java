@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,4 +55,13 @@ public interface DhisType extends Identifiable<String>
      */
     @Nonnull
     Set<Reference> getAllReferences();
+
+    /**
+     * Returns if the data matches the specified reference.
+     *
+     * @param reference the reference that should be checked.
+     * @return <code>true</code> if data matches the specified reference,
+     * <code>false</code> otherwise.
+     */
+    boolean isReference( @Nonnull Reference reference );
 }

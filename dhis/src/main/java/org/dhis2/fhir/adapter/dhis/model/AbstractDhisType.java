@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,5 +63,21 @@ public abstract class AbstractDhisType implements DhisType, Serializable
             references.add( new Reference( getName(), ReferenceType.NAME ) );
         }
         return references;
+    }
+
+    @Override
+    public boolean isReference( @Nonnull Reference reference )
+    {
+        switch ( reference.getType() )
+        {
+            case ID:
+                return reference.getValue().equals( getId() );
+            case CODE:
+                return reference.getValue().equals( getCode() );
+            case NAME:
+                return reference.getValue().equals( getName() );
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
+        }
     }
 }

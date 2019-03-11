@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataSe
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -101,7 +102,12 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
     @Override
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
-        return rules.stream().sorted( DhisToFhirRuleComparator.INSTANCE ).collect( Collectors.toList() );
+        final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
+        final TrackedEntityType type = tei.getType();
+        return rules.stream().map( ri -> new RuleInfo<>( (TrackedEntityRule) ri.getRule(), ri.getDhisDataReferences() ) )
+            .filter( ri -> type.isReference( ri.getRule().getTrackedEntity().getTrackedEntityReference() ) &&
+                ri.getRule().getTrackedEntity().isEnabled() && ri.getRule().getTrackedEntity().isExpEnabled() )
+            .sorted( DhisToFhirRuleComparator.INSTANCE ).collect( Collectors.toList() );
     }
 
     @Nonnull
