@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 
 /**
  * Provides access to one or more request scope cache managers.
+ * <b>Request level caches are not thread-safe.</b>
  *
  * @author volsch
  */

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.cache;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,12 +70,17 @@ public class RequestCache implements Cache
     @Override
     public ValueWrapper get( @Nonnull Object key )
     {
-        final ValueWrapper valueWrapper = requestCache.get( key );
+        ValueWrapper valueWrapper = requestCache.get( key );
         if ( valueWrapper != null )
         {
             return valueWrapper;
         }
-        return otherCache.get( key );
+        valueWrapper = otherCache.get( key );
+        if ( valueWrapper != null )
+        {
+            requestCache.put( key, valueWrapper.get() );
+        }
+        return valueWrapper;
     }
 
     @SuppressWarnings( "unchecked" )

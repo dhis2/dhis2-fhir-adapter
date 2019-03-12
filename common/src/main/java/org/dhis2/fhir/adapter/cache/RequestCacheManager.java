@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.cache;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,7 @@ public class RequestCacheManager implements CacheManager
         {
             final Cache requestCache = Objects.requireNonNull(
                 requestCacheContext.getCacheManager( cacheManagerName ).getCache( name ) );
-            return new RequestCache( defaultCache, requestCache );
+            return new RequestCache( requestCache, defaultCache );
         }
         return defaultCache;
     }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.cache.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,12 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of {@link RequestCacheContext}.
+ * <b>Request level cache is not thread-safe.</b>
  *
  * @author volsch
  */
@@ -58,26 +59,13 @@ public class RequestCacheContextImpl implements RequestCacheContext
     {
         if ( cacheManagers == null )
         {
-            synchronized ( this )
-            {
-                if ( cacheManagers == null )
-                {
-                    cacheManagers = new ConcurrentHashMap<>();
-                }
-            }
+            cacheManagers = new HashMap<>();
         }
         CacheManager cacheManager = cacheManagers.get( name );
         if ( cacheManager == null )
         {
-            synchronized ( this )
-            {
-                cacheManager = cacheManagers.get( name );
-                if ( cacheManager == null )
-                {
-                    cacheManager = new ConcurrentMapCacheManager();
-                    cacheManagers.put( name, cacheManager );
-                }
-            }
+            cacheManager = new ConcurrentMapCacheManager();
+            cacheManagers.put( name, cacheManager );
         }
         return cacheManager;
     }
