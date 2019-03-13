@@ -78,7 +78,7 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
                 attributes( key( "title" ).value( "Fields for FHIR resource mapping creation" ) ),
                 fields.withPath( "fhirResourceType" ).description( "The unique FHIR resource type for which the definition is made." ).type( JsonFieldType.STRING ),
                 fields.withPath( "trackedEntityFhirResourceType" ).description( "The FHIR resource type to which the DHIS tracked entity is mapped." ).type( JsonFieldType.STRING ),
-                fields.withPath( "deleteWhenAbsent" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "deleteWhenAbsent" ).description( "Specifies if the FHIR resource should be deleted when the corresponding required DHIS 2 data elements are absent." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "impTeiLookupScript" ).description( "Link to the executable script that returns the FHIR resource for the TEI that is assigned to the evaluated mapped FHIR resource. The return type of the script must be FHIR_RESOURCE." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "impEventOrgLookupScript" ).description( "Link to the executable evaluation script that returns a reference to a DHIS2 organization unit of an event. The return type of the script must be ORG_UNIT_REF." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "impEventGeoLookupScript" ).description( "Link to the executable evaluation script that returns a location (longitude and latitude) of an event. The returns type of the script must be LOCATION." ).type( JsonFieldType.STRING ).optional(),
@@ -87,13 +87,20 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
                 fields.withPath( "impEnrollmentGeoLookupScript" ).description( "Link to the executable evaluation script that returns a location (longitude and latitude) of an event. The returns type of the script must be LOCATION." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "impEnrollmentDateLookupScript" ).description( "Link to the executable evaluation script that returns the event date. The return type of the script must be DATE_TIME." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "impEffectiveDateLookupScript" ).description( "Link to the executable evaluation script that extract the effective date when the data has been collected. The return type of the script must be DATE_TIME." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expAbsentTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expTeiTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expOrgUnitTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expGeoTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expStatusTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expDateTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "expGroupTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.STRING ).optional()
+                fields.withPath( "expAbsentTransformScript" ).description( "Link to the executable transformation script that sets in an existing exported FHIR resource a status that indicates that corresponding required DHIS 2 data elements are missing. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expTeiTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 tracked entity related FHIR resource in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expOrgUnitTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 organization unit related FHIR resource in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expGeoTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 GEO coordinate information in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expStatusTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 status (e.g. event status) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expDateTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 effective date (e.g. event date) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "expGroupTransformScript" ).description( "Link to the executable transformation script that sets and collects DHIS 2 grouping information (e.g. FHIR encounter as DHIS 2 event) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -123,13 +130,20 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
                 linkWithRel( "impEnrollmentGeoLookupScript" ).description( "Link to the executable evaluation script that returns a location (longitude and latitude) of an event. The returns type of the script must be LOCATION." ).optional(),
                 linkWithRel( "impEnrollmentDateLookupScript" ).description( "Link to the executable evaluation script that returns the event date. The return type of the script must be DATE_TIME." ).optional(),
                 linkWithRel( "impEffectiveDateLookupScript" ).description( "Link to the executable evaluation script that extract the effective date when the data has been collected. The return type of the script must be DATE_TIME." ).optional(),
-                linkWithRel( "expAbsentTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expTeiTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expOrgUnitTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expGeoTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expStatusTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expDateTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional(),
-                linkWithRel( "expGroupTransformScript" ).description( "Used for the export of data (not yet supported officially)." ).optional() ),
+                linkWithRel( "expAbsentTransformScript" ).description( "Link to the executable transformation script that sets in an existing exported FHIR resource a status that indicates that corresponding required DHIS 2 data elements are missing. " +
+                    "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expTeiTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 tracked entity related FHIR resource in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expOrgUnitTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 organization unit related FHIR resource in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expGeoTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 GEO coordinate information in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expStatusTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 status (e.g. event status) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expDateTransformScript" ).description( "Link to the executable transformation script that sets the DHIS 2 effective date (e.g. event date) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional(),
+                linkWithRel( "expGroupTransformScript" ).description( "Link to the executable transformation script that sets and collects DHIS 2 grouping information (e.g. FHIR encounter as DHIS 2 event) in the transformed FHIR resource. "
+                    + "The return type must be BOOLEAN and indicates if the script was successful." ).optional() ),
                 responseFields(
                     attributes( key( "title" ).value( "Fields for tracked entity reading" ) ),
                     fields.withPath( "createdAt" ).description( "The timestamp when the resource has been created." ).type( JsonFieldType.STRING ),
@@ -137,7 +151,7 @@ public class FhirResourceMappingRepositoryRestDocsTest extends AbstractJpaReposi
                     fields.withPath( "lastUpdatedAt" ).description( "The timestamp when the resource has been updated the last time." ).type( JsonFieldType.STRING ),
                     fields.withPath( "fhirResourceType" ).description( "The unique FHIR resource type for which the definition is made." ).type( JsonFieldType.STRING ),
                     fields.withPath( "trackedEntityFhirResourceType" ).description( "The FHIR resource type to which the DHIS tracked entity is mapped." ).type( JsonFieldType.STRING ),
-                    fields.withPath( "deleteWhenAbsent" ).description( "Used for the export of data (not yet supported officially)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "deleteWhenAbsent" ).description( "Specifies if the FHIR resource should be deleted when the corresponding required DHIS 2 data elements are absent." ).type( JsonFieldType.BOOLEAN ).optional(),
                     subsectionWithPath( "_links" ).description( "Links to other resources" )
                 ) ) );
     }

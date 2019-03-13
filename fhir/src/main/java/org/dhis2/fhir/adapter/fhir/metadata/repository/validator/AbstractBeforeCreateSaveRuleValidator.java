@@ -62,10 +62,6 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         {
             errors.rejectValue( "name", "AbstractRule.name.length", new Object[]{ AbstractRule.MAX_NAME_LENGTH }, "Name must not be longer than {0} characters." );
         }
-        if ( rule.getTransformImpScript() == null )
-        {
-            errors.rejectValue( "transformImpScript", "AbstractRule.transformImpScript.null", "Transformation input script is mandatory." );
-        }
         if ( rule.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "AbstractRule.fhirResourceType.null", "FHIR resource type is mandatory." );

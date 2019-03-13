@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,7 +173,7 @@ public class BeforeCreateSaveTrackedEntityRuleValidatorTest extends AbstractJpaR
                 JsonEntityValue.create( "orgUnitLookupScript", "executableScripts", orgLookupScript.getId().toString() ),
                 JsonEntityValue.create( "applicableImpScript", "executableScripts", applicableImpScript.getId().toString() ),
                 JsonEntityValue.create( "applicableCodeSet", "codeSets", applicableCodeSet.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "transformImpScript" ) ) );
+            .andExpect( status().isCreated() );
     }
 
     @Test

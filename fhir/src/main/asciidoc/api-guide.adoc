@@ -424,7 +424,7 @@ include::{snippets}/read-tracked-entity/response-fields.adoc[]
 [[api-resources-data-tracked-entity-rule]]
 ==== Tracked Entity Rule
 The tracked entity rule resource defines a rule that is able to transform
-a FHIR resource that a DHIS 2 tracked entity instance.
+a FHIR resource to a DHIS 2 tracked entity instance.
 
 .Create resource curl snippet
 include::{snippets}/create-tracked-entity-rule/curl-request.adoc[]
@@ -438,6 +438,24 @@ include::{snippets}/read-tracked-entity-rule/curl-request.adoc[]
 include::{snippets}/read-tracked-entity-rule/response-body.adoc[]
 
 include::{snippets}/read-tracked-entity-rule/response-fields.adoc[]
+
+[[api-resources-data-organization-unit-rule]]
+==== Organization Unit Rule
+The organization unit rule resource defines a rule that is able to transform
+a DHIS 2 organisation unit to a FHIR resource (e.g. Organization or Location).
+
+.Create resource curl snippet
+include::{snippets}/create-organization-unit-rule/curl-request.adoc[]
+
+include::{snippets}/create-organization-unit-rule/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-organization-unit-rule/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-organization-unit-rule/response-body.adoc[]
+
+include::{snippets}/read-organization-unit-rule/response-fields.adoc[]
 
 [[api-resources-data-fhir-resource-mapping]]
 ==== FHIR Resource Mapping

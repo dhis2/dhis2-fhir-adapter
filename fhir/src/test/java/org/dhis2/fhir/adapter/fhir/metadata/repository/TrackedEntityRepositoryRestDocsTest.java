@@ -73,11 +73,11 @@ public class TrackedEntityRepositoryRestDocsTest extends AbstractJpaRepositoryRe
             .andExpect( status().isCreated() )
             .andExpect( header().exists( "Location" ) )
             .andDo( documentationHandler.document( requestFields(
-                attributes( key( "title" ).value( "Fields for tracked entity creation" ) ),
+                attributes( key( "title" ).value( "Fields for tracked entity rule creation" ) ),
                 fields.withPath( "name" ).description( "The unique name of the rule." ).type( JsonFieldType.STRING ),
                 fields.withPath( "description" ).description( "The detailed description that describes for which purpose the rule is used." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "enabled" ).description( "Specifies if this rule is enabled." ).type( JsonFieldType.BOOLEAN ),
-                fields.withPath( "outEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "expEnabled" ).description( "Specifies if output transformation from DHIS to FHIR for this tracked entity type is enabled." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "fhirCreateEnabled" ).description( "Specifies if the creation of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type (by default true)." )
                     .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "fhirUpdateEnabled" ).description( "Specifies if the update of a FHIR resource is enabled for output transformations from DHIS to FHIR for this tracked entity type. (by default false)." )
