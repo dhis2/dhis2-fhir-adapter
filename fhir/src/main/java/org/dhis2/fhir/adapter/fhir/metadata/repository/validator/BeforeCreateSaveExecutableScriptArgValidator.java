@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ public class BeforeCreateSaveExecutableScriptArgValidator implements Validator
         {
             errors.rejectValue( "script", "ExecutableScriptArg.script.null", "Script is mandatory." );
         }
-        else if ( !Objects.equals( executableScriptArg.getArgument().getScript().getId(), executableScriptArg.getScript().getScript().getId() ) )
+        else if ( ( executableScriptArg.getArgument() != null ) && !Objects.equals( executableScriptArg.getArgument().getScript().getId(), executableScriptArg.getScript().getScript().getId() ) )
         {
             errors.rejectValue( "argument", "ExecutableScriptArg.argument.script", "Argument does not belong to script of executable script." );
         }
@@ -78,7 +78,7 @@ public class BeforeCreateSaveExecutableScriptArgValidator implements Validator
         {
             errors.rejectValue( "overrideValue", "ExecutableScript.overrideValue.length", new Object[]{ ScriptArg.MAX_DEFAULT_VALUE_LENGTH }, "Override value must not be longer than {0} characters." );
         }
-        if ( executableScriptArg.getOverrideValue() != null )
+        if ( executableScriptArg.getArgument() != null && executableScriptArg.getOverrideValue() != null )
         {
             try
             {

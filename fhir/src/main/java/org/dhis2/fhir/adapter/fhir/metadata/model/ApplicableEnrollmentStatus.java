@@ -43,7 +43,7 @@ public class ApplicableEnrollmentStatus implements Serializable
 {
     private static final long serialVersionUID = 1302815437985742054L;
 
-    private boolean active;
+    private boolean active = true;
     private boolean completed;
     private boolean cancelled;
 

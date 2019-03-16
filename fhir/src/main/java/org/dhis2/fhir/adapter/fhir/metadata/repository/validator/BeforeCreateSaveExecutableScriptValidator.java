@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
                         errors.rejectValue( "script", "ExecutableScript.overrideArguments.script",
                             "Executable script argument does not reference executable script to which it belongs to." );
                     }
-                    if ( !argIds.add( arg.getArgument().getId() ) )
+                    if ( arg.getArgument() != null && !argIds.add( arg.getArgument().getId() ) )
                     {
                         errors.rejectValue( null, "ExecutableScript.overrideArguments.duplicate",
                             new Object[]{ arg.getArgument().getId() }, "Duplicate override argument for argument {0}." );

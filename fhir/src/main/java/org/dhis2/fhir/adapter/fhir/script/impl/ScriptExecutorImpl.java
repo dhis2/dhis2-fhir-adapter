@@ -42,8 +42,8 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.script.ScriptPreparationException;
-import org.dhis2.fhir.adapter.script.ScriptCompilationException;
 import org.dhis2.fhir.adapter.script.ScriptEvaluator;
+import org.dhis2.fhir.adapter.script.ScriptEvaluatorException;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -142,7 +142,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
             result = convertSimpleReturnValue( scriptEvaluator.eval( new ScriptKey( scriptSource ),
                 scriptSource.getSourceText(), scriptVariables ), executableScriptInfo.getScript().getReturnType() );
         }
-        catch ( ScriptCompilationException | ScriptExecutionException e )
+        catch ( ScriptEvaluatorException e )
         {
             throw new ScriptExecutionException( "Error while executing script \"" + executableScriptInfo.getScript().getName() +
                 "\" (" + executableScriptInfo.getExecutableScript().getId() + "): " + e.getMessage(), e.getCause() );

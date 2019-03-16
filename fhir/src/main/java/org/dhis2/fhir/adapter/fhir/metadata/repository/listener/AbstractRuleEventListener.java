@@ -34,9 +34,10 @@ import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
 /**
  * Event listener that prepares {@link AbstractRule} class before saving.
  *
+ * @param <T> the concrete entity class
  * @author volsch
  */
-public abstract class AbstractRuleEventListener extends AbstractRepositoryEventListener<AbstractRule>
+public abstract class AbstractRuleEventListener<T extends AbstractRule> extends AbstractRepositoryEventListener<T>
 {
     @Override
     protected void onBeforeCreate( AbstractRule entity )

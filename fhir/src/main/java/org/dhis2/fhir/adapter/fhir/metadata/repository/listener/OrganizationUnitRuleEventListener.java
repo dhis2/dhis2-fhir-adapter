@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.script;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,15 @@ package org.dhis2.fhir.adapter.script;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.springframework.stereotype.Component;
+
 /**
- * Thrown if an error occurred while executing the script.
+ * Event listener that prepares {@link OrganizationUnitRule} class before saving.
  *
  * @author volsch
  */
-public class ScriptExecutionException extends ScriptEvaluatorException
+@Component
+public class OrganizationUnitRuleEventListener extends AbstractRuleEventListener<OrganizationUnitRule>
 {
-    private static final long serialVersionUID = -3544954549662369603L;
-
-    public ScriptExecutionException( Throwable cause )
-    {
-        super( cause );
-    }
 }

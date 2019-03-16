@@ -29,24 +29,14 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
-import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Event listener that prepares {@link ProgramStageRule} class before saving.
  *
  * @author volsch
  */
-public class ProgramStageRuleEventListener extends AbstractRepositoryEventListener<ProgramStageRule>
+@Component
+public class ProgramStageRuleEventListener extends AbstractRuleEventListener<ProgramStageRule>
 {
-    @Override
-    protected void onBeforeCreate( ProgramStageRule entity )
-    {
-        super.onBeforeCreate( entity );
-    }
-
-    @Override
-    protected void onBeforeSave( ProgramStageRule entity )
-    {
-        super.onBeforeSave( entity );
-    }
 }

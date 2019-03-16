@@ -33,7 +33,7 @@ package org.dhis2.fhir.adapter.script;
  *
  * @author volsch
  */
-public class ScriptCompilationException extends RuntimeException
+public class ScriptCompilationException extends ScriptEvaluatorException
 {
     private static final long serialVersionUID = -3544954549662369603L;
 

@@ -29,24 +29,14 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
-import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Event listener that prepares {@link TrackedEntityRule} class before saving.
  *
  * @author volsch
  */
-public class TrackedEntityRuleEventListener extends AbstractRepositoryEventListener<TrackedEntityRule>
+@Component
+public class TrackedEntityRuleEventListener extends AbstractRuleEventListener<TrackedEntityRule>
 {
-    @Override
-    protected void onBeforeCreate( TrackedEntityRule entity )
-    {
-        super.onBeforeCreate( entity );
-    }
-
-    @Override
-    protected void onBeforeSave( TrackedEntityRule entity )
-    {
-        super.onBeforeSave( entity );
-    }
 }

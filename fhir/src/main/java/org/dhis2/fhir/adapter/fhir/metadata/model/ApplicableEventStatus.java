@@ -43,9 +43,9 @@ public class ApplicableEventStatus implements Serializable
 {
     private static final long serialVersionUID = -753167424963912832L;
 
-    private boolean overdue;
-    private boolean active;
-    private boolean schedule;
+    private boolean overdue = true;
+    private boolean active = true;
+    private boolean schedule = true;
     private boolean visited;
     private boolean completed;
     private boolean skipped;

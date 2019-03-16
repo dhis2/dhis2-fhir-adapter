@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.validator.EnumValue;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -398,7 +399,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @JsonCacheIgnore
-    @OneToMany( mappedBy = "rule" )
+    @OneToMany( mappedBy = "rule", cascade = CascadeType.ALL )
     public List<RuleDhisDataReference> getDhisDataReferences()
     {
         return dhisDataReferences;

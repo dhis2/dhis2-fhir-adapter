@@ -204,7 +204,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
             }
         }
-        if ( firstRule )
+        if ( firstRule && !transformerRequestImpl.getInput().getIdElement().isEmpty() )
         {
             logger.info( "No matching rule for {}.", transformerRequestImpl.getInput().getIdElement() );
         }

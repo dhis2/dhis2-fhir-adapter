@@ -29,16 +29,21 @@ package org.dhis2.fhir.adapter.script;
  */
 
 /**
- * Thrown if an error occurred while executing the script.
+ * Thrown if an error occurred while evaluating the script.
  *
  * @author volsch
  */
-public class ScriptExecutionException extends ScriptEvaluatorException
+public class ScriptEvaluatorException extends RuntimeException
 {
     private static final long serialVersionUID = -3544954549662369603L;
 
-    public ScriptExecutionException( Throwable cause )
+    public ScriptEvaluatorException( Throwable cause )
     {
         super( cause );
+    }
+
+    public ScriptEvaluatorException( String message, Throwable cause )
+    {
+        super( message, cause );
     }
 }
