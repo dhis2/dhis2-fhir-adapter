@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -43,6 +44,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramTrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
@@ -54,17 +56,20 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleDhisDataReference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.model.EventDecisionType;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
@@ -200,6 +205,12 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return null;
         }
 
+        boolean oldEmpty = true;
+        if ( !event.isNewResource() )
+        {
+            oldEmpty = !hasRequiredDataElements( context, ruleInfo, programStage, event );
+        }
+
         if ( !isStatusApplicable( ruleInfo, event ) )
         {
             return null;
@@ -217,6 +228,10 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
+        }
+        if ( !oldEmpty && ( context.getFhirRequest().getRequestMethod() == FhirRequestMethod.CREATE ) )
+        {
+            throw new DhisDataExistsException( "Required data elements contain data already." );
         }
         updateCoordinates( context, ruleInfo, resourceMapping, program, scriptedEnrollment, programStage, scriptedEvent, variables );
 
@@ -288,6 +303,35 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         {
             scriptedEvent.setCoordinate( getCoordinate( context, ruleInfo, resourceMapping.getImpEventGeoLookupScript(), scriptVariables ) );
         }
+    }
+
+    protected boolean hasRequiredDataElements( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull ProgramStage programStage, @Nonnull Event event )
+    {
+        if ( event.isNewResource() )
+        {
+            return false;
+        }
+        boolean anyRequired = false;
+        for ( RuleDhisDataReference r : ruleInfo.getDhisDataReferences() )
+        {
+            if ( r.isRequired() )
+            {
+                if ( !hasDataElementValue( context, ruleInfo, programStage, event, r.getDataReference() ) )
+                {
+                    return false;
+                }
+                anyRequired = true;
+            }
+        }
+        return anyRequired;
+    }
+
+    protected boolean hasDataElementValue( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nonnull Reference dataElementRef )
+    {
+        final ProgramStageDataElement dataElement = programStage.getOptionalDataElement( dataElementRef )
+            .orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " contains data element reference " + dataElementRef + " that is not defined by program stage \"" + programStage.getName() + "\"." ) );
+        final Object value = event.getDataValue( dataElement.getElementId() ).getValue();
+        return ( value != null ) && ( !( value instanceof String ) || StringUtils.isNotBlank( (String) value ) );
     }
 
     @Override

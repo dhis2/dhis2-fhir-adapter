@@ -136,30 +136,34 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<R> getResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context,
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( context.getFhirRequest().getRequestMethod() != FhirRequestMethod.CREATE )
+        boolean activeResource = true;
+        if ( context.getFhirRequest().isDhisFhirId() )
         {
-            if ( context.getFhirRequest().isDhisFhirId() )
+            final String id = getDhisId( context, ruleInfo );
+            if ( id != null )
             {
-                final String id = getDhisId( context, ruleInfo );
                 R resource = getResourceById( id ).orElse( null );
                 if ( resource != null )
                 {
                     return Optional.of( resource );
                 }
+                activeResource = false;
             }
-            else
+        }
+        else
+        {
+            final R resource = getResourceByAssignment( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
+            if ( resource != null )
             {
-                R resource = getResourceByAssignment( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
-                if ( resource != null )
-                {
-                    return Optional.of( resource );
-                }
-
-                resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
-                if ( resource != null )
-                {
-                    return Optional.of( resource );
-                }
+                return Optional.of( resource );
+            }
+        }
+        if ( activeResource )
+        {
+            final R resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
+            if ( resource != null )
+            {
+                return Optional.of( resource );
             }
         }
 

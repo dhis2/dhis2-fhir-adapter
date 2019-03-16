@@ -55,6 +55,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationOutcome;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -147,7 +148,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
     @Override
     @Nullable
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class, DhisDataExistsException.class } )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public FhirRepositoryOperationOutcome save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation )
     {
