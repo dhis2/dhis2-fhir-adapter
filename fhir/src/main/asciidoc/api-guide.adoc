@@ -208,11 +208,17 @@ special operation.
 If you would like to update the transformation export script of a program stage rule,
 the following example will change the link:
 
-`curl -i -XPUT -u admin:district -d "http://localhost:8081/api/executableScripts/ddc7c612-aabb-4ec4-bd63-6d5220cf666f" -H "Content-Type:text/uri-list" http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript`
+[source,bash]
+----
+$ curl -i -XPUT -u admin:district -d "http://localhost:8081/api/executableScripts/ddc7c612-aabb-4ec4-bd63-6d5220cf666f" -H "Content-Type:text/uri-list" http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript
+----
 
 With the following command, the link can be deleted:
 
-`curl -i -XDELETE -u admin:district http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript`
+[source,bash]
+----
+$ curl -i -XDELETE -u admin:district http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript
+----
 
 Sorting and paging can be achieved as seen below.
 
