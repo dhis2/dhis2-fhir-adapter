@@ -161,6 +161,33 @@ data type.
 - SKIPPED
 - VISITED
 
+[[api-enumerations-event-period-day-type]]
+=== Event Period Day Type
+The event period day type specifies when a FHIR resource can be used as input for a specific
+rule. For this the effective date that is extracted from the FHIR resource is compared relative
+to an event specific date. To which event specific date the comparison is performed is defined
+by this constant. If this constant is not specified in a rule, then no restriction for the
+effective date of the FHIR resource exists.
+
+|===
+| Value | Description
+
+| `EVENT_DATE`
+| Relative to the event date itself.
+
+| `DUE_DATE`
+| Relative to the due date of the event.
+
+| `ORIG_DUE_DATE`
+| Relative to the originally calculated due date (not modified by any script).
+
+| `EVENT_UPDATED_DATE`
+| Relative to the last update date of the event.
+
+| `VALUE_UPDATED_DATE`
+| Relative to the maximum last updated date of any data value of the event.
+|===
+
 [[api-resources]]
 == Resources
 
@@ -170,7 +197,22 @@ Resources can be divided into three groups:
 - Data mapping management.
 - Adapter administration.
 
-The response body resource examples in this document use by default content type application/hal+json.
+The response body resource examples in this document use by default content type
+application/hal+json.
+
+If you create a new resource, links to other resources can simply be specified
+by the URL of the resource (see examples in all resource specific sections). If you
+want to update an existing resource, links to other resources must be updated by a
+special operation.
+
+If you would like to update the transformation export script of a program stage rule,
+the following example will change the link:
+
+`curl -i -XPUT -u admin:district -d "http://localhost:8081/api/executableScripts/ddc7c612-aabb-4ec4-bd63-6d5220cf666f" -H "Content-Type:text/uri-list" http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript`
+
+With the following command, the link can be deleted:
+
+`curl -i -XDELETE -u admin:district http://localhost:8081/api/programStageRules/a6636c83-f236-48cd-bb2b-592147db9a34/transformExpScript`
 
 Sorting and paging can be achieved as seen below.
 

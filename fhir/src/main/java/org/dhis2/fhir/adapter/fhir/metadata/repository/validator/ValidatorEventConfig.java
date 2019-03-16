@@ -61,7 +61,7 @@ public class ValidatorEventConfig implements InitializingBean
     @Override
     public void afterPropertiesSet()
     {
-        final List<String> beforeCreateSaveEvents = Arrays.asList( "beforeCreate", "beforeSave" );
+        final List<String> beforeCreateSaveEvents = Arrays.asList( "beforeCreate", "beforeSave", "beforeLinkSave", "beforeLinkDelete" );
         final List<String> beforeDeleteEvents = Collections.singletonList( "beforeDelete" );
         for ( Map.Entry<String, Validator> entry : validators.entrySet() )
         {
