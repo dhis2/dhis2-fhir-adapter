@@ -32,12 +32,14 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
@@ -57,6 +59,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -223,13 +226,27 @@ public class EventServiceImpl implements EventService
 
     @Nonnull
     @Override
-    public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, int from, int max )
+    public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
     {
         final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
-        final String uri = UriComponentsBuilder.newInstance().path( "/events.json" )
+        final List<String> variables = new ArrayList<>();
+        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/events.json" )
             .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "program", programId ).queryParam( "programStage", programStageId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", FIELDS ).toUriString();
-        final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( uri, DhisEvents.class );
+            .queryParam( "program", programId ).queryParam( "programStage", programStageId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", FIELDS )
+            .build().toString();
+        final ResponseEntity<DhisEvents> result;
+        try
+        {
+            result = restTemplate.getForEntity( uri, DhisEvents.class, variables.toArray() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
+            {
+                throw new DhisFindException( e.getMessage(), e );
+            }
+            throw e;
+        }
         final DhisEvents events = Objects.requireNonNull( result.getBody() );
 
         return new DhisResourceResult<>( (events.getEvents().size() > pagingQuery.getResultOffset()) ?

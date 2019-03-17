@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -65,7 +66,7 @@ public interface TrackedEntityService
     TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
 
     @Nonnull
-    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max );
+    DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
 
     @Nonnull
     Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,

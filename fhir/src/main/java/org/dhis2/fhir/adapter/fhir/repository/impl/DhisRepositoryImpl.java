@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  */
 
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
@@ -231,7 +232,8 @@ public class DhisRepositoryImpl implements DhisRepository
     @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, DhisToFhirDataProviderException.class, UnauthorizedException.class, ForbiddenException.class } )
     @Nonnull
     @Override
-    public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Set<SystemCodeValue> filteredCodes, @Nonnull Map<String, Object> filter, Integer count ) throws DhisToFhirDataProviderException
+    public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, Integer count, @Nullable Set<SystemCodeValue> filteredCodes,
+        @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange ) throws DhisToFhirDataProviderException
     {
         final int resultingCount;
         if ( count == null )
@@ -262,7 +264,7 @@ public class DhisRepositoryImpl implements DhisRepository
                 }
                 else
                 {
-                    result = search( fhirClient, fhirResourceType, filteredCodes, filter, dhisResourceTypes.stream().findFirst().get(), rules, resultingCount );
+                    result = search( fhirClient, fhirResourceType, filteredCodes, filter, lastUpdatedDateRange, dhisResourceTypes.stream().findFirst().get(), rules, resultingCount );
                 }
             }
         }
@@ -274,7 +276,7 @@ public class DhisRepositoryImpl implements DhisRepository
     }
 
     @Nonnull
-    protected List<IBaseResource> search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Set<SystemCodeValue> filteredCodes, @Nonnull Map<String, Object> filter,
+    protected List<IBaseResource> search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Set<SystemCodeValue> filteredCodes, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange,
         @Nonnull DhisResourceType dhisResourceType, @Nonnull List<RuleInfo<? extends AbstractRule>> rules, int count )
     {
         if ( count == 0 )
@@ -283,7 +285,7 @@ public class DhisRepositoryImpl implements DhisRepository
         }
 
         final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dhisToFhirTransformerService.getDataProvider( dhisResourceType );
-        final PreparedDhisToFhirSearch preparedSearch = dataProvider.prepareSearchCasted( rules, filter, count );
+        final PreparedDhisToFhirSearch preparedSearch = dataProvider.prepareSearchCasted( fhirClient.getFhirVersion(), rules, filter, lastUpdatedDateRange, count );
 
         final LinkedList<DhisResource> dhisResources = new LinkedList<>();
         final List<IBaseResource> result = new ArrayList<>();

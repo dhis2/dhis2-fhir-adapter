@@ -53,5 +53,10 @@ public enum ScriptType
     /**
      * Transforms a FHIR resource to a FHIR resource.
      */
-    TRANSFORM_FHIR
+    TRANSFORM_FHIR,
+
+    /**
+     * Converts the search filter.
+     */
+    SEARCH_FILTER
 }

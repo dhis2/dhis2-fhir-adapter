@@ -28,11 +28,18 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilterCollector;
+import org.springframework.web.util.UriBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -42,19 +49,34 @@ import java.util.Map;
  * @param <T> the concrete type of the rule.
  * @author volsch
  */
-public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> implements PreparedDhisToFhirSearch
+public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> implements PreparedDhisToFhirSearch, UriFilterApplier
 {
+    private final FhirVersion fhirVersion;
+
     private final List<RuleInfo<T>> ruleInfos;
 
-    private final Map<String, Object> filter;
+    private final Map<String, List<String>> filter;
+
+    private final DateRangeParam lastUpdatedDateRange;
 
     private final int count;
 
-    protected AbstractPreparedDhisToFhirSearch( @Nonnull List<RuleInfo<T>> ruleInfos, @Nonnull Map<String, Object> filter, int count )
+    private UriFilterApplier uriFilterApplier;
+
+    protected AbstractPreparedDhisToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<T>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
     {
+        this.fhirVersion = fhirVersion;
         this.ruleInfos = ruleInfos;
         this.filter = filter;
+        this.lastUpdatedDateRange = lastUpdatedDateRange;
         this.count = count;
+    }
+
+    @Nonnull
+    @Override
+    public FhirVersion getFhirVersion()
+    {
+        return fhirVersion;
     }
 
     @Nonnull
@@ -63,14 +85,39 @@ public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> i
         return ruleInfos;
     }
 
-    @Nonnull
-    public Map<String, Object> getFilter()
+    @Nullable
+    public DateRangeParam getLastUpdatedDateRange()
     {
-        return filter;
+        return lastUpdatedDateRange;
     }
 
     public int getCount()
     {
         return count;
+    }
+
+    public void setUriFilterApplier( @Nonnull UriFilterApplier uriFilterApplier )
+    {
+        this.uriFilterApplier = uriFilterApplier;
+    }
+
+    public SearchFilterCollector createSearchFilterCollector()
+    {
+        return new SearchFilterCollector( filter );
+    }
+
+    @Nonnull
+    @Override
+    public <U extends UriBuilder> U add( @Nonnull U uriBuilder, @Nonnull List<String> variables )
+    {
+        if ( uriFilterApplier == null )
+        {
+            throw new IllegalStateException( "URI filter applier has not been set" );
+        }
+        if ( ( lastUpdatedDateRange != null ) && !lastUpdatedDateRange.isEmpty() )
+        {
+            throw new DhisToFhirDataProviderException( "Search parameter to filter last updated date range is not yet supported." );
+        }
+        return uriFilterApplier.add( uriBuilder, variables );
     }
 }

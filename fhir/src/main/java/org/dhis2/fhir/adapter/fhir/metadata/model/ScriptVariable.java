@@ -56,7 +56,8 @@ public enum ScriptVariable
     ORGANIZATION_UNIT_ID( "organizationUnitId" ),
     ORGANIZATION_UNIT( "organizationUnit" ),
     ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
-    TEI_FHIR_RESOURCE( "teiFhirResource" );
+    TEI_FHIR_RESOURCE( "teiFhirResource" ),
+    SEARCH_FILTER( "searchFilter" );
 
     private final String variableName;
 

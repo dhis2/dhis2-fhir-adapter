@@ -28,6 +28,13 @@ package org.dhis2.fhir.adapter.fhir.server.provider.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.OptionalParam;
+import ca.uhn.fhir.rest.annotation.RawParam;
+import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.TokenOrListParam;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -38,6 +45,9 @@ import org.hl7.fhir.dstu3.model.Immunization;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DSTU3 resource provider.
@@ -58,5 +68,13 @@ public class Dstu3ImmunizationResourceProvider extends AbstractReadWriteResource
     public FhirVersion getFhirVersion()
     {
         return FhirVersion.DSTU3;
+    }
+
+    @Search( allowUnknownParams = true )
+    @Nonnull
+    public IBundleProvider search( @Nullable @Count Integer count, @Nullable @OptionalParam( name = Immunization.SP_VACCINE_CODE ) TokenOrListParam filteredCodes, @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange,
+        @Nullable @RawParam Map<String, List<String>> filter )
+    {
+        return super.search( count, filteredCodes, lastUpdatedDateRange, filter );
     }
 }

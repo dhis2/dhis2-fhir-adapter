@@ -28,11 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,10 +59,10 @@ public interface DhisToFhirDataProvider<R extends AbstractRule>
     DhisResource findByDhisFhirIdentifier( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<R> ruleInfo, @Nonnull String identifier );
 
     @Nonnull
-    PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException;
+    PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException;
 
     @Nonnull
-    PreparedDhisToFhirSearch prepareSearch( @Nonnull List<RuleInfo<R>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException;
+    PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<R>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException;
 
     @Nullable
     DhisToFhirSearchResult<? extends DhisResource> search( @Nonnull PreparedDhisToFhirSearch preparedSearch, @Nullable DhisToFhirSearchState state, int max );

@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -41,6 +43,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
@@ -72,8 +76,9 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
 
     private final TrackedEntityService service;
 
-    public TrackedEntityToFhirDataProvider( @Nonnull TrackedEntityMetadataService metadataService, @Nonnull TrackedEntityService service )
+    public TrackedEntityToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull TrackedEntityService service )
     {
+        super( scriptExecutor );
         this.metadataService = metadataService;
         this.service = service;
     }
@@ -112,13 +117,13 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
 
     @Nonnull
     @Override
-    public PreparedDhisToFhirSearch prepareSearch( @Nonnull List<RuleInfo<TrackedEntityRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException
+    public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<TrackedEntityRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
         final Set<Reference> typeRefs = ruleInfos.stream().filter( ri -> ri.getRule().getTrackedEntity().isEnabled() && ri.getRule().getTrackedEntity().isExpEnabled() )
             .map( ri -> ri.getRule().getTrackedEntity().getTrackedEntityReference() ).collect( Collectors.toCollection( TreeSet::new ) );
         final List<TrackedEntityType> trackedEntityTypes = typeRefs.stream().map( typeRef -> metadataService.findTypeByReference( typeRef )
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity type does not exist: " + typeRef ) ) ).collect( Collectors.toList() );
-        return new PreparedTrackedEntityToFhirSearch( ruleInfos, filter, count, trackedEntityTypes.stream().map( Identifiable::getId ).collect( Collectors.toList() ) );
+        return new PreparedTrackedEntityToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count, trackedEntityTypes.stream().map( Identifiable::getId ).collect( Collectors.toList() ) );
     }
 
     @Nullable
@@ -138,6 +143,9 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
                 return null;
             }
             from = 0;
+
+            // may be filtered by ID of tracked entity type
+            ps.setUriFilterApplier( apply( ps.getFhirVersion(), ps.getRuleInfos(), ps.createSearchFilterCollector() ) );
         }
         else
         {
@@ -145,7 +153,15 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
             from = ss.getFrom();
         }
 
-        final DhisResourceResult<TrackedEntityInstance> result = service.find( typeId, from, max );
+        final DhisResourceResult<TrackedEntityInstance> result;
+        try
+        {
+            result = service.find( typeId, ps, from, max );
+        }
+        catch ( DhisFindException e )
+        {
+            throw new DhisToFhirDataProviderException( e.getMessage(), e );
+        }
         return new DhisToFhirSearchResult<>( result.getResources(),
             new TrackedEntityToFhirSearchState( typeId, from + result.getResources().size(),
                 !result.getResources().isEmpty() && result.isMore() ) );

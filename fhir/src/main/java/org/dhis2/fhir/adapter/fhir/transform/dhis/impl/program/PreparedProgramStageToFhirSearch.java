@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
 
@@ -48,9 +50,10 @@ public class PreparedProgramStageToFhirSearch extends AbstractPreparedDhisToFhir
 {
     private final List<ProgramStageId> programStageIds;
 
-    public PreparedProgramStageToFhirSearch( @Nonnull List<RuleInfo<ProgramStageRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count, @Nonnull List<ProgramStageId> programStageIds )
+    public PreparedProgramStageToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<ProgramStageRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count,
+        @Nonnull List<ProgramStageId> programStageIds )
     {
-        super( ruleInfos, filter, count );
+        super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
         this.programStageIds = programStageIds;
     }
 

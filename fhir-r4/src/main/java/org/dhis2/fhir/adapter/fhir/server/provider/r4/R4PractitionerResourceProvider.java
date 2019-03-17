@@ -28,6 +28,12 @@ package org.dhis2.fhir.adapter.fhir.server.provider.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.OptionalParam;
+import ca.uhn.fhir.rest.annotation.RawParam;
+import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -38,6 +44,9 @@ import org.hl7.fhir.r4.model.Practitioner;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * r4 resource provider.
@@ -58,5 +67,12 @@ public class R4PractitionerResourceProvider extends AbstractReadWriteResourcePro
     public FhirVersion getFhirVersion()
     {
         return FhirVersion.R4;
+    }
+
+    @Search( allowUnknownParams = true )
+    @Nonnull
+    public IBundleProvider search( @Nullable @Count Integer count, @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange, @Nullable @RawParam Map<String, List<String>> filter )
+    {
+        return search( count, null, lastUpdatedDateRange, filter );
     }
 }

@@ -155,6 +155,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private ExecutableScript transformExpScript;
 
+    private ExecutableScript filterScript;
+
     private boolean containedAllowed;
 
     private boolean grouping;
@@ -276,6 +278,19 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setApplicableExpScript( ExecutableScript applicableOutScript )
     {
         this.applicableExpScript = applicableOutScript;
+    }
+
+    @JsonCacheId
+    @ManyToOne
+    @JoinColumn( name = "filter_script_id", referencedColumnName = "id" )
+    public ExecutableScript getFilterScript()
+    {
+        return filterScript;
+    }
+
+    public void setFilterScript( ExecutableScript filterScript )
+    {
+        this.filterScript = filterScript;
     }
 
     @Basic

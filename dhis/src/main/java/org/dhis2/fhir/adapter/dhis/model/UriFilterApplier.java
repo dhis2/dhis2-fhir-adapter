@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,18 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.springframework.web.util.UriBuilder;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+
 /**
- * Thrown if the query is invalid.
+ * Applies a filter to a URI builder.
  *
  * @author volsch
  */
-public class DhisToFhirDataProviderException extends RuntimeException
+public interface UriFilterApplier
 {
-    private static final long serialVersionUID = 565765406720494135L;
-
-    public DhisToFhirDataProviderException( String message )
-    {
-        super( message );
-    }
-
-    public DhisToFhirDataProviderException( String message, Throwable cause )
-    {
-        super( message, cause );
-    }
+    @Nonnull
+    <T extends UriBuilder> T add( @Nonnull T uriBuilder, @Nonnull List<String> variables );
 }

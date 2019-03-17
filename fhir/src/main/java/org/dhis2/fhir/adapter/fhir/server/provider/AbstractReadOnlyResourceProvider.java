@@ -28,12 +28,13 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.rest.annotation.Count;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
@@ -46,6 +47,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
@@ -57,7 +59,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -71,6 +76,8 @@ import java.util.function.Supplier;
 public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> implements IResourceProvider, SingleFhirVersionRestricted
 {
     public static final String SP_IDENTIFIER = "identifier";
+
+    public static final String SP_LAST_UPDATED = "_lastUpdated";
 
     private final Class<T> resourceClass;
 
@@ -138,13 +145,24 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
         } );
     }
 
-    @Search
     @Nonnull
-    public IBundleProvider search( @Count Integer count )
+    protected IBundleProvider search( @Nullable Integer count, @Nullable TokenOrListParam filteredCodes, @Nullable DateRangeParam lastUpdatedDateRange, @Nullable Map<String, List<String>> filter )
     {
+        final Set<SystemCodeValue> convertedFilteredCodes;
+        if ( ( filteredCodes == null ) || filteredCodes.getValuesAsQueryTokens().isEmpty() )
+        {
+            convertedFilteredCodes = null;
+        }
+        else
+        {
+            convertedFilteredCodes = new HashSet<>();
+            filteredCodes.getValuesAsQueryTokens().forEach( tp ->
+                convertedFilteredCodes.add( new SystemCodeValue( StringUtils.defaultString( tp.getSystem() ), StringUtils.defaultString( tp.getValue() ) ) ) );
+        }
+
         return executeInSecurityContext( () ->
             getDhisRepository().search( getFhirClientResource().getFhirClient(), getFhirResourceType(),
-                null, Collections.emptyMap(), count ) );
+                count, convertedFilteredCodes, filter, lastUpdatedDateRange ) );
     }
 
     @Nonnull

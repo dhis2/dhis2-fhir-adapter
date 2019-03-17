@@ -119,7 +119,8 @@ public class TrackedEntityRuleRepositoryRestDocsTest extends AbstractJpaReposito
                 fields.withPath( "expGeoTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the GEO coordinates that are included in the tracked entity instance." )
                     .type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "expOuTransformScript" ).description( "Link to the executable transformation script that performs the transformation of the DHIS organization unit to a FHIR resource (e.g. FHIR organization or location)." )
-                    .type( JsonFieldType.STRING ).optional()
+                    .type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -149,6 +150,7 @@ public class TrackedEntityRuleRepositoryRestDocsTest extends AbstractJpaReposito
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "trackedEntityRule" ).description( "Link to this resource itself." ),
+                linkWithRel( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).optional(),
                 linkWithRel( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).optional(),
                 linkWithRel( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." ).optional(),
                 linkWithRel( "transformImpScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).optional(),

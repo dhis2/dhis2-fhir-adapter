@@ -28,16 +28,23 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilter;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilterCollector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,8 +57,33 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> implements DhisToFhirDataProvider<R>
 {
+    private final ScriptExecutor scriptExecutor;
+
+    protected AbstractDhisToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor )
+    {
+        this.scriptExecutor = scriptExecutor;
+    }
+
     @Nonnull
     protected abstract Class<R> getRuleClass();
+
+    @Nonnull
+    protected SearchFilterCollector apply( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<R>> ruleInfos, @Nonnull SearchFilterCollector searchFilterCollector )
+    {
+        ruleInfos.forEach( ruleInfo -> {
+            if ( ruleInfo.getRule().getFilterScript() != null )
+            {
+                final Boolean result = scriptExecutor.execute( ruleInfo.getRule().getFilterScript(), fhirVersion,
+                    Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), new SearchFilter( searchFilterCollector ) ),
+                    Collections.emptyMap(), Boolean.class );
+                if ( !Boolean.TRUE.equals( result ) )
+                {
+                    throw new DhisToFhirDataProviderException( "Search parameter filter could not be applied." );
+                }
+            }
+        } );
+        return searchFilterCollector;
+    }
 
     @Nullable
     @Override
@@ -62,11 +94,11 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
 
     @Nonnull
     @Override
-    public PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException
+    public PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
         final Class<R> ruleClass = getRuleClass();
         final List<RuleInfo<R>> castedRuleInfos =
             ruleInfos.stream().map( r -> new RuleInfo<>( getRuleClass().cast( r.getRule() ), r.getDhisDataReferences() ) ).collect( Collectors.toList() );
-        return prepareSearch( castedRuleInfos, filter, count );
+        return prepareSearch( fhirVersion, castedRuleInfos, filter, lastUpdatedDateRange, count );
     }
 }

@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
 
@@ -47,9 +49,10 @@ public class PreparedTrackedEntityToFhirSearch extends AbstractPreparedDhisToFhi
 {
     private final List<String> typeIds;
 
-    public PreparedTrackedEntityToFhirSearch( @Nonnull List<RuleInfo<TrackedEntityRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count, @Nonnull List<String> typeIds )
+    public PreparedTrackedEntityToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<TrackedEntityRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count,
+        @Nonnull List<String> typeIds )
     {
-        super( ruleInfos, filter, count );
+        super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
         this.typeIds = typeIds;
     }
 

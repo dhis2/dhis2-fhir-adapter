@@ -108,7 +108,8 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
                     .type( JsonFieldType.STRING ),
                 fields.withPath( "managingOrgIdentifierLookupScript" ).description(
                     "Link to the executable script reference that is used to extract the managing organization unit identifier from the DHIS 2 organization unit. The script must be an evaluation script that returns a STRING." )
-                    .type( JsonFieldType.STRING ).optional()
+                    .type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -138,6 +139,7 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "organizationUnitRule" ).description( "Link to this resource itself." ),
+                linkWithRel( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).optional(),
                 linkWithRel( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).optional(),
                 linkWithRel( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." )
                     .optional(),

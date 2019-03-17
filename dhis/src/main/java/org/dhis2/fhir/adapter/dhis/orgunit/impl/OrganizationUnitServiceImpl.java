@@ -30,9 +30,11 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
@@ -42,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -51,8 +54,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -130,13 +135,27 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
     @HystrixCommand
     @Nonnull
     @Override
-    public DhisResourceResult<OrganizationUnit> find( int from, int max )
+    public DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
     {
         final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
-        final String uri = UriComponentsBuilder.newInstance().path( "/organisationUnits.json" )
+        final List<String> variables = new ArrayList<>();
+        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/organisationUnits.json" )
             .queryParam( "paging", "true" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "order", "id" ).queryParam( "fields", FIELDS ).toUriString();
-        final ResponseEntity<DhisOrganizationUnits> result = restTemplate.getForEntity( uri, DhisOrganizationUnits.class );
+            .queryParam( "order", "id" ).queryParam( "fields", FIELDS ).build( false ).toString();
+
+        final ResponseEntity<DhisOrganizationUnits> result;
+        try
+        {
+            result = restTemplate.getForEntity( uri, DhisOrganizationUnits.class, variables.toArray() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
+            {
+                throw new DhisFindException( e.getMessage(), e );
+            }
+            throw e;
+        }
         final DhisOrganizationUnits organizationUnits = Objects.requireNonNull( result.getBody() );
 
         return new DhisResourceResult<>( (organizationUnits.getOrganizationUnits().size() > pagingQuery.getResultOffset()) ?

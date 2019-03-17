@@ -28,12 +28,15 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +47,8 @@ import java.util.Map;
  */
 public class PreparedOrganizationUnitDhisToFhirSearch extends AbstractPreparedDhisToFhirSearch<OrganizationUnitRule>
 {
-    public PreparedOrganizationUnitDhisToFhirSearch( @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count )
+    public PreparedOrganizationUnitDhisToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
     {
-        super( ruleInfos, filter, count );
+        super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
     }
 }

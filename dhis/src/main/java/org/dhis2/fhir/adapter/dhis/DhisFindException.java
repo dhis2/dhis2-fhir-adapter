@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.dhis;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -29,20 +29,15 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 
 /**
- * Thrown if the query is invalid.
+ * Thrown if the find operation caused a conflict or a bad request on the server.
  *
  * @author volsch
  */
-public class DhisToFhirDataProviderException extends RuntimeException
+public class DhisFindException extends RuntimeException
 {
     private static final long serialVersionUID = 565765406720494135L;
 
-    public DhisToFhirDataProviderException( String message )
-    {
-        super( message );
-    }
-
-    public DhisToFhirDataProviderException( String message, Throwable cause )
+    public DhisFindException( String message, Throwable cause )
     {
         super( message, cause );
     }

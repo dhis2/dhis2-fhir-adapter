@@ -28,6 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+
+import javax.annotation.Nonnull;
+
 /**
  * The prepared DHIS search. This is used for subsequent paged searches.
  *
@@ -35,4 +39,6 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  */
 public interface PreparedDhisToFhirSearch
 {
+    @Nonnull
+    FhirVersion getFhirVersion();
 }

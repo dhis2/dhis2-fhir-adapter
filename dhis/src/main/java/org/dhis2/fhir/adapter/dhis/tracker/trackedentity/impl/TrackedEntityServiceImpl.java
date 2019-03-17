@@ -32,6 +32,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.DhisResourceException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
@@ -40,6 +41,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.sync.DhisLastUpdated;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
@@ -68,8 +70,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -215,13 +219,26 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     @Nonnull
     @Override
-    public DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, int from, int max )
+    public DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
     {
         final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
-        final String uri = UriComponentsBuilder.newInstance().path( "/trackedEntityInstances.json" )
+        final List<String> variables = new ArrayList<>();
+        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/trackedEntityInstances.json" )
             .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "trackedEntityType", trackedEntityTypeId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", TEI_FIELDS ).toUriString();
-        final ResponseEntity<TrackedEntityInstances> result = restTemplate.getForEntity( uri, TrackedEntityInstances.class );
+            .queryParam( "trackedEntityType", trackedEntityTypeId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", TEI_FIELDS ).build().toString();
+        final ResponseEntity<TrackedEntityInstances> result;
+        try
+        {
+            result = restTemplate.getForEntity( uri, TrackedEntityInstances.class, variables.toArray() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
+            {
+                throw new DhisFindException( e.getMessage(), e );
+            }
+            throw e;
+        }
         final TrackedEntityInstances instances = Objects.requireNonNull( result.getBody() );
 
         return new DhisResourceResult<>( (instances.getTrackedEntityInstances().size() > pagingQuery.getResultOffset()) ?

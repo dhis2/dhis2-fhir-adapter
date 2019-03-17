@@ -264,7 +264,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> variables, @Nonnull IBaseResource resource,
         @Nonnull IBaseResource modifiedResource )
     {
-        if ( evaluateNotModified( context, variables, resource, modifiedResource ) )
+        if ( !context.getDhisRequest().isDhisFhirId() && evaluateNotModified( context, variables, resource, modifiedResource ) )
         {
             // resource has not been changed and do not need to be updated
             return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );

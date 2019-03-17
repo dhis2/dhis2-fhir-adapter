@@ -142,7 +142,8 @@ public class ProgramStageRuleRepositoryRestDocsTest extends AbstractJpaRepositor
                     .type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "programStage" ).description( "Link to the tracked entity resource that describes the tracked entity of the transformation." ).type( JsonFieldType.STRING ),
                 fields.withPath( "expDeleteEvaluateScript" ).description( "Link to the executable evaluation script that evaluates if the transformation should result in a deletion of the corresponding FHIR resource." )
-                    .type( JsonFieldType.STRING ).optional() )
+                    .type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).type( JsonFieldType.STRING ).optional() )
             ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -172,6 +173,7 @@ public class ProgramStageRuleRepositoryRestDocsTest extends AbstractJpaRepositor
             .andDo( documentationHandler.document( links(
                 linkWithRel( "self" ).description( "Link to this resource itself." ),
                 linkWithRel( "programStageRule" ).description( "Link to this resource itself." ),
+                linkWithRel( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).optional(),
                 linkWithRel( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).optional(),
                 linkWithRel( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule. The script must be an evaluation script that returns a boolean value." ).optional(),
                 linkWithRel( "transformImpScript" ).description( "Link to the executable script reference that is used to transform the FHIR resource input to the DHIS2 resource." ).optional(),

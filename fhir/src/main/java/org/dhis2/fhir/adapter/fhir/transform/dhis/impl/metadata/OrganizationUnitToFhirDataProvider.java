@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -38,6 +40,8 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchResult;
@@ -61,8 +65,9 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
 {
     private final OrganizationUnitService organizationUnitService;
 
-    public OrganizationUnitToFhirDataProvider( @Nonnull OrganizationUnitService organizationUnitService )
+    public OrganizationUnitToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService )
     {
+        super( scriptExecutor );
         this.organizationUnitService = organizationUnitService;
     }
 
@@ -89,15 +94,18 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
 
     @Nonnull
     @Override
-    public PreparedDhisToFhirSearch prepareSearch( @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nonnull Map<String, Object> filter, int count ) throws DhisToFhirDataProviderException
+    public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
-        return new PreparedOrganizationUnitDhisToFhirSearch( ruleInfos, filter, count );
+        final PreparedOrganizationUnitDhisToFhirSearch ps = new PreparedOrganizationUnitDhisToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
+        ps.setUriFilterApplier( apply( fhirVersion, ruleInfos, ps.createSearchFilterCollector() ) );
+        return ps;
     }
 
     @Nullable
     @Override
     public DhisToFhirSearchResult<OrganizationUnit> search( @Nonnull PreparedDhisToFhirSearch preparedSearch, @Nullable DhisToFhirSearchState state, int max )
     {
+        final PreparedOrganizationUnitDhisToFhirSearch ps = (PreparedOrganizationUnitDhisToFhirSearch) preparedSearch;
         final OrganizationUnitToFhirSearchState ss = (OrganizationUnitToFhirSearchState) state;
         if ( (ss != null) && !ss.isMore() )
         {
@@ -105,7 +113,15 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
         }
 
         final int from = (ss == null) ? 0 : ss.getFrom();
-        final DhisResourceResult<OrganizationUnit> result = organizationUnitService.find( from, max );
+        final DhisResourceResult<OrganizationUnit> result;
+        try
+        {
+            result = organizationUnitService.find( ps, from, max );
+        }
+        catch ( DhisFindException e )
+        {
+            throw new DhisToFhirDataProviderException( e.getMessage(), e );
+        }
         if ( result.getResources().isEmpty() )
         {
             return null;

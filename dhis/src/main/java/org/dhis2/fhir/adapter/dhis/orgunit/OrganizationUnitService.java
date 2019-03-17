@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -54,7 +55,7 @@ public interface OrganizationUnitService
     Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
 
     @Nonnull
-    DhisResourceResult<OrganizationUnit> find( int from, int max );
+    DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
 
     @Nonnull
     Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
