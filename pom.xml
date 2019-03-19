@@ -50,6 +50,7 @@
     <module>fhir-dstu3</module>
     <module>fhir-r4</module>
     <module>app</module>
+    <module>summary</module>
   </modules>
 
   <properties>
@@ -65,8 +66,10 @@
 
     <hapi-fhir.version>3.7.0</hapi-fhir.version>
     <spring.cloud.version>2.0.1.RELEASE</spring.cloud.version>
+    <jacoco.version>0.8.2</jacoco.version>
 
     <skipTests>false</skipTests>
+    <skipCoverage>true</skipCoverage>
   </properties>
 
   <scm>
@@ -201,10 +204,40 @@
           <configuration>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- since DHIS 2 has no time zone support but FHIR has, tests must be executed with a specific time zone -->
-            <argLine>-Duser.timezone=CET</argLine>
+            <argLine>-Duser.timezone=CET ${surefireArgLine}</argLine>
             <!-- due to asynchronous jobs stack traces must not be trimmed in non test source -->
             <trimStackTrace>false</trimStackTrace>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+          <configuration>
+            <skip>${skipCoverage}</skip>
+          </configuration>
+          <executions>
+            <execution>
+              <id>prepare-unit</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+              <configuration>
+                <includes>org/dhis2/fhir/adapter/**</includes>
+                <propertyName>surefireArgLine</propertyName>
+              </configuration>
+            </execution>
+            <execution>
+              <id>report</id>
+              <phase>prepare-package</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <configuration>
+                <includes>org/dhis2/fhir/adapter/**</includes>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
