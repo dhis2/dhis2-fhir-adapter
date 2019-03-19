@@ -35,6 +35,8 @@ import java.time.temporal.ChronoUnit;
 
 /**
  * Unit tests for {@link NameUtils}.
+ *
+ * @author volsch
  */
 public class NameUtilsTest
 {
@@ -85,6 +87,18 @@ public class NameUtilsTest
     public void toEnumNameCamelCaseLower()
     {
         Assert.assertEquals( "TEST_VALUE_1", NameUtils.toEnumName( "testValue1" ) );
+    }
+
+    @Test
+    public void toClassNameNull()
+    {
+        Assert.assertNull( NameUtils.toClassName( null ) );
+    }
+
+    @Test
+    public void toEnumNameEmpty()
+    {
+        Assert.assertEquals( "", NameUtils.toEnumName( "" ) );
     }
 
     @Test

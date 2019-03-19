@@ -698,3 +698,22 @@ VALUES ('a84850454d624b3a9cfd5c36760b8d45', 0, 'f8faecad964f402c8cb4a8271085528d
 INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id)
 VALUES ('d0e1472a05e647c9b36bff1f06fec352', 0, 'DHIS Organization Unit to FHIR Organization', NULL, TRUE, 0, 'ORGANIZATION', 'ORGANIZATION_UNIT', FALSE, 'a84850454d624b3a9cfd5c36760b8d45', '50544af8cf524e1e9a5dd44c736bc8d8');
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id) VALUES ('d0e1472a05e647c9b36bff1f06fec352', '66d12e44471c4318827a0b397f694b6a');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
+VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 0, 'SEARCH_FILTER_LOCATION', 'Prepares Location Search Filter', 'Prepares Location Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba',
+'searchFilter.add(''name'', ''string'', ''name'');
+searchFilter.addReference(''partof'', ''location'', ''organizationunit'', ''parent'');
+searchFilter.addToken(''status'', ''active'', ''closedDate'', ''null'', null);
+searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''!null'', null);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('27f50aeb0f564256ae166118e931524b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba', 'Prepares Location Search Filter', 'SEARCH_FILTER_LOCATION');
+UPDATE fhir_rule SET filter_script_id='27f50aeb0f564256ae166118e931524b' WHERE id='b9546b024adc4868a4cdd5d7789f0df0';
+

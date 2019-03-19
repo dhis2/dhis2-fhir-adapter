@@ -71,6 +71,7 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
             checkValidApplicableInScript( errors, "applicableImpScript", rule.getFhirResourceType(), rule.getApplicableImpScript() );
             checkValidTransformInScript( errors, "transformImpScript", rule.getFhirResourceType(), transformDataType, rule.getTransformImpScript() );
         }
+        checkValidSearchFilterScript( errors, "filterScript", rule.getFilterScript() );
 
         if ( rule.getDhisDataReferences() != null )
         {
@@ -161,6 +162,30 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
         if ( executableScript.getScript().getOutputType() != transformDataType )
         {
             errors.rejectValue( field, "AbstractRule." + field + ".outputType", new Object[]{ transformDataType }, "Assigned output type for incoming transformation script must be {0}." );
+        }
+    }
+
+    protected static void checkValidSearchFilterScript( @NonNull Errors errors, @Nonnull String field, @Nullable ExecutableScript executableScript )
+    {
+        if ( executableScript == null )
+        {
+            return;
+        }
+        if ( executableScript.getScript().getScriptType() != ScriptType.SEARCH_FILTER )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for search filter must be SEARCH_FILTER." );
+        }
+        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for search filter script must be BOOLEAN." );
+        }
+        if ( executableScript.getScript().getInputType() != null )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".inputType", "Input type must not be specified." );
+        }
+        if ( executableScript.getScript().getOutputType() != null )
+        {
+            errors.rejectValue( field, "AbstractRule." + field + ".outputType", "Output type must not be specified." );
         }
     }
 }
