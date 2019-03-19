@@ -48,7 +48,6 @@ import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ResourceFactory;
-import org.hl7.fhir.r4.model.StringType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -144,7 +143,7 @@ public class R4FhirResourceDhisToFhirTransformerUtils extends AbstractFhirResour
         {
             return false;
         }
-        return stringList.contains( new StringType( value ) );
+        return stringList.stream().anyMatch( s -> value.equals( s.getValue() ) );
     }
 
     @Override

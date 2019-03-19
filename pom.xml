@@ -224,6 +224,34 @@
               </goals>
               <configuration>
                 <includes>org/dhis2/fhir/adapter/**</includes>
+                <excludes>
+                  <exclude>**/QA*</exclude>
+                  <exclude>**/QB*</exclude>
+                  <exclude>**/QC*</exclude>
+                  <exclude>**/QD*</exclude>
+                  <exclude>**/QE*</exclude>
+                  <exclude>**/QF*</exclude>
+                  <exclude>**/QG*</exclude>
+                  <exclude>**/QH*</exclude>
+                  <exclude>**/QI*</exclude>
+                  <exclude>**/QJ*</exclude>
+                  <exclude>**/QK*</exclude>
+                  <exclude>**/QL*</exclude>
+                  <exclude>**/QM*</exclude>
+                  <exclude>**/QN*</exclude>
+                  <exclude>**/QO*</exclude>
+                  <exclude>**/QP*</exclude>
+                  <exclude>**/QQ*</exclude>
+                  <exclude>**/QR*</exclude>
+                  <exclude>**/QS*</exclude>
+                  <exclude>**/QT*</exclude>
+                  <exclude>**/QU*</exclude>
+                  <exclude>**/QV*</exclude>
+                  <exclude>**/QW*</exclude>
+                  <exclude>**/QX*</exclude>
+                  <exclude>**/QY*</exclude>
+                  <exclude>**/QZ*</exclude>
+                </excludes>
                 <propertyName>surefireArgLine</propertyName>
               </configuration>
             </execution>
@@ -235,6 +263,34 @@
               </goals>
               <configuration>
                 <includes>org/dhis2/fhir/adapter/**</includes>
+                <excludes>
+                  <exclude>**/QA*</exclude>
+                  <exclude>**/QB*</exclude>
+                  <exclude>**/QC*</exclude>
+                  <exclude>**/QD*</exclude>
+                  <exclude>**/QE*</exclude>
+                  <exclude>**/QF*</exclude>
+                  <exclude>**/QG*</exclude>
+                  <exclude>**/QH*</exclude>
+                  <exclude>**/QI*</exclude>
+                  <exclude>**/QJ*</exclude>
+                  <exclude>**/QK*</exclude>
+                  <exclude>**/QL*</exclude>
+                  <exclude>**/QM*</exclude>
+                  <exclude>**/QN*</exclude>
+                  <exclude>**/QO*</exclude>
+                  <exclude>**/QP*</exclude>
+                  <exclude>**/QQ*</exclude>
+                  <exclude>**/QR*</exclude>
+                  <exclude>**/QS*</exclude>
+                  <exclude>**/QT*</exclude>
+                  <exclude>**/QU*</exclude>
+                  <exclude>**/QV*</exclude>
+                  <exclude>**/QW*</exclude>
+                  <exclude>**/QX*</exclude>
+                  <exclude>**/QY*</exclude>
+                  <exclude>**/QZ*</exclude>
+                </excludes>
               </configuration>
             </execution>
           </executions>

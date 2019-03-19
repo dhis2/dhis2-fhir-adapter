@@ -55,6 +55,8 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
 
     private ExecutableScript identifierLookupScript;
 
+    private ExecutableScript filterScript;
+
     private ExecutableScript otherTransformInScript;
 
     private CodeSet applicableCodeSet;
@@ -66,6 +68,8 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
     {
         identifierLookupScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "DHIS_ORG_UNIT_IDENTIFIER_LOC" ).getSingleResult();
+        filterScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
+            .setParameter( "code", "SEARCH_FILTER_LOCATION" ).getSingleResult();
         otherTransformInScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "CP_OPV_DOSE" ).getSingleResult();
 
@@ -95,6 +99,7 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "identifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ),
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "name" ) ) );
     }
@@ -106,6 +111,7 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "identifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ),
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "fhirResourceType" ) ) );
     }
@@ -116,6 +122,7 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
         entity.setIdentifierLookupScript( null );
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "identifierLookupScript" ) ) );
     }
@@ -126,6 +133,7 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
         entity.setManagingOrgIdentifierLookupScript( null );
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "identifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isCreated() );
     }
@@ -135,6 +143,7 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
     {
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "identifierLookupScript", "executableScripts", otherTransformInScript.getId().toString() ),
                 JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "identifierLookupScript" ) ) );
@@ -145,8 +154,20 @@ public class BeforeCreateSaveOrganizationUnitRuleValidatorTest extends AbstractJ
     {
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "filterScript", "executableScripts", filterScript.getId().toString() ),
                 JsonEntityValue.create( "identifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ),
                 JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", otherTransformInScript.getId().toString() ) ) ) )
             .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "managingOrgIdentifierLookupScript" ) ) );
+    }
+
+    @Test
+    public void testFilterScriptInvalid() throws Exception
+    {
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "identifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ),
+                JsonEntityValue.create( "filterScript", "executableScripts", identifierLookupScript.getId().toString() ),
+                JsonEntityValue.create( "managingOrgIdentifierLookupScript", "executableScripts", identifierLookupScript.getId().toString() ) ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "filterScript" ) ) );
     }
 }
