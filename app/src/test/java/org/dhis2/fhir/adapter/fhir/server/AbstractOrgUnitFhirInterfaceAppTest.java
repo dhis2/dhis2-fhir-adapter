@@ -29,12 +29,6 @@ package org.dhis2.fhir.adapter.fhir.server;
  */
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
 /**
  * Abstract rest interfaces for rest interfaces that access
@@ -44,23 +38,4 @@ import org.springframework.http.ResponseEntity;
  */
 public abstract class AbstractOrgUnitFhirInterfaceAppTest extends AbstractAppTest
 {
-    @Test
-    public void getLocationWithoutAccess()
-    {
-        final HttpEntity<Void> entity = new HttpEntity<>( null );
-        final ResponseEntity<String> responseEntity = localRestTemplate.exchange(
-            "http://localhost:" + localPort + "/fhir/" + getFhirVersionPath() + "/Location/ou-", HttpMethod.GET, entity, String.class );
-        Assert.assertEquals( 403, responseEntity.getStatusCodeValue() );
-    }
-
-    @Test
-    public void getLocation()
-    {
-        final HttpEntity<Void> entity = new HttpEntity<>( null );
-        entity.getHeaders().add( HttpHeaders.AUTHORIZATION, "" );
-        final ResponseEntity<String> responseEntity = localRestTemplate.exchange(
-            "http://localhost:" + localPort + "/fhir/" + getFhirVersionPath() + "/Location/ou-",
-            HttpMethod.GET, entity, String.class );
-        Assert.assertEquals( 403, responseEntity.getStatusCodeValue() );
-    }
 }

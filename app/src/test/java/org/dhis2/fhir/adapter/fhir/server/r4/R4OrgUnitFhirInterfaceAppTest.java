@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.server.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.server.AbstractOrgUnitFhirInterfaceAppTest;
 
 import javax.annotation.Nonnull;
 
@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
-public class R4OrgUnitFhirInterfaceAppTest extends AbstractAppTest
+public class R4OrgUnitFhirInterfaceAppTest extends AbstractOrgUnitFhirInterfaceAppTest
 {
     @Nonnull
     @Override

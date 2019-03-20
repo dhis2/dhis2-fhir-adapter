@@ -28,8 +28,14 @@ package org.dhis2.fhir.adapter.fhir.server.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.AbstractAppTest;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
+import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.server.AbstractOrgUnitFhirInterfaceAppTest;
+import org.hl7.fhir.dstu3.model.Location;
+import org.junit.Test;
 
 import javax.annotation.Nonnull;
 
@@ -39,12 +45,29 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
-public class Dstu3OrgUnitFhirInterfaceAppTest extends AbstractAppTest
+public class Dstu3OrgUnitFhirInterfaceAppTest extends AbstractOrgUnitFhirInterfaceAppTest
 {
     @Nonnull
     @Override
     protected FhirVersion getFhirVersion()
     {
         return FhirVersion.DSTU3;
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void getLocationWithoutAccess()
+    {
+        final FhirContext ctx = FhirContext.forDstu3();
+        final IGenericClient client = ctx.newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
+        client.read().resource( Location.class ).withId( "ou-kJq2mPyFEHo-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+    }
+
+    @Test
+    public void getLocationWithInvalidAccess()
+    {
+        final FhirContext ctx = FhirContext.forDstu3();
+        final IGenericClient client = ctx.newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
+        client.read().resource( Location.class ).withId( "ou-kJq2mPyFEHo-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
     }
 }
