@@ -97,7 +97,7 @@ public class OrganizationUnitResolver
     @Nonnull
     public ScriptedOrganizationUnit getMandatoryById( @Nonnull String id )
     {
-        final OrganizationUnit organizationUnit = organizationUnitService.findOneByReference( new Reference( id, ReferenceType.ID ) )
+        final OrganizationUnit organizationUnit = organizationUnitService.findMetadataByReference( new Reference( id, ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Could not find mandatory DHIS organization unit " + id + "." ) );
         return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
     }

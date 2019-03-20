@@ -80,29 +80,77 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
 
     protected static final String ORGANIZATION_UNIT_BY_ID_URI = "/organisationUnits/{id}.json?fields=" + FIELDS;
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate systemRestTemplate;
+
+    private final RestTemplate userRestTemplate;
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
     @Autowired
-    public OrganizationUnitServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    public OrganizationUnitServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate systemRestTemplate, @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate userRestTemplate )
     {
-        this.restTemplate = restTemplate;
+        this.systemRestTemplate = systemRestTemplate;
+        this.userRestTemplate = userRestTemplate;
     }
 
     @Cacheable
     @HystrixCommand
     @Override
     @Nonnull
-    public Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference )
+    public Optional<OrganizationUnit> findMetadataByReference( @Nonnull Reference reference )
     {
-        return findOneRefreshedByReference( reference );
+        return findMetadataRefreshedByReference( reference );
     }
 
     @HystrixCommand
     @Override
     @Nonnull
-    public Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference )
+    public Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull Reference reference )
+    {
+        return findMetadataRefreshedByReference( systemRestTemplate, reference );
+    }
+
+    @HystrixCommand
+    @Nonnull
+    @Override
+    public Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference )
+    {
+        return findMetadataRefreshedByReference( userRestTemplate, reference );
+    }
+
+    @HystrixCommand
+    @Nonnull
+    @Override
+    public DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
+    {
+        final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
+        final List<String> variables = new ArrayList<>();
+        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/organisationUnits.json" )
+            .queryParam( "paging", "true" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
+            .queryParam( "order", "id" ).queryParam( "fields", FIELDS ).build( false ).toString();
+
+        final ResponseEntity<DhisOrganizationUnits> result;
+        try
+        {
+            result = userRestTemplate.getForEntity( uri, DhisOrganizationUnits.class, variables.toArray() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
+            {
+                throw new DhisFindException( e.getMessage(), e );
+            }
+            throw e;
+        }
+        final DhisOrganizationUnits organizationUnits = Objects.requireNonNull( result.getBody() );
+
+        return new DhisResourceResult<>( (organizationUnits.getOrganizationUnits().size() > pagingQuery.getResultOffset()) ?
+            organizationUnits.getOrganizationUnits().subList( pagingQuery.getResultOffset(), organizationUnits.getOrganizationUnits().size() ) : Collections.emptyList(),
+            (organizationUnits.getPager().getNextPage() != null) );
+    }
+
+    @Nonnull
+    protected Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull RestTemplate restTemplate, @Nonnull Reference reference )
     {
         final ResponseEntity<DhisOrganizationUnits> result;
         switch ( reference.getType() )
@@ -132,42 +180,11 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
         return Objects.requireNonNull( result.getBody() ).getOrganizationUnits().stream().findFirst();
     }
 
-    @HystrixCommand
-    @Nonnull
-    @Override
-    public DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
-    {
-        final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
-        final List<String> variables = new ArrayList<>();
-        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/organisationUnits.json" )
-            .queryParam( "paging", "true" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "order", "id" ).queryParam( "fields", FIELDS ).build( false ).toString();
-
-        final ResponseEntity<DhisOrganizationUnits> result;
-        try
-        {
-            result = restTemplate.getForEntity( uri, DhisOrganizationUnits.class, variables.toArray() );
-        }
-        catch ( HttpClientErrorException e )
-        {
-            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
-            {
-                throw new DhisFindException( e.getMessage(), e );
-            }
-            throw e;
-        }
-        final DhisOrganizationUnits organizationUnits = Objects.requireNonNull( result.getBody() );
-
-        return new DhisResourceResult<>( (organizationUnits.getOrganizationUnits().size() > pagingQuery.getResultOffset()) ?
-            organizationUnits.getOrganizationUnits().subList( pagingQuery.getResultOffset(), organizationUnits.getOrganizationUnits().size() ) : Collections.emptyList(),
-            (organizationUnits.getPager().getNextPage() != null) );
-    }
-
     @Nonnull
     @Override
     public Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis, int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer )
     {
-        final OrganizationUnitPolledItemRetriever eventPolledItemRetriever = new OrganizationUnitPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount, zoneId );
+        final OrganizationUnitPolledItemRetriever eventPolledItemRetriever = new OrganizationUnitPolledItemRetriever( systemRestTemplate, toleranceMillis, maxSearchCount, zoneId );
         return eventPolledItemRetriever.poll( lastUpdated, excludedStoredBy, consumer, null );
     }
 }

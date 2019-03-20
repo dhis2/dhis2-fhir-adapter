@@ -63,7 +63,7 @@ public class SearchFilter
         final FhirResourceType fhirType = resolveFhirResourceType( defaultFhirResourceType );
         final DhisResourceType dhisType = resolveDhisResourceType( dhisResourceType );
 
-        final List<SearchParamValue> searchParamValues = searchFilterCollector.processSearchParamValues( fhirSearchParamName );
+        final List<SearchParamValue> searchParamValues = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
         if ( searchParamValues == null )
         {
             return false;
@@ -97,6 +97,7 @@ public class SearchFilter
         {
             searchFilterCollector.addFilterExpression( dhisPropertyName, "eq", dhisFhirResourceId.getId() );
         }
+        searchFilterCollector.processedSearchParamValues( fhirSearchParamName );
         return true;
     }
 
@@ -104,7 +105,7 @@ public class SearchFilter
     {
         final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty );
 
-        final List<SearchParamValue> searchParamValues = searchFilterCollector.processSearchParamValues( fhirSearchParamName );
+        final List<SearchParamValue> searchParamValues = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
         if ( ( searchParamValues == null ) || ( searchParamValues.size() != 1 ) )
         {
             return false;
@@ -120,6 +121,7 @@ public class SearchFilter
         }
 
         searchFilterCollector.addFilterExpression( dhisPropertyName, dhisOperator, StringUtils.defaultString( dhisValue ) );
+        searchFilterCollector.processedSearchParamValues( fhirSearchParamName );
         return true;
     }
 
@@ -128,7 +130,7 @@ public class SearchFilter
         final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty );
         final SearchParamType type = resolveSearchParamType( searchParamType );
 
-        final List<SearchParamValue> searchParamValue = searchFilterCollector.processSearchParamValues( fhirSearchParamName );
+        final List<SearchParamValue> searchParamValue = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
         if ( searchParamValue == null )
         {
             return false;
@@ -185,6 +187,7 @@ public class SearchFilter
                     type.convertToDhis( StringUtils.defaultString( psv.getValue() ) ) );
             }
         } );
+        searchFilterCollector.processedSearchParamValues( fhirSearchParamName );
         return true;
     }
 

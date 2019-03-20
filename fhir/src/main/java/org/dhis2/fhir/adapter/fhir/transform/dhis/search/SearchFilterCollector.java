@@ -83,9 +83,17 @@ public class SearchFilterCollector implements UriFilterApplier
     }
 
     @Nullable
-    public List<SearchParamValue> processSearchParamValues( @Nonnull String searchParamName )
+    public List<SearchParamValue> getSearchParamValues( @Nonnull String searchParamName )
     {
-        return filter.remove( searchParamName );
+        return filter.get( searchParamName );
+    }
+
+    public void processedSearchParamValues( @Nonnull String searchParamName )
+    {
+        if ( filter.remove( searchParamName ) == null )
+        {
+            throw new IllegalStateException( "Search parameter value has already been removed: " + searchParamName );
+        }
     }
 
     @Nonnull

@@ -706,8 +706,8 @@ INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type
 VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba',
 'searchFilter.add(''name'', ''string'', ''name'');
 searchFilter.addReference(''partof'', ''location'', ''organizationunit'', ''parent'');
-searchFilter.addToken(''status'', ''active'', ''closedDate'', ''null'', null);
-searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''!null'', null);
+searchFilter.addToken(''status'', ''active'', ''closedDate'', ''!null'', null);
+searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''null'', null);
 true', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 'DSTU3');

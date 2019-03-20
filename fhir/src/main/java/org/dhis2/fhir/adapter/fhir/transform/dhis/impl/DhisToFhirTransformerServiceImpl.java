@@ -481,7 +481,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         {
             return null;
         }
-        final OrganizationUnit organizationUnit = organizationUnitService.findOneByReference( new Reference( dhisResource.getOrganizationUnitId(), ReferenceType.ID ) )
+        final OrganizationUnit organizationUnit = organizationUnitService.findMetadataByReference( new Reference( dhisResource.getOrganizationUnitId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "DHIS resource " + dhisResource.getResourceId() + " reference organization unit " + dhisResource.getOrganizationUnitId() + " that cannot be found." ) );
         return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
     }
