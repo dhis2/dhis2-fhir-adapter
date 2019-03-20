@@ -89,7 +89,7 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
     @Override
     public DhisResource findByDhisFhirIdentifier( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull String identifier )
     {
-        return organizationUnitService.findOneRefreshedByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
+        return organizationUnitService.findOneByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
     }
 
     @Nonnull

@@ -49,10 +49,13 @@ import java.util.function.Consumer;
 public interface OrganizationUnitService
 {
     @Nonnull
-    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
+    Optional<OrganizationUnit> findMetadataByReference( @Nonnull Reference reference );
 
     @Nonnull
-    Optional<OrganizationUnit> findOneRefreshedByReference( @Nonnull Reference reference );
+    Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull Reference reference );
+
+    @Nonnull
+    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
 
     @Nonnull
     DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );

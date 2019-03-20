@@ -244,7 +244,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Nonnull
     protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull Reference orgUnitReference, @Nonnull Map<String, Object> scriptVariables )
     {
-        final Optional<OrganizationUnit> organisationUnit = organizationUnitService.findOneByReference( orgUnitReference );
+        final Optional<OrganizationUnit> organisationUnit = organizationUnitService.findMetadataByReference( orgUnitReference );
         if ( !organisationUnit.isPresent() )
         {
             logger.info( "Organization unit of reference does not exist: " + orgUnitReference );

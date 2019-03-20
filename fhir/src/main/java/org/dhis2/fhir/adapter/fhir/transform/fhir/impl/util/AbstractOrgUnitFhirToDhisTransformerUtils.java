@@ -104,7 +104,7 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
         {
             return false;
         }
-        return organizationUnitService.findOneByReference( new Reference( code, ReferenceType.CODE ) ).isPresent();
+        return organizationUnitService.findMetadataByReference( new Reference( code, ReferenceType.CODE ) ).isPresent();
     }
 
     @Nullable
@@ -124,7 +124,7 @@ public abstract class AbstractOrgUnitFhirToDhisTransformerUtils extends Abstract
             .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + getFhirResourceType() + "." ) );
 
         final String resultingCode = StringUtils.defaultString( resourceSystem.getCodePrefix() ) + code;
-        if ( organizationUnitService.findOneByReference( new Reference( resultingCode, ReferenceType.CODE ) ).isPresent() )
+        if ( organizationUnitService.findMetadataByReference( new Reference( resultingCode, ReferenceType.CODE ) ).isPresent() )
         {
             return resultingCode;
         }

@@ -246,31 +246,23 @@ public class DhisRepositoryImpl implements DhisRepository
         }
 
         List<IBaseResource> result = Collections.emptyList();
-        authorizationContext.setAuthorization( systemDhis2Authorization );
-        try
+        try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
         {
-            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+            final List<RuleInfo<? extends AbstractRule>> rules = dhisToFhirTransformerService.findAllRules( fhirClient, fhirResourceType, filteredCodes );
+            final Set<DhisResourceType> dhisResourceTypes = rules.stream().map( r -> r.getRule().getDhisResourceType() ).collect( Collectors.toSet() );
+            if ( dhisResourceTypes.isEmpty() )
             {
-                final List<RuleInfo<? extends AbstractRule>> rules = dhisToFhirTransformerService.findAllRules( fhirClient, fhirResourceType, filteredCodes );
-                final Set<DhisResourceType> dhisResourceTypes = rules.stream().map( r -> r.getRule().getDhisResourceType() ).collect( Collectors.toSet() );
-                if ( dhisResourceTypes.isEmpty() )
-                {
-                    logger.debug( "No matching rules for FHIR resource {} and codes {}.", fhirResourceType, filteredCodes );
-                }
-                else if ( dhisResourceTypes.size() > 1 )
-                {
-                    logger.debug( "More than one matching DHIS resource type ({}) for FHIR resource {} and codes {}. " +
-                        "Search is not supported in this case.", dhisResourceTypes, fhirResourceType, filteredCodes );
-                }
-                else
-                {
-                    result = search( fhirClient, fhirResourceType, filteredCodes, filter, lastUpdatedDateRange, dhisResourceTypes.stream().findFirst().get(), rules, resultingCount );
-                }
+                logger.debug( "No matching rules for FHIR resource {} and codes {}.", fhirResourceType, filteredCodes );
             }
-        }
-        finally
-        {
-            authorizationContext.resetAuthorization();
+            else if ( dhisResourceTypes.size() > 1 )
+            {
+                logger.debug( "More than one matching DHIS resource type ({}) for FHIR resource {} and codes {}. " +
+                    "Search is not supported in this case.", dhisResourceTypes, fhirResourceType, filteredCodes );
+            }
+            else
+            {
+                result = search( fhirClient, fhirResourceType, filteredCodes, filter, lastUpdatedDateRange, dhisResourceTypes.stream().findFirst().get(), rules, resultingCount );
+            }
         }
         return new SimpleBundleProvider( result ).setSize( (result.size() < resultingCount) ? result.size() : null );
     }
@@ -449,57 +441,49 @@ public class DhisRepositoryImpl implements DhisRepository
         public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType )
         {
             IBaseResource resource = null;
-            authorizationContext.setAuthorization( systemDhis2Authorization );
-            try
+            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
             {
-                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+                final DhisResource dhisResource = getDhisResource();
+                if ( dhisResource == null )
                 {
-                    final DhisResource dhisResource = getDhisResource();
-                    if ( dhisResource == null )
-                    {
-                        logger.debug( "DHIS resource could not be found." );
-                        return Optional.empty();
-                    }
-
-                    final WritableDhisRequest dhisRequest = new WritableDhisRequest( true, true, true );
-                    dhisRequest.setResourceType( dhisResource.getResourceType() );
-                    dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
-
-                    DhisToFhirTransformerRequest transformerRequest = createTransformerRequest( fhirResourceType, new ImmutableDhisRequest( dhisRequest ), dhisResource );
-                    if ( transformerRequest == null )
-                    {
-                        logger.debug( "No matching rule has been found." );
-                        return Optional.empty();
-                    }
-
-                    final UUID ruleId = getRuleId();
-                    do
-                    {
-                        final boolean matchingRule = (ruleId == null) || ruleId.equals( transformerRequest.getRuleId() );
-                        dhisRequest.setCompleteTransformation( matchingRule );
-                        dhisRequest.setIncludeReferences( matchingRule );
-
-                        final DhisToFhirTransformOutcome<? extends IBaseResource> outcome =
-                            dhisToFhirTransformerService.transform( transformerRequest );
-                        if ( outcome == null )
-                        {
-                            transformerRequest = null;
-                        }
-                        else
-                        {
-                            if ( matchingRule && (resource == null) && (outcome.getResource() != null) )
-                            {
-                                resource = outcome.getResource();
-                            }
-                            transformerRequest = outcome.getNextTransformerRequest();
-                        }
-                    }
-                    while ( transformerRequest != null );
+                    logger.debug( "DHIS resource could not be found." );
+                    return Optional.empty();
                 }
-            }
-            finally
-            {
-                authorizationContext.resetAuthorization();
+
+                final WritableDhisRequest dhisRequest = new WritableDhisRequest( true, true, true );
+                dhisRequest.setResourceType( dhisResource.getResourceType() );
+                dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
+
+                DhisToFhirTransformerRequest transformerRequest = createTransformerRequest( fhirResourceType, new ImmutableDhisRequest( dhisRequest ), dhisResource );
+                if ( transformerRequest == null )
+                {
+                    logger.debug( "No matching rule has been found." );
+                    return Optional.empty();
+                }
+
+                final UUID ruleId = getRuleId();
+                do
+                {
+                    final boolean matchingRule = ( ruleId == null ) || ruleId.equals( transformerRequest.getRuleId() );
+                    dhisRequest.setCompleteTransformation( matchingRule );
+                    dhisRequest.setIncludeReferences( matchingRule );
+
+                    final DhisToFhirTransformOutcome<? extends IBaseResource> outcome =
+                        dhisToFhirTransformerService.transform( transformerRequest );
+                    if ( outcome == null )
+                    {
+                        transformerRequest = null;
+                    }
+                    else
+                    {
+                        if ( matchingRule && ( resource == null ) && ( outcome.getResource() != null ) )
+                        {
+                            resource = outcome.getResource();
+                        }
+                        transformerRequest = outcome.getNextTransformerRequest();
+                    }
+                }
+                while ( transformerRequest != null );
             }
             return Optional.ofNullable( resource );
         }
