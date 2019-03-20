@@ -28,16 +28,27 @@ package org.dhis2.fhir.adapter.fhir.server.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
+import org.apache.commons.io.IOUtils;
+import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.server.AbstractOrgUnitFhirInterfaceAppTest;
+import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Location;
+import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.ExpectedCount;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
+
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
  * DSTU3 rest interfaces for rest interfaces that access
@@ -45,7 +56,7 @@ import javax.annotation.Nonnull;
  *
  * @author volsch
  */
-public class Dstu3OrgUnitFhirInterfaceAppTest extends AbstractOrgUnitFhirInterfaceAppTest
+public class Dstu3OrgUnitFhirInterfaceAppTest extends AbstractAppTest
 {
     @Nonnull
     @Override
@@ -55,19 +66,127 @@ public class Dstu3OrgUnitFhirInterfaceAppTest extends AbstractOrgUnitFhirInterfa
     }
 
     @Test( expected = AuthenticationException.class )
-    public void getLocationWithoutAccess()
+    public void getLocationWithoutAuthorization()
     {
-        final FhirContext ctx = FhirContext.forDstu3();
-        final IGenericClient client = ctx.newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
-        client.read().resource( Location.class ).withId( "ou-kJq2mPyFEHo-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        final IGenericClient client = createGenericClient();
+        client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void getLocationWithInvalidAuthorization()
+    {
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
+        client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
     }
 
     @Test
-    public void getLocationWithInvalidAccess()
+    public void getLocation() throws Exception
     {
-        final FhirContext ctx = FhirContext.forDstu3();
-        final IGenericClient client = ctx.newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.max( 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Location location = client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        Assert.assertEquals( "Test Hospital", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void getLocationByIdentifierWithoutAuthorization()
+    {
+        final IGenericClient client = createGenericClient();
+        client.search().forResource( Location.class ).where( Location.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void getLocationByIdentifierInvalidAuthorization()
+    {
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
+
+        final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
-        client.read().resource( Location.class ).withId( "ou-kJq2mPyFEHo-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        client.search().forResource( Location.class ).where( Location.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
+    }
+
+    @Test
+    public void getLocationByIdentifier() throws Exception
+    {
+        userDhis2Server.expect( ExpectedCount.between( 1, 2 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Location.class ).where( Location.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 1, bundle.getEntry().size() );
+        Location location = (Location) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( "Test Hospital", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void searchLocationWithoutAuthorization()
+    {
+        final IGenericClient client = createGenericClient();
+        client.search().forResource( Location.class ).where( Location.NAME.matches().value( "Test" ) ).returnBundle( Bundle.class ).execute();
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void searchLocationInvalidAuthorization()
+    {
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?filter=name:$ilike:Test&paging=true&page=1&pageSize=10&order=id" +
+                "&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
+        client.search().forResource( Location.class ).where( Location.NAME.matches().value( "Test" ) ).returnBundle( Bundle.class ).execute();
+    }
+
+    @Test
+    public void searchLocation() throws Exception
+    {
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?filter=name:$ilike:Test&paging=true&page=1&pageSize=10&order=id" +
+                "&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-org-unit.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.max( 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.max( 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_4567" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_4567.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Location.class ).where( Location.NAME.matches().value( "Test" ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Location location = (Location) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( "Test Hospital", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+        location = (Location) bundle.getEntry().get( 1 ).getResource();
+        Assert.assertEquals( "Test Hospital 2", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_4567", location.getIdentifier().get( 0 ).getValue() );
     }
 }

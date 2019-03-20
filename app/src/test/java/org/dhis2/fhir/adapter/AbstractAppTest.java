@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
@@ -177,6 +179,31 @@ public abstract class AbstractAppTest
             default:
                 throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
         }
+    }
+
+    @Nonnull
+    protected FhirContext getFhirContext()
+    {
+        final FhirContext ctx;
+        switch ( getFhirVersion() )
+        {
+            case DSTU3:
+                ctx = FhirContext.forDstu3();
+                break;
+            case R4:
+                ctx = FhirContext.forR4();
+                break;
+            default:
+                throw new AssertionError( "Unhandled FHIR version: " + getFhirVersion() );
+        }
+        ctx.getRestfulClientFactory().setSocketTimeout( 300 * 1000 );
+        return ctx;
+    }
+
+    @Nonnull
+    protected IGenericClient createGenericClient()
+    {
+        return getFhirContext().newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
     }
 
     @Nonnull

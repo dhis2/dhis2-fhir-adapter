@@ -481,20 +481,20 @@ INSERT INTO fhir_script_source_version(script_source_id, fhir_version)
 SELECT script_source_id, 'R4' FROM fhir_script_source_version WHERE fhir_version = 'DSTU3';
 
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('c8ca1fbd4d954911b16ea2310af3533f', 0, 'DHIS2 FHIR Adapter Patient Identifier', 'SYSTEM_DHIS2_FHIR_PATIENT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/patientidentifier',
+VALUES ('c8ca1fbd4d954911b16ea2310af3533f', 0, 'DHIS2 FHIR Adapter Patient Identifier', 'SYSTEM_DHIS2_FHIR_PATIENT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier',
         'DHIS2 FHIR Adapter Patient Identifier.');
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('cc46b8acaced4bd2b10403a7d34da438', 0, 'DHIS2 FHIR Adapter Location Identifier', 'SYSTEM_DHIS2_FHIR_LOCATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/locationidentifier',
+VALUES ('cc46b8acaced4bd2b10403a7d34da438', 0, 'DHIS2 FHIR Adapter Location Identifier', 'SYSTEM_DHIS2_FHIR_LOCATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier',
         'DHIS2 FHIR Adapter Location Identifier.');
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('db955a8aca584263bc56faa99085df93', 0, 'DHIS2 FHIR Adapter Organization Identifier', 'SYSTEM_DHIS2_FHIR_ORGANIZATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/organizationidentifier',
+VALUES ('db955a8aca584263bc56faa99085df93', 0, 'DHIS2 FHIR Adapter Organization Identifier', 'SYSTEM_DHIS2_FHIR_ORGANIZATION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/organization-identifier',
         'DHIS2 FHIR Adapter Organization Identifier.');
 
 INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
-remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
+remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked, use_adapter_identifier, exp_enabled)
 VALUES ('a5a6a64215a24f279cee55a26a86d062', 0, 'FHIR REST Interfaces DSTU3', 'FHIR_RI_DSTU3', 'Used by the FHIR REST Interfaces for DSTU3.', 'DSTU3',
 'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
-'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', TRUE, FALSE);
+'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', TRUE, FALSE, FALSE, TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
 VALUES ('1de5bc4cb55e4be8b96ada239cfa2cf6', 0, 'a5a6a64215a24f279cee55a26a86d062', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
@@ -525,10 +525,10 @@ INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, 
 VALUES('2e56fc2b576a46caaa6d4485c75c6f5b', 0, 'a5a6a64215a24f279cee55a26a86d062', 'ORGANIZATION', 'db955a8aca584263bc56faa99085df93');
 
 INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
-remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked)
+remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked, use_adapter_identifier, exp_enabled)
 VALUES ('46f0af46365440b38d4c7a633332c3b3', 0, 'FHIR REST Interfaces R4', 'FHIR_RI_R4', 'Used by the FHIR REST Interfaces for R4.', 'R4',
 'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
-'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', FALSE, TRUE);
+'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', FALSE, TRUE, FALSE, TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
 VALUES ('fedf63ac80f04f24a8e9595767f0983a', 0, '46f0af46365440b38d4c7a633332c3b3', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
@@ -559,10 +559,10 @@ INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, 
 VALUES('e2cdcfd609f044fe9dd2c3e97540ea22', 0, '46f0af46365440b38d4c7a633332c3b3', 'ORGANIZATION', 'db955a8aca584263bc56faa99085df93');
 
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('dbc68848371346f78c5b5d0f12f091b9', 0, 'DHIS2 FHIR Adapter Condition Identifier', 'SYSTEM_DHIS2_FHIR_CONDITION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/conditionidentifier',
+VALUES ('dbc68848371346f78c5b5d0f12f091b9', 0, 'DHIS2 FHIR Adapter Condition Identifier', 'SYSTEM_DHIS2_FHIR_CONDITION_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/condition-identifier',
         'DHIS2 FHIR Adapter Condition Identifier.');
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
-VALUES ('06bc5bb6116a4a759b677c64a29f99b8', 0, 'DHIS2 FHIR Adapter Diagnostic Report Identifier', 'SYSTEM_DHIS2_FHIR_DIAGNOSTIC_REPORT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/diagnosticreportidentifier',
+VALUES ('06bc5bb6116a4a759b677c64a29f99b8', 0, 'DHIS2 FHIR Adapter Diagnostic Report Identifier', 'SYSTEM_DHIS2_FHIR_DIAGNOSTIC_REPORT_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/diagnostic-report-identifier',
         'DHIS2 FHIR Adapter Diagnostic Report Identifier.');
 INSERT INTO fhir_system (id, version, name, code, system_uri, description)
 VALUES ('84d4ee666bd24c31a0ead0cb1fcc0837', 0, 'DHIS2 FHIR Adapter Encounter Identifier', 'SYSTEM_DHIS2_FHIR_ENCOUNTER_IDENTIFIER', 'http://www.dhis2.org/dhis2fhiradapter/systems/encounteridentifier',
@@ -765,6 +765,25 @@ VALUES ('5090c485a2254c2ea8f695fa74ce1618', 0, '655f55b538264fe7b38e1e29bcad09ec
 UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '25a97bb47b394ed48677db4bcaa28ccf')
 WHERE id='5090c485a2254c2ea8f695fa74ce1618';
 
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id)
-VALUES ('b9546b024adc4868a4cdd5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd67fc4d4d9b7491f98730acd7');
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
+VALUES ('b9546b024adc4868a4cdd5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd67fc4d4d9b7491f98730acd7', true, true, true, true);
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_identifier_lookup_script_id) VALUES ('b9546b024adc4868a4cdd5d7789f0df0', '5090c485a2254c2ea8f695fa74ce1618', '66d12e44471c4318827a0b397f694b6a');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
+VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 0, 'SEARCH_FILTER_LOCATION', 'Prepares Location Search Filter', 'Prepares Location Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba',
+'searchFilter.add(''name'', ''string'', ''name'');
+searchFilter.addReference(''partof'', ''location'', ''organization-unit'', ''parent'');
+searchFilter.addToken(''status'', ''active'', ''closedDate'', ''null'', null);
+searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''!null'', null);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('27f50aeb0f564256ae166118e931524b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba', 'Prepares Location Search Filter', 'SEARCH_FILTER_LOCATION');
+UPDATE fhir_rule SET filter_script_id='27f50aeb0f564256ae166118e931524b' WHERE id='b9546b024adc4868a4cdd5d7789f0df0';
+

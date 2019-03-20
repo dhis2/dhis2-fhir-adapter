@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,17 +106,19 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
     @HystrixCommand
     @Override
     @Nonnull
+    @CachePut( unless = "#result==null" )
     public Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull Reference reference )
     {
-        return findMetadataRefreshedByReference( systemRestTemplate, reference );
+        return findByReference( systemRestTemplate, reference );
     }
 
     @HystrixCommand
     @Nonnull
     @Override
+    @CachePut( unless = "#result==null" )
     public Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference )
     {
-        return findMetadataRefreshedByReference( userRestTemplate, reference );
+        return findByReference( userRestTemplate, reference );
     }
 
     @HystrixCommand
@@ -150,7 +153,7 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
     }
 
     @Nonnull
-    protected Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull RestTemplate restTemplate, @Nonnull Reference reference )
+    protected Optional<OrganizationUnit> findByReference( @Nonnull RestTemplate restTemplate, @Nonnull Reference reference )
     {
         final ResponseEntity<DhisOrganizationUnits> result;
         switch ( reference.getType() )
