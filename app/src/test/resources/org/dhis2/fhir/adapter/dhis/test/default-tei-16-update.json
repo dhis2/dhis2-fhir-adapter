@@ -1,9 +1,9 @@
 {
   "coordinates": "[-13.262743,8.4665341]", "attributes": [
-  { "value": "2002-11-19", "lastUpdated": "2018-11-19T21:38:41.565+01:00", "attribute": "BiTsLcJQ95V" }, { "value": "PT_81588", "lastUpdated": "2018-11-19T21:38:41.561+01:00", "attribute": "KSr2yTdu1AI" },
-  { "value": "Elizabeth", "lastUpdated": "2018-11-19T21:38:41.563+01:00", "attribute": "TfdH5KvFmMy" }, { "value": "FEMALE", "lastUpdated": "2018-11-19T21:38:41.564+01:00", "attribute": "CklPZdOd6H1" },
-  { "value": "Freetown", "lastUpdated": "2018-11-19T21:38:41.567+01:00", "attribute": "Y0i71Y6CVdy" }, { "value": "West", "lastUpdated": "2018-11-19T21:38:41.564+01:00", "attribute": "aW66s2QSosT" },
-  { "value": "PT_81588", "lastUpdated": "2018-11-19T21:38:41.562+01:00", "attribute": "Ewi7FUfcHAD" }, { "value": "West", "attribute": "EpbquVl5OD6" }, { "value": "Maria", "attribute": "ftFBu8mHZ4H" },
+  { "value": "2002-11-19", "attribute": "BiTsLcJQ95V" }, { "value": "PT_81588", "attribute": "KSr2yTdu1AI" },
+  { "value": "Elizabeth", "attribute": "TfdH5KvFmMy" }, { "value": "FEMALE", "attribute": "CklPZdOd6H1" },
+  { "value": "Freetown", "attribute": "Y0i71Y6CVdy" }, { "value": "West", "attribute": "aW66s2QSosT" },
+  { "value": "PT_81588", "attribute": "Ewi7FUfcHAD" }, { "value": "West", "attribute": "EpbquVl5OD6" }, { "value": "Maria", "attribute": "ftFBu8mHZ4H" },
   { "value": "(723) 456-7890.20", "attribute": "pjexi5YaAPa" }
 ], "trackedEntityInstance": "JeR2xl4mZfx", "trackedEntityType": "MCPQUTHX1Ze", "orgUnit": "ldXIdLNUNEn"
 }

@@ -50,7 +50,7 @@ public abstract class AbstractFhirServerAppTest extends AbstractAppTest
         headers.add( "Origin", "localhost" );
         final HttpEntity<Void> entity = new HttpEntity<>( headers );
         final ResponseEntity<String> responseEntity = localRestTemplate.exchange(
-            "http://localhost:" + localPort + "/fhir/" + getFhirVersionPath() + "/metadata", HttpMethod.GET, entity, String.class );
+            "http://localhost:" + localPort + "/fhir/" + getFhirVersionPath() + "/default/metadata", HttpMethod.GET, entity, String.class );
         Assert.assertEquals( 200, responseEntity.getStatusCodeValue() );
         Assert.assertEquals( "localhost", responseEntity.getHeaders().getFirst( "Access-Control-Allow-Origin" ) );
     }

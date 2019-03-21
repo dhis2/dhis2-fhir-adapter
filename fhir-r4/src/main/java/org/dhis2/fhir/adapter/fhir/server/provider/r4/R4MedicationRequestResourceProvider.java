@@ -33,6 +33,7 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RawParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
@@ -72,9 +73,9 @@ public class R4MedicationRequestResourceProvider extends AbstractReadWriteResour
 
     @Search( allowUnknownParams = true )
     @Nonnull
-    public IBundleProvider search( @Nullable @Count Integer count, @Nullable @OptionalParam( name = MedicationRequest.SP_CODE ) TokenOrListParam filteredCodes, @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange,
-        @Nullable @RawParam Map<String, List<String>> filter )
+    public IBundleProvider search( @Nonnull RequestDetails requestDetails, @Nullable @Count Integer count, @Nullable @OptionalParam( name = MedicationRequest.SP_CODE ) TokenOrListParam filteredCodes,
+        @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange, @Nullable @RawParam Map<String, List<String>> filter )
     {
-        return super.search( count, filteredCodes, lastUpdatedDateRange, filter );
+        return super.search( requestDetails, count, filteredCodes, lastUpdatedDateRange, filter );
     }
 }

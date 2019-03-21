@@ -203,7 +203,7 @@ public abstract class AbstractAppTest
     @Nonnull
     protected IGenericClient createGenericClient()
     {
-        return getFhirContext().newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() );
+        return getFhirContext().newRestfulGenericClient( "http://localhost:" + localPort + "/fhir" + getFhirVersionPath() + "/default" );
     }
 
     @Nonnull

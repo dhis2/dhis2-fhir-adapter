@@ -33,6 +33,7 @@ import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
 import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
@@ -64,8 +65,9 @@ public abstract class AbstractReadWriteResourceProvider<T extends IBaseResource>
 
     @Create
     @Nonnull
-    public MethodOutcome create( @ResourceParam T resource )
+    public MethodOutcome create( @Nonnull RequestDetails requestDetails, @ResourceParam T resource )
     {
+        validateUseCase( requestDetails );
         if ( !resource.getIdElement().isEmpty() )
         {
             throw new UnprocessableEntityException( "Specifying an ID for a resource that should be created is not supported." );
@@ -82,8 +84,9 @@ public abstract class AbstractReadWriteResourceProvider<T extends IBaseResource>
 
     @Update
     @Nonnull
-    public MethodOutcome update( @ResourceParam T resource )
+    public MethodOutcome update( @Nonnull RequestDetails requestDetails, @ResourceParam T resource )
     {
+        validateUseCase( requestDetails );
         if ( !resource.getIdElement().hasIdPart() )
         {
             throw new UnprocessableEntityException( "For a resource that should be updated an ID must be specified." );

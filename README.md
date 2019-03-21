@@ -170,8 +170,8 @@ After successful initial setup the FHIR REST interfaces are accessible under the
 
 | FHIR Version | Context relative URI |
 |--------------|----------------------|
-| DSTU3        | /fhir/dstu3          |
-| R4           | /fhir/r4             |
+| DSTU3        | /fhir/dstu3/default  |
+| R4           | /fhir/r4/default     |
 
 ### API for Administration and Mapping
 The adapter provides REST interfaces for administration and mapping. The documentation is currently generated automatically when building the adapter. Unit test execution must not be skipped in this case when building the adapter. The documentation can be 

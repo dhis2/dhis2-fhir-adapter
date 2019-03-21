@@ -35,6 +35,7 @@ import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import ca.uhn.fhir.rest.server.tenant.UrlBaseTenantIdentificationStrategy;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
 import org.springframework.beans.factory.ObjectProvider;
@@ -86,6 +87,7 @@ public class FhirRestfulServer extends RestfulServer
     @Override
     protected void initialize()
     {
+        setTenantIdentificationStrategy( new UrlBaseTenantIdentificationStrategy() );
         setDefaultPreferReturn( PreferReturnEnum.MINIMAL );
         setETagSupport( ETagSupportEnum.DISABLED );
 

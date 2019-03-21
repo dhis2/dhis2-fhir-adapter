@@ -33,6 +33,7 @@ import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -79,6 +80,8 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
 
     public static final String SP_LAST_UPDATED = "_lastUpdated";
 
+    public static final String DEFAULT_USE_CASE_TENANT = "default";
+
     private final Class<T> resourceClass;
 
     private final FhirRepository fhirRepository;
@@ -122,16 +125,18 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
 
     @Read
     @Nullable
-    public T getResourceById( @IdParam IIdType id )
+    public T getResourceById( @Nonnull RequestDetails requestDetails, @IdParam IIdType id )
     {
+        validateUseCase( requestDetails );
         return executeInSecurityContext( () -> resourceClass.cast( getDhisRepository().read(
             getFhirClientResource().getFhirClient(), getFhirResourceType(), extractDhisFhirResourceId( id ) ).orElse( null ) ) );
     }
 
     @Search
     @Nonnull
-    public List<T> searchByIdentifier( @Nonnull @RequiredParam( name = SP_IDENTIFIER ) TokenParam identifierParam )
+    public List<T> searchByIdentifier( @Nonnull RequestDetails requestDetails, @Nonnull @RequiredParam( name = SP_IDENTIFIER ) TokenParam identifierParam )
     {
+        validateUseCase( requestDetails );
         return executeInSecurityContext( () -> {
             final FhirClientSystem fhirClientSystem = getFhirClientSystem();
             if ( !fhirClientSystem.getSystem().getSystemUri().equals( identifierParam.getSystem() ) ||
@@ -146,8 +151,10 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
     }
 
     @Nonnull
-    protected IBundleProvider search( @Nullable Integer count, @Nullable TokenOrListParam filteredCodes, @Nullable DateRangeParam lastUpdatedDateRange, @Nullable Map<String, List<String>> filter )
+    protected IBundleProvider search( @Nonnull RequestDetails requestDetails, @Nullable Integer count, @Nullable TokenOrListParam filteredCodes, @Nullable DateRangeParam lastUpdatedDateRange, @Nullable Map<String, List<String>> filter )
     {
+        validateUseCase( requestDetails );
+
         final Set<SystemCodeValue> convertedFilteredCodes;
         if ( ( filteredCodes == null ) || filteredCodes.getValuesAsQueryTokens().isEmpty() )
         {
@@ -226,6 +233,15 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
                     " has not assigned system URI for FHIR version " + getFhirVersion() + "." ) );
         }
         return fhirClientSystem;
+    }
+
+    protected void validateUseCase( @Nonnull RequestDetails theRequestDetails )
+    {
+        final String tenantId = theRequestDetails.getTenantId();
+        if ( !DEFAULT_USE_CASE_TENANT.equals( tenantId ) )
+        {
+            new InvalidRequestException( "Selected use case must be default (received " + tenantId + ")." );
+        }
     }
 
     protected final <R> R executeInSecurityContext( @Nonnull Supplier<R> supplier )

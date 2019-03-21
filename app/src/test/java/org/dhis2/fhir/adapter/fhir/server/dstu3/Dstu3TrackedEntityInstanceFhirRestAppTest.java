@@ -294,7 +294,7 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         MethodOutcome methodOutcome = client.create().resource( patient ).execute();
         Assert.assertEquals( Boolean.TRUE, methodOutcome.getCreated() );
-        Assert.assertEquals( "http://localhost:" + localPort + "/fhir/dstu3/Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", methodOutcome.getId().toString() );
+        Assert.assertEquals( "http://localhost:" + localPort + "/fhir/dstu3/default/Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", methodOutcome.getId().toString() );
     }
 
     @Test( expected = AuthenticationException.class )
@@ -363,6 +363,6 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         MethodOutcome methodOutcome = client.update().resource( patient ).execute();
         Assert.assertNotEquals( Boolean.TRUE, methodOutcome.getCreated() );
-        Assert.assertEquals( "http://localhost:" + localPort + "/fhir/dstu3/Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", methodOutcome.getId().toString() );
+        Assert.assertEquals( "http://localhost:" + localPort + "/fhir/dstu3/default/Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", methodOutcome.getId().toString() );
     }
 }

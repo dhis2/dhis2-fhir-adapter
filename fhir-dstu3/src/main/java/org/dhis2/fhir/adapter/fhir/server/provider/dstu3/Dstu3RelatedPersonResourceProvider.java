@@ -33,6 +33,7 @@ import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RawParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
@@ -71,8 +72,8 @@ public class Dstu3RelatedPersonResourceProvider extends AbstractReadWriteResourc
 
     @Search( allowUnknownParams = true )
     @Nonnull
-    public IBundleProvider search( @Nullable @Count Integer count, @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange, @Nullable @RawParam Map<String, List<String>> filter )
+    public IBundleProvider search( @Nonnull RequestDetails requestDetails, @Nullable @Count Integer count, @Nullable @OptionalParam( name = SP_LAST_UPDATED ) DateRangeParam lastUpdatedDateRange, @Nullable @RawParam Map<String, List<String>> filter )
     {
-        return search( count, null, lastUpdatedDateRange, filter );
+        return search( requestDetails, count, null, lastUpdatedDateRange, filter );
     }
 }
