@@ -1,1 +1,1 @@
-{ "organisationUnits": [ { "code": "OU_1234", "id": "ldXIdLNUNEn", "name": "Test Hospital" } ] }
+{ "organisationUnits": [ { "code": "OU_1234", "id": "ldXIdLNUNEn", "name": "Test Hospital", "level": 4 } ] }

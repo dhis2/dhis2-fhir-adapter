@@ -493,7 +493,7 @@ VALUES ('db955a8aca584263bc56faa99085df93', 0, 'DHIS2 FHIR Adapter Organization 
 INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
 remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked, use_adapter_identifier, exp_enabled)
 VALUES ('a5a6a64215a24f279cee55a26a86d062', 0, 'FHIR REST Interfaces DSTU3', 'FHIR_RI_DSTU3', 'Used by the FHIR REST Interfaces for DSTU3.', 'DSTU3',
-'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
+'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', FALSE, 0, FALSE, FALSE,
 'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', TRUE, FALSE, FALSE, TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
 VALUES ('1de5bc4cb55e4be8b96ada239cfa2cf6', 0, 'a5a6a64215a24f279cee55a26a86d062', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
@@ -527,7 +527,7 @@ VALUES('2e56fc2b576a46caaa6d4485c75c6f5b', 0, 'a5a6a64215a24f279cee55a26a86d062'
 INSERT INTO fhir_client (id, version, name, code, description, fhir_version, web_hook_authorization_header, dhis_authentication_method, dhis_username, dhis_password,
 remote_base_url, use_remote, tolerance_millis, logging, verbose_logging, adapter_base_url, subscription_type, enabled, locked, use_adapter_identifier, exp_enabled)
 VALUES ('46f0af46365440b38d4c7a633332c3b3', 0, 'FHIR REST Interfaces R4', 'FHIR_RI_R4', 'Used by the FHIR REST Interfaces for R4.', 'R4',
-'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', TRUE, 0, FALSE, FALSE,
+'None 1234', 'BASIC', 'none', 'none', 'http://localhost:8088/fhir', FALSE, 0, FALSE, FALSE,
 'http://localhost:8080/fhiradapter', 'REST_HOOK_WITH_JSON_PAYLOAD', FALSE, TRUE, FALSE, TRUE);
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
 VALUES ('fedf63ac80f04f24a8e9595767f0983a', 0, '46f0af46365440b38d4c7a633332c3b3', 'CONDITION', NULL, 'FHIR Condition Resource.', TRUE);
@@ -769,6 +769,57 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('b9546b024adc4868a4cdd5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd67fc4d4d9b7491f98730acd7', true, true, true, true);
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_identifier_lookup_script_id) VALUES ('b9546b024adc4868a4cdd5d7789f0df0', '5090c485a2254c2ea8f695fa74ce1618', '66d12e44471c4318827a0b397f694b6a');
 
+
+
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('53fdf1da61454e259d25fc41b9baf09f', 0, 'Transforms DHIS Org Unit to FHIR Organization', 'TRANSFORM_DHIS_ORG_UNIT_FHIR_ORG',
+        'Transforms DHIS Organization Unit to FHIR Organization.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_ORGANIZATION_UNIT', 'FHIR_ORGANIZATION');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('53fdf1da61454e259d25fc41b9baf09f', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('53fdf1da61454e259d25fc41b9baf09f', 'INPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('50544af8cf524e1e9a5dd44c736bc8d8', 0, '53fdf1da61454e259d25fc41b9baf09f',
+'output.setPartOf(null);
+output.getType().clear();
+if ((input.getLevel() > args[''facilityLevel'']) && (input.getParentId() != null))
+{
+  var parentOrganizationUnit = organizationUnitResolver.getMandatoryById(input.getParentId());
+  var parentOrganization = organizationUnitResolver.getFhirResource(parentOrganizationUnit);
+  if (parentOrganization == null)
+  {
+    context.missingDhisResource(parentOrganizationUnit.getResourceId());
+  }
+  output.getPartOf().setReferenceElement(parentOrganization.getIdElement().toUnqualifiedVersionless());
+}
+else
+{
+  output.addType().addCoding().setSystem(''http://hl7.org/fhir/organizationtype'').setCode(''prov'');
+}
+output.setActive(input.getClosedDate() == null);
+output.setName(input.getName());
+output.getAlias().clear();
+if ((input.getShortName() != null) && !input.getShortName().equals(input.getName()))
+{
+  output.addAlias(input.getShortName());
+}
+if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.getName()) && !fhirResourceUtils.containsString(output.getAlias(), input.getDisplayName()))
+{
+  output.addAlias(input.getDisplayName());
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('50544af8cf524e1e9a5dd44c736bc8d8', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('50544af8cf524e1e9a5dd44c736bc8d8', 0, '53fdf1da61454e259d25fc41b9baf09f',
+        'Transforms DHIS Org Unit to FHIR Organization', 'TRANSFORM_DHIS_ORG_UNIT_FHIR_ORG',
+        'Transforms DHIS Organization Unit to FHIR Organization.');
+
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
+VALUES ('d0e1472a05e647c9b36bff1f06fec352', 0, 'DHIS Organization Unit to FHIR Organization', NULL, TRUE, 0, 'ORGANIZATION', 'ORGANIZATION_UNIT', FALSE, 'a84850454d624b3a9cfd5c36760b8d45', '50544af8cf524e1e9a5dd44c736bc8d8', TRUE, TRUE, TRUE, TRUE);
+INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id) VALUES ('d0e1472a05e647c9b36bff1f06fec352', '66d12e44471c4318827a0b397f694b6a');
+
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
 VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 0, 'SEARCH_FILTER_LOCATION', 'Prepares Location Search Filter', 'Prepares Location Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cf3072ec06ad4d62a8a075ad2ab330ba', 'SEARCH_FILTER');
@@ -787,3 +838,634 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code)
 VALUES ('27f50aeb0f564256ae166118e931524b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba', 'Prepares Location Search Filter', 'SEARCH_FILTER_LOCATION');
 UPDATE fhir_rule SET filter_script_id='27f50aeb0f564256ae166118e931524b' WHERE id='b9546b024adc4868a4cdd5d7789f0df0';
 
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('2f3b01d641ce41eaa66ccc7b1d98aea6', 0, 'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms DHIS Person to FHIR Patient.', 'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d641ce41eaa66ccc7b1d98aea6', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d641ce41eaa66ccc7b1d98aea6', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('2f3b01d641ce41eaa66ccc7b1d98aea6', 'OUTPUT');
+UPDATE fhir_script SET base_script_id = (SELECT id FROM fhir_script WHERE id = 'ea8879435e944e319441c7661fe1063e')
+WHERE id='2f3b01d641ce41eaa66ccc7b1d98aea6';
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('d7e622c519144e5ba590039fc0c2a105', 0, '2f3b01d641ce41eaa66ccc7b1d98aea6',
+'resetFhirValue', 'BOOLEAN', TRUE, 'false', 'Specifies if existing values in FHIR can be reset by null values (except first and last name).');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('6f8864e7cd4947f89756556e92955c39', 0, '2f3b01d641ce41eaa66ccc7b1d98aea6',
+'resetAddressText', 'BOOLEAN', TRUE, 'false', 'Specifies if existing address values (other than text representation) may be reset.');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('f0a48e63cc1d4d0285fa80c7e79a5d9e', 0, '2f3b01d641ce41eaa66ccc7b1d98aea6',
+'function canOverrideAddress(address)
+{
+  return !address.hasLine() && !address.hasCity() && !address.hasDistrict() && !address.hasState() && !address.hasPostalCode() && !address.hasCountry();
+}
+if (output.getName().size() < 2)
+{
+  var lastName = input.getValue(args[''lastNameAttribute'']);
+  var firstName = input.getValue(args[''firstNameAttribute'']);
+  if ((lastName != null) || (firstName != null) || args[''resetFhirValue''])
+  {
+    output.getName().clear();
+    if ((lastName != null) || args[''resetFhirValue''])
+    {
+      output.getNameFirstRep().setFamily(lastName);
+    }
+    if ((firstName != null) || args[''resetFhirValue''])
+    {
+      humanNameUtils.updateGiven(output.getNameFirstRep(), firstName);
+    }
+  }
+}
+if (args[''birthDateAttribute''] != null)
+{
+  var birthDate = input.getValue(args[''birthDateAttribute'']);
+  if ((birthDate != null) || args[''resetFhirValue''])
+  {
+    output.setBirthDateElement(dateTimeUtils.getPreciseDateElement(birthDate));
+  }
+}
+if (args[''genderAttribute''] != null)
+{
+  var gender = input.getValue(args[''genderAttribute'']);
+  if ((gender != null) || args[''resetFhirValue''])
+  {
+    output.setGender(genderUtils.getAdministrativeGender(gender));
+  }
+}
+if ((args[''addressTextAttribute''] != null) && (output.getAddress().size() < 2))
+{
+  var addressText = input.getValue(args[''addressTextAttribute'']);
+  if (((addressText != null) || args[''resetFhirValue'']) && (args[''resetAddressText''] || !output.hasAddress() || canOverrideAddress(output.getAddressFirstRep())))
+  {
+    output.getAddress().clear();
+    output.addAddress().setText(addressText);
+  }
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('f0a48e63cc1d4d0285fa80c7e79a5d9e', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('f0a48e63cc1d4d0285fa80c7e79a5d9e', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('6a014e536a7e4bb68cfc817e4756ed4d', 0, '2f3b01d641ce41eaa66ccc7b1d98aea6',
+        'Transforms DHIS Person to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT', 'Transforms DHIS Person to FHIR Patient.');
+UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '72451c8f7492470790b8a3e0796de19e')
+WHERE id='6a014e536a7e4bb68cfc817e4756ed4d';
+
+UPDATE fhir_rule
+SET transform_exp_script_id = '6a014e536a7e4bb68cfc817e4756ed4d'
+WHERE id = '5f9ebdc9852e4c8387ca795946aabc35';
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('4318ff25f09f414baa781958e47eca09', 0, 'Transforms DHIS Person GEO data to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT_GEO', 'Transforms the coordinates that are includes in DHIS Person to FHIR Patient.', 'TRANSFORM_TO_FHIR',
+        'BOOLEAN', 'DHIS_TRACKED_ENTITY_INSTANCE', 'FHIR_PATIENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25f09f414baa781958e47eca09', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25f09f414baa781958e47eca09', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('4318ff25f09f414baa781958e47eca09', 'OUTPUT');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('650e2d2582d7450abac03a20f31817b2', 0, '4318ff25f09f414baa781958e47eca09',
+'if (output.getAddress().size() < 2)
+{
+  geoUtils.updateAddress(output.getAddressFirstRep(), input.getCoordinates());
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('650e2d2582d7450abac03a20f31817b2', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('650e2d2582d7450abac03a20f31817b2', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('b9d24e63d1ee43a1968a77fbc3f805fb', 0, '4318ff25f09f414baa781958e47eca09',
+        'Transforms DHIS Person GEO data to FHIR Patient', 'TRANSFORM_DHIS_PERSON_FHIR_PATIENT_GEO',
+        'Transforms the coordinates that are includes in DHIS Person to FHIR Patient.');
+
+UPDATE fhir_tracked_entity_rule
+SET exp_geo_transform_script_id = 'b9d24e63d1ee43a1968a77fbc3f805fb'
+WHERE id = '5f9ebdc9852e4c8387ca795946aabc35';
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('ae61e5bb51c54740bc35b2d054eff202', 0, 'Transforms DHIS Org Unit to FHIR Resource', 'TRANSFORM_DHIS_OU_TO_FHIR', 'Transforms the DHIS Organization Unit to the FHIR resource.', 'TRANSFORM_TO_FHIR',
+        'BOOLEAN', NULL, NULL);
+UPDATE fhir_script SET base_script_id = (SELECT id FROM fhir_script WHERE id = 'a250e109a13542b28bdb1c050c1d384c')
+WHERE id='ae61e5bb51c54740bc35b2d054eff202';
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb51c54740bc35b2d054eff202', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb51c54740bc35b2d054eff202', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb51c54740bc35b2d054eff202', 'OUTPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('ae61e5bb51c54740bc35b2d054eff202', 'ORGANIZATION_UNIT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('b7a87ddde968465d874cceeff61b7cd8', 0, 'ae61e5bb51c54740bc35b2d054eff202',
+'overrideExisting', 'BOOLEAN', TRUE, 'true', 'Specifies if an existing value should be overridden.');
+INSERT INTO fhir_script_source(id, version, script_id, source_text, source_type)
+VALUES ('78c2b73c469c4ab4824407e817b72d4a', 0, 'ae61e5bb51c54740bc35b2d054eff202',
+'var ok = false;
+var code = null;
+if (output.managingOrganization && (output.getManagingOrganization().isEmpty() || args[''overrideExisting'']))
+{
+  if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    output.setManagingOrganization(null);
+  }
+  else
+  {
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
+    if ((code == null) && args[''useIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
+    }
+  }
+}
+else
+{
+  ok = true;
+}
+if (code != null)
+{
+  var organization = fhirClientUtils.findBySystemIdentifier(''ORGANIZATION'', code);
+  if (organization == null)
+  {
+    context.missingDhisResource(organizationUnit.getResourceId());
+  }
+  output.setManagingOrganization(null);
+  output.getManagingOrganization().setReferenceElement(organization.getIdElement().toUnqualifiedVersionless());
+  ok = true;
+}
+ok', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('78c2b73c469c4ab4824407e817b72d4a', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('78c2b73c469c4ab4824407e817b72d4a', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('416decee4604473ab6501a997d731ff0', 0, 'ae61e5bb51c54740bc35b2d054eff202',
+        'Transforms DHIS Org Unit to FHIR Resource', 'TRANSFORM_DHIS_OU_TO_FHIR',
+        'Transforms the DHIS Organization Unit to the FHIR resource.');
+UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '25a97bb47b394ed48677db4bcaa28ccf')
+WHERE id='416decee4604473ab6501a997d731ff0';
+
+UPDATE fhir_tracked_entity_rule
+SET exp_ou_transform_script_id = '416decee4604473ab6501a997d731ff0'
+WHERE id = '5f9ebdc9852e4c8387ca795946aabc35';
+
+UPDATE fhir_rule SET exp_enabled=TRUE
+WHERE id IN(
+  '52227dd9c79c478b92af9aa1f33c76fd',
+  '5f9ebdc9852e4c8387ca795946aabc35',
+  'd0e1472a05e647c9b36bff1f06fec352',
+  'b9546b024adc4868a4cdd5d7789f0df0');
+UPDATE fhir_tracked_entity SET exp_enabled=TRUE
+WHERE id IN ('4203754d21774a4486aa2de31ee4c8ee');
+
+UPDATE fhir_script_source SET source_text=
+'var ok = false;
+var code = null;
+if (output.location)
+{
+  if (context.getDhisRequest().isDhisFhirId())
+  {
+    var ref = context.getDhisFhirResourceReference(organizationUnit, ''Location'');
+    if (ref != null)
+    {
+      if (typeof output.addLocation === ''undefined'')
+      {
+        output.setLocation(ref);
+      }
+      else
+      {
+        output.addLocation().setLocation(ref);
+      }
+      ok = true;
+    }
+  }
+  else if (!output.getLocation().isEmpty() && !args[''overrideExisting''])
+  {
+    ok = true;
+  }
+  else if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    output.setLocation(null);
+    ok = true;
+  }
+  else
+  {
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''LOCATION'');
+    if ((code == null) && args[''useLocationIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''LOCATION'');
+    }
+  }
+  if (code != null)
+  {
+    var resource = fhirClientUtils.findBySystemIdentifier(''LOCATION'', code);
+    if (resource == null)
+    {
+      context.missingDhisResource(organizationUnit.getResourceId());
+    }
+    output.setLocation(null);
+    if (typeof output.addLocation !== ''undefined'')
+    {
+      output.addLocation().getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    }
+    else
+    {
+      output.getLocation().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+    }
+    ok = true;
+  }
+}
+if (!ok && (output.managingOrganization || output.performer || output.serviceProvider))
+{
+  if (context.getDhisRequest().isDhisFhirId())
+  {
+    var ref = context.getDhisFhirResourceReference(organizationUnit, ''Organization'');
+    if (ref != null)
+    {
+      if (output.managingOrganization)
+      {
+        output.setManagingOrganization(ref);
+        ok = true;
+      }
+      else if (output.performer)
+      {
+        output.setPerformer(null);
+        var performer = output.addPerformer();
+        if (typeof performer.actor === ''undefined'')
+        {
+          performer.setReferenceElement(ref.getReferenceElement());
+        }
+        else
+        {
+          performer.setActor(ref);
+        }
+        ok = true;
+      }
+      else if (output.serviceProvider)
+      {
+        output.setServiceProvider(ref);
+        ok = true;
+      }
+    }
+  }
+  else if (((output.managingOrganization && !output.getManagingOrganization().isEmpty()) || (output.performer && !output.getPerformer().isEmpty()) || (output.serviceProvider && !output.getServiceProvider().isEmpty())) && !args[''overrideExisting''])
+  {
+    ok = true;
+  }
+  else if ((organizationUnit == null) || (organizationUnit.getCode() == null) || organizationUnit.getCode().isEmpty())
+  {
+    if (output.managingOrganization)
+    {
+      output.setManagingOrganization(null);
+      ok = true;
+    }
+    else if (output.performer)
+    {
+      output.setPerformer(null);
+      ok = true;
+    }
+    else if (output.serviceProvider)
+    {
+      output.setServiceProvider(null);
+      ok = true;
+    }
+  }
+  else
+  {
+    code = codeUtils.getByMappedCode(organizationUnit.getCode(), ''ORGANIZATION'');
+    if ((code == null) && args[''useIdentifierCode''])
+    {
+      code = codeUtils.getCodeWithoutPrefix(organizationUnit.getCode(), ''ORGANIZATION'');
+    }
+  }
+  if (code != null)
+  {
+    var resource = fhirClientUtils.findBySystemIdentifier(''ORGANIZATION'', code);
+    if (resource == null)
+    {
+      context.missingDhisResource(organizationUnit.getResourceId());
+    }
+    if (output.managingOrganization)
+    {
+      output.setManagingOrganization(null);
+      output.getManagingOrganization().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      ok = true;
+    }
+    else if (output.performer)
+    {
+      output.setPerformer(null);
+      var performer = output.addPerformer();
+      if (typeof performer.actor === ''undefined'')
+      {
+        performer.setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      }
+      else
+      {
+        performer.getActor().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      }
+      ok = true;
+    }
+    else if (output.serviceProvider)
+    {
+      output.setServiceProvider(null);
+      output.getServiceProvider().setReferenceElement(resource.getIdElement().toUnqualifiedVersionless());
+      ok = true;
+    }
+  }
+}
+ok' WHERE id = '78c2b73c469c4ab4824407e817b72d4a';
+
+UPDATE fhir_script_source SET source_text =
+'output.setPartOf(null);
+output.getType().clear();
+if ((input.getLevel() > args[''facilityLevel'']) && (input.getParentId() != null))
+{
+  if (context.getDhisRequest().isIncludeReferences())
+  {
+    var parentOrganizationUnit = organizationUnitResolver.getMandatoryById(input.getParentId());
+    var parentOrganizationRef = null;
+    if (context.getDhisRequest().isDhisFhirId())
+    {
+      parentOrganizationRef = context.getDhisFhirResourceReference(parentOrganizationUnit, ''Organization'');
+    }
+    else
+    {
+      var parentOrganization = organizationUnitResolver.getFhirResource(parentOrganizationUnit);
+      if (parentOrganization == null)
+      {
+        context.missingDhisResource(parentOrganizationUnit.getResourceId());
+      }
+      parentOrganizationRef = fhirResourceUtils.createReference(parentOrganization);
+    }
+    output.setPartOf(parentOrganizationRef);
+  }
+}
+else
+{
+  output.addType().setText(args[''facilityTypeDisplayName'']).addCoding().setSystem(''http://hl7.org/fhir/organization-type'').setCode(''prov'');
+}
+output.setActive(input.getClosedDate() == null);
+output.setName(input.getName());
+output.getAlias().clear();
+if ((input.getShortName() != null) && !input.getShortName().equals(input.getName()))
+{
+  output.addAlias(input.getShortName());
+}
+if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.getName()) && !fhirResourceUtils.containsString(output.getAlias(), input.getDisplayName()))
+{
+  output.addAlias(input.getDisplayName());
+}
+true' WHERE id='50544af8cf524e1e9a5dd44c736bc8d8' AND version=0;
+
+UPDATE fhir_script_source SET source_text=
+'output.setManagingOrganization(null);
+output.setOperationalStatus(null);
+output.setPartOf(null);
+output.setPhysicalType(null);
+if (input.getParentId() != null)
+{
+  if (context.getDhisRequest().isIncludeReferences())
+  {
+    var parentOrganizationUnit = organizationUnitResolver.getMandatoryById(input.getParentId());
+    var parentLocationRef = null;
+    if (context.getDhisRequest().isDhisFhirId())
+    {
+      parentLocationRef = context.getDhisFhirResourceReference(parentOrganizationUnit, ''Location'');
+    }
+    else
+    {
+      var parentLocation = organizationUnitResolver.getFhirResource(parentOrganizationUnit);
+      if (parentLocation == null)
+      {
+        context.missingDhisResource(parentOrganizationUnit.getResourceId());
+      }
+      parentLocationRef = fhirResourceUtils.createReference(parentLocation);
+    }
+    output.setPartOf(parentLocationRef);
+  }
+}
+if (input.getLevel() === args[''facilityLevel''])
+{
+  if (context.getDhisRequest().isIncludeReferences())
+  {
+    var organizationRef = null;
+    if (context.getDhisRequest().isIncludeReferences())
+    {
+      organizationRef = context.getDhisFhirResourceReference(input, ''Organization'');
+    }
+    else
+    {
+      var organization = organizationUnitResolver.getFhirResource(input, ''ORGANIZATION'');
+      if (organization == null)
+      {
+        context.missingDhisResource(input.getResourceId());
+      }
+      organizationRef = fhirResourceUtils.createReference(organization);
+    }
+    output.setManagingOrganization(organizationRef);
+  }
+  output.getPhysicalType().addCoding().setSystem(''http://hl7.org/fhir/location-physical-type'').setCode(''si'').setDisplay(''Site'');
+}
+if (input.getLevel() < args[''facilityLevel''])
+{
+  output.getPhysicalType().addCoding().setSystem(''http://hl7.org/fhir/location-physical-type'').setCode(''jdn'').setDisplay(''Jurisdiction'');
+}
+if (input.getClosedDate() == null)
+{
+  output.setStatus(locationUtils.getLocationStatus(''active''));
+}
+else
+{
+  output.setStatus(locationUtils.getLocationStatus(''inactive''));
+}
+output.setPosition(geoUtils.createLocationPosition(input.getCoordinates()));
+output.setName(input.getName());
+output.getAlias().clear();
+if ((input.getShortName() != null) && !input.getShortName().equals(input.getName()))
+{
+  output.addAlias(input.getShortName());
+}
+if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.getName()) && !fhirResourceUtils.containsString(output.getAlias(), input.getDisplayName()))
+{
+  output.addAlias(input.getDisplayName());
+}
+true' WHERE id='4bb9745e43c0455fbeee98e95c83df3d' AND version=0;
+
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('50544af8cf524e1e9a5dd44c736bc8d8', 'R4');
+
+UPDATE fhir_script_source SET source_text=
+'function getOrganizationUnitMappedCode(organizationReference)
+{
+  var mappedCode = null;
+  if (organizationReference != null)
+  {
+    var hierarchy = organizationUtils.findHierarchy(organizationReference);
+    if (hierarchy != null)
+    {
+      for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+      {
+        var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''ORGANIZATION'');
+        if (code != null)
+        {
+          mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
+          if ((mappedCode == null) && args[''useIdentifierCode''])
+          {
+            mappedCode = organizationUtils.existsWithPrefix(code);
+          }
+        }
+      }
+    }
+  }
+  return mappedCode;
+}
+function getOrganizationUnitMappedCode(organizationReference)
+{
+  var mappedCode = null;
+  if (organizationReference != null)
+  {
+    var hierarchy = organizationUtils.findHierarchy(organizationReference);
+    if (hierarchy != null)
+    {
+      for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+      {
+        var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''ORGANIZATION'');
+        if (code != null)
+        {
+          mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
+          if ((mappedCode == null) && args[''useIdentifierCode''])
+          {
+            mappedCode = organizationUtils.existsWithPrefix(code);
+          }
+        }
+      }
+    }
+  }
+  return mappedCode;
+}
+function getLocationReference(location)
+{
+  if (typeof input.locationFirstRep === ''undefined'')
+  {
+    return location;
+  }
+  else if (typeof input.locationFirstRep.location !== ''undefined'')
+  {
+    return input.locationFirstRep.location;
+  }
+  return null;
+}
+function getMappedCode(resource)
+{
+  var  mappedCode = null ;
+  if (resource.managingOrganization)
+  {
+    mappedCode = getOrganizationUnitMappedCode(resource.managingOrganization);
+  }
+  else if (resource.location)
+  {
+    var locationReference = getLocationReference(resource.location);
+    if (locationReference != null)
+    {
+      var hierarchy = locationUtils.findHierarchy(locationReference);
+      if (hierarchy != null)
+      {
+        for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+        {
+          var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''LOCATION'');
+          if (code != null)
+          {
+            mappedCode = codeUtils.getMappedCode(code, ''LOCATION'');
+            if ((mappedCode == null) && args[''useIdentifierCode''])
+            {
+              mappedCode = locationUtils.existsWithPrefix(code);
+            }
+          }
+        }
+        for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+        {
+          var organizationReference = hierarchy.get(i).getManagingOrganization();
+          if (organizationReference != null)
+          {
+            mappedCode = getOrganizationUnitMappedCode(organizationReference);
+          }
+        }
+      }
+    }
+  }
+  return mappedCode;
+}
+var ref = null;
+if (context.getFhirRequest().isDhisFhirId())
+{
+  var fhirOrgUnitRef = null;
+  if (input.managingOrganization)
+  {
+    fhirOrgUnitRef = input.managingOrganization;
+  }
+  else if (input.location)
+  {
+    fhirOrgUnitRef = input.location;
+  }
+  else if (input.encounter)
+  {
+    var encounter = referenceUtils.getResource(input.encounter, ''Encounter'');
+    if (encounter != null)
+    {
+      fhirOrgUnitRef = getLocationReference(encounter.location);
+    }
+  }
+  if (fhirOrgUnitRef == null)
+  {
+    if (args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+    {
+      ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+    }
+    else if ((typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+    {
+      ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+    }
+  }
+  else
+  {
+    ref = context.createReference(context.extractDhisId(fhirOrgUnitRef.getReferenceElement()), ''id'');
+  }
+}
+else
+{
+  var mappedCode;
+  if (input.managingOrganization || input.location)
+  {
+    mappedCode = getMappedCode(input);
+  }
+  else if (input.encounter)
+  {
+    var encounter = referenceUtils.getResource(input.encounter, ''Encounter'');
+    if (encounter != null)
+    {
+      mappedCode = getMappedCode(encounter);
+    }
+  }
+  if (mappedCode == null)
+  {
+    mappedCode = args[''defaultCode''];
+  }
+  if (mappedCode != null)
+  {
+    ref = context.createReference(mappedCode, ''CODE'');
+  }
+  if ((ref == null) && args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+  {
+    ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+  }
+  else if ((ref == null) && (typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+  {
+    ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+  }
+}
+ref' WHERE id='7b94febabcf64635929a01311b25d975' AND version=0;
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('7b94febabcf64635929a01311b25d975', 'R4');

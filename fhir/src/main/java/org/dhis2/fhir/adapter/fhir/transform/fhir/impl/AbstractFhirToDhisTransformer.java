@@ -140,7 +140,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         if ( context.getFhirRequest().isDhisFhirId() )
         {
             final String id = getDhisId( context, ruleInfo );
-            if ( id != null )
+            if ( id == null )
+            {
+                activeResource = ( context.getFhirRequest().getRequestMethod() != FhirRequestMethod.CREATE );
+            }
+            else
             {
                 R resource = getResourceById( id ).orElse( null );
                 if ( resource != null )

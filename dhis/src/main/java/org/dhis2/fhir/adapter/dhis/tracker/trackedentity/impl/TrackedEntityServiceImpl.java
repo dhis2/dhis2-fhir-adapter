@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
@@ -56,6 +55,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -184,7 +185,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @HystrixCommand
     @Nonnull
     @Override
-    public Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
+    @CachePut( key = "{'findByAttrValue', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances", unless = "#result.size() == 0" )
+    public Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
     {
         // filtering by values with a colon inside is not supported by DHIS2 Web API
         if ( value.contains( ":" ) )
@@ -197,7 +199,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     @Nonnull
     @Override
-    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull @CacheKey String typeId, @Nonnull @CacheKey String attributeId, @Nonnull @CacheKey String value, int maxResult )
+    @Cacheable( key = "{'findByAttrValue', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances", unless = "#result.size() == 0" )
+    public Collection<TrackedEntityInstance> findByAttrValue( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
     {
         return findByAttrValueRefreshed( typeId, attributeId, value, maxResult );
     }
@@ -255,6 +258,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
         {
+            clear( trackedEntityInstance );
             response = restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
                 trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
         }
@@ -287,6 +291,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
         {
+            clear( trackedEntityInstance );
             response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
                 ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
         }
@@ -344,5 +349,14 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final HttpEntity<ReservedValue> response = restTemplate.exchange( builder.buildAndExpand( attributeId ).toUriString(),
             HttpMethod.GET, null, ReservedValue.class );
         return Objects.requireNonNull( response.getBody() ).getValue();
+    }
+
+    private void clear( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    {
+        trackedEntityInstance.setLastUpdated( null );
+        if ( trackedEntityInstance.getAttributes() != null )
+        {
+            trackedEntityInstance.getAttributes().forEach( tei -> tei.setLastUpdated( null ) );
+        }
     }
 }

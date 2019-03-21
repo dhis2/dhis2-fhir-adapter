@@ -37,7 +37,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Tests the basic operations of DSTU3 FHIR interfaces.
+ * Base test class for tracked entity instance based FHIR interfaces.
  *
  * @author volsch
  */
