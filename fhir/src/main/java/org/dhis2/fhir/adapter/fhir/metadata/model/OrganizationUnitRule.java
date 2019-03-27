@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 
+import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -115,5 +116,11 @@ public class OrganizationUnitRule extends AbstractRule
     public boolean isEffectiveFhirDeleteEnable()
     {
         return isExpEnabled() && isFhirDeleteEnabled();
+    }
+
+    @Override
+    public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
+    {
+        return false;
     }
 }

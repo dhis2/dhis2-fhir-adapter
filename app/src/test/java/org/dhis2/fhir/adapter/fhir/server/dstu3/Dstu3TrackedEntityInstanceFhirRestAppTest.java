@@ -92,19 +92,17 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
     }
 
     @Test
-    public void getPatient1() throws Exception
+    public void getPatientRepeated() throws Exception
     {
         getPatient();
-    }
-
-    @Test
-    public void getPatient2() throws Exception
-    {
         getPatient();
     }
 
     private void getPatient() throws Exception
     {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
         expectTrackedEntityMetadataRequests();
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx.json?" +
@@ -122,6 +120,9 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier", patient.getIdentifier().get( 0 ).getSystem() );
         Assert.assertEquals( "PT_81589", patient.getIdentifier().get( 0 ).getValue() );
         Assert.assertEquals( "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352", patient.getManagingOrganization().getReference() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
     }
 
     @Test( expected = AuthenticationException.class )
@@ -147,21 +148,19 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
     }
 
     @Test
-    public void getPatientByIdentifier1() throws Exception
+    public void getPatientByIdentifierRepeated() throws Exception
     {
         getPatientByIdentifier();
-    }
-
-    @Test
-    public void getPatientByIdentifier2() throws Exception
-    {
         getPatientByIdentifier();
     }
 
     private void getPatientByIdentifier() throws Exception
     {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
         expectTrackedEntityMetadataRequests();
-        userDhis2Server.expect( ExpectedCount.twice(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE&filter=Ewi7FUfcHAD:EQ:OU_1234&pageSize=1" +
                 "&fields=deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -179,6 +178,9 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier", patient.getIdentifier().get( 0 ).getSystem() );
         Assert.assertEquals( "PT_81589", patient.getIdentifier().get( 0 ).getValue() );
         Assert.assertEquals( "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352", patient.getManagingOrganization().getReference() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
     }
 
     @Test( expected = AuthenticationException.class )
@@ -204,19 +206,17 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
     }
 
     @Test
-    public void searchPatient1() throws Exception
+    public void searchPatientRepeated() throws Exception
     {
         searchPatient();
-    }
-
-    @Test
-    public void searchPatient2() throws Exception
-    {
         searchPatient();
     }
 
     private void searchPatient() throws Exception
     {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
         expectTrackedEntityMetadataRequests();
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?skipPaging=false&page=1&pageSize=10&trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE" +
@@ -236,6 +236,8 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier", patient.getIdentifier().get( 0 ).getSystem() );
         Assert.assertEquals( "PT_81589", patient.getIdentifier().get( 0 ).getValue() );
         Assert.assertEquals( "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352", patient.getManagingOrganization().getReference() );
+
+        systemDhis2Server.verify();
         userDhis2Server.verify();
     }
 

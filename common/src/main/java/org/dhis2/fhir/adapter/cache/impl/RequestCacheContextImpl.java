@@ -64,7 +64,10 @@ public class RequestCacheContextImpl implements RequestCacheContext
         CacheManager cacheManager = cacheManagers.get( name );
         if ( cacheManager == null )
         {
-            cacheManager = new ConcurrentMapCacheManager();
+            cacheManager = new ConcurrentMapCacheManager()
+            {
+
+            };
             cacheManagers.put( name, cacheManager );
         }
         return cacheManager;

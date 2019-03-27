@@ -201,7 +201,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Nonnull
     @Override
     protected Optional<TrackedEntityInstance> getActiveResource( @Nonnull FhirToDhisTransformerContext context,
-        @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+        @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         final IBaseResource baseResource = getTeiResource( context, ruleInfo, scriptVariables );
         if ( baseResource == null )
@@ -226,7 +226,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Nullable
     @Override
     protected TrackedEntityInstance createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         if ( context.isCreationDisabled() )
         {

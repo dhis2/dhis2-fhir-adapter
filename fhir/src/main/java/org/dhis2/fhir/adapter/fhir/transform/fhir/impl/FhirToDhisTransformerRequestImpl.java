@@ -38,6 +38,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +60,8 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
     private final Map<String, FhirToDhisTransformerUtils> transformerUtils;
 
     private final List<RuleInfo<? extends AbstractRule>> rules;
+
+    private final List<RuleInfo<? extends AbstractRule>> executedRules = new ArrayList<>();
 
     private int ruleIndex;
 
@@ -115,13 +118,23 @@ public class FhirToDhisTransformerRequestImpl implements FhirToDhisTransformerRe
         return (ruleIndex >= rules.size());
     }
 
+    public void executed( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo )
+    {
+        executedRules.add( ruleInfo );
+    }
+
     @Nullable
     public RuleInfo<? extends AbstractRule> nextRule()
     {
-        if ( ruleIndex >= rules.size() )
+        while ( ruleIndex < rules.size() )
         {
-            return null;
+            final RuleInfo<? extends AbstractRule> rule = rules.get( ruleIndex++ );
+            if ( executedRules.stream().noneMatch( er -> rule.getRule().coversExecutedRule( er.getRule() ) ) )
+            {
+                return rule;
+            }
         }
-        return rules.get( ruleIndex++ );
+
+        return null;
     }
 }

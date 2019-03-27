@@ -85,8 +85,17 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
     }
 
     @Test
-    public void getLocation() throws Exception
+    public void getLocationRepeated() throws Exception
     {
+        getLocation();
+        getLocation();
+    }
+
+    private void getLocation() throws Exception
+    {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -101,6 +110,9 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
         Assert.assertEquals( 1, location.getIdentifier().size() );
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
         Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
     }
 
     @Test( expected = AuthenticationException.class )
@@ -123,8 +135,17 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
     }
 
     @Test
-    public void getLocationByIdentifier() throws Exception
+    public void getLocationByIdentifierRepeated() throws Exception
     {
+        getLocationByIdentifier();
+        getLocationByIdentifier();
+    }
+
+    private void getLocationByIdentifier() throws Exception
+    {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
         userDhis2Server.expect( ExpectedCount.between( 1, 2 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
@@ -138,6 +159,9 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
         Assert.assertEquals( 1, location.getIdentifier().size() );
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
         Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
     }
 
     @Test( expected = AuthenticationException.class )

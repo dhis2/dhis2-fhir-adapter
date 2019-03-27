@@ -1,0 +1,19 @@
+{
+  "status": "OK",
+  "response": {
+    "importSummaries": [
+      {
+        "status": "SUCCESS",
+        "reference": "ieR4nl4mufa",
+        "events": {
+          "importSummaries": [
+            {
+              "status": "SUCCESS",
+              "reference": "deR4kl4mnf7"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

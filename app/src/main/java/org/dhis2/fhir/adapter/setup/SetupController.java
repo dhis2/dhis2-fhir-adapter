@@ -47,6 +47,7 @@ import javax.validation.Valid;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.util.Collections;
 
 /**
  * Controller that is used to setup the application. The controller is disabled
@@ -106,7 +107,7 @@ public class SetupController
 
         try
         {
-            setupService.apply( setup, true, true );
+            setupService.apply( setup, Collections.emptySet(), true, true );
         }
         catch ( SetupException | RestResponseEntityException e )
         {

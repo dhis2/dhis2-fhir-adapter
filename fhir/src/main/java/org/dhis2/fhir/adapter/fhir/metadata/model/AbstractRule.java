@@ -437,6 +437,16 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     @JsonIgnore
     public abstract boolean isEffectiveFhirDeleteEnable();
 
+    /**
+     * Returns if the specified executed rule covers this rule and this rule
+     * does not need to be executed.
+     *
+     * @param executedRule the rule that has been executed.
+     * @return <code>true</code> if the specified rule covers this rule,
+     * <code>false</code> otherwise.
+     */
+    public abstract boolean coversExecutedRule( @Nonnull AbstractRule executedRule );
+
     @Override
     public int compareTo( @Nonnull AbstractRule o )
     {

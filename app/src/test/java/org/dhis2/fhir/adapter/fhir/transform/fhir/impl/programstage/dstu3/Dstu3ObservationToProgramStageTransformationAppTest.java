@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.programstage.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,48 +28,23 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.programstage.AbstractObservationToProgramStageTransformationAppTest;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
- * Service to create, update and read DHIS2 Program Stage Instances (aka events)
- * on DHIS2.
+ * Tests the transformation of a FHIR Observation to a DHIS 2 Program Stage Instance.
  *
  * @author volsch
  */
-public interface EventService
+public class Dstu3ObservationToProgramStageTransformationAppTest
+    extends AbstractObservationToProgramStageTransformationAppTest
 {
     @Nonnull
-    List<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
-        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
-
-    @Nonnull
-    List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
-        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
-
-    @Nonnull
-    Optional<Event> findOneById( @Nonnull String eventId );
-
-    @Nonnull
-    Optional<Event> findOneDeletedById( @Nonnull String eventId );
-
-    @Nonnull
-    Event createOrMinimalUpdate( @Nonnull Event event );
-
-    @Nonnull
-    DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
+    @Override
+    protected FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
 }

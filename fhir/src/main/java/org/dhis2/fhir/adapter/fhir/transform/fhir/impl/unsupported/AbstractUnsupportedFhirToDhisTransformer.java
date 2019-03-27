@@ -91,7 +91,7 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nonnull
     @Override
-    protected Optional<R> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    protected Optional<R> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         return Optional.empty();
     }
@@ -129,7 +129,7 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
 
     @Nullable
     @Override
-    protected R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+    protected R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         return null;
     }

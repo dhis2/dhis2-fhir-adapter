@@ -1,0 +1,55 @@
+{
+  "resourceType": "Observation",
+  "id": "73",
+  "meta": {
+    "versionId": "7",
+    "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+  },
+  "contained": [
+    {
+      "resourceType": "Organization",
+      "id": "1",
+      "name": "Birth Unit",
+      "partOf": {
+        "reference": "Organization/21"
+      }
+    }
+  ],
+  "status": "final",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://hl7.org/fhir/observation-category",
+          "code": "vital-signs",
+          "display": "Vital Signs"
+        }
+      ]
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://loinc.org",
+        "code": "29463-7",
+        "display": "Weight"
+      }
+    ],
+    "text": "Any Body Weight Observations"
+  },
+  "subject": {
+    "reference": "Patient/15"
+  },
+  "effectiveDateTime": "2018-11-18",
+  "performer": [
+    {
+      "reference": "#1"
+    }
+  ],
+  "valueQuantity": {
+    "value": 3.678,
+    "unit": "kg",
+    "system": "http://unitsofmeasure.org",
+    "code": "kg"
+  }
+}

@@ -366,16 +366,16 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Nonnull
     @Override
     protected Optional<Event> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
-        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+        @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
-        return getExistingResource( context, ruleInfo, scriptVariables, this::getMostAppropriateEvent, sync );
+        return getExistingResource( context, ruleInfo, scriptVariables, this::getMostAppropriateEvent, sync, refreshed );
     }
 
     @Nonnull
     private Optional<Event> getExistingResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
-        @Nonnull BiFunction<Collection<Event>, LazyObject<ZonedDateTime>, Event> function, boolean sync )
+        @Nonnull BiFunction<Collection<Event>, LazyObject<ZonedDateTime>, Event> function, boolean sync, boolean refreshed )
     {
-        final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
+        final EventInfo eventInfo = getEventInfo( scriptVariables, sync, refreshed );
         if ( eventInfo.getEvents().isEmpty() )
         {
             return Optional.empty();
@@ -442,20 +442,21 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Override
     protected Optional<Event> findResourceById( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull String id, @Nonnull Map<String, Object> scriptVariables )
     {
-        return getExistingResource( context, ruleInfo, scriptVariables, ( events, effectiveDate ) -> events.stream().filter( e -> id.equals( e.getId() ) ).findFirst().orElse( null ), false );
+        return getExistingResource( context, ruleInfo, scriptVariables, ( events, effectiveDate ) -> events.stream().filter( e -> id.equals( e.getId() ) ).findFirst().orElse( null ), false, true );
     }
 
     @Nullable
     @Override
     protected Event createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         if ( context.isCreationDisabled() || !ruleInfo.getRule().isEventCreationEnabled() || !ruleInfo.getRule().getProgramStage().isCreationEnabled() )
         {
             return null;
         }
 
-        final EventInfo eventInfo = getEventInfo( scriptVariables, sync );
+        // sync is not required since get active resource must have been invoked before synced
+        final EventInfo eventInfo = getEventInfo( scriptVariables, false, refreshed );
         // creation of event may not be applicable
         if ( (ruleInfo.getRule().getProgramStage().getCreationApplicableScript() != null) &&
             !Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getProgramStage().getCreationApplicableScript(), scriptVariables, Boolean.class ) ) )
@@ -824,7 +825,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     }
 
     @Nonnull
-    protected EventInfo getEventInfo( @Nonnull Map<String, Object> scriptVariables, boolean sync )
+    protected EventInfo getEventInfo( @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed )
     {
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ProgramStage programStage = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM_STAGE, ProgramStage.class );
@@ -837,7 +838,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             .lock( "in-te:" + trackedEntityInstance.getId() );
 
         final Enrollment enrollment;
-        if ( sync )
+        if ( sync || refreshed )
         {
             enrollment = enrollmentService.findLatestActiveRefreshed( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
         }
@@ -849,11 +850,21 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         List<Event> events = Collections.emptyList();
         if ( enrollment != null )
         {
-            // find method must not return cached data (if it would, data must be refreshed when invoked in a synchronized call)
-            final List<Event> foundEvents = eventService.find( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
+
+            final List<Event> foundEvents;
+            if ( refreshed )
+            {
+                foundEvents = eventService.findRefreshed( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
+            }
+            else
+            {
+                foundEvents = eventService.find( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
+            }
+
             events = foundEvents.stream().peek( e -> e.setEnrollment( enrollment ) ).sorted( Collections.reverseOrder( new EventComparator() ) ).collect( Collectors.toList() );
             enrollment.setEvents( events );
         }
+
         return new EventInfo( program, programStage, trackedEntityType, trackedEntityInstance, enrollment, events );
     }
 

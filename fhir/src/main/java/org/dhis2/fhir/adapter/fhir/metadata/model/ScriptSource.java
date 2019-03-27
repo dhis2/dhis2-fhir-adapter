@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script_source" )
-@NamedQuery( name = ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, query = "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions" )
+@NamedQuery( name = ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, query = "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions ORDER BY id" )
 public class ScriptSource extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6002604151209645784L;

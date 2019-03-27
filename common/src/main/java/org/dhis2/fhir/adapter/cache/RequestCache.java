@@ -43,6 +43,8 @@ import java.util.concurrent.Callable;
  */
 public class RequestCache implements Cache
 {
+    public static final Object NULL = new Object();
+
     private final Cache requestCache;
 
     private final Cache otherCache;
@@ -73,6 +75,10 @@ public class RequestCache implements Cache
         ValueWrapper valueWrapper = requestCache.get( key );
         if ( valueWrapper != null )
         {
+            if ( valueWrapper.get() == NULL )
+            {
+                return new SimpleValueWrapper( null );
+            }
             return valueWrapper;
         }
         valueWrapper = otherCache.get( key );
@@ -126,14 +132,14 @@ public class RequestCache implements Cache
     @Override
     public void put( @Nonnull Object key, Object value )
     {
-        requestCache.put( key, value );
+        requestCache.put( key, value == null ? NULL : value );
         otherCache.put( key, value );
     }
 
     @Override
     public ValueWrapper putIfAbsent( @Nonnull Object key, Object value )
     {
-        requestCache.putIfAbsent( key, value );
+        requestCache.putIfAbsent( key, value == null ? NULL : value );
         return toValueWrapper( otherCache.putIfAbsent( key, value ) );
     }
 

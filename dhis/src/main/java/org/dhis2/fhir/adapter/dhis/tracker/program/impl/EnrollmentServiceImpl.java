@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.cache.annotation.CacheKey;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
@@ -40,6 +39,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -82,7 +83,8 @@ public class EnrollmentServiceImpl implements EnrollmentService
     @HystrixCommand
     @Nonnull
     @Override
-    public Optional<Enrollment> findLatestActiveRefreshed( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
+    @CachePut( key = "{'findLatestActive', #a0, #a1}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
+    public Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEnrollments> result = restTemplate.getForEntity(
             LATEST_ACTIVE_URI, DhisEnrollments.class, programId, trackedEntityInstanceId );
@@ -91,7 +93,8 @@ public class EnrollmentServiceImpl implements EnrollmentService
 
     @Nonnull
     @Override
-    public Optional<Enrollment> findLatestActive( @CacheKey @Nonnull String programId, @CacheKey @Nonnull String trackedEntityInstanceId )
+    @Cacheable( key = "{'findLatestActive', #a0, #a1}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
+    public Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId )
     {
         return findLatestActiveRefreshed( programId, trackedEntityInstanceId );
     }

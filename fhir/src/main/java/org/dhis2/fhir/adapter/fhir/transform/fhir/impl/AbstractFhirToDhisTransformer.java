@@ -164,7 +164,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
         if ( activeResource )
         {
-            final R resource = getActiveResource( context, ruleInfo, scriptVariables, false ).orElse( null );
+            final R resource = getActiveResource( context, ruleInfo, scriptVariables, false, true ).orElse( null );
             if ( resource != null )
             {
                 return Optional.of( resource );
@@ -176,18 +176,19 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             (context.getFhirRequest().getRequestMethod() == null) )
         {
             final String id = getDhisId( context, ruleInfo );
-            resource = createResource( context, ruleInfo, id, scriptVariables, false );
+            resource = createResource( context, ruleInfo, id, scriptVariables, false, false );
             if ( (resource != null) && isSyncRequired( context, ruleInfo, scriptVariables ) )
             {
                 // the active resource may have been created in the meantime
-                resource = getActiveResource( context, ruleInfo, scriptVariables, true ).orElse( null );
+                resource = getActiveResource( context, ruleInfo, scriptVariables, true, true ).orElse( null );
                 if ( resource != null )
                 {
                     return Optional.of( resource );
                 }
-                resource = createResource( context, ruleInfo, id, scriptVariables, true );
+                resource = createResource( context, ruleInfo, id, scriptVariables, true, false );
             }
         }
+
         return Optional.ofNullable( resource );
     }
 
@@ -199,7 +200,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     @Nonnull
     protected abstract Optional<R> getActiveResource(
         @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
-        @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
+        @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException;
 
     @Nonnull
     protected Optional<R> getResourceByAssignment( @Nonnull FhirClientResource fhirClientResource,
@@ -220,7 +221,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     @Nullable
     protected abstract R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo,
-        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync ) throws TransformerException;
+        @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException;
 
     @Nullable
     protected String getDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo )

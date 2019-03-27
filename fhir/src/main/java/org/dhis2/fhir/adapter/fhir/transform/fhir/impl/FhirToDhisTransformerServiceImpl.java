@@ -135,6 +135,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         {
             throw new TransformerMappingException( "No transformer utils can be found for FHIR version " + fhirRequest.getVersion() );
         }
+
         final AbstractCodeFhirToDhisTransformerUtils codeTransformerUtils = (AbstractCodeFhirToDhisTransformerUtils) transformerUtils.get( ScriptVariable.CODE_UTILS.getVariableName() );
         if ( codeTransformerUtils == null )
         {
@@ -198,16 +199,20 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
                 {
                     logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
                         ruleInfo, transformerRequestImpl.getInput().getIdElement(), ruleInfo.getRule().isStop() );
+                    transformerRequestImpl.executed( ruleInfo );
                     return new FhirToDhisTransformOutcome<>( outcome, (ruleInfo.getRule().isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
                 }
+
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
                 lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
             }
         }
+
         if ( firstRule && !transformerRequestImpl.getInput().getIdElement().isEmpty() )
         {
             logger.info( "No matching rule for {}.", transformerRequestImpl.getInput().getIdElement() );
         }
+
         return null;
     }
 
@@ -218,6 +223,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         {
             return true;
         }
+
         return Boolean.TRUE.equals( TransformerUtils.executeScript( scriptExecutor, context, ruleInfo, ruleInfo.getRule().getApplicableImpScript(), scriptVariables, Boolean.class ) );
     }
 }

@@ -1,0 +1,31 @@
+{
+  "resourceType": "Bundle",
+  "id": "0cad0ac5-7a60-419b-9793-6467af38c0db",
+  "meta": {
+    "lastUpdated": "2018-11-21T18:18:55.560+01:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Observation?_format=json&_sort=_lastUpdated"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "http://localhost:8082/hapi-fhir-jpaserver-example/baseDstu3/Observation/73",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "73",
+        "meta": {
+          "versionId": "7",
+          "lastUpdated": "2018-11-19T21:31:14.493+01:00"
+        }
+      },
+      "search": {
+        "mode": "match"
+      }
+    }
+  ]
+}

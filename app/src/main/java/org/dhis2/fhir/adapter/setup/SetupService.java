@@ -146,7 +146,7 @@ public class SetupService
     }
 
     @Transactional
-    public SetupResult apply( @Nonnull Setup setup, boolean createSubscriptions, boolean verifyDhis )
+    public SetupResult apply( @Nonnull Setup setup, @Nonnull Set<FhirResourceType> additionalFhirResourceTypes, boolean createSubscriptions, boolean verifyDhis )
     {
         SetupResult setupResult = null;
         if ( !setup.isFhirRestInterfaceOnly() )
@@ -160,7 +160,8 @@ public class SetupService
                 "Default DHIS2 Patients", "DEFAULT_DHIS2_PATIENT",
                 "National Patient ID", "Default DHIS2 patient system URI." );
 
-            setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem, createSubscriptions );
+            setupResult = createFhirClient( setup.getFhirClientSetup(), FhirVersion.DSTU3, "", organizationSystem, patientSystem,
+                additionalFhirResourceTypes, createSubscriptions );
             createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         }
         updateTrackedEntity( setup.getTrackedEntitySetup(), verifyDhis );
@@ -169,7 +170,8 @@ public class SetupService
 
     @Nonnull
     @Transactional
-    public SetupResult createFhirClient( @Nonnull FhirClientSetup setup, @Nonnull FhirVersion fhirVersion, @Nonnull String suffix, @Nonnull System organizationSystem, @Nonnull System patientSystem, boolean createSubscriptions )
+    public SetupResult createFhirClient( @Nonnull FhirClientSetup setup, @Nonnull FhirVersion fhirVersion, @Nonnull String suffix, @Nonnull System organizationSystem, @Nonnull System patientSystem,
+        @Nonnull Set<FhirResourceType> additionalFhirResourceTypes, boolean createSubscriptions )
     {
         final Set<FhirResourceType> autoCreatedSubscriptionResources = new HashSet<>();
         autoCreatedSubscriptionResources.add( FhirResourceType.PATIENT );
@@ -205,6 +207,20 @@ public class SetupService
 
             fhirClient.getResources().add( rsr );
         }
+
+        additionalFhirResourceTypes.forEach( frt -> {
+            final FhirClientResource rsr = new FhirClientResource();
+            rsr.setFhirClient( fhirClient );
+            rsr.setFhirResourceType( frt );
+            rsr.setDescription( "FHIR client for FHIR " + frt + "." );
+
+            final FhirClientResourceUpdate resourceUpdate = new FhirClientResourceUpdate( Instant.now() );
+            resourceUpdate.setGroup( rsr );
+            rsr.setResourceUpdate( resourceUpdate );
+
+            fhirClient.getResources().add( rsr );
+        } );
+
         if ( createSubscriptions )
         {
             fhirClient.setAutoCreatedSubscriptionResources( autoCreatedSubscriptionResources );

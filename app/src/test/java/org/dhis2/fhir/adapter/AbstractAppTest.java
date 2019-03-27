@@ -63,10 +63,14 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -161,6 +165,12 @@ public abstract class AbstractAppTest
     @Autowired
     @Qualifier( "fhirResourceQueueJmsTemplate" )
     private JmsTemplate fhirResourceQueueJmsTemplate;
+
+    @Autowired
+    protected EntityManager entityManager;
+
+    @Autowired
+    protected PlatformTransactionManager transactionManager;
 
     private long resourceDlQueueCount;
 
@@ -357,6 +367,20 @@ public abstract class AbstractAppTest
         clearCache( metadataCacheManager );
         clearCache( dhisCacheManager );
         clearCache( fhirCacheManager );
+
+        final TransactionStatus transactionStatus = transactionManager.getTransaction( new DefaultTransactionDefinition() );
+        try
+        {
+            entityManager.createQuery( "DELETE FROM ProcessedDhisResource " ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM StoredDhisResource " ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM ProcessedFhirResource " ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM StoredFhirResource " ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM FhirDhisAssignment " ).executeUpdate();
+        }
+        finally
+        {
+            transactionManager.commit( transactionStatus );
+        }
 
         resourceDlQueueCount = getQueueMessageCount( fhirResourceQueueJmsTemplate, RESOURCE_DL_QUEUE_NAME );
     }

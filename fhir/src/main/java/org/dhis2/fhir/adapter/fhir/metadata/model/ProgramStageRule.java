@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.springframework.hateoas.core.Relation;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -310,5 +311,12 @@ public class ProgramStageRule extends AbstractRule
     public boolean isEffectiveFhirDeleteEnable()
     {
         return isExpEnabled() && isFhirDeleteEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirDeleteEnabled();
+    }
+
+    @Override
+    public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
+    {
+        return executedRule instanceof ProgramStageRule && ( (ProgramStageRule) executedRule )
+            .getProgramStage().getProgram().getId().equals( getProgramStage().getProgram().getId() );
     }
 }

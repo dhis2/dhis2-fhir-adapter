@@ -47,6 +47,8 @@ import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -122,12 +124,23 @@ public class EventServiceImpl implements EventService
     @HystrixCommand
     @Nonnull
     @Override
-    public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+    @CachePut( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
+    public List<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_URI, DhisEvents.class, programId, trackedEntityInstanceId );
         return Objects.requireNonNull( result.getBody() ).getEvents().stream().filter( e -> enrollmentId.equals( e.getEnrollmentId() ) &&
             programStageId.equals( e.getProgramStageId() ) ).collect( Collectors.toList() );
+    }
+
+    @HystrixCommand
+    @Nonnull
+    @Override
+    @Cacheable( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
+    public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
+    {
+        return findRefreshed( programId, programStageId, enrollmentId, trackedEntityInstanceId );
     }
 
     @HystrixCommand

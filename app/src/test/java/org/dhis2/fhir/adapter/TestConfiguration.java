@@ -60,7 +60,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -194,6 +196,9 @@ public class TestConfiguration
             return;
         }
 
+        final Set<FhirResourceType> additionalFhirResourceTypes = new HashSet<>();
+        additionalFhirResourceTypes.add( FhirResourceType.OBSERVATION );
+
         final Setup setup = new Setup();
 
         setup.setFhirRestInterfaceOnly( false );
@@ -251,9 +256,9 @@ public class TestConfiguration
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
-            setupResult = setupService.apply( setup, false, false );
+            setupResult = setupService.apply( setup, additionalFhirResourceTypes, false, false );
             setupResultR4 = setupService.createFhirClient( setupR4.getFhirClientSetup(), FhirVersion.R4, "_R4",
-                setupResult.getOrganizationSystem(), setupResult.getPatientSystem(), false );
+                setupResult.getOrganizationSystem(), setupResult.getPatientSystem(), additionalFhirResourceTypes, false );
             Assert.assertTrue( setupService.hasCompletedSetup() );
         }
         finally
