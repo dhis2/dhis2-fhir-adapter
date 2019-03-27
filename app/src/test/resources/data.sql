@@ -1469,3 +1469,371 @@ else
 ref' WHERE id='7b94febabcf64635929a01311b25d975' AND version=0;
 INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
 VALUES ('7b94febabcf64635929a01311b25d975', 'R4');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('1197b27e395643dda75cbfc6808dc49d', 0, 'Vital Sign', 'VITAL_SIGN', 'Vital signs.');
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('d4aa72e9b57e4d5c8856860ebdf460af', 0, '1197b27e395643dda75cbfc6808dc49d', 'All Birth Weight Observations', 'ALL_OB_BIRTH_WEIGHT', 'All Birth Weight Observations.');
+-- Code set with all Body Weight Observations
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('d37dfecbce884fa49a7844ffe874c140', 0, '1197b27e395643dda75cbfc6808dc49d', 'All Body Weight Observations', 'ALL_OB_BODY_WEIGHT', 'All Body Weight Observations.');
+
+
+INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f1da6937e2fe47a4b0f38bbff7818ee1', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'TRANSFORM_FHIR_OB_BODY_WEIGHT', 'Transforms FHIR Observation Body Weight', 'Transforms FHIR Observation Body Weight to a data element and performs weight unit conversion.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937e2fe47a4b0f38bbff7818ee1', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937e2fe47a4b0f38bbff7818ee1', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f1da6937e2fe47a4b0f38bbff7818ee1', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, created_at, last_updated_at, last_updated_by, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('0767919959ae45309411ac5814102372', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f1da6937e2fe47a4b0f38bbff7818ee1',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, FALSE, NULL, 'Data element on which the body weight must be set.');
+INSERT INTO fhir_script_argument(id, version, created_at, last_updated_at, last_updated_by, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('1ef4f760de9a4c29a321a8eee5c52313', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f1da6937e2fe47a4b0f38bbff7818ee1',
+'override', 'BOOLEAN', TRUE, FALSE, 'true', 'Specifies if an existing value should be overridden.');
+INSERT INTO fhir_script_argument(id, version, created_at, last_updated_at, last_updated_by, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('d8cd0e7d778045d18094b448b480e6b8', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f1da6937e2fe47a4b0f38bbff7818ee1',
+'round', 'BOOLEAN', TRUE, FALSE, 'true', 'Specifies if the resulting value should be rounded.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('3d15bf81343c45bc9c281e87a8da6fa5', 0, 'f1da6937e2fe47a4b0f38bbff7818ee1',
+'weightUnit', 'WEIGHT_UNIT', TRUE, 'KILO_GRAM', 'The resulting weight unit in which the value will be set on the data element.');
+
+
+-- Script that is executed to check if enrollment into Child Programme is applicable
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('3ddfc83e065546db81110a3370970125', 0, 'Child Programme Creation Applicable', 'CHILD_PROGRAMME_CREATION_APPLICABLE',
+'Checks if the enrollment into child programme is applicable. The enrollment is applicable if the person is younger than a defined amount time.',
+'EVALUATE', 'BOOLEAN', NULL, NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e065546db81110a3370970125', 'TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('3ddfc83e065546db81110a3370970125', 'DATE_TIME');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('b06c9036006b40439c6f57dd7286098b', 0, '3ddfc83e065546db81110a3370970125',
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('8cddd857d510472c835ad9454ffe1d39', 0, '3ddfc83e065546db81110a3370970125',
+'age', 'INTEGER', TRUE, FALSE, '1', 'The person must be younger than the this amount of time (in specified units).');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('331db7c9edd84ff59e7740c391aa789e', 0, '3ddfc83e065546db81110a3370970125',
+'ageUnit', 'DATE_UNIT', TRUE, FALSE, 'YEARS', 'The unit in which the age is specified.');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('1f9dc84d29a544609192eb03cea156d9', 0, '3ddfc83e065546db81110a3370970125', 'dateTimeUtils.isYoungerThan(dateTime, trackedEntityInstance.getValue(args[''birthDateAttribute'']), args[''age''], args[''ageUnit''])', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('1f9dc84d29a544609192eb03cea156d9', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('dfb7f13cae214cfb88156f1416ca8388', 0, '3ddfc83e065546db81110a3370970125',
+'Child Programme Creation Applicable', 'CHILD_PROGRAMME_CREATION_APPLICABLE', 'Checks if the enrollment of a person is applicable.');
+
+-- Script that is executed on creation of a program instance of Child Programme
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('60e83e185f6640a19c9d1d993e5ccdb3', 0, 'Child Programme Creation', 'CHILD_PROGRAMME_CREATION', 'Child programme creation.', 'EVALUATE', 'BOOLEAN', NULL, 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e185f6640a19c9d1d993e5ccdb3', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('60e83e185f6640a19c9d1d993e5ccdb3', 'ENROLLMENT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('363ed415be4a4311a7bf780a304d6f8c', 0, '60e83e185f6640a19c9d1d993e5ccdb3',
+'birthDateAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', TRUE, FALSE, 'CODE:MMD_PER_DOB', 'The reference of the tracked entity attribute that contains the birth date of the Person.');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('f45aed605208430e869ef0b87f5a6321', 0, '60e83e185f6640a19c9d1d993e5ccdb3', 'enrollment.setIncidentDate(trackedEntityInstance.getValue(args[''birthDateAttribute'']))', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('f45aed605208430e869ef0b87f5a6321', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('6836cbd193ba4ab8a4cb69348ad9d099', 0, '60e83e185f6640a19c9d1d993e5ccdb3',
+'Child Programme Creation', 'CHILD_PROGRAMME_CREATION', 'Child programme creation.');
+
+-- Tracker Program Child Programme
+INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,creation_applicable_script_id,creation_script_id,enrollment_date_is_incident,tracked_entity_fhir_resource_type)
+VALUES ('45e61665754d4861891ea2064fc0ae7d', 0, 'Child Programme', 'NAME:Child Programme', '5f9ebdc9852e4c8387ca795946aabc35', TRUE, TRUE,
+'dfb7f13cae214cfb88156f1416ca8388', '6836cbd193ba4ab8a4cb69348ad9d099', TRUE, 'PATIENT');
+-- Tracker Program Child Programme, Stage Birth
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled,event_date_is_incident)
+VALUES ('4c074c85be494b9d89739e16b9615dad', 0, 'Birth', 'NAME:Birth', '45e61665754d4861891ea2064fc0ae7d', TRUE, TRUE, TRUE);
+-- Tracker Program Child Programme, Stage Baby Postnatal
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled,event_date_is_incident)
+VALUES ('526b4e01774747efa25df32ccd739e87', 0, 'Baby Postnatal', 'NAME:Baby Postnatal', '45e61665754d4861891ea2064fc0ae7d', TRUE, TRUE, TRUE);
+
+-- Tracker Program Child Programme, Birth: Weight from Body Weight
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('4a326b8949614b6980218d5285c2b0a7', 0, 'f1da6937e2fe47a4b0f38bbff7818ee1', 'CP: Birth Weight from Body Weight', 'CP_BIRTH_WEIGHT_BODY_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('0c2062a7c136472aa38894ce6b8325f2', '4a326b8949614b6980218d5285c2b0a7', '1ef4f760de9a4c29a321a8eee5c52313', 'false');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('70684c93b22a4fff86bb604683c27fdd', '4a326b8949614b6980218d5285c2b0a7', '0767919959ae45309411ac5814102372', 'CODE:DE_2005736');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('6e29a09d94f848b6863e976fc3c58568', '4a326b8949614b6980218d5285c2b0a7', '3d15bf81343c45bc9c281e87a8da6fa5', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Birth: Weight from Body Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_code_set_id, transform_imp_script_id)
+VALUES ('097d9ee0bdb344aeb9613b4584bad1db', 0, 'Child Programme: Birth Weight from Body Weight', NULL, TRUE, 0, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', 'd37dfecbce884fa49a7844ffe874c140', '4a326b8949614b6980218d5285c2b0a7');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, after_period_day_type, after_period_days,enrollment_creation_enabled,event_creation_enabled)
+VALUES ('097d9ee0bdb344aeb9613b4584bad1db','4c074c85be494b9d89739e16b9615dad', 'ORIG_DUE_DATE', 1, TRUE, TRUE);
+
+-- Tracker Program Child Programme, Baby Postnatal: Infant Weight
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('0104ad19ba8248dcbbd138dd5f0d8a2c', 0, 'f1da6937e2fe47a4b0f38bbff7818ee1', 'CP: Infant Weight', 'CP_BODY_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('794c69f686b34c30b4e1fd162c6ab825', '0104ad19ba8248dcbbd138dd5f0d8a2c', '0767919959ae45309411ac5814102372', 'CODE:DE_2006099');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('5b729da43f0b49ba9059cc7fc74841d8', '0104ad19ba8248dcbbd138dd5f0d8a2c', '3d15bf81343c45bc9c281e87a8da6fa5', 'GRAM');
+
+-- Rule Tracker Program Child Programme, Baby Postnatal: Infant Weight
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_code_set_id, transform_imp_script_id)
+VALUES ('a6636c83f23648cdbb2b592147db9a34', 0, 'Child Programme: Infant Weight', NULL, TRUE, 10, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', 'd37dfecbce884fa49a7844ffe874c140', '0104ad19ba8248dcbbd138dd5f0d8a2c');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, before_period_day_type, after_period_day_type, after_period_days,enrollment_creation_enabled,event_creation_enabled)
+VALUES ('a6636c83f23648cdbb2b592147db9a34','526b4e01774747efa25df32ccd739e87', 'ORIG_DUE_DATE', 'ORIG_DUE_DATE', 1,TRUE,TRUE);
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('50a60c9bd7f24ceabbc7b633d276a2f7', 0, 'TRANSFORM_FHIR_OB_BIRTH_WEIGHT', 'Transforms FHIR Observation Birth Weight', 'Transforms FHIR Observation Birth Weight to a data element and performs weight unit conversion.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('50a60c9bd7f24ceabbc7b633d276a2f7', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('50a60c9bd7f24ceabbc7b633d276a2f7', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('50a60c9bd7f24ceabbc7b633d276a2f7', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('600187f8eba545999061b6fe8bc1c518', 0, '50a60c9bd7f24ceabbc7b633d276a2f7',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element on which the birth weight must be set.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('ead06d428e4047f58a8974fbcf237b2b', 0, '50a60c9bd7f24ceabbc7b633d276a2f7',
+'weightUnit', 'WEIGHT_UNIT', TRUE, 'KILO_GRAM', 'The resulting weight unit in which the value will be set on the data element.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('5e272692021444fea16c0c79f2f61917', 0, '50a60c9bd7f24ceabbc7b633d276a2f7',
+'round', 'BOOLEAN', TRUE, 'true', 'Specifies if the resulting value should be rounded.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('05485e11fb1f4fc18518f9322dfb7dbb', 0, '50a60c9bd7f24ceabbc7b633d276a2f7',
+'output.setValue(args[''dataElement''], vitalSignUtils.getWeight(input.value, args[''weightUnit''], args[''round'']), null, context.getFhirRequest().getLastUpdated())', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('05485e11fb1f4fc18518f9322dfb7dbb', 'DSTU3');
+
+-- Script that creates an observation with the the body weight from a data element with a specific weight unit
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type, base_script_id)
+VALUES ('83a84beeeadc4c8ab78f8c8b9269883d', 0, 'TRANSFORM_BODY_WEIGHT_FHIR_OB', 'Transforms Body Weight FHIR Observation', 'Transforms Body Weight to a FHIR Observation and performs weight unit conversion.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_OBSERVATION', 'f1da6937e2fe47a4b0f38bbff7818ee1');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('83a84beeeadc4c8ab78f8c8b9269883d', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('83a84beeeadc4c8ab78f8c8b9269883d', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('83a84beeeadc4c8ab78f8c8b9269883d', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('cd274a356f1c495a94edf935572fcac3', 0, '83a84beeeadc4c8ab78f8c8b9269883d',
+'output.setCode(codeUtils.getRuleCodeableConcept());
+if (output.getCode().isEmpty())
+{
+  output.getCode().setText(dataElementUtils.getDataElementName(args[''dataElement'']));
+}
+output.setCategory(null);
+output.addCategory().addCoding().setSystem(''http://hl7.org/fhir/observationcategory'').setCode(''vitalsigns'').setDisplay(''Vital Signs'');
+var weight = input.getIntegerValue(args[''dataElement'']);
+var weightUnit = vitalSignUtils.getWeightUnit(args[''weightUnit'']);
+output.addChild(''valueQuantity'').setValue(args[''round''] ? Math.round(weight) : weight).setUnit(weightUnit.getUcumCode()).setSystem(''http://unitsofmeasure.org'');
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('cd274a356f1c495a94edf935572fcac3', 'DSTU3');
+
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('518b52d22d1e417186ce1e40ec269a1a', 0, '50a60c9bd7f24ceabbc7b633d276a2f7', 'CP: Birth Weight', 'CP_BIRTH_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('75c2d252e7c24321b20bba7d5f89af80', '518b52d22d1e417186ce1e40ec269a1a', 'ead06d428e4047f58a8974fbcf237b2b', 'GRAM');
+
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_executable_script_id)
+VALUES ('f8fb030926c6450d9e809e2e765ccd00', 0, '83a84beeeadc4c8ab78f8c8b9269883d', 'CP: Export Birth Weight', 'CP_EXP_BIRTH_WEIGHT', '518b52d22d1e417186ce1e40ec269a1a');
+UPDATE fhir_rule
+SET transform_exp_script_id = 'f8fb030926c6450d9e809e2e765ccd00'
+WHERE id = 'ff043b6e40c94fa79721ba2239b38360';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '87388c6e449e466f8ef8c2b44557a10f', 0, id, 'CODE:DE_2005736', 'dataElement', true
+FROM fhir_rule
+WHERE id = 'ff043b6e40c94fa79721ba2239b38360';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '08d3eedfb73d44879fa4f2aeef3be35f';
+
+-- Tracker Program Child Programme, Birth: Weight from Body Weight
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_executable_script_id)
+VALUES ('2918efbfb8f948f9921a405996bd6831', 0, '83a84beeeadc4c8ab78f8c8b9269883d', 'CP: Export Birth Weight from Body Weight', 'CP_EXP_BIRTH_WEIGHT_BODY_WEIGHT', '4a326b8949614b6980218d5285c2b0a7');
+UPDATE fhir_rule
+SET transform_exp_script_id = '2918efbfb8f948f9921a405996bd6831',
+    exp_enabled= false
+WHERE id = '097d9ee0bdb344aeb9613b4584bad1db';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT 'a11ed48e66e34988a64d7e0a69486155', 0, id, 'CODE:DE_2005736', 'dataElement', true
+FROM fhir_rule
+WHERE id = '097d9ee0bdb344aeb9613b4584bad1db';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '70684c93b22a4fff86bb604683c27fdd';
+
+-- Tracker Program Child Programme, Baby Postnatal: Body Weight
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_executable_script_id)
+VALUES ('06005c16cbc84a50abb07b16140c109c', 0, '83a84beeeadc4c8ab78f8c8b9269883d', 'CP: Export Infant Weight', 'CP_EXP_INFANT_WEIGHT', '0104ad19ba8248dcbbd138dd5f0d8a2c');
+UPDATE fhir_rule
+SET transform_exp_script_id = '06005c16cbc84a50abb07b16140c109c'
+WHERE id = 'a6636c83f23648cdbb2b592147db9a34';
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT '9589bff180b94f9dbafb8e679a219bf1', 0, id, 'CODE:DE_2006099', 'dataElement', true
+FROM fhir_rule
+WHERE id = 'a6636c83f23648cdbb2b592147db9a34';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '794c69f686b34c30b4e1fd162c6ab825';
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('cafbd01232004756a849e505aae721f7', 0, 'TRANSFORM_FHIR_OB_BODY_HEIGHT', 'Transforms FHIR Observation Body Height', 'Transforms FHIR Observation Body Height to a data element and performs height unit conversion.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_OBSERVATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cafbd01232004756a849e505aae721f7', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cafbd01232004756a849e505aae721f7', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cafbd01232004756a849e505aae721f7', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('3918ef5c45c34f9c94c4e6a1fd99d4bf', 0, 'cafbd01232004756a849e505aae721f7',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, NULL, 'Data element on which the body height must be set.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('60c1f864b1c3459aae0b8efeb74dd7fc', 0, 'cafbd01232004756a849e505aae721f7',
+'override', 'BOOLEAN', TRUE, 'true', 'Specifies if an existing value should be overridden.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('ab81fa50e9db4cebb2830364c89edf90', 0, 'cafbd01232004756a849e505aae721f7',
+'heightUnit', 'HEIGHT_UNIT', TRUE, 'CENTI_METER', 'The resulting height unit in which the value will be set on the data element.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('beef9a9cb6ae48efbfda25ef277fc29e', 0, 'cafbd01232004756a849e505aae721f7',
+'round', 'BOOLEAN', TRUE, 'true', 'Specifies if the resulting value should be rounded.');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('0aac359d6d1b4b4fab626d79290e01a7', 0, 'cafbd01232004756a849e505aae721f7',
+'output.setValue(args[''dataElement''], vitalSignUtils.getHeight(input.value, args[''heightUnit''], args[''round'']), null, args[''override''], context.getFhirRequest().getLastUpdated())', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('0aac359d6d1b4b4fab626d79290e01a7', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('158d4ec6d9cf43819d2c4ddb9691f8f2', 0, 'cafbd01232004756a849e505aae721f7', 'Transforms FHIR Observation Body Height', 'TRANSFORM_FHIR_OB_BODY_HEIGHT');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type, base_script_id)
+VALUES ('8a700412354c4c59aef2e996d52c36c3', 0, 'TRANSFORM_BODY_HEIGHT_FHIR_OB', 'Transforms Body Height FHIR Observation', 'Transforms Body Height to a FHIR Observation and performs height unit conversion.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_OBSERVATION', 'cafbd01232004756a849e505aae721f7');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8a700412354c4c59aef2e996d52c36c3', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8a700412354c4c59aef2e996d52c36c3', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8a700412354c4c59aef2e996d52c36c3', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('b10bf5a234a24769a55ec7cffc895c93', 0, '8a700412354c4c59aef2e996d52c36c3',
+'output.setCode(codeUtils.getRuleCodeableConcept());
+if (output.getCode().isEmpty())
+{
+  output.getCode().setText(dataElementUtils.getDataElementName(args[''dataElement'']));
+}
+output.setCategory(null);
+output.addCategory().addCoding().setSystem(''http://hl7.org/fhir/observationcategory'').setCode(''vitalsigns'').setDisplay(''Vital Signs'');
+var height = input.getIntegerValue(args[''dataElement'']);
+var heightUnit = vitalSignUtils.getHeightUnit(args[''heightUnit'']);
+output.addChild(''valueQuantity'').setValue(args[''round''] ? Math.round(height) : height).setCode(heightUnit.getUcumCode()).setSystem(''http://unitsofmeasure.org'').setUnit(heightUnit.getUnit());
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('b10bf5a234a24769a55ec7cffc895c93', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('e859a64f349d4e67bba0f2460e61fb6e', 0, '8a700412354c4c59aef2e996d52c36c3', 'Transforms Body Height FHIR Observation', 'TRANSFORM_BODY_HEIGHT_FHIR_OB');
+
+-- Script that sets the FHIR observation to the status of the DHIS event
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('1e06ef0524664ed9b32e7f9dfecf4d45', 0, 'TRANSFORM_EVENT_FHIR_EN', 'Transforms DHIS event to FHIR Encounter', 'Transforms DHIS event to FHIR Encounter.',
+'TRANSFORM_TO_FHIR', 'BOOLEAN', 'DHIS_EVENT', 'FHIR_ENCOUNTER');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef0524664ed9b32e7f9dfecf4d45', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef0524664ed9b32e7f9dfecf4d45', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('1e06ef0524664ed9b32e7f9dfecf4d45', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('cfec6b38477749fd944dddab80421bc2', 0, '1e06ef0524664ed9b32e7f9dfecf4d45',
+'output.setType(null);
+output.addType().setText(program.getName() + '': '' + programStage.getName());
+context.setAttribute(''groupencounterevent'' + input.getId(), output);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('cfec6b38477749fd944dddab80421bc2', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('5eab76a90ff443b0a7d05a6e726ca80e', 0, '1e06ef0524664ed9b32e7f9dfecf4d45',
+        'Transforms DHIS event to FHIR Encounter', 'TRANSFORM_EVENT_FHIR_EN',
+        'Transforms DHIS event to FHIR Encounter.');
+
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('ac0af564c3ee49799ac3d36b04ddb73d', 0, '1197b27e395643dda75cbfc6808dc49d', 'All Body Height Observations', 'ALL_OB_BODY_HEIGHT', 'All Body Height Observations.');
+INSERT INTO fhir_code_set_value(code_set_id, code_id)
+  SELECT 'ac0af564c3ee49799ac3d36b04ddb73d', id FROM fhir_code WHERE code IN
+  ('LOINC_83022', 'LOINC_83014', 'LOINC_31385', 'LOINC_31377');
+UPDATE fhir_code_set_value SET preferred_export=true WHERE code_id='d308a6acad84453d9fb6e04f6a468469';
+
+-- Encounter Child Programme, Birth
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled)
+VALUES ('9d342f13aec146299d654f03fd0e848c', 0, 'Child Programme Birth Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('9d342f13aec146299d654f03fd0e848c', '4c074c85be494b9d89739e16b9615dad');
+
+-- Encounter Child Programme, Baby Postnatal
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled)
+VALUES ('1f2da6ec41b04b6499d9e98fca864b0f', 0, 'Child Programme Baby Postnatal Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id)
+VALUES ('1f2da6ec41b04b6499d9e98fca864b0f', '526b4e01774747efa25df32ccd739e87');
+
+INSERT INTO fhir_script (id,version,name,code,description,script_type,return_type,input_type,output_type)
+VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 0, 'Vital Signs New Program Stage', 'VITAL_SIGN_NEW_PS', 'Decides about creation of a new program stage for vital signs.', 'EVALUATE', 'EVENT_DECISION_TYPE', NULL, 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'PROGRAM_STAGE_EVENTS');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('20e1ac3ff49c4fa893e2b5e18c5f9665', 'DATE_TIME');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('09db6430cfb24861befbaf7408e35c2e', 0, '20e1ac3ff49c4fa893e2b5e18c5f9665',
+        'programStageUtils.containsEventDay(programStageEvents, dateTime) ? ''CONTINUE'' : ''NEW_EVENT''', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('09db6430cfb24861befbaf7408e35c2e', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('5f1b7d9848ad4df4bdb223e7de8f0fc1', 0, '20e1ac3ff49c4fa893e2b5e18c5f9665',
+'Vital Signs New Program Stage', 'VITAL_SIGN_NEW_PS', 'Decides about creation of a new program stage for vital signs.');
+
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('07febf71a102408e8c5926d2a6536a39', 0, 'f1da6937e2fe47a4b0f38bbff7818ee1', 'Transforms FHIR Observation Body Weight', 'TRANSFORM_FHIR_OB_BODY_WEIGHT');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value)
+VALUES ('85653f4cf09940728be8e2713d0c865a', '07febf71a102408e8c5926d2a6536a39', '5e272692021444fea16c0c79f2f61917', 'false');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('ddc7c612aabb4ec4bd636d5220cf666f', 0, '83a84beeeadc4c8ab78f8c8b9269883d', 'Transforms Body Weight FHIR Observation', 'TRANSFORM_BODY_WEIGHT_FHIR_OB');
+
+INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,enrollment_date_is_incident,fhir_create_enabled,fhir_update_enabled,fhir_delete_enabled,tracked_entity_fhir_resource_type)
+VALUES ('fe122800620740719b1f161e2844c72f', 0, 'Vital Signs', 'NAME:Vital Signs', '5f9ebdc9852e4c8387ca795946aabc35', TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,'PATIENT');
+INSERT INTO fhir_tracker_program_stage (id,version,name,program_stage_ref,program_id,enabled,creation_enabled,event_date_is_incident,before_script_id,fhir_create_enabled,fhir_update_enabled,fhir_delete_enabled)
+VALUES ('eca2b04a54e84b7595fa8035f7477ed8', 0, 'Daily Vital Signs', 'NAME:Daily Vital Signs', 'fe122800620740719b1f161e2844c72f', TRUE, TRUE, FALSE, '5f1b7d9848ad4df4bdb223e7de8f0fc1', TRUE, TRUE, TRUE);
+
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_imp_script_id, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled, applicable_code_set_id)
+VALUES ('75b9786f87624c54a5a5bdae358a62e5', 0, 'Daily Vital Signs: Weight', NULL, TRUE, 1, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', TRUE, '07febf71a102408e8c5926d2a6536a39', 'ddc7c612aabb4ec4bd636d5220cf666f', TRUE, TRUE, TRUE, 'd37dfecbce884fa49a7844ffe874c140');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, event_creation_enabled, enrollment_creation_enabled)
+VALUES ('75b9786f87624c54a5a5bdae358a62e5', 'eca2b04a54e84b7595fa8035f7477ed8', true, true);
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+VALUES('7edd49b3e32443cf858be909d97bccf1', 0, '75b9786f87624c54a5a5bdae358a62e5', 'CODE:VS_982701', 'dataElement', true);
+
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_imp_script_id, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled,
+                       applicable_code_set_id)
+VALUES ('0035e8b199e04cedacf7726ab26d9483', 0, 'Daily Vital Signs: Height', NULL, TRUE, 1, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', TRUE, '158d4ec6d9cf43819d2c4ddb9691f8f2', 'e859a64f349d4e67bba0f2460e61fb6e', TRUE, TRUE, TRUE, 'ac0af564c3ee49799ac3d36b04ddb73d');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, event_creation_enabled, enrollment_creation_enabled)
+VALUES ('0035e8b199e04cedacf7726ab26d9483', 'eca2b04a54e84b7595fa8035f7477ed8', true, true);
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+VALUES('d2751686cc9f4bc69f44068fe6d806f3', 0, '0035e8b199e04cedacf7726ab26d9483', 'CODE:VS_982702', 'dataElement', true);
+UPDATE fhir_rule_dhis_data_ref SET rule_id='0035e8b199e04cedacf7726ab26d9483'
+WHERE id='d2751686cc9f4bc69f44068fe6d806f3';
