@@ -127,11 +127,19 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     "Script \"" + executableScriptInfo.getScript().getName() + "\" requires variable " + v.getVariableName() + " that has not been provided." );
             }
         } );
-        final Map<String, Object> args = createArgs( executableScriptInfo, arguments );
+
+        final Map<String, Object> args;
+        try
+        {
+            args = createArgs( executableScriptInfo, arguments );
+        }
+        catch ( ScriptPreparationException e )
+        {
+            throw new ScriptPreparationException( "Script \"" + executableScriptInfo.getScript().getName() + "\" argument mismatch: " + e.getMessage(), e );
+        }
 
         final Map<String, Object> scriptVariables = new HashMap<>( variables );
         scriptVariables.put( ARGUMENTS_VARIABLE_NAME, args );
-
 
         final Object result;
         final ScriptSource scriptSource = executableScriptInfo.getScriptSource();

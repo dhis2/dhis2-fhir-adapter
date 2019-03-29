@@ -1,0 +1,253 @@
+{
+  "name": "Child Programme",
+  "id": "EPDyQuoRnXk",
+  "withoutRegistration": false,
+  "displayIncidentDate": true,
+  "selectEnrollmentDatesInFuture": false,
+  "registration": true,
+  "selectIncidentDatesInFuture": false,
+  "trackedEntityType": {
+    "id": "MCPQUTHX1Ze"
+  },
+  "programStages": [
+    {
+      "name": "Birth",
+      "id": "MsWxkiY6tMS",
+      "generatedByEnrollmentDate": false,
+      "repeatable": false,
+      "minDaysFromStart": 0,
+      "programStageDataElements": [
+        {
+          "id": "uRAfo19lLtY",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_391382",
+            "name": "MCH Apgar comment",
+            "id": "wquzcS4X6He",
+            "formName": "Apgar comment",
+            "valueType": "TEXT",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "Ije8HSPh71d",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006098",
+            "name": "MCH Apgar Score",
+            "id": "uzKeaNjgQz9",
+            "formName": "Apgar Score",
+            "valueType": "NUMBER",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "GLrVTw75zSK",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2005736",
+            "name": "MCH Weight (g)",
+            "id": "BnplxU2jGvX",
+            "formName": "Weight (g)",
+            "valueType": "NUMBER",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "aQd5KKFge1U",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006101",
+            "name": "MCH BCG dose",
+            "id": "Lon4lYDF0SH",
+            "formName": "BCG dose",
+            "valueType": "BOOLEAN",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "lm3Cxju7CL0",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006104",
+            "name": "MCH OPV dose",
+            "id": "ft7iD5ZzPxJ",
+            "formName": "OPV dose",
+            "valueType": "TEXT",
+            "optionSetValue": true,
+            "optionSet": {
+              "name": "MNCH Polio doses (0-3)",
+              "id": "kzgQRhOCadd",
+              "options": [
+                {
+                  "code": "0",
+                  "name": "Dose 0"
+                },
+                {
+                  "code": "1",
+                  "name": "Dose 1"
+                },
+                {
+                  "code": "2",
+                  "name": "Dose 2"
+                },
+                {
+                  "code": "3",
+                  "name": "Dose 3"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Baby Postnatal",
+      "id": "qowTSevVSkd",
+      "generatedByEnrollmentDate": false,
+      "repeatable": false,
+      "minDaysFromStart": 6,
+      "programStageDataElements": [
+        {
+          "id": "s7bKmA7gfXq",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006099",
+            "name": "MCH Infant Weight  (g)",
+            "id": "UnN0Jdrfr4o",
+            "formName": "Infant Weight (g)",
+            "valueType": "NUMBER",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "g1eWTx5nsNx",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006125",
+            "name": "MCH Measles dose",
+            "id": "KBLBjsTfNSS",
+            "formName": "Measles dose",
+            "valueType": "BOOLEAN",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "TKnlmmxUEss",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006126",
+            "name": "MCH Yellow fever dose",
+            "id": "TNg7ABaHeP7",
+            "formName": "Yellow fever dose",
+            "valueType": "BOOLEAN",
+            "optionSetValue": false
+          }
+        },
+        {
+          "id": "mx5k0I1SLDt",
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "dataElement": {
+            "code": "DE_2006105",
+            "name": "MCH DPT dose",
+            "id": "vNGGmCPNfky",
+            "formName": "DPT dose",
+            "valueType": "TEXT",
+            "optionSetValue": true,
+            "optionSet": {
+              "name": "MNCH DPT doses (1-3)",
+              "id": "udkr3ihaeD3",
+              "options": [
+                {
+                  "code": "1",
+                  "name": "Dose 1"
+                },
+                {
+                  "code": "2",
+                  "name": "Dose 2"
+                },
+                {
+                  "code": "3",
+                  "name": "Dose 3"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "programTrackedEntityAttributes": [
+    {
+      "name": "Child Programme National identifier",
+      "id": "eUP78IY4rUF",
+      "valueType": "TEXT",
+      "mandatory": true,
+      "trackedEntityAttribute": {
+        "code": "National identifier",
+        "name": "National identifier",
+        "id": "Ewi7FUfcHAD",
+        "generated": false,
+        "valueType": "TEXT"
+      }
+    },
+    {
+      "name": "Child Programme First name",
+      "id": "uFGQkRw6EDE",
+      "valueType": "TEXT",
+      "mandatory": true,
+      "trackedEntityAttribute": {
+        "code": "MMD_PER_NAM",
+        "name": "First name",
+        "id": "TfdH5KvFmMy",
+        "generated": false,
+        "valueType": "TEXT"
+      }
+    },
+    {
+      "name": "Child Programme Last name",
+      "id": "bvdti04phv1",
+      "valueType": "TEXT",
+      "mandatory": true,
+      "trackedEntityAttribute": {
+        "name": "Last name",
+        "id": "aW66s2QSosT",
+        "generated": false,
+        "valueType": "TEXT"
+      }
+    },
+    {
+      "name": "Child Programme Date of birth",
+      "id": "lc0TmYosiUA",
+      "valueType": "DATE",
+      "mandatory": true,
+      "trackedEntityAttribute": {
+        "name": "Date of birth",
+        "id": "BiTsLcJQ95V",
+        "generated": false,
+        "valueType": "DATE"
+      }
+    },
+    {
+      "name": "Child Programme Gender",
+      "id": "UO5ktkMV0IE",
+      "valueType": "TEXT",
+      "mandatory": false,
+      "trackedEntityAttribute": {
+        "name": "Gender",
+        "id": "CklPZdOd6H1",
+        "generated": false,
+        "valueType": "TEXT"
+      }
+    }
+  ]
+}

@@ -287,7 +287,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             {
                 throw new TransformerDataException( "DHIS2 FHIR ID " + dhisFhirResourceId + " does not reference a tracked entity." );
             }
-            trackedEntityInstance = trackedEntityService.findOneById( dhisFhirResourceId.getId() )
+            trackedEntityInstance = trackedEntityService.findOneByIdRefreshed( dhisFhirResourceId.getId() )
                 .orElseThrow( () -> new TransformerDataException( "Tracked entity instance for DHIS2 FHIR ID " + dhisFhirResourceId + " could not be found" ) );
         }
         else

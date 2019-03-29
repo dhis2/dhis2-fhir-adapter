@@ -93,7 +93,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case ORGANIZATION_UNIT:
                 return organizationUnitService.findOneByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case TRACKED_ENTITY:
-                return trackedEntityService.findOneById( dhisResourceId.getId() );
+                return trackedEntityService.findOneByIdRefreshed( dhisResourceId.getId() );
             case PROGRAM_STAGE_EVENT:
                 return eventService.findOneById( dhisResourceId.getId() );
             case ENROLLMENT:

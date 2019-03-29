@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepositor
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedEvent;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
@@ -130,7 +131,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
 
     @Nonnull
     @Override
-    public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource )
+    public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
     {
         final Event event = (Event) dhisResource;
 

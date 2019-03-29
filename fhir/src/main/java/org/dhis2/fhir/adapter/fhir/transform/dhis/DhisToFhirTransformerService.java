@@ -74,7 +74,7 @@ public interface DhisToFhirTransformerService
     DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirClient fhirClient, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource, @Nonnull FhirResourceType fhirResourceType, @Nonnull UUID ruleId );
 
     @Nonnull
-    DhisToFhirTransformerRequest updateTransformerRequest( @Nonnull DhisToFhirTransformerRequest transformerRequest, @Nonnull DhisResource dhisResource );
+    DhisToFhirTransformerRequest updateTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisToFhirTransformerRequest transformerRequest, @Nonnull DhisResource dhisResource );
 
     @Nullable
     DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull DhisToFhirTransformerRequest transformerRequest ) throws TransformerException;

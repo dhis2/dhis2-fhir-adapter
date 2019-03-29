@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
@@ -85,7 +86,7 @@ public class OrganizationUnitToFhirRequestResolver extends AbstractDhisToFhirReq
 
     @Nonnull
     @Override
-    public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource )
+    public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
     {
         return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( (OrganizationUnit) dhisResource ) );
     }

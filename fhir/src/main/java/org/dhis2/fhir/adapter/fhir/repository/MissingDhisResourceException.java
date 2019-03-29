@@ -47,6 +47,7 @@ public class MissingDhisResourceException extends RuntimeException
 
     public MissingDhisResourceException( @Nonnull DhisResourceId dhisResourceId )
     {
+        super( "The mandatory DHIS resource could not be found: " + dhisResourceId );
         this.dhisResourceId = dhisResourceId;
     }
 

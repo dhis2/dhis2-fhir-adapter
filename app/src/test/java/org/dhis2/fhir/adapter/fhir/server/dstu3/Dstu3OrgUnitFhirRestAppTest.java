@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.server.dstu3;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -82,6 +83,76 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
         client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+    }
+
+    @Test( expected = ResourceNotFoundException.class )
+    public void getLocationNotExistsRepeated() throws Exception
+    {
+        try
+        {
+            getLocationNotExists();
+            Assert.fail( "Exception expected also an first invocation." );
+        }
+        catch ( ResourceNotFoundException e )
+        {
+            getLocationNotExists();
+        }
+    }
+
+    private void getLocationNotExists() throws Exception
+    {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/0dXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withStatus( HttpStatus.NOT_FOUND ).contentType( MediaType.APPLICATION_JSON ).body( "{}" ) );
+
+        try
+        {
+            final IGenericClient client = createGenericClient();
+            client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+            client.read().resource( Location.class ).withId( "ou-0dXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        }
+        catch ( ResourceNotFoundException e )
+        {
+            systemDhis2Server.verify();
+            userDhis2Server.verify();
+            throw e;
+        }
+    }
+
+    @Test( expected = ResourceNotFoundException.class )
+    public void getLocationRuleNotFoundRepeated() throws Exception
+    {
+        try
+        {
+            getLocationNotExists();
+            Assert.fail( "Exception expected also an first invocation." );
+        }
+        catch ( ResourceNotFoundException e )
+        {
+            getLocationNotExists();
+        }
+    }
+
+    private void getLocationRuleNotFound() throws Exception
+    {
+        systemDhis2Server.reset();
+        userDhis2Server.reset();
+
+        try
+        {
+            final IGenericClient client = createGenericClient();
+            client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+            client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-a9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        }
+        catch ( ResourceNotFoundException e )
+        {
+            systemDhis2Server.verify();
+            userDhis2Server.verify();
+            throw e;
+        }
     }
 
     @Test

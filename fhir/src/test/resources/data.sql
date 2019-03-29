@@ -230,7 +230,16 @@ VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 0, 'Observation TEI Lookup', 'OBSERV
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8b5ab5f1363d4ccb8e63d6ecf25b3017', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('960d2e6c247948a2b04eb14879e71d14', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3017', 'referenceUtils.getResource(input.subject, ''PATIENT'')', 'JAVASCRIPT');
+VALUES ('960d2e6c247948a2b04eb14879e71d14', 0, '8b5ab5f1363d4ccb8e63d6ecf25b3017', 'if (context.getFhirRequest().isDhisFhirId())
+{
+  fhirResource = fhirResourceUtils.createResource(''Patient'');
+  fhirResource.setId(input.getSubject().getReferenceElement());
+}
+else
+{
+  fhirResource = referenceUtils.getResource(input.subject, ''Patient'');
+}
+fhirResource', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('960d2e6c247948a2b04eb14879e71d14', 'DSTU3');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)

@@ -52,6 +52,9 @@ public interface TrackedEntityService
         @Nonnull Map<RequiredValueType, String> requiredValues );
 
     @Nonnull
+    Optional<TrackedEntityInstance> findOneByIdRefreshed( @Nonnull String id );
+
+    @Nonnull
     Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
 
     @Nonnull

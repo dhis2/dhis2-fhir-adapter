@@ -34,6 +34,7 @@ import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
@@ -63,7 +64,8 @@ public class RepositoryExceptionInterceptor extends InterceptorAdapter
     {
         final BaseServerResponseException result;
         final Throwable unprocessableEntityException = ExceptionUtils.findCause( theException, DhisConflictException.class,
-            TransformerDataException.class, TrackedEntityInstanceNotFoundException.class, DhisToFhirDataProviderException.class, DhisDataExistsException.class );
+            TransformerDataException.class, TrackedEntityInstanceNotFoundException.class, DhisToFhirDataProviderException.class, DhisDataExistsException.class,
+            MissingDhisResourceException.class );
         if ( unprocessableEntityException != null )
         {
             log.info( "Request could not be processed because of an error: {}", unprocessableEntityException.getMessage() );

@@ -165,7 +165,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
-    public Optional<TrackedEntityInstance> findOneById( @Nonnull String id )
+    @CachePut( key = "{'findOneById', #a0}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances" )
+    public Optional<TrackedEntityInstance> findOneByIdRefreshed( @Nonnull String id )
     {
         TrackedEntityInstance instance;
         try
@@ -181,6 +182,15 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             throw e;
         }
         return Optional.of( instance );
+    }
+
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
+    @Nonnull
+    @Override
+    @Cacheable( key = "{'findOneById', #a0}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances" )
+    public Optional<TrackedEntityInstance> findOneById( @Nonnull String id )
+    {
+        return findOneByIdRefreshed( id );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )

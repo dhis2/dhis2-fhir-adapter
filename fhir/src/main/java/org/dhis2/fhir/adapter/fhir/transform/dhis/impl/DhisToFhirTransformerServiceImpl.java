@@ -257,7 +257,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     {
         final DhisToFhirRequestResolver requestResolver = getRequestResolver( dhisRequest.getResourceType() );
         final ScriptedDhisResource scriptedResource =
-            requestResolver.convert( Objects.requireNonNull( DhisBeanTransformerUtils.clone( resource ) ) );
+            requestResolver.convert( Objects.requireNonNull( DhisBeanTransformerUtils.clone( resource ) ), dhisRequest );
         return createTransformerRequest( false, fhirClient, dhisRequest, scriptedResource, Collections.singletonList( ruleInfo ) );
     }
 
@@ -266,7 +266,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     public DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirClient fhirClient, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         final DhisToFhirRequestResolver requestResolver = getRequestResolver( dhisRequest.getResourceType() );
-        return createTransformerRequest( dhisRequest, rr -> rr.convert( resource ), requestResolver, ( rr, scriptedResource ) -> rr.resolveRules( scriptedResource, rules ),
+        return createTransformerRequest( dhisRequest, rr -> rr.convert( resource, dhisRequest ), requestResolver, ( rr, scriptedResource ) -> rr.resolveRules( scriptedResource, rules ),
             ri -> true, ( si, rr ) -> fhirClient );
     }
 
@@ -274,7 +274,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     @Override
     public DhisToFhirTransformerRequest createTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource resource )
     {
-        return createTransformerRequest( dhisRequest, rr -> rr.convert( Objects.requireNonNull( DhisBeanTransformerUtils.clone( resource ) ) ),
+        return createTransformerRequest( dhisRequest, rr -> rr.convert( Objects.requireNonNull( DhisBeanTransformerUtils.clone( resource ) ), dhisRequest ),
             ri -> true, ( si, rr ) -> rr.resolveFhirClient( si ).orElse( null ) );
     }
 
@@ -316,13 +316,13 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     {
         final DhisToFhirRequestResolver requestResolver = getRequestResolver( dhisResource.getResourceType() );
         final ScriptedDhisResource scriptedDhisResource = requestResolver.convert(
-            Objects.requireNonNull( DhisBeanTransformerUtils.clone( dhisResource ) ) );
+            Objects.requireNonNull( DhisBeanTransformerUtils.clone( dhisResource ) ), dhisRequest );
 
         final List<RuleInfo<? extends AbstractRule>> ruleInfos = requestResolver.resolveRules( scriptedDhisResource );
         final RuleInfo<? extends AbstractRule> matchingRuleInfo = ruleInfos.stream().filter( ri -> ri.getRule().getId().equals( ruleId ) ).findFirst().orElse( null );
         if ( (matchingRuleInfo == null) || !fhirResourceType.equals( matchingRuleInfo.getRule().getFhirResourceType() ) )
         {
-            logger.info( "Could not find any matching grouping rule to process DHIS resource." );
+            logger.info( "Could not find any matching rule to process DHIS resource." );
             return null;
         }
         final List<RuleInfo<? extends AbstractRule>> groupingRuleInfos = ruleInfos.stream()
@@ -369,11 +369,11 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     @Override
     @Nonnull
-    public DhisToFhirTransformerRequest updateTransformerRequest( @Nonnull DhisToFhirTransformerRequest transformerRequest, @Nonnull DhisResource dhisResource )
+    public DhisToFhirTransformerRequest updateTransformerRequest( @Nonnull DhisRequest dhisRequest, @Nonnull DhisToFhirTransformerRequest transformerRequest, @Nonnull DhisResource dhisResource )
     {
         final DhisToFhirRequestResolver requestResolver = getRequestResolver( dhisResource.getResourceType() );
         final DhisResource input = Objects.requireNonNull( DhisBeanTransformerUtils.clone( dhisResource ) );
-        final ScriptedDhisResource scriptedInput = requestResolver.convert( input );
+        final ScriptedDhisResource scriptedInput = requestResolver.convert( input, dhisRequest );
 
         final DhisToFhirTransformerRequestImpl transformerRequestImpl = (DhisToFhirTransformerRequestImpl) transformerRequest;
         transformerRequestImpl.setInput( scriptedInput );
