@@ -147,7 +147,7 @@ public class DhisRepositoryImpl implements DhisRepository
         this.fhirRestInterfaceConfig = fhirRestInterfaceConfig;
     }
 
-    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class } )
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, UnauthorizedException.class } )
     @Override
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public void save( @Nonnull DhisSyncGroup syncGroup, @Nonnull DhisResource resource )

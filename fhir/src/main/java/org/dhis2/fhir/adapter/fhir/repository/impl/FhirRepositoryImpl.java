@@ -33,6 +33,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
@@ -148,7 +149,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
     @Override
     @Nullable
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class, DhisDataExistsException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class, DhisDataExistsException.class, UnauthorizedException.class } )
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public FhirRepositoryOperationOutcome save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation )
     {

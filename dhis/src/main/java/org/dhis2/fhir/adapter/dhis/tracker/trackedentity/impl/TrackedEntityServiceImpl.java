@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
@@ -130,7 +131,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         this.storedItemService = storedItemService;
     }
 
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Override
     public void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type, @Nonnull Map<RequiredValueType, String> requiredValues )
     {
@@ -161,7 +162,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         } );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public Optional<TrackedEntityInstance> findOneById( @Nonnull String id )
@@ -182,7 +183,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return Optional.of( instance );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @CachePut( key = "{'findByAttrValue', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances", unless = "#result.size() == 0" )
@@ -197,6 +198,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             .getBody() ).getTrackedEntityInstances();
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @Cacheable( key = "{'findByAttrValue', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances", unless = "#result.size() == 0" )
@@ -212,7 +214,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return new TrackedEntityPolledItemRetriever( restTemplate, toleranceMillis, maxSearchCount, zoneId ).poll( lastUpdated, excludedStoredBy, consumer, null );
     }
 
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
     public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
@@ -220,6 +222,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
@@ -249,6 +252,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             (instances.getTrackedEntityInstances().size() >= pagingQuery.getPageSize()) );
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     protected TrackedEntityInstance create( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {

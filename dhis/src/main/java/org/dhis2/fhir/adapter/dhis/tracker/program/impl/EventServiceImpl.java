@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.apache.commons.lang3.ObjectUtils;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
@@ -113,7 +114,7 @@ public class EventServiceImpl implements EventService
         this.polledProgramRetriever = polledProgramRetriever;
     }
 
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
     public Event createOrMinimalUpdate( @Nonnull Event event )
@@ -121,7 +122,7 @@ public class EventServiceImpl implements EventService
         return event.isNewResource() ? create( event ) : minimalUpdate( event );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @CachePut( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
@@ -133,7 +134,7 @@ public class EventServiceImpl implements EventService
             programStageId.equals( e.getProgramStageId() ) ).collect( Collectors.toList() );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @Cacheable( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
@@ -143,7 +144,7 @@ public class EventServiceImpl implements EventService
         return findRefreshed( programId, programStageId, enrollmentId, trackedEntityInstanceId );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public Optional<Event> findOneById( @Nonnull String eventId )
@@ -164,6 +165,7 @@ public class EventServiceImpl implements EventService
         return Optional.of( instance );
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public Optional<Event> findOneDeletedById( @Nonnull String eventId )
@@ -237,6 +239,7 @@ public class EventServiceImpl implements EventService
         return event;
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )

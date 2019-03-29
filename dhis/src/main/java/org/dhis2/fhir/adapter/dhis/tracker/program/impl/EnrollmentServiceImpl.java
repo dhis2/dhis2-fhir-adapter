@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
@@ -80,7 +81,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
         this.restTemplate = restTemplate;
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @CachePut( key = "{'findLatestActive', #a0, #a1}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
@@ -91,6 +92,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return Objects.requireNonNull( result.getBody() ).getEnrollments().stream().findFirst();
     }
 
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @Cacheable( key = "{'findLatestActive', #a0, #a1}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
@@ -99,7 +101,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return findLatestActiveRefreshed( programId, trackedEntityInstanceId );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public Optional<Enrollment> findOneById( @Nonnull String id )
@@ -120,7 +122,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return Optional.of( instance );
     }
 
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
     public Enrollment create( @Nonnull Enrollment enrollment )
@@ -161,7 +163,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
         return enrollment;
     }
 
-    @HystrixCommand( ignoreExceptions = { DhisConflictException.class } )
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
     public Enrollment update( @Nonnull Enrollment enrollment )

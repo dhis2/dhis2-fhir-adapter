@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
@@ -112,7 +113,7 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
         return findByReference( systemRestTemplate, reference );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     @CachePut( unless = "#result==null" )
@@ -121,7 +122,7 @@ public class OrganizationUnitServiceImpl implements OrganizationUnitService
         return findByReference( userRestTemplate, reference );
     }
 
-    @HystrixCommand
+    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
     public DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
