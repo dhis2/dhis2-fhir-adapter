@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  */
 
 import ca.uhn.fhir.rest.param.DateRangeParam;
+import org.dhis2.fhir.adapter.dhis.model.ItemContainerType;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -63,7 +64,8 @@ public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> i
 
     private UriFilterApplier uriFilterApplier;
 
-    protected AbstractPreparedDhisToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<T>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
+    protected AbstractPreparedDhisToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<T>> ruleInfos,
+        @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
     {
         this.fhirVersion = fhirVersion;
         this.ruleInfos = ruleInfos;
@@ -101,9 +103,9 @@ public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> i
         this.uriFilterApplier = uriFilterApplier;
     }
 
-    public SearchFilterCollector createSearchFilterCollector()
+    public SearchFilterCollector createSearchFilterCollector( @Nullable ItemContainerType itemContainerType )
     {
-        return new SearchFilterCollector( filter );
+        return new SearchFilterCollector( itemContainerType, filter );
     }
 
     @Nonnull
@@ -119,5 +121,11 @@ public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> i
             throw new DhisToFhirDataProviderException( "Search parameter to filter last updated date range is not yet supported." );
         }
         return uriFilterApplier.add( uriBuilder, variables );
+    }
+
+    @Override
+    public boolean containsQueryParam( @Nonnull String name )
+    {
+        return uriFilterApplier.containsQueryParam( name );
     }
 }

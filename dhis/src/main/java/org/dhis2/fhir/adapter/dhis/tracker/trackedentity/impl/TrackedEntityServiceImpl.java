@@ -241,7 +241,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         final List<String> variables = new ArrayList<>();
         final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/trackedEntityInstances.json" )
             .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "trackedEntityType", trackedEntityTypeId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", TEI_FIELDS ).build().toString();
+            .queryParam( "trackedEntityType", trackedEntityTypeId ).queryParam( "ouMode", uriFilterApplier.containsQueryParam( "ou" ) ? "SELECTED" : "ACCESSIBLE" )
+            .queryParam( "fields", TEI_FIELDS ).build().toString();
         final ResponseEntity<TrackedEntityInstances> result;
         try
         {

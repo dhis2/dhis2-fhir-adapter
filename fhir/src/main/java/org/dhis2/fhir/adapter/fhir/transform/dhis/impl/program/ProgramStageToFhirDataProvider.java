@@ -79,7 +79,7 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
 
     public ProgramStageToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService metadataService, @Nonnull EventService eventService )
     {
-        super( scriptExecutor );
+        super( scriptExecutor, false );
         this.metadataService = metadataService;
         this.eventService = eventService;
     }
@@ -143,7 +143,7 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
             from = 0;
 
             // may be filtered by ID of program stage
-            ps.setUriFilterApplier( apply( ps.getFhirVersion(), ps.getRuleInfos(), ps.createSearchFilterCollector() ) );
+            ps.setUriFilterApplier( apply( ps.getFhirVersion(), ps.getRuleInfos(), ps.createSearchFilterCollector( null ) ) );
         }
         else
         {

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -185,5 +185,17 @@ public class WritableTrackedEntityType extends AbstractDhisType implements Track
             this.attributesById = attributesById = attributes.stream().filter( a -> (a.getAttribute() != null) ).collect( Collectors.toMap( a -> a.getAttribute().getId(), a -> a ) );
         }
         return Optional.ofNullable( attributesById.get( id ) );
+    }
+
+    @Nullable
+    @Override
+    public String getItemId( @Nullable Reference reference )
+    {
+        if ( reference == null )
+        {
+            return null;
+        }
+
+        return getOptionalTypeAttribute( reference ).map( TrackedEntityTypeAttribute::getAttributeId ).orElse( null );
     }
 }

@@ -200,6 +200,40 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         userDhis2Server.verify();
     }
 
+    @Test
+    public void searchObservationPatient() throws Exception
+    {
+        expectProgramStageMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=10&program=EPDyQuoRnXk&programStage=qowTSevVSkd&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
+                "program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-70-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx.json?" +
+                "fields=deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-tei-15-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=9&program=EPDyQuoRnXk&programStage=MsWxkiY6tMS&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
+                "program,enrollment," +
+                "trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-71-only-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEp.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-org-unit-OU_4567.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Observation.class ).where( Observation.PATIENT.hasId( new IdType( "Patient", "te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Observation observation = (Observation) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( 0, observation.getIdentifier().size() );
+        Assert.assertEquals( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", observation.getSubject().getReference() );
+        Assert.assertEquals( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352", observation.getPerformerFirstRep().getReference() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
+    }
+
     @Test( expected = AuthenticationException.class )
     public void createObservationWithoutAuthorization() throws Exception
     {

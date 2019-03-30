@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
 import javax.annotation.Nonnull;
@@ -39,23 +40,23 @@ import javax.annotation.Nonnull;
  */
 public class TrackedEntityToFhirSearchState implements DhisToFhirSearchState
 {
-    private final String typeId;
+    private final TrackedEntityType trackedEntityType;
 
     private final int from;
 
     private final boolean more;
 
-    public TrackedEntityToFhirSearchState( @Nonnull String typeId, int from, boolean more )
+    public TrackedEntityToFhirSearchState( @Nonnull TrackedEntityType trackedEntityType, int from, boolean more )
     {
-        this.typeId = typeId;
+        this.trackedEntityType = trackedEntityType;
         this.from = from;
         this.more = more;
     }
 
     @Nonnull
-    public String getTypeId()
+    public TrackedEntityType getTrackedEntityType()
     {
-        return typeId;
+        return trackedEntityType;
     }
 
     public int getFrom()

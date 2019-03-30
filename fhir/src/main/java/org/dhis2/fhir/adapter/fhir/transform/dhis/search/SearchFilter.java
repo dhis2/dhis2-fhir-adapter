@@ -30,10 +30,12 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.search;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProviderException;
+import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.NameUtils;
 
@@ -52,21 +54,58 @@ public class SearchFilter
 {
     private final SearchFilterCollector searchFilterCollector;
 
-    public SearchFilter( @Nonnull SearchFilterCollector searchFilterCollector )
+    private final boolean onlyStringContains;
+
+    public SearchFilter( @Nonnull SearchFilterCollector searchFilterCollector, boolean onlyStringContains )
     {
         this.searchFilterCollector = searchFilterCollector;
+        this.onlyStringContains = onlyStringContains;
+    }
+
+    @Nullable
+    public Reference createReference( @Nullable String value, @Nonnull Object referenceType )
+    {
+        return TransformerUtils.createReference( value, referenceType );
     }
 
     public boolean addReference( @Nonnull String fhirSearchParamName, @Nullable Object defaultFhirResourceType, @Nonnull Object dhisResourceType, @Nonnull Object dhisProperty )
     {
-        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty );
+        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty, false );
+        final DhisFhirResourceId dhisResourceId = getSearchedDhisResourceId( fhirSearchParamName, defaultFhirResourceType, dhisResourceType );
+
+        if ( dhisPropertyName == null )
+        {
+            throw new TransformerMappingException( "Mapping reference search property is not known: " + dhisProperty );
+        }
+
+        if ( dhisResourceId == null )
+        {
+            return false;
+        }
+
+        if ( SearchFilterCollector.QUERY_PARAM_NAMES.contains( dhisPropertyName ) )
+        {
+            searchFilterCollector.addQueryParam( dhisPropertyName, dhisResourceId.getId() );
+        }
+        else
+        {
+            searchFilterCollector.addFilterExpression( dhisPropertyName, "eq", dhisResourceId.getId() );
+        }
+
+        searchFilterCollector.processedSearchParamValues( fhirSearchParamName );
+        return true;
+    }
+
+    @Nullable
+    private DhisFhirResourceId getSearchedDhisResourceId( @Nonnull String fhirSearchParamName, @Nullable Object defaultFhirResourceType, @Nonnull Object dhisResourceType )
+    {
         final FhirResourceType fhirType = resolveFhirResourceType( defaultFhirResourceType );
         final DhisResourceType dhisType = resolveDhisResourceType( dhisResourceType );
 
         final List<SearchParamValue> searchParamValues = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
         if ( searchParamValues == null )
         {
-            return false;
+            return null;
         }
 
         if ( searchParamValues.size() != 1 )
@@ -88,33 +127,30 @@ public class SearchFilter
         {
             throw new DhisToFhirDataProviderException( "Search filter contains unexpected FHIR resource reference: " + dhisFhirResourceId );
         }
-
-        if ( SearchFilterCollector.QUERY_PARAM_NAMES.contains( dhisPropertyName ) )
-        {
-            searchFilterCollector.addQueryParam( dhisPropertyName, dhisFhirResourceId.getId() );
-        }
-        else
-        {
-            searchFilterCollector.addFilterExpression( dhisPropertyName, "eq", dhisFhirResourceId.getId() );
-        }
-        searchFilterCollector.processedSearchParamValues( fhirSearchParamName );
-        return true;
+        return dhisFhirResourceId;
     }
 
     public boolean addToken( @Nonnull String fhirSearchParamName, @Nonnull String searchParamValue, @Nonnull Object dhisProperty, @Nonnull String dhisOperator, @Nullable String dhisValue )
     {
-        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty );
+        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty, false );
+
+        if ( dhisPropertyName == null )
+        {
+            throw new TransformerMappingException( "Mapping reference search property is not known: " + dhisProperty );
+        }
 
         final List<SearchParamValue> searchParamValues = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
         if ( ( searchParamValues == null ) || ( searchParamValues.size() != 1 ) )
         {
             return false;
         }
+
         final SearchParamValue spv = searchParamValues.get( 0 );
         if ( spv.getModifier() != null )
         {
             throw new DhisToFhirDataProviderException( "Modifiers are not supported for filtering tokens: " + fhirSearchParamName );
         }
+
         if ( ( spv.getValues().size() != 1 ) || !searchParamValue.equals( spv.getValues().get( 0 ) ) )
         {
             return false;
@@ -127,10 +163,30 @@ public class SearchFilter
 
     public boolean add( @Nonnull String fhirSearchParamName, @Nonnull Object searchParamType, @Nonnull Object dhisProperty )
     {
-        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty );
-        final SearchParamType type = resolveSearchParamType( searchParamType );
+        return add( fhirSearchParamName, searchParamType, dhisProperty, false );
+    }
 
+    public boolean addOptional( @Nonnull String fhirSearchParamName, @Nonnull Object searchParamType, @Nonnull Object dhisProperty )
+    {
+        return add( fhirSearchParamName, searchParamType, dhisProperty, true );
+    }
+
+    private boolean add( @Nonnull String fhirSearchParamName, @Nonnull Object searchParamType, @Nonnull Object dhisProperty, boolean optional )
+    {
+        final String dhisPropertyName = searchFilterCollector.mapDhisProperty( dhisProperty, optional );
+        final SearchParamType type = resolveSearchParamType( searchParamType );
         final List<SearchParamValue> searchParamValue = searchFilterCollector.getSearchParamValues( fhirSearchParamName );
+
+        if ( dhisPropertyName == null )
+        {
+            if ( !optional )
+            {
+                throw new TransformerMappingException( "Mapped reference for search parameter is not known: " + fhirSearchParamName );
+            }
+
+            return false;
+        }
+
         if ( searchParamValue == null )
         {
             return false;
@@ -148,11 +204,15 @@ public class SearchFilter
                         dhisOperator = "eq";
                         break;
                     case SearchParamValue.CONTAINS_MODIFIER:
-                        dhisOperator = "ilike";
+                        dhisOperator = onlyStringContains ? "like" : "ilike";
                         break;
                     default:
                         throw new DhisToFhirDataProviderException( "Unsupported search modifier: " + spv.getModifier() );
                 }
+            }
+            if ( onlyStringContains && dhisOperator.equals( "$ilike" ) )
+            {
+                throw new DhisToFhirDataProviderException( "Use search modifier 'eq' or 'contains' for search parameter " + fhirSearchParamName );
             }
 
             for ( final PrefixedSearchValue psv : spv.getPrefixedValue( type.isPrefixAllowed() ) )
@@ -226,7 +286,7 @@ public class SearchFilter
         }
         catch ( IllegalArgumentException e )
         {
-            throw new TransformerMappingException( "Invalid DHIS resource typè: " + dhisResourceType );
+            throw new TransformerMappingException( "Invalid DHIS resource type: " + dhisResourceType );
         }
     }
 

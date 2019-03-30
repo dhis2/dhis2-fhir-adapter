@@ -42,4 +42,6 @@ public interface UriFilterApplier
 {
     @Nonnull
     <T extends UriBuilder> T add( @Nonnull T uriBuilder, @Nonnull List<String> variables );
+
+    boolean containsQueryParam( @Nonnull String name );
 }

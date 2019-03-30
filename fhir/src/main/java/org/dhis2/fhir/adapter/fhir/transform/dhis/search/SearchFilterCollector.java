@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.search;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.ItemContainerType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -55,7 +56,7 @@ import java.util.function.Function;
 public class SearchFilterCollector implements UriFilterApplier
 {
     public static final Set<String> QUERY_PARAM_NAMES = Collections.unmodifiableSet(
-        new HashSet<>( Arrays.asList( "orgUnit", "trackedEntityInstance", "event" ) ) );
+        new HashSet<>( Arrays.asList( "event", "orgUnit", "ou", "status", "trackedEntityInstance" ) ) );
 
     private final Function<Reference, String> dhisPropertyRefResolver;
 
@@ -67,7 +68,12 @@ public class SearchFilterCollector implements UriFilterApplier
 
     public SearchFilterCollector( @Nullable Map<String, List<String>> filter )
     {
-        this( null, filter );
+        this( (Function<Reference, String>) null, filter );
+    }
+
+    public SearchFilterCollector( @Nullable ItemContainerType itemContainerType, @Nullable Map<String, List<String>> filter )
+    {
+        this( itemContainerType == null ? null : (Function<Reference, String>) itemContainerType::getItemId, filter );
     }
 
     public SearchFilterCollector( @Nullable Function<Reference, String> dhisPropertyRefResolver, @Nullable Map<String, List<String>> filter )
@@ -96,21 +102,36 @@ public class SearchFilterCollector implements UriFilterApplier
         }
     }
 
-    @Nonnull
-    public String mapDhisProperty( @Nonnull Object property )
+    @Nullable
+    public String mapDhisProperty( @Nullable Object property, boolean optional )
     {
+        if ( property == null )
+        {
+            return null;
+        }
+
         if ( property instanceof String )
         {
             return (String) property;
         }
+
         if ( property instanceof Reference )
         {
             if ( dhisPropertyRefResolver == null )
             {
                 throw new TransformerMappingException( "Mapping reference search properties is not supported: " + property );
             }
-            return dhisPropertyRefResolver.apply( (Reference) property );
+
+            String result = dhisPropertyRefResolver.apply( (Reference) property );
+
+            if ( result == null && !optional )
+            {
+                throw new TransformerMappingException( "Mapping reference search property is not known: " + property );
+            }
+
+            return result;
         }
+
         throw new TransformerMappingException( "Not a valid search property type: " + property.getClass() );
     }
 
@@ -126,6 +147,11 @@ public class SearchFilterCollector implements UriFilterApplier
             throw new DhisToFhirDataProviderException( "Colon characters in search parameter values are not supported." );
         }
         filterExpressions.add( propertyName + ':' + operator + ':' + StringUtils.defaultString( value ) );
+    }
+
+    public boolean containsQueryParam( @Nonnull String name )
+    {
+        return queryParams.containsKey( name );
     }
 
     @Override

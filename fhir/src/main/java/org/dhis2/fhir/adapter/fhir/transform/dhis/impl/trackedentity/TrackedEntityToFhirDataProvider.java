@@ -52,7 +52,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchResult;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirDataProvider;
-import org.dhis2.fhir.adapter.model.Identifiable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -78,7 +77,7 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
 
     public TrackedEntityToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull TrackedEntityService service )
     {
-        super( scriptExecutor );
+        super( scriptExecutor, true );
         this.metadataService = metadataService;
         this.service = service;
     }
@@ -123,7 +122,7 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
             .map( ri -> ri.getRule().getTrackedEntity().getTrackedEntityReference() ).collect( Collectors.toCollection( TreeSet::new ) );
         final List<TrackedEntityType> trackedEntityTypes = typeRefs.stream().map( typeRef -> metadataService.findTypeByReference( typeRef )
             .orElseThrow( () -> new TransformerMappingException( "Tracked entity type does not exist: " + typeRef ) ) ).collect( Collectors.toList() );
-        return new PreparedTrackedEntityToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count, trackedEntityTypes.stream().map( Identifiable::getId ).collect( Collectors.toList() ) );
+        return new PreparedTrackedEntityToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count, trackedEntityTypes );
     }
 
     @Nullable
@@ -133,37 +132,40 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
         final PreparedTrackedEntityToFhirSearch ps = (PreparedTrackedEntityToFhirSearch) preparedSearch;
         final TrackedEntityToFhirSearchState ss = (TrackedEntityToFhirSearchState) state;
 
-        final String typeId;
+        final TrackedEntityType type;
         final int from;
         if ( (ss == null) || !ss.isMore() )
         {
-            typeId = ps.getNextTypeId( (ss == null) ? null : ss.getTypeId() );
-            if ( typeId == null )
+            type = ps.getNextType( ( ss == null ) ? null : ss.getTrackedEntityType() );
+
+            if ( type == null )
             {
                 return null;
             }
+
             from = 0;
 
             // may be filtered by ID of tracked entity type
-            ps.setUriFilterApplier( apply( ps.getFhirVersion(), ps.getRuleInfos(), ps.createSearchFilterCollector() ) );
+            ps.setUriFilterApplier( apply( ps.getFhirVersion(), ps.getRuleInfos(), ps.createSearchFilterCollector( type ) ) );
         }
         else
         {
-            typeId = ss.getTypeId();
+            type = ss.getTrackedEntityType();
             from = ss.getFrom();
         }
 
         final DhisResourceResult<TrackedEntityInstance> result;
         try
         {
-            result = service.find( typeId, ps, from, max );
+            result = service.find( type.getId(), ps, from, max );
         }
         catch ( DhisFindException e )
         {
             throw new DhisToFhirDataProviderException( e.getMessage(), e );
         }
+
         return new DhisToFhirSearchResult<>( result.getResources(),
-            new TrackedEntityToFhirSearchState( typeId, from + result.getResources().size(),
+            new TrackedEntityToFhirSearchState( type, from + result.getResources().size(),
                 !result.getResources().isEmpty() && result.isMore() ) );
     }
 }

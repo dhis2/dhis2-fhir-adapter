@@ -114,4 +114,11 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, ImmutableD
     {
         return delegate.isReference( reference );
     }
+
+    @Nullable
+    @Override
+    public String getItemId( @Nullable Reference reference )
+    {
+        return delegate.getItemId( reference );
+    }
 }

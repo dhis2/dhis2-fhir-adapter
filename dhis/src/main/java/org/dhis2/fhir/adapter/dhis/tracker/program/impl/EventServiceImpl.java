@@ -248,8 +248,9 @@ public class EventServiceImpl implements EventService
         final List<String> variables = new ArrayList<>();
         final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/events.json" )
             .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "program", programId ).queryParam( "programStage", programStageId ).queryParam( "ouMode", "ACCESSIBLE" ).queryParam( "fields", FIELDS )
-            .build().toString();
+            .queryParam( "program", programId ).queryParam( "programStage", programStageId )
+            .queryParam( "ouMode", uriFilterApplier.containsQueryParam( "orgUnit" ) ? "SELECTED" : "ACCESSIBLE" )
+            .queryParam( "fields", FIELDS ).build().toString();
         final ResponseEntity<DhisEvents> result;
         try
         {

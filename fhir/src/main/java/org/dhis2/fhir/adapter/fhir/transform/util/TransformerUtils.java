@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -40,6 +42,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,6 +59,26 @@ public abstract class TransformerUtils
     public static final String TRANSFORMER_CONTEXT_VAR_NAME = "transformerContext";
 
     public static final String RULE_VAR_NAME = "rule";
+
+    @Nullable
+    public static Reference createReference( @Nullable String value, @Nonnull Object referenceType )
+    {
+        final ReferenceType rt;
+        try
+        {
+            rt = NameUtils.toEnumValue( ReferenceType.class, referenceType );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Not a valid reference type: " + referenceType, e );
+        }
+
+        if ( value == null )
+        {
+            return null;
+        }
+        return new Reference( value, rt );
+    }
 
     @Nonnull
     public static <T> T getScriptVariable( @Nonnull Map<String, Object> scriptVariables, @Nonnull ScriptVariable scriptVariable, @Nonnull Class<T> type ) throws FatalTransformerException

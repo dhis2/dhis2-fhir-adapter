@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,47 +28,21 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.rest.param.DateRangeParam;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Implementation of {@link PreparedDhisToFhirSearch} for tracked entity types.
+ * Type definition of an item container.
  *
  * @author volsch
  */
-public class PreparedTrackedEntityToFhirSearch extends AbstractPreparedDhisToFhirSearch<TrackedEntityRule>
+public interface ItemContainerType
 {
-    private final List<TrackedEntityType> types;
-
-    public PreparedTrackedEntityToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<TrackedEntityRule>> ruleInfos, @Nullable Map<String, List<String>> filter,
-        @Nullable DateRangeParam lastUpdatedDateRange, int count, @Nonnull List<TrackedEntityType> types )
-    {
-        super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
-        this.types = types;
-    }
-
+    /**
+     * Returns the ID of the item with the specified reference.
+     *
+     * @param reference the item reference for which the ID should be returned.
+     * @return the ID of the item reference.
+     */
     @Nullable
-    public TrackedEntityType getNextType( @Nullable TrackedEntityType currentType )
-    {
-        if ( currentType == null )
-        {
-            return types.get( 0 );
-        }
-        final int index = types.indexOf( currentType );
-        if ( ( index + 1 ) >= types.size() )
-        {
-            return null;
-        }
-        return types.get( index + 1 );
-    }
+    String getItemId( @Nullable Reference reference );
 }

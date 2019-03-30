@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisType;
+import org.dhis2.fhir.adapter.dhis.model.ItemContainerType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Scriptable
-public interface TrackedEntityType extends DhisType
+public interface TrackedEntityType extends DhisType, ItemContainerType
 {
     List<? extends TrackedEntityTypeAttribute> getAttributes();
 

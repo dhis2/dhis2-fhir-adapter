@@ -241,6 +241,60 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
         userDhis2Server.verify();
     }
 
+    @Test
+    public void searchPatientOrganization() throws Exception
+    {
+        expectTrackedEntityMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?ou=ldXIdLNUNEn&skipPaging=false&page=1&pageSize=10&trackedEntityType=MCPQUTHX1Ze&ouMode=SELECTED" +
+                "&fields=deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-tei-15-16-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Patient.class ).where( Patient.ORGANIZATION.hasId( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Patient patient = (Patient) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( "West", patient.getNameFirstRep().getFamily() );
+        Assert.assertEquals( 1, patient.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier", patient.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "PT_81589", patient.getIdentifier().get( 0 ).getValue() );
+        Assert.assertEquals( "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352", patient.getManagingOrganization().getReference() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
+    }
+
+    @Test
+    public void searchPatientGiven() throws Exception
+    {
+        expectTrackedEntityMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?filter=TfdH5KvFmMy:like:ete&skipPaging=false&page=1&pageSize=10&trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE" +
+                "&fields=deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-tei-15-16-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Patient.class ).where( Patient.GIVEN.contains().value( "ete" ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Patient patient = (Patient) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( "West", patient.getNameFirstRep().getFamily() );
+        Assert.assertEquals( 1, patient.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier", patient.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "PT_81589", patient.getIdentifier().get( 0 ).getValue() );
+        Assert.assertEquals( "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352", patient.getManagingOrganization().getReference() );
+
+        systemDhis2Server.verify();
+        userDhis2Server.verify();
+    }
+
     @Test( expected = AuthenticationException.class )
     public void createPatientWithoutAuthorization() throws Exception
     {

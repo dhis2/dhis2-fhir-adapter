@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Location;
 import org.junit.Assert;
 import org.junit.Test;
@@ -272,6 +273,36 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         Bundle bundle = client.search().forResource( Location.class ).where( Location.NAME.matches().value( "Test" ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Location location = (Location) bundle.getEntry().get( 0 ).getResource();
+        Assert.assertEquals( "Test Hospital", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_1234", location.getIdentifier().get( 0 ).getValue() );
+        location = (Location) bundle.getEntry().get( 1 ).getResource();
+        Assert.assertEquals( "Test Hospital 2", location.getName() );
+        Assert.assertEquals( 1, location.getIdentifier().size() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
+        Assert.assertEquals( "OU_4567", location.getIdentifier().get( 0 ).getValue() );
+    }
+
+    @Test
+    public void searchParentLocation() throws Exception
+    {
+        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?filter=parent.id:eq:bdXIaLNUNEp&paging=true&page=1&pageSize=10&order=id" +
+                "&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-org-unit.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_4567" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_4567.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        Bundle bundle = client.search().forResource( Location.class ).where( Location.PARTOF.hasId( new IdType( "Location", "ou-bdXIaLNUNEp-b9546b024adc4868a4cdd5d7789f0df0" ) ) ).returnBundle( Bundle.class ).execute();
         Assert.assertEquals( 2, bundle.getEntry().size() );
         Location location = (Location) bundle.getEntry().get( 0 ).getResource();
         Assert.assertEquals( "Test Hospital", location.getName() );

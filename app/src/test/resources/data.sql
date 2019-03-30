@@ -839,7 +839,7 @@ INSERT INTO fhir_script_variable (script_id, variable) VALUES ('cf3072ec06ad4d62
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
 VALUES ('10200cc2f0604aa8a9070d12b199ff3b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba',
 'searchFilter.add(''name'', ''string'', ''name'');
-searchFilter.addReference(''partof'', ''location'', ''organization-unit'', ''parent'');
+searchFilter.addReference(''partof'', ''location'', ''organization-unit'', ''parent.id'');
 searchFilter.addToken(''status'', ''active'', ''closedDate'', ''null'', null);
 searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''!null'', null);
 true', 'JAVASCRIPT');
@@ -2181,3 +2181,89 @@ VALUES ('248d964c4dbf4271bb5722f5aed5c9f9', 0, 'ENCOUNTER',
         'f7863a1786da42d289fd7f6c3d214f1b', '416decee4604473ab6501a997d731ff0', '30ee57d1062f484785b9f2262a678151',
         'deb4fd13d5b241df9f300fb73b063c8b');
 UPDATE fhir_resource_mapping SET exp_group_transform_script_id = '2347ba1f2d5b42768934100cbdb0fcfa' WHERE fhir_resource_type='OBSERVATION';
+
+UPDATE fhir_script_source SET source_text=
+'searchFilter.add(''name'', ''string'', ''name'');
+searchFilter.addReference(''partof'', ''location'', ''organization-unit'', ''parent.id'');
+searchFilter.addToken(''status'', ''active'', ''closedDate'', ''null'', null);
+searchFilter.addToken(''status'', ''inactive'', ''closedDate'', ''!null'', null);
+true' WHERE id = '10200cc2f0604aa8a9070d12b199ff3b' AND version = 0;
+
+UPDATE fhir_script_source SET source_text=
+'searchFilter.add(''name'', ''string'', ''name'');
+searchFilter.addReference(''partof'', ''organization'', ''organization-unit'', ''parent.id'');
+searchFilter.addToken(''status'', ''true'', ''closedDate'', ''null'', null);
+searchFilter.addToken(''status'', ''false'', ''closedDate'', ''!null'', null);
+true' WHERE id = '1f1f0ce95b9b4ce1b8824e40713314bf' AND version = 0;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
+VALUES ('ebf89e1eede9408ca523c9912a72d376', 0, 'SEARCH_FILTER_ENCOUNTER', 'Prepares Encounter Search Filter', 'Prepares Encounter Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('ebf89e1eede9408ca523c9912a72d376', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('4ff5f488210943d0b44dd9ab7241bc39', 0, 'ebf89e1eede9408ca523c9912a72d376',
+'searchFilter.addReference(''subject'', ''patient'', ''tracked-entity'', ''trackedEntityInstance'');
+searchFilter.addReference(''location'', ''location'', ''organization-unit'', ''orgUnit'');
+searchFilter.addToken(''status'', ''in-progress'', ''status'', ''eq'', ''ACTIVE'');
+searchFilter.addToken(''status'', ''skipped'', ''status'', ''eq'', ''CANCELLED'');
+searchFilter.addToken(''status'', ''finished'', ''status'', ''eq'', ''COMPLETED'');
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('4ff5f488210943d0b44dd9ab7241bc39', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('4ff5f488210943d0b44dd9ab7241bc39', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('bae38b4e5d1646e9b579a9a0900edb72', 0, 'ebf89e1eede9408ca523c9912a72d376', 'Prepares Encounter Search Filter', 'SEARCH_FILTER_ENCOUNTER');
+UPDATE fhir_rule SET filter_script_id='bae38b4e5d1646e9b579a9a0900edb72' WHERE fhir_resource_type='ENCOUNTER' and dhis_resource_type='PROGRAM_STAGE_EVENT' and filter_script_id IS NULL;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
+VALUES ('45767b712bb04a20bbd79932ed0e6d83', 0, 'SEARCH_FILTER_OBSERVATION', 'Prepares Observation Search Filter', 'Prepares Observation Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('45767b712bb04a20bbd79932ed0e6d83', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('a99c0dfc00554aff90e3f313d0bb82a6', 0, '45767b712bb04a20bbd79932ed0e6d83',
+'searchFilter.addReference(''patient'', ''patient'', ''tracked-entity'', ''trackedEntityInstance'');
+searchFilter.addReference(''subject'', ''patient'', ''tracked-entity'', ''trackedEntityInstance'');
+searchFilter.addReference(''encounter'', ''encounter'', ''program-stage-event'', ''event'');
+searchFilter.addToken(''status'', ''final'', ''status'', ''eq'', ''COMPLETED'');
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('a99c0dfc00554aff90e3f313d0bb82a6', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('a99c0dfc00554aff90e3f313d0bb82a6', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('a97e64a781d14f6284f2da9a003f9d0b', 0, '45767b712bb04a20bbd79932ed0e6d83', 'Prepares Observation Search Filter', 'SEARCH_FILTER_OBSERVATION');
+UPDATE fhir_rule SET filter_script_id='a97e64a781d14f6284f2da9a003f9d0b' WHERE fhir_resource_type='OBSERVATION' and dhis_resource_type='PROGRAM_STAGE_EVENT' and filter_script_id IS NULL;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
+VALUES ('8bf44a88fbbe4f2ab42b89d1da7751b6', 0, 'SEARCH_FILTER_IMMUNIZATION', 'Prepares Immunization Search Filter', 'Prepares Immunization Search Filter.', 'SEARCH_FILTER', 'BOOLEAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('8bf44a88fbbe4f2ab42b89d1da7751b6', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('2da4f14b3d094f12bc2c3b228d0a8f4e', 0, '8bf44a88fbbe4f2ab42b89d1da7751b6',
+'searchFilter.addReference(''patient'', ''patient'', ''tracked-entity'', ''trackedEntityInstance'');
+searchFilter.addReference(''encounter'', ''encounter'', ''program-stage-event'', ''event'');
+searchFilter.addToken(''status'', ''final'', ''status'', ''eq'', ''COMPLETED'');
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('2da4f14b3d094f12bc2c3b228d0a8f4e', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('2da4f14b3d094f12bc2c3b228d0a8f4e', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code)
+VALUES ('2e3c191f8cf14a9098764e9b0b6e4e8c', 0, '8bf44a88fbbe4f2ab42b89d1da7751b6', 'Prepares Immunization Search Filter', 'SEARCH_FILTER_IMMUNIZATION');
+UPDATE fhir_rule SET filter_script_id='2e3c191f8cf14a9098764e9b0b6e4e8c' WHERE fhir_resource_type='IMMUNIZATION' and dhis_resource_type='PROGRAM_STAGE_EVENT' and filter_script_id IS NULL;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, base_script_id)
+VALUES ('6f1a456adb0945038bb69bba687f13b4', 0, 'SEARCH_FILTER_PATIENT', 'Prepares Patient Search Filter', 'Prepares Patient Search Filter.', 'SEARCH_FILTER', 'BOOLEAN', 'ea8879435e944e319441c7661fe1063e');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('6f1a456adb0945038bb69bba687f13b4', 'SEARCH_FILTER');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('49def204d98d4b21bd2466aeda141592', 0, '6f1a456adb0945038bb69bba687f13b4',
+'searchFilter.addReference(''organization'', ''organization'', ''organization-unit'', ''ou'');
+searchFilter.add(''given'', ''string'', args[''firstNameAttribute'']);
+searchFilter.add(''name'', ''string'', args[''lastNameAttribute'']);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('49def204d98d4b21bd2466aeda141592', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('49def204d98d4b21bd2466aeda141592', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_executable_script_id)
+VALUES ('a2b0c480d4b14a30abbc44f720402d5a', 0, '6f1a456adb0945038bb69bba687f13b4', 'Prepares Patient Search Filter', 'SEARCH_FILTER_PATIENT', '72451c8f7492470790b8a3e0796de19e');
+UPDATE fhir_rule SET filter_script_id='a2b0c480d4b14a30abbc44f720402d5a' WHERE fhir_resource_type='PATIENT' and dhis_resource_type='TRACKED_ENTITY'
+and filter_script_id IS NULL and id = '5f9ebdc9852e4c8387ca795946aabc35';

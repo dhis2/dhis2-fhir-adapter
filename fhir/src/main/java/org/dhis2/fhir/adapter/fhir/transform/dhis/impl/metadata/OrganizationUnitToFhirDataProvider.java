@@ -67,7 +67,7 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
 
     public OrganizationUnitToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService )
     {
-        super( scriptExecutor );
+        super( scriptExecutor, false );
         this.organizationUnitService = organizationUnitService;
     }
 
@@ -97,7 +97,7 @@ public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataPr
     public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
         final PreparedOrganizationUnitDhisToFhirSearch ps = new PreparedOrganizationUnitDhisToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
-        ps.setUriFilterApplier( apply( fhirVersion, ruleInfos, ps.createSearchFilterCollector() ) );
+        ps.setUriFilterApplier( apply( fhirVersion, ruleInfos, ps.createSearchFilterCollector( null ) ) );
         return ps;
     }
 

@@ -59,9 +59,12 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
 {
     private final ScriptExecutor scriptExecutor;
 
-    protected AbstractDhisToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor )
+    private final boolean onlyStringContains;
+
+    protected AbstractDhisToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, boolean onlyStringContains )
     {
         this.scriptExecutor = scriptExecutor;
+        this.onlyStringContains = onlyStringContains;
     }
 
     @Nonnull
@@ -74,8 +77,9 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
             if ( ruleInfo.getRule().getFilterScript() != null )
             {
                 final Boolean result = scriptExecutor.execute( ruleInfo.getRule().getFilterScript(), fhirVersion,
-                    Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), new SearchFilter( searchFilterCollector ) ),
+                    Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), new SearchFilter( searchFilterCollector, onlyStringContains ) ),
                     Collections.emptyMap(), Boolean.class );
+
                 if ( !Boolean.TRUE.equals( result ) )
                 {
                     throw new DhisToFhirDataProviderException( "Search parameter filter could not be applied." );
