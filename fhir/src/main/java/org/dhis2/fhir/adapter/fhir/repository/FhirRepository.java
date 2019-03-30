@@ -43,4 +43,6 @@ public interface FhirRepository
 {
     @Nullable
     FhirRepositoryOperationOutcome save( @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource resource, @Nullable FhirRepositoryOperation fhirRepositoryOperation );
+
+    boolean delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId );
 }

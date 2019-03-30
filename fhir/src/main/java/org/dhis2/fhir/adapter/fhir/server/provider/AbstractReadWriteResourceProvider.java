@@ -30,10 +30,13 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
 
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.Create;
+import ca.uhn.fhir.rest.annotation.Delete;
+import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
 import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
@@ -43,6 +46,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationOutcome;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 
@@ -99,5 +103,21 @@ public abstract class AbstractReadWriteResourceProvider<T extends IBaseResource>
             throw new UnprocessableEntityException( "Could not find a rule that matches the resource that should be updated." );
         }
         return new MethodOutcome( new IdDt( getFhirResourceType().getResourceTypeName(), outcome.getId() ), Boolean.FALSE );
+    }
+
+    @Delete
+    @Nonnull
+    public MethodOutcome delete( @Nonnull RequestDetails requestDetails, @IdParam IIdType id )
+    {
+        validateUseCase( requestDetails );
+        final boolean deleted = executeInSecurityContext( () ->
+            getFhirRepository().delete( getFhirClientResource(), extractDhisFhirResourceId( id ) ) );
+
+        if ( !deleted )
+        {
+            throw new ResourceNotFoundException( "Could not find resource to be deleted." );
+        }
+
+        return new MethodOutcome();
     }
 }

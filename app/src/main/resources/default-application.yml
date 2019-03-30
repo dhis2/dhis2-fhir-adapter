@@ -315,11 +315,12 @@ dhis2.fhir-adapter:
   # can be stored on connected client FHIR services.
   sync:
     # Retrieves new and updated DHIS2 resources periodically.
-    # IMPORTANT NOTE: This feature is still under development and beta.
     processor:
       # Specifies how often the DHIS2 resources should be synchronized. Event if the
       # processor has been disabled, this value is used to periodically clean-up
-      # information about DHIS2 resources that have been stored by the adapter.
+      # information about DHIS2 resources that have been stored by the adapter. Since
+      # the data is polled from DHIS2 currently the polling should not be done too
+      # often to save resources on DHIS2.
       request-rate-millis: 60000
       # Specifies the number of milli seconds that are subtracted from the stored last
       # updated timestamp when synchronizing the DHIS2 resources the next time. This is

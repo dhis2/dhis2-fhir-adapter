@@ -39,11 +39,13 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
@@ -159,6 +161,14 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         }
 
         return new FhirToDhisTransformerRequestImpl( fhirClientResource, new FhirToDhisTransformerContextImpl( fhirRequest, false ), input, transformerUtils, rules );
+    }
+
+    @Nullable
+    @Override
+    public FhirToDhisDeleteTransformOutcome<? extends DhisResource> delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
+    {
+        // TODO must be implemented
+        return null;
     }
 
     @Nullable

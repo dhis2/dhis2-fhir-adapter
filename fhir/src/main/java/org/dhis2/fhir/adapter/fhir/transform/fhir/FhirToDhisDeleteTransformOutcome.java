@@ -29,28 +29,31 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
-import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
- * Transforms a FHIR resource to a DHIS 2 resource by applying defines rules.
+ * The outcome of the transformation between a FHIR resource and a DHIS 2 resource
+ * when a deletion has been requested.
  *
+ * @param <R> the concrete type of the returned DHIS 2 resource.
  * @author volsch
  */
-public interface FhirToDhisTransformerService
+public class FhirToDhisDeleteTransformOutcome<R extends DhisResource> extends FhirToDhisBaseTransformOutcome<R>
 {
-    @Nonnull
-    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource originalInput, boolean contained );
+    private static final long serialVersionUID = -1022008827965716982L;
 
-    @Nullable
-    FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerRequest transformerRequest ) throws TransformerException;
+    private final boolean delete;
 
-    @Nullable
-    FhirToDhisDeleteTransformOutcome<? extends DhisResource> delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException;
+    public FhirToDhisDeleteTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource, boolean delete )
+    {
+        super( rule, resource );
+        this.delete = delete;
+    }
+
+    public boolean isDelete()
+    {
+        return delete;
+    }
 }

@@ -240,7 +240,7 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
         final String tenantId = theRequestDetails.getTenantId();
         if ( !DEFAULT_USE_CASE_TENANT.equals( tenantId ) )
         {
-            new InvalidRequestException( "Selected use case must be default (received " + tenantId + ")." );
+            throw new InvalidRequestException( "Selected use case must be default (received " + tenantId + ")." );
         }
     }
 

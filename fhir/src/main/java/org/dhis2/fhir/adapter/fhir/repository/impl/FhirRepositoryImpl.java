@@ -169,6 +169,15 @@ public class FhirRepositoryImpl implements FhirRepository
         return saveInternally( fhirClientResource, resource, fhirRepositoryOperation, false );
     }
 
+    @Override
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, TransformerDataException.class, TransformerMappingException.class, TrackedEntityInstanceNotFoundException.class, DhisDataExistsException.class, UnauthorizedException.class } )
+    @Transactional( propagation = Propagation.NOT_SUPPORTED )
+    public boolean delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId )
+    {
+        // TODO implement deletion
+        return false;
+    }
+
     @Nonnull
     protected Authorization createAuthorization( @Nonnull FhirClient fhirClient )
     {

@@ -36,8 +36,10 @@ import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransformer;
@@ -73,6 +75,14 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
         {
             logger.error( "Unsupported rule for DHIS2 Resource Type {}.", getDhisResourceType() );
         }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public FhirToDhisDeleteTransformOutcome<R> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<U> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
+    {
+        logger.error( "Unsupported rule for DHIS2 Resource Type {}.", getDhisResourceType() );
         return null;
     }
 

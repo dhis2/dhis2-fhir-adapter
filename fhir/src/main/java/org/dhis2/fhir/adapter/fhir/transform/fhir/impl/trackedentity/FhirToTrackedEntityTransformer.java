@@ -45,10 +45,12 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
@@ -169,6 +171,14 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         scriptedTrackedEntityInstance.validate();
 
         return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), trackedEntityInstance );
+    }
+
+    @Nullable
+    @Override
+    public FhirToDhisDeleteTransformOutcome<TrackedEntityInstance> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
+    {
+        // TODO must be implemented
+        return null;
     }
 
     protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo ) throws TransformerException

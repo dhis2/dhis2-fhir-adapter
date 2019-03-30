@@ -29,28 +29,40 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
-import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
-import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * Transforms a FHIR resource to a DHIS 2 resource by applying defines rules.
+ * The base outcome of the transformation between a FHIR resource and a DHIS 2 resource.
  *
+ * @param <R> the concrete type of the returned DHIS 2 resource.
  * @author volsch
  */
-public interface FhirToDhisTransformerService
+public class FhirToDhisBaseTransformOutcome<R extends DhisResource> implements Serializable
 {
+    private static final long serialVersionUID = -1022009827965716982L;
+
+    private final AbstractRule rule;
+
+    private final R resource;
+
+    public FhirToDhisBaseTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
+    {
+        this.rule = rule;
+        this.resource = resource;
+    }
+
     @Nonnull
-    FhirToDhisTransformerRequest createTransformerRequest( @Nonnull FhirRequest fhirRequest, @Nonnull FhirClientResource fhirClientResource, @Nonnull IBaseResource originalInput, boolean contained );
+    public AbstractRule getRule()
+    {
+        return rule;
+    }
 
-    @Nullable
-    FhirToDhisTransformOutcome<? extends DhisResource> transform( @Nonnull FhirToDhisTransformerRequest transformerRequest ) throws TransformerException;
-
-    @Nullable
-    FhirToDhisDeleteTransformOutcome<? extends DhisResource> delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException;
+    @Nonnull
+    public R getResource()
+    {
+        return resource;
+    }
 }

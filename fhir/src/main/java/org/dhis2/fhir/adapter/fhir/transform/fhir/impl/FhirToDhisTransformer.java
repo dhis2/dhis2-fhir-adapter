@@ -34,7 +34,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -68,4 +70,12 @@ public interface FhirToDhisTransformer<R extends DhisResource, U extends Abstrac
     @Nullable
     FhirToDhisTransformOutcome<R> transformCasted( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException;
+
+    @Nullable
+    FhirToDhisDeleteTransformOutcome<R> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<U> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId )
+        throws TransformerException;
+
+    @Nullable
+    FhirToDhisDeleteTransformOutcome<R> transformDeletionCasted( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId )
+        throws TransformerException;
 }

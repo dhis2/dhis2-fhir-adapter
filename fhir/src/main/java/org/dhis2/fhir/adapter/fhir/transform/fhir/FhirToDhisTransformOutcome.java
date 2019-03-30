@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 
 /**
  * The outcome of the transformation between a FHIR resource and a DHIS 2 resource.
@@ -41,40 +40,22 @@ import java.io.Serializable;
  * @param <R> the concrete type of the returned DHIS 2 resource.
  * @author volsch
  */
-public class FhirToDhisTransformOutcome<R extends DhisResource> implements Serializable
+public class FhirToDhisTransformOutcome<R extends DhisResource> extends FhirToDhisBaseTransformOutcome<R>
 {
-    private static final long serialVersionUID = -1022009827965716982L;
-
-    private final AbstractRule rule;
-
-    private final R resource;
+    private static final long serialVersionUID = -1022008827965716982L;
 
     private final FhirToDhisTransformerRequest nextTransformerRequest;
 
     public FhirToDhisTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
     {
-        this.rule = rule;
-        this.resource = resource;
+        super( rule, resource );
         this.nextTransformerRequest = null;
     }
 
     public FhirToDhisTransformOutcome( @Nonnull FhirToDhisTransformOutcome<R> outcome, @Nullable FhirToDhisTransformerRequest nextTransformerRequest )
     {
-        this.rule = outcome.getRule();
-        this.resource = outcome.getResource();
+        super( outcome.getRule(), outcome.getResource() );
         this.nextTransformerRequest = nextTransformerRequest;
-    }
-
-    @Nonnull
-    public AbstractRule getRule()
-    {
-        return rule;
-    }
-
-    @Nonnull
-    public R getResource()
-    {
-        return resource;
     }
 
     @Nullable
