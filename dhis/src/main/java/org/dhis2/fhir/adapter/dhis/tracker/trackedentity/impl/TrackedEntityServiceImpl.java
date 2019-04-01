@@ -44,6 +44,7 @@ import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.sync.DhisLastUpdated;
 import org.dhis2.fhir.adapter.dhis.sync.StoredDhisResourceService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.RequiredValueType;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
@@ -230,6 +231,26 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
+    }
+
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
+    @Override
+    public boolean delete( @Nonnull String eventId )
+    {
+        Event instance;
+        try
+        {
+            restTemplate.delete( "/trackedEntityInstances/{id}", eventId );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                return false;
+            }
+            throw e;
+        }
+        return true;
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )

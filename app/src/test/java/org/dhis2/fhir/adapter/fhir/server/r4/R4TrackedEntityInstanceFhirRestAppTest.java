@@ -421,4 +421,43 @@ public class R4TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEntit
         Assert.assertNotEquals( Boolean.TRUE, methodOutcome.getCreated() );
         Assert.assertEquals( "http://localhost:" + localPort + "/fhir/r4/default/Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", methodOutcome.getId().toString() );
     }
+
+    @Test( expected = AuthenticationException.class )
+    public void deletePatientWithoutAuthorization() throws Exception
+    {
+        expectTrackedEntityMetadataRequests();
+
+        final IGenericClient client = createGenericClient();
+        client.delete().resourceById( "Patient", "te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ).execute();
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void deletePatientInvalidAuthorization() throws Exception
+    {
+        expectTrackedEntityMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx" ) )
+            .andExpect( method( HttpMethod.DELETE ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
+            .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
+        client.delete().resourceById( "Patient", "te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ).execute();
+
+        userDhis2Server.verify();
+    }
+
+    @Test
+    public void deletePatient() throws Exception
+    {
+        expectTrackedEntityMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/JeR2Ul4mZfx" ) )
+            .andExpect( method( HttpMethod.DELETE ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-tei-15-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        client.delete().resourceById( "Patient", "te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ).execute();
+
+        userDhis2Server.verify();
+    }
 }

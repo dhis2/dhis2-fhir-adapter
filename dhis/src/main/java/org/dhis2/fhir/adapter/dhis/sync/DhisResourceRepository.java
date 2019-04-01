@@ -52,4 +52,6 @@ public interface DhisResourceRepository
 
     @Nonnull
     DhisResource save( @Nonnull DhisResource resource );
+
+    boolean delete( @Nonnull DhisResource resource );
 }

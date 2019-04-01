@@ -115,6 +115,26 @@ public class EventServiceImpl implements EventService
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
+    @Override
+    public boolean delete( @Nonnull String eventId )
+    {
+        Event instance;
+        try
+        {
+            restTemplate.delete( "/events/{id}", eventId );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                return false;
+            }
+            throw e;
+        }
+        return true;
+    }
+
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
     public Event createOrMinimalUpdate( @Nonnull Event event )

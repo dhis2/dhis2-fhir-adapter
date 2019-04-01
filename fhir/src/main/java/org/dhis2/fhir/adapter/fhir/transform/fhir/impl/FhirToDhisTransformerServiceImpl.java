@@ -167,8 +167,25 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     @Override
     public FhirToDhisDeleteTransformOutcome<? extends DhisResource> delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
-        // TODO must be implemented
-        return null;
+        final RuleInfo<? extends AbstractRule> ruleInfo = ruleRepository.findOneImpByDhisFhirInputData(
+            Objects.requireNonNull( fhirClientResource.getFhirResourceType() ), Objects.requireNonNull( dhisFhirResourceId.getType() ), dhisFhirResourceId.getRuleId() ).orElse( null );
+
+        if ( ruleInfo == null )
+        {
+            return null;
+        }
+
+        final FhirToDhisTransformer<?, ?> transformer = this.transformers.get(
+            new FhirVersionedValue<>( fhirClientResource.getFhirClient().getFhirVersion(), ruleInfo.getRule().getDhisResourceType() ) );
+
+        if ( transformer == null )
+        {
+            throw new TransformerMappingException( "No transformer can be found for FHIR version " +
+                fhirClientResource.getFhirClient().getFhirVersion() +
+                " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
+        }
+
+        return transformer.transformDeletionCasted( fhirClientResource, ruleInfo, dhisFhirResourceId );
     }
 
     @Nullable

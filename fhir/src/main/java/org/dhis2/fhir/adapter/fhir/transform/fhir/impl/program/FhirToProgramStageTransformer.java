@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
@@ -65,6 +66,7 @@ import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
@@ -262,7 +264,44 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Override
     public FhirToDhisDeleteTransformOutcome<Event> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
-        // TODO must be implemented
+        if ( ruleInfo.getRule().isGrouping() && ruleInfo.getDhisDataReferences().isEmpty() )
+        {
+            return new FhirToDhisDeleteTransformOutcome<>(
+                ruleInfo.getRule(), new Event( dhisFhirResourceId.getId() ), true );
+        }
+        else if ( !ruleInfo.getDhisDataReferences().isEmpty() )
+        {
+            final Event event = getResourceById( dhisFhirResourceId.getId() ).orElse( null );
+            if ( event != null )
+            {
+                final Program program = programMetadataService.findProgramByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
+                    .orElseThrow( () -> new TransformerDataException( "Program " + event.getProgramId() + " of event " + event.getId() + " could not be found." ) );
+                final ProgramStage programStage = program.getOptionalStage( ruleInfo.getRule().getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " requires program stage \"" +
+                    ruleInfo.getRule().getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + ruleInfo.getRule().getProgramStage().getProgram().getName() + "\"." ) );
+                boolean anyModified = false;
+
+                for ( RuleDhisDataReference dataReference : ruleInfo.getDhisDataReferences() )
+                {
+                    final ProgramStageDataElement dataElement = programStage.getOptionalDataElement( dataReference.getDataReference() ).orElseThrow( () ->
+                        new TransformerMappingException( "Event of program stage \"" + programStage.getName() + "\" of program \"" +
+                            program.getName() + "\" does not include data element: " + dataReference ) );
+                    final WritableDataValue dataValue = event.getDataValue( dataElement.getElementId() );
+
+                    if ( dataValue.getValue() != null )
+                    {
+                        dataValue.setValue( null );
+                        dataValue.setModified();
+                        anyModified = true;
+                    }
+                }
+
+                if ( anyModified )
+                {
+                    return new FhirToDhisDeleteTransformOutcome<>( ruleInfo.getRule(), event, false );
+                }
+            }
+        }
+
         return null;
     }
 

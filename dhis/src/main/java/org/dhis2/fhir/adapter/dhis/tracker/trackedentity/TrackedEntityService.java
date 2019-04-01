@@ -68,6 +68,8 @@ public interface TrackedEntityService
     @Nonnull
     TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance );
 
+    boolean delete( @Nonnull String teiId );
+
     @Nonnull
     DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
 

@@ -82,6 +82,11 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         super();
     }
 
+    public TrackedEntityInstance( @Nonnull String id )
+    {
+        this.id = id;
+    }
+
     public TrackedEntityInstance( @Nonnull TrackedEntityType type, @Nullable String id, boolean newResource )
     {
         this.typeId = type.getId();

@@ -380,4 +380,54 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Assert.assertNotEquals( Boolean.TRUE, methodOutcome.getCreated() );
         Assert.assertEquals( "http://localhost:" + localPort + "/fhir/dstu3/default/Observation/ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db", methodOutcome.getId().toString() );
     }
+
+    @Test( expected = AuthenticationException.class )
+    public void deleteObservationWithoutAuthorization() throws Exception
+    {
+        expectProgramStageMetadataRequests();
+
+        final IGenericClient client = createGenericClient();
+        client.delete().resourceById( "Observation", "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" ).execute();
+    }
+
+    @Test( expected = AuthenticationException.class )
+    public void deleteObservationInvalidAuthorization() throws Exception
+    {
+        expectProgramStageMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events/deR4kl4mnf7.json?" +
+            "fields=deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
+            .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
+        client.delete().resourceById( "Observation", "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" ).execute();
+
+        userDhis2Server.verify();
+    }
+
+    @Test
+    public void deleteObservation() throws Exception
+    {
+        expectProgramStageMetadataRequests();
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events/deR4kl4mnf7.json?" +
+            "fields=deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-event-70-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments/ieR4nl4mufa.json" ) )
+            .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-enrollment-70-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events/deR4kl4mnf7/BnplxU2jGvX.json?mergeMode=MERGE" ) ).andExpect( method( HttpMethod.PUT ) )
+            .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
+            .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
+            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-70-update-delete.json", StandardCharsets.UTF_8 ) ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-70-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+
+        final IGenericClient client = createGenericClient();
+        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
+        client.delete().resourceById( "Observation", "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" ).execute();
+
+        userDhis2Server.verify();
+    }
 }

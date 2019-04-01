@@ -177,8 +177,8 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
     @Override
     public FhirToDhisDeleteTransformOutcome<TrackedEntityInstance> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
-        // TODO must be implemented
-        return null;
+        return new FhirToDhisDeleteTransformOutcome<>(
+            ruleInfo.getRule(), new TrackedEntityInstance( dhisFhirResourceId.getId() ), true );
     }
 
     protected boolean addScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo ) throws TransformerException

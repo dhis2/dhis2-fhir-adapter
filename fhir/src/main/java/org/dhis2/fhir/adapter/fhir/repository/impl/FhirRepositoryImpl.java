@@ -60,6 +60,7 @@ import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerService;
@@ -174,8 +175,21 @@ public class FhirRepositoryImpl implements FhirRepository
     @Transactional( propagation = Propagation.NOT_SUPPORTED )
     public boolean delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId )
     {
-        // TODO implement deletion
-        return false;
+        final FhirToDhisDeleteTransformOutcome<? extends DhisResource> outcome = fhirToDhisTransformerService.delete( fhirClientResource, dhisFhirResourceId );
+
+        if ( outcome == null )
+        {
+            return false;
+        }
+
+        if ( outcome.isDelete() )
+        {
+            return dhisResourceRepository.delete( outcome.getResource() );
+        }
+
+        dhisResourceRepository.save( outcome.getResource() );
+
+        return true;
     }
 
     @Nonnull
@@ -185,6 +199,7 @@ public class FhirRepositoryImpl implements FhirRepository
         {
             throw new FatalTransformerException( "Unhandled DHIS2 authentication method: " + fhirClient.getDhisEndpoint().getAuthenticationMethod() );
         }
+
         return new Authorization( "Basic " + Base64.getEncoder().encodeToString(
             (fhirClient.getDhisEndpoint().getUsername() + ":" + fhirClient.getDhisEndpoint().getPassword()).getBytes( StandardCharsets.UTF_8 ) ) );
     }

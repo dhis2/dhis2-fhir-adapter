@@ -66,6 +66,8 @@ public interface EventService
     @Nonnull
     Event createOrMinimalUpdate( @Nonnull Event event );
 
+    boolean delete( @Nonnull String eventId );
+
     @Nonnull
     DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
 

@@ -109,6 +109,11 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
         super();
     }
 
+    public Event( @Nonnull String id )
+    {
+        this.id = id;
+    }
+
     public Event( boolean newResource )
     {
         this.newResource = newResource;

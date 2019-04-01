@@ -148,6 +148,22 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
         return resource;
     }
 
+    @Override
+    public boolean delete( @Nonnull DhisResource resource )
+    {
+        switch ( resource.getResourceType() )
+        {
+            case TRACKED_ENTITY:
+                return trackedEntityService.delete( resource.getId() );
+            case ENROLLMENT:
+                throw new UnsupportedOperationException( "Deleting DHIS enrollment resources is nut supported currently." );
+            case PROGRAM_STAGE_EVENT:
+                return eventService.delete( resource.getId() );
+            default:
+                throw new AssertionError( "Unhandled DHIS resource type: " + resource.getResourceType() );
+        }
+    }
+
     private boolean saveTrackedEntityInstance( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
         if ( trackedEntityInstance.isNewResource() || trackedEntityInstance.isModified() )
