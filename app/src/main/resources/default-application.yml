@@ -124,7 +124,8 @@ dhis2.fhir-adapter:
   # Specifies if the automatic import of FHIR resources to DHIS2 is enabled.
   import-enabled: false
   # Specifies if the automatic export of DHIS2 resources to FHIR resources is enabled.
-  # Important note: This is an experimental feature currently.
+  # Since the data is polled from DHIS2 currently the polling should not be done too
+  # often to save resources on DHIS2.
   export-enabled: false
   # Specifies if the FHIR interfaces should be enabled.
   fhir-rest-interfaces:
