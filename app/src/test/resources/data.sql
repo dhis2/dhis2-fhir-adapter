@@ -1265,7 +1265,7 @@ if (input.getLevel() === args[''facilityLevel''])
   if (context.getDhisRequest().isIncludeReferences())
   {
     var organizationRef = null;
-    if (context.getDhisRequest().isIncludeReferences())
+    if (context.getDhisRequest().isDhisFhirId())
     {
       organizationRef = context.getDhisFhirResourceReference(input, ''Organization'');
     }
