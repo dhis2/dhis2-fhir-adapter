@@ -79,7 +79,13 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
     @Override
     public String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId )
     {
+        return findFirstDhisResourceId( rule, subscription, fhirResourceId, false );
+    }
+
+    protected String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId, boolean locked )
+    {
         return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, String.class )
+            .setLockMode( locked ? LockModeType.PESSIMISTIC_WRITE : LockModeType.NONE )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
             .setParameter( "fhirResourceId", fhirResourceId.getIdPart() ).getResultList().stream().findFirst().orElse( null );
     }
@@ -101,7 +107,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
         final TransactionStatus transactionStatus = platformTransactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
-            final String existingId = findFirstDhisResourceId( rule, fhirClient, fhirResourceId );
+            final String existingId = findFirstDhisResourceId( rule, fhirClient, fhirResourceId, true );
             if ( existingId == null )
             {
                 updated = persist( rule, fhirClient, fhirResourceId, dhisResourceId );

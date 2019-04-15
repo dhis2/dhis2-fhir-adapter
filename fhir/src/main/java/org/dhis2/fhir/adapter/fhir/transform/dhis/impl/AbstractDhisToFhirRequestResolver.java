@@ -58,7 +58,7 @@ public abstract class AbstractDhisToFhirRequestResolver implements DhisToFhirReq
     @Nonnull
     public Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource )
     {
-        Optional<FhirClient> fhirClient = fhirClientRepository.findOnly();
+        Optional<FhirClient> fhirClient = fhirClientRepository.findExpEnabledOnly();
         if ( fhirClient.isPresent() && fhirClient.get().isEnabled() && fhirClient.get().isExpEnabled() )
         {
             return fhirClient;

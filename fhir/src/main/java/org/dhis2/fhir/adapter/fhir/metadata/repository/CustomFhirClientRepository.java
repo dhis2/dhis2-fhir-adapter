@@ -41,7 +41,7 @@ import java.util.Optional;
 public interface CustomFhirClientRepository
 {
     @Nonnull
-    Optional<FhirClient> findOnly();
+    Optional<FhirClient> findExpEnabledOnly();
 
     @Nonnull
     <S extends FhirClient> S saveAndFlush( @Nonnull S entity );

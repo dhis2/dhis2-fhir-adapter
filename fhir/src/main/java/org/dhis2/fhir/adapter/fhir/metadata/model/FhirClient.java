@@ -74,7 +74,7 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_client" )
 @JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
-@NamedQuery( name = FhirClient.ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM FhirClient rs WHERE rs.enabled=true" )
+@NamedQuery( name = FhirClient.ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM FhirClient rs WHERE rs.enabled=true AND rs.code NOT LIKE 'FHIR_RI_%'" )
 public class FhirClient extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -2488855592701580509L;
