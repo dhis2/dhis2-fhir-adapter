@@ -239,6 +239,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( ruleInfo.getRule().getTransformImpScript() == null )
+        {
+            return true;
+        }
+
         return Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getTransformImpScript(), scriptVariables, Boolean.class ) );
     }
 

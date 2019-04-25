@@ -503,6 +503,11 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
 
     protected boolean transform( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( ruleInfo.getRule().getTransformExpScript() == null )
+        {
+            return true;
+        }
+
         return Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getTransformExpScript(), scriptVariables, Boolean.class ) );
     }
 
