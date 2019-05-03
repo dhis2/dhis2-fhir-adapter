@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.service.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,73 +28,57 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.dhis2.fhir.adapter.data.model.DataGroupUpdate;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
+import org.dhis2.fhir.adapter.model.Metadata;
+import org.hibernate.Hibernate;
 
 import javax.annotation.Nonnull;
-import javax.persistence.AttributeOverride;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import java.time.Instant;
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * Contains the subscription status of a single FHIR resource type.
+ * {@link MetadataObjectContainer} for specific metadata object types.
  *
  * @author volsch
  */
-@Entity
-@Table( name = "fhir_client_resource_update" )
-@AttributeOverride( name = "lastUpdated", column = @Column( name = "remote_last_updated", nullable = false ) )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class FhirClientResourceUpdate extends DataGroupUpdate<FhirClientResource>
+public class TypedMetadataObjectContainer implements Serializable
 {
-    private static final long serialVersionUID = -2051276256396499975L;
+    private static final long serialVersionUID = -2050553626102331995L;
 
-    private UUID id;
+    private final Map<Class<? extends Metadata>, MetadataObjectContainer<Metadata<UUID>>> typedContainers = new HashMap<>();
 
-    private FhirClientResource group;
+    private final Map<Class<? extends Metadata>, Set<Class<? extends Metadata>>> referencedTypes = new HashMap<>();
 
-    public FhirClientResourceUpdate()
+    public boolean addObject( @Nonnull Metadata<UUID> metadata )
     {
-        super();
+        @SuppressWarnings( "unchecked" ) final Metadata<UUID> unproxiedMetadata = (Metadata<UUID>) Hibernate.unproxy( metadata );
+
+        return getContainer( unproxiedMetadata.getClass() ).addObject( unproxiedMetadata );
     }
 
-    public FhirClientResourceUpdate( @Nonnull Instant lastUpdated )
+    public void addObjects( @Nonnull Collection<? extends Metadata<UUID>> metadata, @Nullable Class<? extends Metadata<UUID>> referencedByType )
     {
-        super( lastUpdated );
+        metadata.forEach( this::addObject );
     }
 
-    @Id
-    public UUID getId()
+    @Nonnull
+    public Set<Class<? extends Metadata>> getTypes()
     {
-        return id;
+        return typedContainers.keySet();
     }
 
-    public void setId( UUID id )
+    public boolean contains( @Nonnull Class<? extends Metadata> metadataType )
     {
-        this.id = id;
+        return getContainer( metadataType ).isEmpty();
     }
 
-    @JoinColumn( name = "id", nullable = false )
-    @OneToOne( optional = false )
-    @MapsId
-    @JsonIgnore
-    public FhirClientResource getGroup()
+    @Nonnull
+    public MetadataObjectContainer<Metadata<UUID>> getContainer( @Nonnull Class<? extends Metadata> metadataType )
     {
-        return group;
-    }
-
-    public void setGroup( FhirClientResource group )
-    {
-        this.group = group;
-        setId( (group == null) ? null : group.getId() );
+        return typedContainers.computeIfAbsent( metadataType, key -> new MetadataObjectContainer<>() );
     }
 }

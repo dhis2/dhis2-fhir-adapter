@@ -28,10 +28,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -65,6 +67,7 @@ import java.io.Serializable;
         ".fhirClient=:subscription" ),
     @NamedQuery( name = FhirClientResource.FIND_FIRST_CACHED_NAMED_QUERY, query = "SELECT r FROM FhirClientResource r JOIN FETCH r.fhirClient s WHERE s.id=:fhirClientId AND r.fhirResourceType=:fhirResourceType ORDER BY r.preferred DESC, r.id" )
 } )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class FhirClientResource extends VersionedBaseMetadata implements DataGroup, Serializable
 {
     private static final long serialVersionUID = -6797001318266984453L;

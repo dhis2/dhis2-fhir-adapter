@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.FhirVersionPersistentSortedSetConverter;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -60,6 +62,7 @@ import java.util.SortedSet;
 @Entity
 @Table( name = "fhir_script_source" )
 @NamedQuery( name = ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, query = "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions ORDER BY id" )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class ScriptSource extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6002604151209645784L;

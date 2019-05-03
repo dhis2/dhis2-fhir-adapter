@@ -29,9 +29,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -60,7 +61,7 @@ import java.util.Objects;
  */
 @Entity
 @Table( name = "fhir_code_set" )
-@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
 public class CodeSet extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 1177970691904984600L;
@@ -138,6 +139,7 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
     @Access( AccessType.PROPERTY )
     @OneToMany( orphanRemoval = true, mappedBy = "codeSet", cascade = CascadeType.ALL )
     @OrderBy( "id" )
+    @BatchSize( size = 100 )
     public List<CodeSetValue> getCodeSetValues()
     {
         return codeSetValues;

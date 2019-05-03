@@ -42,6 +42,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisAutoConfiguration;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -62,6 +63,7 @@ import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Properties;
 
 /**
  * Test configuration.
@@ -139,5 +141,12 @@ public class MockMvcTestConfig
                 return super.resolveDescription( constraint );
             }
         };
+    }
+
+    @Nonnull
+    @Bean
+    protected BuildProperties buildProperties()
+    {
+        return new BuildProperties( new Properties() );
     }
 }

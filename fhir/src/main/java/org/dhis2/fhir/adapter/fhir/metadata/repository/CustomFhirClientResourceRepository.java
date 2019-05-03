@@ -50,12 +50,12 @@ public interface CustomFhirClientResourceRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    @PreAuthorize( "permitAll()" )
+    @PreAuthorize( "true" )
     Optional<FhirClientResource> findOneByIdCached( @Nonnull UUID id );
 
     @RestResource( exported = false )
     @Nonnull
-    @PreAuthorize( "permitAll()" )
+    @PreAuthorize( "true" )
     Optional<FhirClientResource> findFirstCached( @Nonnull UUID fhirClientId, @Nonnull FhirResourceType fhirResourceType );
 
     @RestResource( exported = false )

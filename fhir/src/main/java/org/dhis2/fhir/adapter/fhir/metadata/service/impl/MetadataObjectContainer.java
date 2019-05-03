@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.fhir.metadata.service.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,56 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.common.collect.Sets;
+import org.dhis2.fhir.adapter.model.Metadata;
+
+import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Container that contains metadata objects of a specific type.
  *
- * @param <I> the concrete type of the ID of the entity.
+ * @param <T> the concrete type of the metadata.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public class MetadataObjectContainer<T extends Metadata<UUID>> implements Serializable
 {
-    String ID_FIELD_NAME = "id";
+    private static final long serialVersionUID = -4706561116134442934L;
 
-    I getId();
+    private final Set<T> objects = Sets.newIdentityHashSet();
+
+    @Nonnull
+    public Set<T> getObjects()
+    {
+        return objects;
+    }
+
+    public boolean addObject( @Nonnull T metadata )
+    {
+        return objects.add( metadata );
+    }
+
+    public void addObjects( @Nonnull Collection<? extends T> metadata )
+    {
+        metadata.forEach( this::addObject );
+    }
+
+    @Nonnull
+    public List<T> getSortedObjects()
+    {
+        return Collections.unmodifiableList( getObjects().stream()
+            .sorted( Comparator.comparing( Metadata::getId ) ).collect( Collectors.toList() ) );
+    }
+
+    public boolean isEmpty()
+    {
+        return objects.isEmpty();
+    }
 }

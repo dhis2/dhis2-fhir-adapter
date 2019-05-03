@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.springframework.hateoas.core.Relation;
 
 import javax.annotation.Nonnull;
@@ -74,7 +74,7 @@ import javax.persistence.Transient;
             "EXISTS (SELECT 1 FROM RuleDhisDataReference edr WHERE edr.rule=psr AND edr.dataReference IN (:dataReferences))" )
 } )
 @Relation( value = "rule", collectionRelation = "rules" )
-@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class ProgramStageRule extends AbstractRule
 {
     private static final long serialVersionUID = 3376410603952222321L;

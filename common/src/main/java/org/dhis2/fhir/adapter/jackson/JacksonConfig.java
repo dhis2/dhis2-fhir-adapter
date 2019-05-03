@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.jackson;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.jackson;
  */
 
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -66,9 +65,7 @@ public class JacksonConfig
                     new LocalDateDeserializer( DateTimeFormatter.ISO_LOCAL_DATE ) );
             jacksonObjectMapperBuilder.filters( new SimpleFilterProvider()
                 .addFilter( SecuredPropertyFilter.FILTER_NAME, new SecuredPropertyFilter() )
-                .addFilter( JsonCachePropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
-                {
-                } ) );
+                .addFilter( RestPropertyFilter.FILTER_NAME, new RestPropertyFilter() ) );
             jacksonObjectMapperBuilder.featuresToDisable( SerializationFeature.WRITE_DATES_AS_TIMESTAMPS );
         };
     }

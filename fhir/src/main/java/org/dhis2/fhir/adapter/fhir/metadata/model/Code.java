@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
+import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
+import org.dhis2.fhir.adapter.jackson.RestIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
@@ -59,6 +63,7 @@ import java.util.Objects;
  */
 @Entity
 @Table( name = "fhir_code" )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class Code extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 6376382638316116368L;
@@ -161,10 +166,12 @@ public class Code extends VersionedBaseMetadata implements Serializable
         this.codeCategory = codeCategory;
     }
 
+    @RestIgnore
+    @RestResource( exported = false )
+    @JsonCacheIgnore
     @OneToMany( mappedBy = "code" )
     @OrderBy( "id" )
-    @JsonIgnore
-    @RestResource( exported = false )
+    @BatchSize( size = 100 )
     public List<SystemCode> getSystemCodes()
     {
         return systemCodes;

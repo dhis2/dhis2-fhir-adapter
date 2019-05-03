@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
@@ -49,8 +50,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "mappedTrackedEntity" )
 @RepositoryRestResource( path = "trackedEntities", collectionResourceRel = "trackedEntities", itemResourceRel = "trackedEntity" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface MappedTrackedEntityRepository extends JpaRepository<MappedTrackedEntity, UUID>, QuerydslPredicateExecutor<MappedTrackedEntity>
+public interface MappedTrackedEntityRepository extends JpaRepository<MappedTrackedEntity, UUID>, QuerydslPredicateExecutor<MappedTrackedEntity>, AdapterRepository<MappedTrackedEntity>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<MappedTrackedEntity> getEntityType()
+    {
+        return MappedTrackedEntity.class;
+    }
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

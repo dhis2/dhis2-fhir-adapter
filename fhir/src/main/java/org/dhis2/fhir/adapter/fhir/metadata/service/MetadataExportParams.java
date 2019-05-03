@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.fhir.metadata.service;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -29,16 +29,30 @@ package org.dhis2.fhir.adapter.model;
  */
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Parameters that control the export of metadata.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public class MetadataExportParams implements Serializable
 {
-    String ID_FIELD_NAME = "id";
+    private static final long serialVersionUID = -3584875762236388996L;
 
-    I getId();
+    private final Set<String> excludedSystemUris = new HashSet<>();
+
+    private final Set<UUID> trackerProgramIds = new HashSet<>();
+
+    public Set<String> getExcludedSystemUris()
+    {
+        return excludedSystemUris;
+    }
+
+    public Set<UUID> getTrackerProgramIds()
+    {
+        return trackerProgramIds;
+    }
 }

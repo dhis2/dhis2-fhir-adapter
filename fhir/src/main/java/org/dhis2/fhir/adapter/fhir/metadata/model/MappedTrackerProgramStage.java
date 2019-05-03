@@ -33,8 +33,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceAttributeConverter;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -51,7 +51,7 @@ import java.io.Serializable;
 
 @Entity
 @Table( name = "fhir_tracker_program_stage" )
-@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
 public class MappedTrackerProgramStage extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7561285892767275117L;

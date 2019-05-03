@@ -57,8 +57,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "fhirClientSystem" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('ADMINISTRATION')" )
-public interface FhirClientSystemRepository extends JpaRepository<FhirClientSystem, UUID>, QuerydslPredicateExecutor<FhirClientSystem>
+public interface FhirClientSystemRepository extends JpaRepository<FhirClientSystem, UUID>, QuerydslPredicateExecutor<FhirClientSystem>, AdapterRepository<FhirClientSystem>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<FhirClientSystem> getEntityType()
+    {
+        return FhirClientSystem.class;
+    }
+
     @RestResource( exported = false )
     @Nonnull
     @Query( "SELECT rss FROM #{#entityName} rss WHERE rss.fhirClient=:fhirClient" )

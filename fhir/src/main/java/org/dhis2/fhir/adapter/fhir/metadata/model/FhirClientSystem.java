@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
@@ -53,7 +53,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_client_system" )
-@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class FhirClientSystem extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -930459310559544662L;

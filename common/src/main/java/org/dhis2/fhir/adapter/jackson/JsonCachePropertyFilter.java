@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.jackson;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,6 @@ import java.util.UUID;
  */
 public class JsonCachePropertyFilter extends SimpleBeanPropertyFilter
 {
-    public static final String FILTER_NAME = "cachePropertyFilter";
-
     @Override
     public void serializeAsField( Object pojo, JsonGenerator generator, SerializerProvider provider, PropertyWriter writer ) throws Exception
     {
@@ -103,7 +101,7 @@ public class JsonCachePropertyFilter extends SimpleBeanPropertyFilter
         @Override
         public UUID getId()
         {
-            return null;
+            return uuid;
         }
     }
 }

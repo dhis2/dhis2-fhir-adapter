@@ -54,8 +54,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "mappedProgram" )
 @RepositoryRestResource( path = "trackerPrograms", collectionResourceRel = "trackerPrograms", itemResourceRel = "trackerProgram" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>
+public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>, AdapterRepository<MappedTrackerProgram>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<MappedTrackerProgram> getEntityType()
+    {
+        return MappedTrackerProgram.class;
+    }
+
     @RestResource( exported = false )
     @Query( value = "SELECT p.programReference FROM #{#entityName} p WHERE p.enabled=true AND p.expEnabled=true" )
     @Cacheable( key = "{#root.methodName}" )

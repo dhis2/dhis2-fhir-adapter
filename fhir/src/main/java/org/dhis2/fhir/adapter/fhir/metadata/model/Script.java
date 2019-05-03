@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,12 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.dhis2.fhir.adapter.fhir.metadata.model.jackson.ScriptVariablePersistentSortedSetConverter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
+import org.dhis2.fhir.adapter.jackson.RestIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -66,7 +68,7 @@ import java.util.SortedSet;
  */
 @Entity
 @Table( name = "fhir_script" )
-@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
 public class Script extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 2166269559735726192L;
@@ -200,6 +202,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
     @OneToMany( mappedBy = "script" )
     @OrderBy( "id" )
     @JsonIgnore
+    @BatchSize( size = 100 )
     public List<ScriptArg> getArguments()
     {
         return arguments;
@@ -210,7 +213,6 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.arguments = scriptVariables;
     }
 
-    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_variable", joinColumns = @JoinColumn( name = "script_id" ) )
     @Column( name = "variable" )
@@ -227,10 +229,11 @@ public class Script extends VersionedBaseMetadata implements Serializable
         this.variables = variables;
     }
 
+    @RestIgnore
     @JsonCacheIgnore
     @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL )
     @OrderBy( "id" )
-    @JsonIgnore
+    @BatchSize( size = 100 )
     public List<ScriptSource> getSources()
     {
         return sources;

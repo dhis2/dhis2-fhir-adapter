@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,15 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
-
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Implemented by objects that depend on a specific coding system.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public interface SystemDependent
 {
-    String ID_FIELD_NAME = "id";
-
-    I getId();
+    /**
+     * @return the system on which the object depends on.
+     */
+    System getSystem();
 }

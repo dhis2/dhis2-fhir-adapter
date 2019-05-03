@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,8 +52,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "system" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>
+public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>, AdapterRepository<System>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<System> getEntityType()
+    {
+        return System.class;
+    }
+
     @RestResource( exported = false )
     @Nonnull
     @Cacheable( key = "{#root.methodName, #a0}" )

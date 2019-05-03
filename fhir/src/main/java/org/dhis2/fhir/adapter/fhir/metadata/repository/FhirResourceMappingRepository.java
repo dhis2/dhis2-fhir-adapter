@@ -43,6 +43,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,13 +56,27 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "resourceMapping" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>
+public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>, AdapterRepository<FhirResourceMapping>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<FhirResourceMapping> getEntityType()
+    {
+        return FhirResourceMapping.class;
+    }
+
     @RestResource( exported = false )
     @Nonnull
     @Cacheable( key = "{#root.methodName, #a0, #a1}" )
     @Query( "SELECT rt FROM #{#entityName} rt WHERE rt.fhirResourceType=:fhirResourceType AND rt.trackedEntityFhirResourceType=:trackedEntityFhirResourceType" )
     Optional<FhirResourceMapping> findOneByFhirResourceType( @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType, @Param( "trackedEntityFhirResourceType" ) @Nonnull FhirResourceType trackedEntityFhirResourceType );
+
+    @RestResource( exported = false )
+    @Nonnull
+    @Query( "SELECT rt FROM #{#entityName} rt WHERE rt.fhirResourceType IN (:fhirResourceTypes) AND rt.trackedEntityFhirResourceType=:trackedEntityFhirResourceType" )
+    List<FhirResourceMapping> findAllByFhirResourceTypes( @Param( "fhirResourceTypes" ) @Nonnull Collection<FhirResourceType> fhirResourceTypes, @Param( "trackedEntityFhirResourceType" ) @Nonnull FhirResourceType trackedEntityFhirResourceType );
 
     @Override
     @Nonnull

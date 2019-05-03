@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.fhir.metadata.service;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,81 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Version information of the Adapter that exported metadata.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public class MetadataVersionInfo implements Serializable
 {
-    String ID_FIELD_NAME = "id";
+    private static final long serialVersionUID = -2370362966100785702L;
 
-    I getId();
+    public static final String VERSION_INFO_FIELD_NAME = "versionInfo";
+
+    @JsonInclude( JsonInclude.Include.NON_NULL )
+    private Instant builtAt;
+
+    @JsonInclude( JsonInclude.Include.NON_EMPTY )
+    private String version;
+
+    @JsonInclude( JsonInclude.Include.NON_EMPTY )
+    private String commitId;
+
+    private Instant exportedAt;
+
+    public Instant getBuiltAt()
+    {
+        return builtAt;
+    }
+
+    public void setBuiltAt( Instant builtAt )
+    {
+        this.builtAt = builtAt;
+    }
+
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public void setVersion( String version )
+    {
+        this.version = version;
+    }
+
+    public String getCommitId()
+    {
+        return commitId;
+    }
+
+    public void setCommitId( String commitId )
+    {
+        this.commitId = commitId;
+    }
+
+    public Instant getExportedAt()
+    {
+        return exportedAt;
+    }
+
+    public void setExportedAt( Instant exportedAt )
+    {
+        this.exportedAt = exportedAt;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "MetadataVersionInfo{" +
+            "builtAt='" + builtAt + '\'' +
+            ", version='" + version + '\'' +
+            ", commitId='" + commitId + '\'' +
+            ", exportedAt=" + exportedAt +
+            '}';
+    }
 }

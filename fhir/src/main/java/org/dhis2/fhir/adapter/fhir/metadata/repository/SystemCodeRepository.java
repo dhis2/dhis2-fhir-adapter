@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +55,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "systemCode" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, QuerydslPredicateExecutor<SystemCode>, CustomSystemCodeRepository
+public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, QuerydslPredicateExecutor<SystemCode>, CustomSystemCodeRepository, AdapterRepository<SystemCode>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<SystemCode> getEntityType()
+    {
+        return SystemCode.class;
+    }
+
     @RestResource( exported = false )
     @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND sc.enabled=true AND c.enabled=true AND s.enabled=true" )
     @Cacheable( keyGenerator = "systemCodeFindAllByCodesKeyGenerator" )

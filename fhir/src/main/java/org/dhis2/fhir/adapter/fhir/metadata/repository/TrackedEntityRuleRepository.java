@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,20 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,8 +53,22 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntityRule, UUID>, QuerydslPredicateExecutor<TrackedEntityRule>, CustomTrackedEntityRuleRepository
+public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntityRule, UUID>, QuerydslPredicateExecutor<TrackedEntityRule>, CustomTrackedEntityRuleRepository, AdapterRepository<TrackedEntityRule>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<TrackedEntityRule> getEntityType()
+    {
+        return TrackedEntityRule.class;
+    }
+
+    @Nonnull
+    @RestResource( exported = false )
+    @Query( "SELECT r FROM #{#entityName} r JOIN r.trackedEntity te WHERE te IN (:trackedEntities)" )
+    <S extends TrackedEntityRule> List<S> findAllByTrackedEntities( @Nonnull Collection<MappedTrackedEntity> trackedEntities );
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

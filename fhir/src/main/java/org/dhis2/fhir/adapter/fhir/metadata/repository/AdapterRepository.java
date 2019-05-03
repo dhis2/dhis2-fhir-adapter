@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,22 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import org.dhis2.fhir.adapter.model.Metadata;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import javax.annotation.Nonnull;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Base repository interface that returns the entity class
  *
- * @param <I> the concrete type of the ID of the entity.
+ * @param <T> the concrete type of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public interface AdapterRepository<T extends Metadata>
 {
-    String ID_FIELD_NAME = "id";
-
-    I getId();
+    @Nonnull
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    Class<T> getEntityType();
 }

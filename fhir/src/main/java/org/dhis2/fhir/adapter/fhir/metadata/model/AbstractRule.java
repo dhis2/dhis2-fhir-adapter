@@ -35,11 +35,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
+import org.hibernate.annotations.BatchSize;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Basic;
@@ -98,7 +99,7 @@ import java.util.List;
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
 } )
-@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
 {
     private static final long serialVersionUID = 3426378271314934021L;
@@ -415,6 +416,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     @JsonCacheIgnore
     @OneToMany( mappedBy = "rule", cascade = CascadeType.ALL )
+    @BatchSize( size = 100 )
     public List<RuleDhisDataReference> getDhisDataReferences()
     {
         return dhisDataReferences;

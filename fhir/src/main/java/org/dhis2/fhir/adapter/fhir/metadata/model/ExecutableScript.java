@@ -29,9 +29,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -59,7 +60,7 @@ import java.util.List;
  */
 @Entity
 @Table( name = "fhir_executable_script" )
-@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
 public class ExecutableScript extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = -2006842064596779970L;
@@ -143,6 +144,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     @Access( AccessType.PROPERTY )
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
+    @BatchSize( size = 100 )
     public List<ExecutableScriptArg> getOverrideArguments()
     {
         return overrideArguments;

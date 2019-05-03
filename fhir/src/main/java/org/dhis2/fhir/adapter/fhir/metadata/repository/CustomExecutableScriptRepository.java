@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,6 @@ public interface CustomExecutableScriptRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    @PreAuthorize( "permitAll()" )
+    @PreAuthorize( "true" )
     Optional<ExecutableScriptInfo> findInfo( @Nullable ExecutableScript executableScript, @Nonnull FhirVersion fhirVersion );
 }

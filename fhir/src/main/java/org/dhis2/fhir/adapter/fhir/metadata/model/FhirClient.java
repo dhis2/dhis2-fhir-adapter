@@ -35,10 +35,11 @@ import org.dhis2.fhir.adapter.data.model.DataGroup;
 import org.dhis2.fhir.adapter.data.model.DataGroupId;
 import org.dhis2.fhir.adapter.data.model.UuidDataGroupId;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
+import org.hibernate.annotations.BatchSize;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Basic;
@@ -73,7 +74,7 @@ import java.util.UUID;
  */
 @Entity
 @Table( name = "fhir_client" )
-@JsonFilter( JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
 @NamedQuery( name = FhirClient.ALL_ENABLED_REMOTE_SUBSCRIPTIONS_NAMED_QUERY, query = "SELECT rs FROM FhirClient rs WHERE rs.enabled=true AND rs.code NOT LIKE 'FHIR_RI_%'" )
 public class FhirClient extends VersionedBaseMetadata implements DataGroup, Serializable
 {
@@ -264,6 +265,7 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
     @JsonCacheIgnore
     @OneToMany( mappedBy = "fhirClient", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
+    @BatchSize( size = 100 )
     public List<FhirClientResource> getResources()
     {
         return resources;
@@ -277,6 +279,7 @@ public class FhirClient extends VersionedBaseMetadata implements DataGroup, Seri
     @JsonCacheIgnore
     @OneToMany( mappedBy = "fhirClient", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
+    @BatchSize( size = 100 )
     public List<FhirClientSystem> getSystems()
     {
         return systems;

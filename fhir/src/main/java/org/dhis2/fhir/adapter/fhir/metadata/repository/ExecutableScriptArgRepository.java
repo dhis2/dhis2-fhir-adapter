@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -49,8 +50,17 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScriptArg" )
-public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>, QuerydslPredicateExecutor<ExecutableScriptArg>
+public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>, QuerydslPredicateExecutor<ExecutableScriptArg>, AdapterRepository<ExecutableScriptArg>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<ExecutableScriptArg> getEntityType()
+    {
+        return ExecutableScriptArg.class;
+    }
+
     @RestResource( exported = false )
     @Query( "SELECT esa FROM #{#entityName} esa JOIN esa.script es ON es.code=:scriptCode JOIN esa.argument a ON a.name=:argName" )
     @Nonnull

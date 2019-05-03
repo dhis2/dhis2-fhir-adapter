@@ -31,8 +31,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
@@ -55,7 +55,7 @@ import javax.validation.constraints.NotNull;
 @NamedQuery( name = TrackedEntityRule.FIND_ALL_EXP_BY_TYPE_NAMED_QUERY, query = "SELECT ter FROM TrackedEntityRule ter JOIN ter.trackedEntity te " +
     "WHERE ter.enabled=true AND ter.expEnabled=true AND (ter.fhirCreateEnabled=true OR ter.fhirUpdateEnabled=true) " +
     "AND te.enabled=true AND te.expEnabled=true AND (te.fhirCreateEnabled=true OR te.fhirUpdateEnabled=true) AND te.trackedEntityReference IN (:typeReferences)" )
-@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class TrackedEntityRule extends AbstractRule
 {
     private static final long serialVersionUID = -3997570895838354307L;

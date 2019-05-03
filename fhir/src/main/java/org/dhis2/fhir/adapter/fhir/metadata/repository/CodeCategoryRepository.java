@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
@@ -49,8 +50,17 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "codeCategory" )
 @RepositoryRestResource( path = "codeCategories", collectionResourceRel = "codeCategories", itemResourceRel = "codeCategory" )
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface CodeCategoryRepository extends JpaRepository<CodeCategory, UUID>, QuerydslPredicateExecutor<CodeCategory>
+public interface CodeCategoryRepository extends JpaRepository<CodeCategory, UUID>, QuerydslPredicateExecutor<CodeCategory>, AdapterRepository<CodeCategory>
 {
+    @Nonnull
+    @Override
+    @RestResource( exported = false )
+    @PreAuthorize( "true" )
+    default Class<CodeCategory> getEntityType()
+    {
+        return CodeCategory.class;
+    }
+
     @Override
     @Nonnull
     @CacheEvict( allEntries = true )

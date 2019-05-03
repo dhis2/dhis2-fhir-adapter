@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.jackson;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,28 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.PropertyWriter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Filters properties that are annotated by {@link RestIgnore}.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public class RestPropertyFilter extends SimpleBeanPropertyFilter implements AdapterBeanPropertyFilter
 {
-    String ID_FIELD_NAME = "id";
-
-    I getId();
+    @Override
+    public void serializeAsField( Object pojo, JsonGenerator generator, SerializerProvider provider, PropertyWriter writer ) throws Exception
+    {
+        if ( include( writer ) && writer.getAnnotation( RestIgnore.class ) == null )
+        {
+            writer.serializeAsField( pojo, generator, provider );
+        }
+        else if ( !generator.canOmitFields() )
+        {
+            writer.serializeAsOmittedField( pojo, generator, provider );
+        }
+    }
 }

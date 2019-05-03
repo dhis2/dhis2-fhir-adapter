@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.persistence.Basic;
@@ -50,7 +50,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table( name = "fhir_resource_mapping" )
-@JsonFilter( value = JsonCachePropertyFilter.FILTER_NAME )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class FhirResourceMapping extends VersionedBaseMetadata implements Serializable
 {
     private static final long serialVersionUID = 7669881610498151697L;

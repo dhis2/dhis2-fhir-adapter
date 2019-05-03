@@ -44,6 +44,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.dhis2.fhir.adapter.auth.Authorization;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCachePropertyFilter;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
@@ -182,7 +183,7 @@ public class DhisConfig
         final ObjectMapper mapper = new ObjectMapper();
         mapper.enableDefaultTyping( ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY );
         mapper.setFilterProvider( new SimpleFilterProvider()
-            .addFilter( JsonCachePropertyFilter.FILTER_NAME, new JsonCachePropertyFilter() )
+            .addFilter( AdapterBeanPropertyFilter.FILTER_NAME, new JsonCachePropertyFilter() )
             .addFilter( SecuredPropertyFilter.FILTER_NAME, new SimpleBeanPropertyFilter()
             {
             } ) );

@@ -28,8 +28,11 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Basic;
@@ -37,6 +40,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -49,7 +53,8 @@ import java.util.Collection;
  */
 @Entity
 @Table( name = "fhir_system" )
-public class System extends VersionedBaseMetadata implements Serializable
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
+public class System extends VersionedBaseMetadata implements SystemDependent, Serializable
 {
     private static final long serialVersionUID = 1072841132452061822L;
 
@@ -175,6 +180,7 @@ public class System extends VersionedBaseMetadata implements Serializable
     @RestResource( exported = false )
     @JsonIgnore
     @OneToMany( mappedBy = "system" )
+    @BatchSize( size = 100 )
     public Collection<SystemCode> getSystemCodes()
     {
         return systemCodes;
@@ -183,5 +189,13 @@ public class System extends VersionedBaseMetadata implements Serializable
     public void setSystemCodes( Collection<SystemCode> systemCodes )
     {
         this.systemCodes = systemCodes;
+    }
+
+    @Override
+    @JsonIgnore
+    @Transient
+    public System getSystem()
+    {
+        return this;
     }
 }

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 
 import javax.annotation.Nonnull;
@@ -62,7 +64,8 @@ import java.io.Serializable;
 @Table( name = "fhir_system_code" )
 @NamedQuery( name = SystemCode.FIND_SYSTEM_CODES_BY_CODE_ID_NAMED_QUERY, query =
     "SELECT NEW org.dhis2.fhir.adapter.fhir.model.SystemCodeValue(s.systemUri, sc.systemCode, sc.displayName) FROM SystemCode sc JOIN sc.system s WHERE sc.code.id=:codeId AND sc.enabled=true AND s.enabled=true" )
-public class SystemCode extends VersionedBaseMetadata implements Serializable
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
+public class SystemCode extends VersionedBaseMetadata implements SystemDependent, Serializable
 {
     private static final long serialVersionUID = 7048763667494469394L;
 
@@ -112,6 +115,7 @@ public class SystemCode extends VersionedBaseMetadata implements Serializable
         this.code = code;
     }
 
+    @Override
     @ManyToOne( optional = false )
     @JoinColumn( name = "system_id", referencedColumnName = "id", nullable = false )
     public System getSystem()

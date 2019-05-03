@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.model;
+package org.dhis2.fhir.adapter.jackson;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,17 +28,21 @@ package org.dhis2.fhir.adapter.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface that must be implemented by all FHIR adapter metadata.
+ * Used to specify that a property should be ignored when serializing
+ * for REST interface.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+@Target( { ElementType.FIELD, ElementType.METHOD } )
+@Retention( RetentionPolicy.RUNTIME )
+@Documented
+public @interface RestIgnore
 {
-    String ID_FIELD_NAME = "id";
-
-    I getId();
 }
