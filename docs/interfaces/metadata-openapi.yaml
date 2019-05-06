@@ -1,0 +1,77 @@
+openapi: 3.0.0
+servers:
+  - url: '{adapterBaseUrl}'
+    variables:
+      adapterBaseUrl:
+        default: http://localhost:8081
+        description: |
+          The base URL of the DHIS 2 FHIR Adapter.
+info:
+  description: DHIS 2 FHIR Adapter Metadata API
+  version: "1.1.0"
+  title: DHIS2 FHIR Adapter Metadata API
+  license:
+    name: DHIS 2 License
+    url: 'https://github.com/dhis2/dhis2-fhir-adapter/blob/master/LICENSE'
+tags:
+  - name: code-data-mapping-users
+    description: Restricted to users that have access to code and data mappings.
+paths:
+  /api/metadata:
+    get:
+      tags:
+        - code-data-mapping-users
+      summary: exports metadata
+      operationId: exportMetadata
+      description: |
+        Exports the metadata for selected or all configured Tracker Programs.
+        All directly and indirectly referenced metadata of these Tracker
+        Programs will be exported as well. Metadata for specific system URIs
+        can be exluded from the export (e.g. due to license restrictions).
+      parameters:
+        - in: query
+          name: trackerProgramId
+          description: |
+            The IDs of one or more Tracker Programs that should be exported.
+            If no ID is specified, all Tracker Programs are exported.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - in: query
+          name: excludedSystemUri
+          description: |
+            The system URIs of coding systems (e.g. http://snomed.info/sct) that
+            should not be exported (e.g. due to license restrictions).
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uri
+        - in: query
+          name: download
+          description: |
+            Specifies if the resulting metadata should be offered as a file
+            that can be downloaded in a web browser. By default it will be
+            displyed inline in the web browser.
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: metadata export as JSON object
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+security:
+  - basicAuth: []
