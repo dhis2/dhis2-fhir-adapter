@@ -34,12 +34,8 @@ import org.dhis2.fhir.adapter.model.Metadata;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Container that contains metadata objects of a specific type.
@@ -67,13 +63,6 @@ public class MetadataObjectContainer<T extends Metadata<UUID>> implements Serial
     public void addObjects( @Nonnull Collection<? extends T> metadata )
     {
         metadata.forEach( this::addObject );
-    }
-
-    @Nonnull
-    public List<T> getSortedObjects()
-    {
-        return Collections.unmodifiableList( getObjects().stream()
-            .sorted( Comparator.comparing( Metadata::getId ) ).collect( Collectors.toList() ) );
     }
 
     public boolean isEmpty()

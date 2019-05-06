@@ -28,49 +28,57 @@ package org.dhis2.fhir.adapter.fhir.metadata.service.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Metadata;
-import org.hibernate.Hibernate;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Arrays;
 
 /**
- * {@link MetadataObjectContainer} for specific metadata object types.
+ * Unit tests for {@link MetadataObjectContainer}.
  *
  * @author volsch
  */
-public class TypedMetadataObjectContainer implements Serializable
+public class MetadataObjectContainerTest
 {
-    private static final long serialVersionUID = -2050553626102331995L;
-
-    private final Map<Class<? extends Metadata>, MetadataObjectContainer<Metadata<UUID>>> typedContainers = new HashMap<>();
-
-    public boolean addObject( @Nonnull Metadata<UUID> metadata )
+    @Test
+    public void empty()
     {
-        @SuppressWarnings( "unchecked" ) final Metadata<UUID> unproxiedMetadata = (Metadata<UUID>) Hibernate.unproxy( metadata );
-
-        return getContainer( unproxiedMetadata.getClass() ).addObject( unproxiedMetadata );
+        final MetadataObjectContainer container = new MetadataObjectContainer();
+        Assert.assertTrue( container.isEmpty() );
     }
 
-    public void addObjects( @Nonnull Collection<? extends Metadata<UUID>> metadata )
+    @Test
+    public void notEmpty()
     {
-        metadata.forEach( this::addObject );
+        final MetadataObjectContainer<Code> container = new MetadataObjectContainer<>();
+        container.addObject( new Code() );
+        Assert.assertFalse( container.isEmpty() );
     }
 
-    @Nonnull
-    public Set<Class<? extends Metadata>> getTypes()
+    @Test
+    public void addUniqueObject()
     {
-        return typedContainers.keySet();
+        final MetadataObjectContainer<Code> container = new MetadataObjectContainer<>();
+        final Code code1 = new Code();
+        final Code code2 = new Code();
+
+        container.addObject( code1 );
+        container.addObject( code1 );
+        container.addObject( code2 );
+
+        Assert.assertThat( container.getObjects(), Matchers.containsInAnyOrder( code1, code2 ) );
     }
 
-    @Nonnull
-    public MetadataObjectContainer<Metadata<UUID>> getContainer( @Nonnull Class<? extends Metadata> metadataType )
+    @Test
+    public void addUniqueObjects()
     {
-        return typedContainers.computeIfAbsent( metadataType, key -> new MetadataObjectContainer<>() );
+        final MetadataObjectContainer<Code> container = new MetadataObjectContainer<>();
+        final Code code1 = new Code();
+        final Code code2 = new Code();
+
+        container.addObjects( Arrays.asList( code1, code2, code1 ) );
+        Assert.assertThat( container.getObjects(), Matchers.containsInAnyOrder( code1, code2 ) );
     }
 }

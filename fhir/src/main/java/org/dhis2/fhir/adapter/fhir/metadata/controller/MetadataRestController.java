@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.controller;
  */
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportParams;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportService;
 import org.springframework.http.HttpHeaders;
@@ -63,8 +62,8 @@ public class MetadataRestController
         this.metadataExportService = metadataExportService;
     }
 
-    @RequestMapping( method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     @Nonnull
+    @RequestMapping( method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     public ResponseEntity<JsonNode> exp( @RequestParam( name = "trackerProgramId", required = false ) List<UUID> trackerProgramIds,
         @RequestParam( name = "excludedSystemUri", required = false ) List<String> excludedSystemUris,
         @RequestParam( name = "download", required = false, defaultValue = "false" ) boolean download )
@@ -90,12 +89,5 @@ public class MetadataRestController
         }
 
         return new ResponseEntity<>( node, headers, HttpStatus.OK );
-    }
-
-    @RequestMapping( method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
-    @Nonnull
-    public JsonNode imp( @Nonnull JsonNode rootNode )
-    {
-        return JsonNodeFactory.instance.nullNode();
     }
 }

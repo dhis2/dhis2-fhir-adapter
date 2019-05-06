@@ -40,7 +40,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SystemDependent;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportParams;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.model.Metadata;
-import org.dhis2.fhir.adapter.model.UuidIdentifiable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +47,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -131,7 +129,11 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
                 stream = ( (Collection<Metadata>) metadata ).stream();
             }
 
-            generator.writeStartArray();
+            if ( include )
+            {
+                generator.writeFieldName( writer.getName() );
+                generator.writeStartArray();
+            }
             stream.forEach( m -> {
                 if ( isIncludedMetadataValue( m ) )
                 {
@@ -151,7 +153,10 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
                     }
                 }
             } );
-            generator.writeEndArray();
+            if ( include )
+            {
+                generator.writeEndArray();
+            }
         }
         else if ( isIncludedMetadataValue( metadata ) )
         {
@@ -242,23 +247,5 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
         }
 
         return true;
-    }
-
-    public static class UuidId implements UuidIdentifiable, Serializable
-    {
-        private static final long serialVersionUID = 6983696927256767602L;
-
-        private final UUID uuid;
-
-        public UuidId( UUID uuid )
-        {
-            this.uuid = uuid;
-        }
-
-        @Override
-        public UUID getId()
-        {
-            return uuid;
-        }
     }
 }

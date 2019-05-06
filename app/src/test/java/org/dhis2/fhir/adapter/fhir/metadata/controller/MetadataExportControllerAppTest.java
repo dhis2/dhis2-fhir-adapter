@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
+package org.dhis2.fhir.adapter.fhir.metadata.controller;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,7 +28,44 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class FhirResourceFhirToDhisTransformerUtilsTest
-{
+import org.dhis2.fhir.adapter.AbstractAppTest;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.junit.Test;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Tests export of metadata.
+ *
+ * @author volsch
+ */
+public class MetadataExportControllerAppTest extends AbstractAppTest
+{
+    @Nonnull
+    @Override
+    protected FhirVersion getFhirVersion()
+    {
+        return FhirVersion.DSTU3;
+    }
+
+    @Test
+    public void invokeAuthorized() throws Exception
+    {
+        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" )
+            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() );
+    }
+
+    @Test
+    public void invokeUnauthorized() throws Exception
+    {
+        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" )
+            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "code_mapping:code_mapping_1"
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isForbidden() );
+    }
 }

@@ -152,13 +152,13 @@ public class MetadataExportServiceImpl implements MetadataExportService
 
         final List<MappedTrackerProgram> trackerPrograms = params.getTrackerProgramIds().isEmpty() ?
             trackerProgramRepository.findAll() : trackerProgramRepository.findAllById( params.getTrackerProgramIds() );
-        typedContainer.addObjects( trackerPrograms, null );
+        typedContainer.addObjects( trackerPrograms );
 
         if ( !trackerPrograms.isEmpty() )
         {
-            typedContainer.addObjects( programStageRuleRepository.findAllByProgram( trackerPrograms ), MappedTrackerProgram.class );
+            typedContainer.addObjects( programStageRuleRepository.findAllByProgram( trackerPrograms ) );
             typedContainer.addObjects( trackerPrograms.stream().map( MappedTrackerProgram::getTrackedEntityRule )
-                .collect( Collectors.toList() ), MappedTrackerProgram.class );
+                .collect( Collectors.toList() ) );
         }
 
         processFhirResourceTypes( typedContainer );
