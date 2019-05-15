@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,17 +57,18 @@ import java.util.stream.Collectors;
  */
 public enum FhirResourceType
 {
-    CONDITION( FhirVersion.ALL, "Condition", 19, "Condition" ),
-    DIAGNOSTIC_REPORT( FhirVersion.ALL, "DiagnosticReport", 30, "DiagnosticReport" ),
-    ENCOUNTER( FhirVersion.ALL, "Encounter", 4, "Encounter" ),
-    IMMUNIZATION( FhirVersion.ALL, "Immunization", 22, "Immunization" ),
-    LOCATION( FhirVersion.ALL, "Location", 2, "Location" ),
-    MEDICATION_REQUEST( FhirVersion.ALL, "MedicationRequest", 21, "MedicationRequest" ),
-    OBSERVATION( FhirVersion.ALL, "Observation", 20, "Observation" ),
-    ORGANIZATION( FhirVersion.ALL, "Organization", 1, "Organization" ),
-    PATIENT( FhirVersion.ALL, "Patient", 10, "Patient" ),
-    RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, "RelatedPerson" ),
-    PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, "Practitioner" );
+    CONDITION( FhirVersion.ALL, "Condition", 19, Collections.emptySet(), Collections.singleton( "Condition" ) ),
+    DIAGNOSTIC_REPORT( FhirVersion.ALL, "DiagnosticReport", 30, Collections.emptySet(), Collections.singleton( "DiagnosticReport" ) ),
+    ENCOUNTER( FhirVersion.ALL, "Encounter", 4, Collections.emptySet(), Collections.singleton( "Encounter" ) ),
+    IMMUNIZATION( FhirVersion.ALL, "Immunization", 22, Collections.emptySet(), Collections.singleton( "Immunization" ) ),
+    LOCATION( FhirVersion.ALL, "Location", 2, Collections.emptySet(), Collections.singleton( "Location" ) ),
+    MEDICATION_REQUEST( FhirVersion.ALL, "MedicationRequest", 21, Collections.emptySet(), Collections.singleton( "MedicationRequest" ) ),
+    OBSERVATION( FhirVersion.ALL, "Observation", 20, Collections.emptySet(), Collections.singleton( "Observation" ) ),
+    ORGANIZATION( FhirVersion.ALL, "Organization", 1, Collections.emptySet(), Collections.singleton( "Organization" ) ),
+    PATIENT( FhirVersion.ALL, "Patient", 10, Collections.emptySet(), Collections.singleton( "Patient" ) ),
+    RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
+    PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
+    MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
@@ -110,14 +112,19 @@ public enum FhirResourceType
 
     private final int order;
 
+    private final Set<String> transactionalWith;
+
     private final Set<String> simpleClassNames;
 
-    FhirResourceType( Set<FhirVersion> fhirVersions, String resourceTypeName, int order, String... simpleClassNames )
+    private volatile Set<FhirResourceType> transactionalWithTypes;
+
+    FhirResourceType( Set<FhirVersion> fhirVersions, String resourceTypeName, int order, Collection<String> transactionalWith, Collection<String> simpleClassNames )
     {
         this.fhirVersions = fhirVersions;
         this.resourceTypeName = resourceTypeName;
         this.order = order;
-        this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( simpleClassNames ) ) );
+        this.transactionalWith = new HashSet<>( transactionalWith );
+        this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( simpleClassNames ) );
     }
 
     @Nonnull
@@ -135,6 +142,34 @@ public enum FhirResourceType
     public int getOrder()
     {
         return order;
+    }
+
+    /**
+     * @return the FHIR resource types that can be combined with this FHIR resource type in a transaction.
+     */
+    @Nonnull
+    public Set<FhirResourceType> getTransactionalWith()
+    {
+        if ( transactionalWithTypes == null )
+        {
+            final Set<FhirResourceType> resourceTypes = new HashSet<>();
+
+            for ( final String resourceTypeName : transactionalWith )
+            {
+                final FhirResourceType type = getByResourceTypeName( resourceTypeName );
+
+                if ( type == null )
+                {
+                    throw new AssertionError( "Undefined FHIR resource type: " + resourceTypeName );
+                }
+
+                resourceTypes.add( type );
+            }
+
+            transactionalWithTypes = Collections.unmodifiableSet( resourceTypes );
+        }
+
+        return transactionalWithTypes;
     }
 
     @Nonnull

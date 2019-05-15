@@ -38,6 +38,7 @@ import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import ca.uhn.fhir.rest.server.tenant.UrlBaseTenantIdentificationStrategy;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
+import org.dhis2.fhir.adapter.fhir.server.provider.FhirResourceProvider;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
@@ -57,19 +58,21 @@ public class FhirRestfulServer extends RestfulServer
 {
     private static final long serialVersionUID = -8746071131827306156L;
 
-    private final List<IResourceProvider> resourceProviders;
+    private final List<FhirResourceProvider> resourceProviders;
 
     private final List<IServerInterceptor> interceptors;
 
     private final IPagingProvider pagingProvider;
 
     public FhirRestfulServer( @Nonnull FhirContext fhirContext,
-        @Nonnull ObjectProvider<List<IResourceProvider>> resourceProviders,
+        @Nonnull ObjectProvider<List<FhirResourceProvider>> resourceProviders,
         @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors,
         @Nonnull IPagingProvider pagingProvider )
     {
         super( fhirContext );
+
         final FhirVersion fhirVersion = FhirVersion.get( fhirContext.getVersion().getVersion() );
+
         if ( fhirVersion == null )
         {
             throw new IllegalStateException(
@@ -91,7 +94,9 @@ public class FhirRestfulServer extends RestfulServer
         setDefaultPreferReturn( PreferReturnEnum.MINIMAL );
         setETagSupport( ETagSupportEnum.DISABLED );
 
-        setResourceProviders( resourceProviders );
+        setProviders( resourceProviders.stream().filter( provider -> !( provider instanceof IResourceProvider ) ).toArray() );
+        setResourceProviders( resourceProviders.stream().filter( provider -> provider instanceof IResourceProvider )
+            .map( provider -> (IResourceProvider) provider ).collect( Collectors.toList() ) );
         setInterceptors( interceptors );
         setPagingProvider( pagingProvider );
     }
@@ -103,10 +108,12 @@ public class FhirRestfulServer extends RestfulServer
         {
             return null;
         }
+
         final List<T> copiedList = new ArrayList<>( list );
         AnnotationAwareOrderComparator.sort( copiedList );
         // list is processed in inverse order by HAPI FHIR
         Collections.reverse( copiedList );
+
         return copiedList;
     }
 }

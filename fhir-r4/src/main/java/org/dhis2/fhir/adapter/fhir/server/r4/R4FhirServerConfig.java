@@ -30,12 +30,12 @@ package org.dhis2.fhir.adapter.fhir.server.r4;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.server.IPagingProvider;
-import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.RestfulServer;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import org.dhis2.fhir.adapter.auth.AuthorizationResetFilter;
 import org.dhis2.fhir.adapter.fhir.server.AbstractFhirServerConfig;
 import org.dhis2.fhir.adapter.fhir.server.FhirRestfulServer;
+import org.dhis2.fhir.adapter.fhir.server.provider.FhirResourceProvider;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -64,7 +64,7 @@ public class R4FhirServerConfig extends AbstractFhirServerConfig
     @Bean
     @Nonnull
     protected FhirRestfulServer fhirRestfulServerR4( @Nonnull @Qualifier( "fhirContextR4" ) FhirContext fhirContext,
-        @Nonnull ObjectProvider<List<IResourceProvider>> resourceProviders,
+        @Nonnull ObjectProvider<List<FhirResourceProvider>> resourceProviders,
         @Nonnull ObjectProvider<List<IServerInterceptor>> interceptors,
         @Nonnull IPagingProvider pagingProvider )
     {

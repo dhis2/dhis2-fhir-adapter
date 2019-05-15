@@ -37,25 +37,15 @@ import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import ca.uhn.fhir.rest.server.IResourceProvider;
-import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
-import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
-import org.dhis2.fhir.adapter.fhir.model.SingleFhirVersionRestricted;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
-import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,8 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * Abstract base class of all resource providers for FHIR interface. This
@@ -74,46 +62,18 @@ import java.util.function.Supplier;
  * @param <T> the concrete type of the resource.
  * @author volsch
  */
-public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> implements IResourceProvider, SingleFhirVersionRestricted
+public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> extends AbstractResourceProvider<T>
 {
     public static final String SP_IDENTIFIER = "identifier";
 
     public static final String SP_LAST_UPDATED = "_lastUpdated";
-
-    public static final String DEFAULT_USE_CASE_TENANT = "default";
-
-    private final Class<T> resourceClass;
-
-    private final FhirRepository fhirRepository;
-
-    private final DhisRepository dhisRepository;
-
-    private final FhirClientResourceRepository fhirClientResourceRepository;
-
-    private final FhirClientSystemRepository fhirClientSystemRepository;
-
-    private final FhirResourceType fhirResourceType;
-
-    private volatile FhirClientResource fhirClientResource;
-
-    private volatile FhirClientSystem fhirClientSystem;
 
     public AbstractReadOnlyResourceProvider( @Nonnull Class<T> resourceClass,
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        this.resourceClass = resourceClass;
-        this.fhirClientResourceRepository = fhirClientResourceRepository;
-        this.fhirClientSystemRepository = fhirClientSystemRepository;
-        this.fhirRepository = fhirRepository;
-        this.dhisRepository = dhisRepository;
-        this.fhirResourceType = FhirResourceType.getByResourceType( resourceClass );
-
-        if ( fhirResourceType == null )
-        {
-            throw new AssertionError( "Unhandled FHIR resource type: " + resourceClass );
-        }
+        super( resourceClass, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
     @Override
@@ -170,90 +130,5 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
         return executeInSecurityContext( () ->
             getDhisRepository().search( getFhirClientResource().getFhirClient(), getFhirResourceType(),
                 count, convertedFilteredCodes, filter, lastUpdatedDateRange ) );
-    }
-
-    @Nonnull
-    protected FhirClientResourceRepository getFhirClientResourceRepository()
-    {
-        return fhirClientResourceRepository;
-    }
-
-    @Nonnull
-    protected FhirRepository getFhirRepository()
-    {
-        return fhirRepository;
-    }
-
-    @Nonnull
-    protected DhisRepository getDhisRepository()
-    {
-        return dhisRepository;
-    }
-
-    @Nonnull
-    protected FhirResourceType getFhirResourceType()
-    {
-        return fhirResourceType;
-    }
-
-    @Nonnull
-    protected DhisFhirResourceId extractDhisFhirResourceId( @Nonnull IIdType idType ) throws UnprocessableEntityException
-    {
-        try
-        {
-            return DhisFhirResourceId.parse( idType.getIdPart() );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new UnprocessableEntityException( "Invalid DHIS2 FHIR ID: " + idType.getIdPart() );
-        }
-    }
-
-    @Nonnull
-    protected FhirClientResource getFhirClientResource()
-    {
-        if ( fhirClientResource == null )
-        {
-            final UUID fhirClientId = FhirClient.getIdByFhirVersion( getFhirVersion() );
-            fhirClientResource = fhirClientResourceRepository.findFirstCached( fhirClientId, fhirResourceType )
-                .orElseThrow( () -> new InvalidRequestException( "FHIR resource " + fhirResourceType +
-                    " is not supported for FHIR version " + getFhirVersion() + "." ) );
-        }
-        return fhirClientResource;
-    }
-
-    @Nonnull
-    protected FhirClientSystem getFhirClientSystem()
-    {
-        if ( fhirClientSystem == null )
-        {
-            final UUID fhirClientId = FhirClient.getIdByFhirVersion( getFhirVersion() );
-            fhirClientSystem = fhirClientSystemRepository.findOneByFhirClientResourceType( fhirClientId, fhirResourceType )
-                .orElseThrow( () -> new InvalidRequestException( "FHIR resource " + fhirResourceType +
-                    " has not assigned system URI for FHIR version " + getFhirVersion() + "." ) );
-        }
-        return fhirClientSystem;
-    }
-
-    protected void validateUseCase( @Nonnull RequestDetails theRequestDetails )
-    {
-        final String tenantId = theRequestDetails.getTenantId();
-        if ( !DEFAULT_USE_CASE_TENANT.equals( tenantId ) )
-        {
-            throw new InvalidRequestException( "Selected use case must be default (received " + tenantId + ")." );
-        }
-    }
-
-    protected final <R> R executeInSecurityContext( @Nonnull Supplier<R> supplier )
-    {
-        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
-        try
-        {
-            return supplier.get();
-        }
-        finally
-        {
-            SecurityContextHolder.clearContext();
-        }
     }
 }
