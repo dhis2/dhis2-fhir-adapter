@@ -201,6 +201,12 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         return context.getFhirRequest().isSync();
     }
 
+    @Override
+    protected boolean isAlwaysActiveResource( @Nonnull RuleInfo<TrackedEntityRule> ruleInfo )
+    {
+        return false;
+    }
+
     @Nonnull
     @Override
     protected Optional<TrackedEntityInstance> getResourceById( @Nullable String id ) throws TransformerException

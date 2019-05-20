@@ -267,7 +267,7 @@ public class FhirRepositoryImpl implements FhirRepository
         final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
         if ( fhirResourceType == null )
         {
-            logger.info( "FHIR Resource type for {} is not available. Contained FHIR Resource cannot be processed." );
+            logger.info( "FHIR resource type for {} is not available. Contained FHIR Resource cannot be processed.", resource.getClass().getSimpleName() );
             return null;
         }
 
@@ -402,7 +402,7 @@ public class FhirRepositoryImpl implements FhirRepository
                     if ( operationOutcome == null )
                     {
                         final String dhisFhirResourceId = DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() );
-                        if ( fhirRequest.isDhisFhirId() && resource.getIdElement().isEmpty() )
+                        if ( fhirRequest.isDhisFhirId() && ( resource.getIdElement().isEmpty() || resource.getIdElement().isLocal() ) )
                         {
                             resource.setId( new IdDt( Objects.requireNonNull( fhirRequest.getResourceType() ).getResourceTypeName(), dhisFhirResourceId ) );
                         }

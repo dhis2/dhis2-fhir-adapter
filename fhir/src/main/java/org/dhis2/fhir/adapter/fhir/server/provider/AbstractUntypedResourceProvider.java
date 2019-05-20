@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  */
 
 import ca.uhn.fhir.rest.api.server.RequestDetails;
+import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
@@ -60,6 +61,8 @@ import java.util.function.Supplier;
 public abstract class AbstractUntypedResourceProvider implements FhirResourceProvider, SingleFhirVersionRestricted
 {
     public static final String DEFAULT_USE_CASE_TENANT = "default";
+
+    public static final String SP_IDENTIFIER = "identifier";
 
     private final FhirRepository fhirRepository;
 
@@ -180,5 +183,17 @@ public abstract class AbstractUntypedResourceProvider implements FhirResourcePro
         {
             SecurityContextHolder.clearContext();
         }
+    }
+
+    protected TokenParam parseTokenParam( @Nonnull String param )
+    {
+        final int index = param.indexOf( '|' );
+
+        if ( index < 0 )
+        {
+            return new TokenParam( null, param );
+        }
+
+        return new TokenParam( param.substring( 0, index ), param.substring( index + 1 ) );
     }
 }

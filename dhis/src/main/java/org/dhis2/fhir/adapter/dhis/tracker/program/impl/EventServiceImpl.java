@@ -48,6 +48,7 @@ import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
@@ -137,6 +138,7 @@ public class EventServiceImpl implements EventService
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
+    @CacheEvict( key = "{'find', #a0.programId, #a0.programStageId, #a0.enrollmentId, #a0.trackedEntityInstanceId}", cacheManager = "dhisCacheManager", cacheNames = "events" )
     public Event createOrMinimalUpdate( @Nonnull Event event )
     {
         return event.isNewResource() ? create( event ) : minimalUpdate( event );

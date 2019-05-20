@@ -140,6 +140,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         return FhirVersion.ALL;
     }
 
+    protected abstract boolean isAlwaysActiveResource( @Nonnull RuleInfo<U> ruleInfo );
+
     @Nonnull
     protected Optional<R> getResource( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context,
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
@@ -170,7 +172,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
                 return Optional.of( resource );
             }
         }
-        if ( activeResource )
+        if ( activeResource || isAlwaysActiveResource( ruleInfo ) )
         {
             final R resource = getActiveResource( context, ruleInfo, scriptVariables, false, true ).orElse( null );
             if ( resource != null )

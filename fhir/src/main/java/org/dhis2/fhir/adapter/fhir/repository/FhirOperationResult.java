@@ -48,6 +48,8 @@ public class FhirOperationResult implements Serializable
 
     public static final int CREATED_STATUS_CODE = 201;
 
+    public static final int NO_CONTENT_STATUS_CODE = 204;
+
     public static final int BAD_REQUEST_STATUS_CODE = 400;
 
     public static final int UNAUTHORIZED_STATUS_CODE = 401;
@@ -94,9 +96,30 @@ public class FhirOperationResult implements Serializable
         this.issue = issue;
     }
 
+    public void ok()
+    {
+        setStatusCode( OK_STATUS_CODE );
+    }
+
+    public void created()
+    {
+        setStatusCode( CREATED_STATUS_CODE );
+    }
+
+    public void noContent()
+    {
+        setStatusCode( NO_CONTENT_STATUS_CODE );
+    }
+
     public void badRequest( @Nonnull String diagnostics )
     {
         setStatusCode( BAD_REQUEST_STATUS_CODE );
+        setIssue( new FhirOperationIssue( FhirOperationIssueSeverity.ERROR, FhirOperationIssueType.INVALID, diagnostics ) );
+    }
+
+    public void notFound( @Nonnull String diagnostics )
+    {
+        setStatusCode( NOT_FOUND_STATUS_CODE );
         setIssue( new FhirOperationIssue( FhirOperationIssueSeverity.ERROR, FhirOperationIssueType.INVALID, diagnostics ) );
     }
 

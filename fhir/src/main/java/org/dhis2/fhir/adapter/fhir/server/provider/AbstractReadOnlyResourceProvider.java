@@ -64,8 +64,6 @@ import java.util.Set;
  */
 public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> extends AbstractResourceProvider<T>
 {
-    public static final String SP_IDENTIFIER = "identifier";
-
     public static final String SP_LAST_UPDATED = "_lastUpdated";
 
     public AbstractReadOnlyResourceProvider( @Nonnull Class<T> resourceClass,

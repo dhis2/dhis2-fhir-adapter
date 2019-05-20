@@ -30,10 +30,10 @@ package org.dhis2.fhir.adapter;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
-import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DateTimeType;
@@ -61,7 +61,7 @@ import java.util.Date;
  * This content LOINC® is copyright © 1995 Regenstrief Institute, Inc. and the
  * LOINC Committee, and available at no cost under the license at http://loinc.org/terms-of-use
  */
-public class R4InterfaceDemoClient
+public class R4BatchDemoClient
 {
     private static final String SERVER_BASE = "http://localhost:8081/fhir/r4/default";
 
@@ -74,6 +74,7 @@ public class R4InterfaceDemoClient
             System.err.println( "Syntax: ORG_CODE MOTHER_NATIONAL_ID CHILD_NATIONAL_ID" );
             System.exit( 10 );
         }
+
         final String orgCode = args[0];
         final String motherNationalId = args[1];
         final String childNationalId = args[2];
@@ -89,7 +90,8 @@ public class R4InterfaceDemoClient
 
         final LocalDate childBirthDate = LocalDate.now().minusDays( 8 );
 
-        org.hl7.fhir.r4.model.Patient child = new Patient();
+        Patient child = new Patient();
+        child.setIdElement( IdType.newRandomUuid() );
         child.addIdentifier()
             .setSystem( "http://www.dhis2.org/dhis2-fhir-adapter/systems/patient-identifier" )
             .setValue( childNationalId );
@@ -108,24 +110,15 @@ public class R4InterfaceDemoClient
         child.getAddress().get( 0 )
             .addExtension()
             .setUrl( "http://hl7.org/fhir/StructureDefinition/geolocation" )
-            .addExtension( new org.hl7.fhir.r4.model.Extension()
+            .addExtension( new Extension()
                 .setUrl( "latitude" )
-                .setValue( new org.hl7.fhir.r4.model.DecimalType( 8.4665341 ) ) )
+                .setValue( new DecimalType( 8.4665341 ) ) )
             .addExtension( new Extension()
                 .setUrl( "longitude" )
                 .setValue( new DecimalType( -13.262743 ) ) );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
-        child.setManagingOrganization( new org.hl7.fhir.r4.model.Reference(
-            new org.hl7.fhir.r4.model.IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
-
-        MethodOutcome methodOutcome = client.create().resource( child ).execute();
-        System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
-
-        child.setId( methodOutcome.getId() );
-        child.getNameFirstRep().setFamily( "Newton" );
-
-        methodOutcome = client.update().resource( child ).execute();
-        System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+        child.setManagingOrganization( new Reference(
+            new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
 
         Immunization imm1 = new Immunization();
         imm1.getPatient().setReference( child.getId() );
@@ -142,9 +135,6 @@ public class R4InterfaceDemoClient
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
         imm1.setLocation( new Reference( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
 
-        methodOutcome = client.create().resource( imm1 ).execute();
-        System.out.println( "Immunization 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
-
         Observation bw1 = new Observation();
         bw1.addCategory( new CodeableConcept().addCoding(
             new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
@@ -154,13 +144,30 @@ public class R4InterfaceDemoClient
             TemporalPrecisionEnum.DAY ) );
         bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );
 
-        methodOutcome = client.create().resource( bw1 ).execute();
-        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+        ////////////////////////////////////////
+        // Transaction Bundle with Create/Update
+        ////////////////////////////////////////
 
-        bw1.setId( methodOutcome.getId() );
-        bw1.getValueQuantity().setValue( 121 );
-
-        methodOutcome = client.update().resource( bw1 ).execute();
-        System.out.println( "Observation 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
+        Bundle bundle = new Bundle();
+        bundle.setType( Bundle.BundleType.BATCH );
+        bundle.addEntry()
+            .setResource( child )
+            .setFullUrl( child.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.PUT )
+            .setUrl( "Patient?identifier=http%3A%2F%2Fwww.dhis2.org%2Fdhis2-fhir-adapter%2Fsystems%2Fpatient-identifier%7C" + childNationalId );
+        bundle.addEntry()
+            .setResource( imm1 )
+            .setFullUrl( imm1.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Immunization" );
+        bundle.addEntry()
+            .setResource( bw1 )
+            .setFullUrl( bw1.getId() )
+            .getRequest()
+            .setMethod( Bundle.HTTPVerb.POST )
+            .setUrl( "Observation" );
+        client.transaction().withBundle( bundle ).execute();
     }
 }

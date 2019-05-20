@@ -29,25 +29,41 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  */
 
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
+import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
+import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirBatchRequest;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperationResult;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperationType;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationOutcome;
+import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationType;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.util.List;
 
 /**
  * Abstract base class of all resource providers for FHIR bundles.
@@ -57,6 +73,8 @@ import java.net.URISyntaxException;
  */
 public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> extends AbstractUntypedResourceProvider
 {
+    private final Logger log = LoggerFactory.getLogger( getClass() );
+
     public AbstractBundleResourceProvider(
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
@@ -66,14 +84,17 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     }
 
     @Nonnull
-    protected T processInternal( T bundle )
+    protected T processInternal( @Nonnull RequestDetails requestDetails, T bundle )
     {
+        validateUseCase( requestDetails );
+
         if ( bundle == null )
         {
             throw new InvalidRequestException( "Bundle has not been specified." );
         }
 
         final FhirBatchRequest batchRequest = createBatchRequest( bundle );
+        process( batchRequest );
 
         return createBatchResponse( batchRequest );
     }
@@ -83,6 +104,236 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
 
     @Nonnull
     protected abstract T createBatchResponse( @Nonnull FhirBatchRequest batchRequest );
+
+    protected void process( @Nonnull FhirBatchRequest batchRequest )
+    {
+        // according to FHIR specification the operations must be processed in order: DELETE, POST, PUT
+
+        executeInSecurityContext( () -> {
+            processDeletes( batchRequest );
+            processPuts( batchRequest, true );
+            processPosts( batchRequest );
+            processPuts( batchRequest, false );
+
+            return null;
+        } );
+    }
+
+    protected void processDeletes( @Nonnull FhirBatchRequest batchRequest )
+    {
+        batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.DELETE && !o.isProcessed() ).forEach( o -> {
+            try
+            {
+                final DhisFhirResourceId dhisFhirResourceId = extractDhisResourceId( o, false );
+
+                if ( dhisFhirResourceId == null )
+                {
+                    return;
+                }
+
+                if ( getFhirRepository().delete( o.getClientResource(), dhisFhirResourceId ) )
+                {
+                    o.getResult().noContent();
+                }
+                else
+                {
+                    o.getResult().notFound( "Specified resource to be deleted could not be found." );
+                }
+            }
+            catch ( TransformerDataException e )
+            {
+                o.getResult().badRequest( e.getMessage() );
+            }
+            catch ( Exception e )
+            {
+                log.error( "An unexpected error occurred while executing batch DELETE.", e );
+                o.getResult().internalServerError( e.getMessage() );
+            }
+        } );
+    }
+
+    protected void processPosts( @Nonnull FhirBatchRequest batchRequest )
+    {
+        batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.POST && !o.isProcessed() ).forEach( o -> {
+            try
+            {
+                final FhirRepositoryOperationOutcome outcome = getFhirRepository().save( o.getClientResource(), o.getResource(), new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE ) );
+
+                if ( outcome == null )
+                {
+                    o.getResult().badRequest( "Could not find a rule that matches the resource that should be created." );
+                }
+                else
+                {
+                    o.getResult().setId( new IdDt( outcome.getId() ) );
+                    o.getResult().created();
+                }
+            }
+            catch ( TransformerDataException e )
+            {
+                o.getResult().badRequest( e.getMessage() );
+            }
+            catch ( Exception e )
+            {
+                log.error( "An unexpected error occurred while executing batch POST.", e );
+                o.getResult().internalServerError( e.getMessage() );
+            }
+        } );
+    }
+
+    protected void processPuts( @Nonnull FhirBatchRequest batchRequest, boolean createOnly )
+    {
+        batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.PUT &&
+            !o.isProcessed() && ( !createOnly || hasConditionalReferenceUrl( o ) ) ).forEach( o -> {
+            try
+            {
+                final DhisFhirResourceId dhisFhirResourceId = extractDhisResourceId( o, true );
+                final FhirRepositoryOperationType operationType;
+
+                if ( dhisFhirResourceId == null )
+                {
+                    if ( o.isProcessed() )
+                    {
+                        return;
+                    }
+
+                    operationType = FhirRepositoryOperationType.CREATE;
+                }
+                else if ( createOnly )
+                {
+                    o.getResource().setId( new IdDt( dhisFhirResourceId.toString() ) );
+
+                    return;
+                }
+                else
+                {
+                    o.getResource().setId( new IdDt( dhisFhirResourceId.toString() ) );
+                    operationType = FhirRepositoryOperationType.UPDATE;
+                }
+
+                final FhirRepositoryOperationOutcome outcome = getFhirRepository().save( o.getClientResource(), o.getResource(),
+                    new FhirRepositoryOperation( operationType ) );
+
+                if ( outcome == null )
+                {
+                    o.getResult().badRequest( "Could not find a rule that matches the resource that should be created." );
+                }
+                else if ( operationType == FhirRepositoryOperationType.CREATE )
+                {
+                    o.getResult().setId( new IdDt( outcome.getId() ) );
+                    o.getResult().created();
+                }
+                else
+                {
+                    o.getResult().ok();
+                }
+            }
+            catch ( TransformerDataException e )
+            {
+                o.getResult().badRequest( e.getMessage() );
+            }
+            catch ( Exception e )
+            {
+                log.error( "An unexpected error occurred while executing batch PUT.", e );
+                o.getResult().internalServerError( e.getMessage() );
+            }
+        } );
+    }
+
+    @Nullable
+    private DhisFhirResourceId extractDhisResourceId( @Nonnull FhirOperation o, boolean ignoreNotFound )
+    {
+        DhisFhirResourceId dhisFhirResourceId;
+
+        if ( hasConditionalReferenceUrl( o ) )
+        {
+            final IBaseResource resource = lookupConditionalReferenceUrl( o );
+
+            if ( resource == null )
+            {
+                if ( !ignoreNotFound )
+                {
+                    o.getResult().notFound( "Conditional reference in URL could not be found." );
+                }
+
+                return null;
+            }
+
+            dhisFhirResourceId = DhisFhirResourceId.parse( resource.getIdElement().getIdPart() );
+        }
+        else
+        {
+            try
+            {
+                dhisFhirResourceId = DhisFhirResourceId.parse( o.getResourceId() );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                o.getResult().badRequest( "Not a valid DHIS2 FHIR resource ID: " + o.getResourceId() );
+
+                return null;
+            }
+        }
+
+        return dhisFhirResourceId;
+    }
+
+    protected boolean hasConditionalReferenceUrl( @Nonnull FhirOperation operation )
+    {
+        return operation.getUri() != null && StringUtils.isNotBlank( operation.getUri().getQuery() );
+    }
+
+    @Nullable
+    protected IBaseResource lookupConditionalReferenceUrl( @Nonnull FhirOperation operation )
+    {
+        if ( operation.getUri() == null )
+        {
+            return null;
+        }
+
+        final MultiValueMap<String, String> parameters = UriComponentsBuilder
+            .fromUri( operation.getUri() ).build().getQueryParams();
+
+        if ( parameters.isEmpty() )
+        {
+            return null;
+        }
+
+        final List<String> identifiers = parameters.get( SP_IDENTIFIER );
+        final String identifier;
+
+        if ( identifiers == null )
+        {
+            operation.getResult().badRequest( "Only identifiers are supported as conditional references in URLs." );
+            return null;
+        }
+
+        if ( identifiers.size() > 1 )
+        {
+            operation.getResult().badRequest( "Conditional reference in URL must not contain more than one identifier." );
+            return null;
+        }
+
+        try
+        {
+            identifier = URLDecoder.decode( identifiers.get( 0 ), "UTF-8" );
+        }
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new IllegalStateException( e );
+        }
+
+        final FhirClientSystem fhirClientSystem = getFhirClientSystem( operation.getFhirResourceType() );
+        final TokenParam identifierParam = parseTokenParam( identifier );
+
+        if ( !fhirClientSystem.getSystem().getSystemUri().equals( identifierParam.getSystem() ) ||
+            StringUtils.isBlank( identifierParam.getValue() ) )
+        {
+            return null;
+        }
+
+        return getDhisRepository().readByIdentifier( operation.getClientResource().getFhirClient(), operation.getFhirResourceType(), identifierParam.getValue() ).orElse( null );
+    }
 
     @Nonnull
     protected FhirOperation createOperation( @Nullable String fullUrl, @Nullable IBaseResource resource, @Nullable String httpVerb, @Nullable String url )
@@ -122,11 +373,21 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
             resultingResourceType = resourceType;
         }
 
-        final FhirOperation operation = new FhirOperation( operationType, resultingResourceType, idPart, resource, uri );
+        FhirClientResource clientResource;
+        try
+        {
+            clientResource = ( resultingResourceType == null ) ? null : getFhirClientResource( resultingResourceType );
+        }
+        catch ( InvalidRequestException e )
+        {
+            clientResource = null;
+        }
+
+        final FhirOperation operation = new FhirOperation( operationType, resultingResourceType, clientResource, idPart, resource, uri );
 
         if ( operationType == FhirOperationType.UNKNOWN )
         {
-            operation.getResult().badRequest( "Request method has not been specified." );
+            operation.getResult().badRequest( "Request method has not been specified or is not supported." );
         }
         else if ( url != null && uri == null )
         {
@@ -136,9 +397,21 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         {
             operation.getResult().badRequest( "FHIR resource type could not be determined." );
         }
+        else if ( clientResource == null )
+        {
+            operation.getResult().badRequest( "FHIR resource type " + resultingResourceType + " is not supported." );
+        }
         else if ( ( operationType == FhirOperationType.POST || operationType == FhirOperationType.PUT ) && resource == null )
         {
             operation.getResult().badRequest( "FHIR resource must be included to perform POST or PUT." );
+        }
+        else if ( operationType == FhirOperationType.POST && hasConditionalReferenceUrl( operation ) )
+        {
+            operation.getResult().badRequest( "Conditional resources cannot be used to perform a POST" );
+        }
+        else if ( ( operationType == FhirOperationType.PUT || operationType == FhirOperationType.DELETE ) && StringUtils.isEmpty( idPart ) && !hasConditionalReferenceUrl( operation ) )
+        {
+            operation.getResult().badRequest( "Either an ID must be specified or the URL must contain a condition." );
         }
 
         return operation;

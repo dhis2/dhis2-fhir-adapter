@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
@@ -125,6 +126,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
+    @CacheEvict( key = "{'findLatestActive', #a0.programId, #a0.trackedEntityInstanceId}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
     public Enrollment create( @Nonnull Enrollment enrollment )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
@@ -166,6 +168,7 @@ public class EnrollmentServiceImpl implements EnrollmentService
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Nonnull
     @Override
+    @CacheEvict( key = "{'findLatestActive', #a0.programId, #a0.trackedEntityInstanceId}", cacheManager = "dhisCacheManager", cacheNames = "enrollments" )
     public Enrollment update( @Nonnull Enrollment enrollment )
     {
         // update of included events is not supported

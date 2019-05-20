@@ -146,7 +146,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
         final FhirContext fhirContext = fhirResourceRepository.findFhirContext( fhirRequest.getVersion() )
             .orElseThrow( () -> new FatalTransformerException( "FHIR context for FHIR version " + fhirRequest.getVersion() + " is not available." ) );
-        final IBaseResource input = Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
+        final IBaseResource input = fhirRequest.isDhisFhirId() ? originalInput : Objects.requireNonNull( FhirBeanTransformerUtils.clone( fhirContext, originalInput ) );
         final List<RuleInfo<? extends AbstractRule>> rules;
         if ( fhirRequest.getRuleId() == null )
         {

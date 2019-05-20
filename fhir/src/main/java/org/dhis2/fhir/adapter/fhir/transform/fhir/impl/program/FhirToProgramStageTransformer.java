@@ -588,6 +588,12 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return event;
     }
 
+    @Override
+    protected boolean isAlwaysActiveResource( @Nonnull RuleInfo<ProgramStageRule> ruleInfo )
+    {
+        return !ruleInfo.getRule().isGrouping();
+    }
+
     @Nonnull
     private Map<String, Object> createResourceVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> scriptVariables, @Nonnull EventInfo eventInfo, @Nonnull Enrollment enrollment )
     {

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -49,6 +50,8 @@ public class FhirOperation implements Serializable
 
     private final FhirResourceType fhirResourceType;
 
+    private final FhirClientResource clientResource;
+
     private final String resourceId;
 
     private final IBaseResource resource;
@@ -57,10 +60,11 @@ public class FhirOperation implements Serializable
 
     private final FhirOperationResult result = new FhirOperationResult();
 
-    public FhirOperation( @Nonnull FhirOperationType operationType, @Nullable FhirResourceType fhirResourceType, @Nullable String resourceId, @Nullable IBaseResource resource, @Nullable URI uri )
+    public FhirOperation( @Nonnull FhirOperationType operationType, @Nullable FhirResourceType fhirResourceType, @Nullable FhirClientResource clientResource, @Nullable String resourceId, @Nullable IBaseResource resource, @Nullable URI uri )
     {
         this.operationType = operationType;
         this.fhirResourceType = fhirResourceType;
+        this.clientResource = clientResource;
         this.resourceId = resourceId;
         this.resource = resource;
         this.uri = uri;
@@ -80,6 +84,11 @@ public class FhirOperation implements Serializable
     public FhirResourceType getFhirResourceType()
     {
         return fhirResourceType;
+    }
+
+    public FhirClientResource getClientResource()
+    {
+        return clientResource;
     }
 
     public String getResourceId()

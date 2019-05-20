@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.server.provider.dstu3;
 
 import ca.uhn.fhir.rest.annotation.Transaction;
 import ca.uhn.fhir.rest.annotation.TransactionParam;
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
@@ -72,9 +73,9 @@ public class Dstu3BundleResourceProvider extends AbstractBundleResourceProvider<
 
     @Nonnull
     @Transaction
-    public Bundle process( @TransactionParam Bundle bundle )
+    public Bundle process( @Nonnull RequestDetails requestDetails, @TransactionParam Bundle bundle )
     {
-        return processInternal( bundle );
+        return processInternal( requestDetails, bundle );
     }
 
     @Nonnull
