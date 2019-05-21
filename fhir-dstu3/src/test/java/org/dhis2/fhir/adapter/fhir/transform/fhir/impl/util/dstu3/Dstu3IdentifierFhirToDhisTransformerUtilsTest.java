@@ -37,6 +37,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
 import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.junit.Assert;
@@ -159,5 +160,44 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.PATIENT );
 
         Assert.assertEquals( "ABC_123", utils.getResourceIdentifier( patient, "PATIENT" ) );
+    }
+
+    @Test
+    public void getIncludedReferenceIdentifierWithSystem()
+    {
+        final Patient patient = new Patient();
+        patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
+
+        final Reference reference = new Reference( new IdType( "Patient", "5671" ) ).setIdentifier( new Identifier().setSystem( "http://test.com" ).setValue( "ABC_123" ) );
+        Assert.assertEquals( "ABC_123", utils.getReferenceIdentifier( reference, "PATIENT", "http://test.com" ) );
+        Mockito.verifyZeroInteractions( referenceFhirToDhisTransformerUtils );
+    }
+
+    @Test
+    public void getIncludedReferenceIdentifierWithDifferentSystem()
+    {
+        final Patient patient = new Patient();
+        patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
+
+        final Reference reference = new Reference( new IdType( "Patient", "5671" ) ).setIdentifier( new Identifier().setSystem( "http://test.com" ).setValue( "ABC_123" ) );
+        Assert.assertNull( utils.getReferenceIdentifier( reference, "PATIENT", "http://test2.com" ) );
+    }
+
+    @Test
+    public void getIncludedReferenceIdentifierWithDefaultSystem()
+    {
+        final Patient patient = new Patient();
+        patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
+
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
+        Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
+        Mockito.doReturn( request ).when( context ).getFhirRequest();
+        Mockito.doReturn( Optional.of( resourceSystem ) ).when( request ).getOptionalResourceSystem( FhirResourceType.PATIENT );
+
+        final Reference reference = new Reference( new IdType( "Patient", "5671" ) ).setIdentifier( new Identifier().setSystem( "http://test.com" ).setValue( "ABC_123" ) );
+        Assert.assertEquals( "ABC_123", utils.getReferenceIdentifier( reference, "PATIENT" ) );
+        Mockito.verifyZeroInteractions( referenceFhirToDhisTransformerUtils );
     }
 }

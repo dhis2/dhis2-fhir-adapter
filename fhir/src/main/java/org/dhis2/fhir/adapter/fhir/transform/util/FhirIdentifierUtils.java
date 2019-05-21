@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -47,22 +48,44 @@ import java.util.Map;
 @Component
 public class FhirIdentifierUtils
 {
-    private volatile Map<Class<? extends IDomainResource>, Method> identifierMethods = new HashMap<>();
+    private volatile Map<Class<? extends IBaseReference>, Method> referenceIdentifierMethods = new HashMap<>();
+
+    private volatile Map<Class<? extends IDomainResource>, Method> resourceIdentifierMethods = new HashMap<>();
+
+    @Nullable
+    public Method getIdentifierMethod( @Nonnull IBaseReference reference )
+    {
+        final Class<? extends IBaseReference> referenceClass = reference.getClass();
+        final Map<Class<? extends IBaseReference>, Method> identifierMethods = this.referenceIdentifierMethods;
+
+        if ( identifierMethods.containsKey( referenceClass ) )
+        {
+            return identifierMethods.get( referenceClass );
+        }
+
+        final Method method = ReflectionUtils.findMethod( referenceClass, "getIdentifier" );
+        final Map<Class<? extends IBaseReference>, Method> copiedIdentifierMethods = new HashMap<>( identifierMethods );
+        copiedIdentifierMethods.put( referenceClass, method );
+        this.referenceIdentifierMethods = copiedIdentifierMethods;
+
+        return method;
+    }
 
     @Nullable
     public Method getIdentifierMethod( @Nonnull IDomainResource domainResource )
     {
         final Class<? extends IDomainResource> domainResourceClass = domainResource.getClass();
-        final Map<Class<? extends IDomainResource>, Method> identifierMethods = this.identifierMethods;
+        final Map<Class<? extends IDomainResource>, Method> identifierMethods = this.resourceIdentifierMethods;
+
         if ( identifierMethods.containsKey( domainResourceClass ) )
         {
             return identifierMethods.get( domainResourceClass );
         }
 
-        final Method method = ReflectionUtils.findMethod( domainResource.getClass(), "getIdentifier" );
+        final Method method = ReflectionUtils.findMethod( domainResourceClass, "getIdentifier" );
         final Map<Class<? extends IDomainResource>, Method> copiedIdentifierMethods = new HashMap<>( identifierMethods );
         copiedIdentifierMethods.put( domainResourceClass, method );
-        this.identifierMethods = copiedIdentifierMethods;
+        this.resourceIdentifierMethods = copiedIdentifierMethods;
 
         return method;
     }

@@ -47,6 +47,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * HAPI FHIR Server exception interceptor that translates all exceptions to the
@@ -59,13 +62,15 @@ public class RepositoryExceptionInterceptor extends InterceptorAdapter
 {
     private final Logger log = LoggerFactory.getLogger( getClass() );
 
+    public static final Set<Class<? extends Exception>> UNPROCESSABLE_ENTITY_EXCEPTIONS = new HashSet<>( Arrays.asList( DhisConflictException.class,
+        TransformerDataException.class, TrackedEntityInstanceNotFoundException.class, DhisToFhirDataProviderException.class, DhisDataExistsException.class,
+        MissingDhisResourceException.class ) );
+
     @Override
     public BaseServerResponseException preProcessOutgoingException( RequestDetails theRequestDetails, Throwable theException, HttpServletRequest theServletRequest )
     {
         final BaseServerResponseException result;
-        final Throwable unprocessableEntityException = ExceptionUtils.findCause( theException, DhisConflictException.class,
-            TransformerDataException.class, TrackedEntityInstanceNotFoundException.class, DhisToFhirDataProviderException.class, DhisDataExistsException.class,
-            MissingDhisResourceException.class );
+        final Throwable unprocessableEntityException = ExceptionUtils.findCause( theException, UNPROCESSABLE_ENTITY_EXCEPTIONS.toArray( new Class[0] ) );
         if ( unprocessableEntityException != null )
         {
             log.info( "Request could not be processed because of an error: {}", unprocessableEntityException.getMessage() );

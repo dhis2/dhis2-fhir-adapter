@@ -117,8 +117,7 @@ public class R4BatchDemoClient
                 .setUrl( "longitude" )
                 .setValue( new DecimalType( -13.262743 ) ) );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
-        child.setManagingOrganization( new Reference(
-            new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
+        child.getManagingOrganization().getIdentifier().setSystem( "http://www.dhis2.org/dhis2-fhir-adapter/systems/organization-identifier" ).setValue( "OU_278320" );
 
         Immunization imm1 = new Immunization();
         imm1.getPatient().setReference( child.getId() );
@@ -139,7 +138,7 @@ public class R4BatchDemoClient
         bw1.addCategory( new CodeableConcept().addCoding(
             new Coding().setSystem( ObservationCategory.VITALSIGNS.getSystem() ).setCode( ObservationCategory.VITALSIGNS.toCode() ) ) );
         bw1.setCode( new CodeableConcept().addCoding( new Coding().setSystem( "http://loinc.org" ).setCode( "8339-4" ) ) );
-        bw1.getSubject().setReference( child.getId() );
+        bw1.getSubject().getIdentifier().setSystem( "http://www.dhis2.org/dhis2-fhir-adapter/systems/patient-identifier" ).setValue( childNationalId );
         bw1.setEffective( new DateTimeType( Date.from( childBirthDate.atStartOfDay( ZoneId.systemDefault() ).toInstant() ),
             TemporalPrecisionEnum.DAY ) );
         bw1.setValue( new Quantity().setValue( 119 ).setSystem( "http://unitsofmeasure.org" ).setCode( "[oz_av]" ) );

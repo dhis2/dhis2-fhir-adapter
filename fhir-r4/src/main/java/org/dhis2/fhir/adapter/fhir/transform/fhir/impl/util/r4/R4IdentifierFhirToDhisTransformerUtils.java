@@ -28,12 +28,14 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ReferenceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IDomainResource;
 import org.hl7.fhir.r4.model.Identifier;
 import org.springframework.stereotype.Component;
@@ -65,6 +67,20 @@ public class R4IdentifierFhirToDhisTransformerUtils extends AbstractIdentifierFh
     public Set<FhirVersion> getFhirVersions()
     {
         return FhirVersion.R4_ONLY;
+    }
+
+    @Nullable
+    @Override
+    protected String getIncludedReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull FhirResourceType resourceType, @Nonnull Method identifierMethod, @Nonnull String system )
+    {
+        final Identifier identifier = (Identifier) ReflectionUtils.invokeMethod( identifierMethod, reference );
+
+        if ( identifier != null && system.equals( identifier.getSystem() ) )
+        {
+            return identifier.getValue();
+        }
+
+        return null;
     }
 
     @Nullable

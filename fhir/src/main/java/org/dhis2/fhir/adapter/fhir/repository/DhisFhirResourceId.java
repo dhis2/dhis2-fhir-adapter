@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -97,6 +98,25 @@ public class DhisFhirResourceId implements Serializable
     public static String toString( @Nonnull DhisResourceType type, @Nonnull String id, @Nonnull UUID ruleId )
     {
         return type.getAbbreviation() + "-" + id + "-" + StringUtils.remove( ruleId.toString(), '-' );
+    }
+
+    public static boolean isValid( @Nullable String value )
+    {
+        if ( value == null )
+        {
+            return false;
+        }
+
+        try
+        {
+            parse( value );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            return false;
+        }
+
+        return true;
     }
 
     @Nonnull

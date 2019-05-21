@@ -33,6 +33,8 @@ import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -48,7 +50,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationOutcome;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationType;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
+import org.dhis2.fhir.adapter.util.ExceptionUtils;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -65,6 +67,8 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.List;
 
+import static org.dhis2.fhir.adapter.fhir.server.RepositoryExceptionInterceptor.UNPROCESSABLE_ENTITY_EXCEPTIONS;
+
 /**
  * Abstract base class of all resource providers for FHIR bundles.
  *
@@ -75,12 +79,17 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
 {
     private final Logger log = LoggerFactory.getLogger( getClass() );
 
+    private final RequestCacheService requestCacheService;
+
     public AbstractBundleResourceProvider(
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
-        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
+        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository,
+        @Nonnull RequestCacheService requestCacheService )
     {
         super( fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
+
+        this.requestCacheService = requestCacheService;
     }
 
     @Nonnull
@@ -110,10 +119,13 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         // according to FHIR specification the operations must be processed in order: DELETE, POST, PUT
 
         executeInSecurityContext( () -> {
-            processDeletes( batchRequest );
-            processPuts( batchRequest, true );
-            processPosts( batchRequest );
-            processPuts( batchRequest, false );
+            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+            {
+                processDeletes( batchRequest );
+                processPuts( batchRequest, true );
+                processPosts( batchRequest );
+                processPuts( batchRequest, false );
+            }
 
             return null;
         } );
@@ -140,14 +152,9 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                     o.getResult().notFound( "Specified resource to be deleted could not be found." );
                 }
             }
-            catch ( TransformerDataException e )
-            {
-                o.getResult().badRequest( e.getMessage() );
-            }
             catch ( Exception e )
             {
-                log.error( "An unexpected error occurred while executing batch DELETE.", e );
-                o.getResult().internalServerError( e.getMessage() );
+                handleException( o, e );
             }
         } );
     }
@@ -165,18 +172,12 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 }
                 else
                 {
-                    o.getResult().setId( new IdDt( outcome.getId() ) );
-                    o.getResult().created();
+                    o.getResult().created( new IdDt( outcome.getId() ) );
                 }
-            }
-            catch ( TransformerDataException e )
-            {
-                o.getResult().badRequest( e.getMessage() );
             }
             catch ( Exception e )
             {
-                log.error( "An unexpected error occurred while executing batch POST.", e );
-                o.getResult().internalServerError( e.getMessage() );
+                handleException( o, e );
             }
         } );
     }
@@ -220,24 +221,34 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 }
                 else if ( operationType == FhirRepositoryOperationType.CREATE )
                 {
-                    o.getResult().setId( new IdDt( outcome.getId() ) );
-                    o.getResult().created();
+                    o.getResult().created( new IdDt( outcome.getId() ) );
                 }
                 else
                 {
                     o.getResult().ok();
                 }
             }
-            catch ( TransformerDataException e )
-            {
-                o.getResult().badRequest( e.getMessage() );
-            }
             catch ( Exception e )
             {
-                log.error( "An unexpected error occurred while executing batch PUT.", e );
-                o.getResult().internalServerError( e.getMessage() );
+                handleException( o, e );
             }
         } );
+    }
+
+    private void handleException( @Nonnull FhirOperation o, @Nonnull Exception e )
+    {
+        final Throwable unprocessableEntityException = ExceptionUtils.findCause( e, UNPROCESSABLE_ENTITY_EXCEPTIONS.toArray( new Class[0] ) );
+
+        if ( unprocessableEntityException != null )
+        {
+            log.debug( "Could not process entity while executing batch " + o.getOperationType() + ".", e );
+            o.getResult().unprocessableEntity( e.getMessage() );
+        }
+        else
+        {
+            log.error( "An unexpected error occurred while executing batch " + o.getOperationType() + ".", e );
+            o.getResult().internalServerError( e.getMessage() );
+        }
     }
 
     @Nullable

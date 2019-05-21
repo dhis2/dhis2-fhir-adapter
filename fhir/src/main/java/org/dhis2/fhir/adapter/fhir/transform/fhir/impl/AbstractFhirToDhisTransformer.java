@@ -277,39 +277,46 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
         final IBaseResource baseResource = getTrackedEntityInstanceResource( context, ruleInfo, resourceMapping, scriptVariables );
+        TrackedEntityInstance trackedEntityInstance = null;
+
         if ( baseResource == null )
         {
             logger.info( "Tracked entity instance resource could not be extracted from input." );
+
             return Optional.empty();
         }
-        final TrackedEntityInstance trackedEntityInstance;
-        if ( context.getFhirRequest().isDhisFhirId() )
+
+        if ( context.getFhirRequest().isDhisFhirId() && baseResource.getIdElement().hasIdPart() )
         {
-            if ( !baseResource.getIdElement().hasIdPart() )
-            {
-                throw new TransformerDataException( "FHIR resource to be used as tracked entity instance does not contain an ID." );
-            }
-            final DhisFhirResourceId dhisFhirResourceId;
+            DhisFhirResourceId dhisFhirResourceId;
+
             try
             {
                 dhisFhirResourceId = DhisFhirResourceId.parse( baseResource.getIdElement().getIdPart() );
             }
             catch ( IllegalArgumentException e )
             {
-                throw new TransformerDataException( "Invalid DHIS2 FHIR ID: " + baseResource.getIdElement().getIdPart(), e );
+                dhisFhirResourceId = null;
             }
-            if ( dhisFhirResourceId.getType() != DhisResourceType.TRACKED_ENTITY )
+
+            if ( dhisFhirResourceId != null )
             {
-                throw new TransformerDataException( "DHIS2 FHIR ID " + dhisFhirResourceId + " does not reference a tracked entity." );
+                if ( dhisFhirResourceId.getType() != DhisResourceType.TRACKED_ENTITY )
+                {
+                    throw new TransformerDataException( "DHIS2 FHIR ID " + dhisFhirResourceId + " does not reference a tracked entity." );
+                }
+
+                trackedEntityInstance = trackedEntityService.findOneByIdRefreshed( dhisFhirResourceId.getId() )
+                    .orElseThrow( () -> new TransformerDataException( "Tracked entity instance for DHIS2 FHIR ID " + baseResource.getIdElement().getIdPart() + " could not be found" ) );
             }
-            trackedEntityInstance = trackedEntityService.findOneByIdRefreshed( dhisFhirResourceId.getId() )
-                .orElseThrow( () -> new TransformerDataException( "Tracked entity instance for DHIS2 FHIR ID " + dhisFhirResourceId + " could not be found" ) );
         }
-        else
+
+        if ( trackedEntityInstance == null )
         {
             trackedEntityInstance = getTrackedEntityInstanceByIdentifier( context, ruleInfo, baseResource, scriptVariables, sync )
                 .orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) );
         }
+
         return Optional.of( trackedEntityInstance );
     }
 

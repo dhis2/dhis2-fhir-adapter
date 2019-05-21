@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
@@ -57,6 +58,8 @@ public class FhirOperationResult implements Serializable
     public static final int FORBIDDEN_STATUS_CODE = 403;
 
     public static final int NOT_FOUND_STATUS_CODE = 404;
+
+    public static final int UNPROCESSABLE_ENTITY_STATUS_CODE = 422;
 
     public static final int INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
 
@@ -101,9 +104,10 @@ public class FhirOperationResult implements Serializable
         setStatusCode( OK_STATUS_CODE );
     }
 
-    public void created()
+    public void created( @Nullable IIdType id )
     {
         setStatusCode( CREATED_STATUS_CODE );
+        setId( id );
     }
 
     public void noContent()
@@ -120,6 +124,12 @@ public class FhirOperationResult implements Serializable
     public void notFound( @Nonnull String diagnostics )
     {
         setStatusCode( NOT_FOUND_STATUS_CODE );
+        setIssue( new FhirOperationIssue( FhirOperationIssueSeverity.ERROR, FhirOperationIssueType.INVALID, diagnostics ) );
+    }
+
+    public void unprocessableEntity( @Nonnull String diagnostics )
+    {
+        setStatusCode( UNPROCESSABLE_ENTITY_STATUS_CODE );
         setIssue( new FhirOperationIssue( FhirOperationIssueSeverity.ERROR, FhirOperationIssueType.INVALID, diagnostics ) );
     }
 

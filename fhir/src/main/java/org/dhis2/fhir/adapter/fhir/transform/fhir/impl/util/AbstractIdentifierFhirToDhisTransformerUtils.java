@@ -102,15 +102,26 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         {
             return null;
         }
+
+        String identifier = getIncludedReferenceIdentifier( reference, fhirResourceType, null );
+
+        if ( identifier != null )
+        {
+            return identifier;
+        }
+
         referenceFhirToDhisTransformerUtils.initReference( reference, fhirResourceType );
+
         if ( reference.getResource() instanceof IDomainResource )
         {
             return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType );
         }
+
         return null;
     }
 
     @Nullable
+    @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the business identifier with the specified system URI from the referenced FHIR resource with the specified FHIR resource type. If the resource type does not match null is returned.",
         args = {
             @ScriptMethodArg( value = "reference", description = "The FHIR reference of a domain resource from which the identifier should be extracted." ),
@@ -124,11 +135,21 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
         {
             return null;
         }
+
+        String identifier = getIncludedReferenceIdentifier( reference, fhirResourceType, system );
+
+        if ( identifier != null )
+        {
+            return identifier;
+        }
+
         referenceFhirToDhisTransformerUtils.initReference( reference, fhirResourceType );
+
         if ( reference.getResource() instanceof IDomainResource )
         {
             return getResourceIdentifier( (IDomainResource) reference.getResource(), fhirResourceType, system );
         }
+
         return null;
     }
 
@@ -190,6 +211,48 @@ public abstract class AbstractIdentifierFhirToDhisTransformerUtils extends Abstr
 
         return null;
     }
+
+    @Nullable
+    protected String getIncludedReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType, @Nullable String system )
+    {
+        final FhirResourceType resourceType;
+
+        if ( reference == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            resourceType = NameUtils.toEnumValue( FhirResourceType.class, fhirResourceType );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+        }
+
+        final Method method = fhirIdentifierUtils.getIdentifierMethod( reference );
+
+        if ( method != null )
+        {
+            String resultingSystem = system;
+
+            if ( resultingSystem == null )
+            {
+                final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+
+                resultingSystem = context.getFhirRequest().getOptionalResourceSystem( resourceType ).map( ResourceSystem::getSystem )
+                    .orElseThrow( () -> new TransformerMappingException( "No system has been defined for resource type " + resourceType + "." ) );
+            }
+
+            return getIncludedReferenceIdentifier( reference, resourceType, method, resultingSystem );
+        }
+
+        return null;
+    }
+
+    @Nullable
+    protected abstract String getIncludedReferenceIdentifier( @Nullable IBaseReference reference, @Nonnull FhirResourceType resourceType, @Nonnull Method identifierMethod, @Nonnull String system );
 
     @Nullable
     protected abstract String getIdentifierValue( @Nonnull IDomainResource domainResource, @Nonnull Method identifierMethod, @Nullable String system );

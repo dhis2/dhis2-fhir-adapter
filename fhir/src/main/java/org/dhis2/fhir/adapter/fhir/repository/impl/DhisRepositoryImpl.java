@@ -246,7 +246,7 @@ public class DhisRepositoryImpl implements DhisRepository
         }
 
         List<IBaseResource> result = Collections.emptyList();
-        try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+        try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext( true ) )
         {
             final List<RuleInfo<? extends AbstractRule>> rules = dhisToFhirTransformerService.findAllRules( fhirClient, fhirResourceType, filteredCodes );
             final Set<DhisResourceType> dhisResourceTypes = rules.stream().map( r -> r.getRule().getDhisResourceType() ).collect( Collectors.toSet() );
@@ -395,7 +395,7 @@ public class DhisRepositoryImpl implements DhisRepository
             DhisToFhirTransformOutcome<? extends IBaseResource> outcome;
             try ( final LockContext lockContext = lockManager.begin() )
             {
-                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext( true ) )
                 {
                     outcome = dhisToFhirTransformerService.transform( transformerRequest );
                 }
@@ -441,7 +441,7 @@ public class DhisRepositoryImpl implements DhisRepository
         public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType )
         {
             IBaseResource resource = null;
-            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+            try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext( true ) )
             {
                 final DhisResource dhisResource = getDhisResource();
                 if ( dhisResource == null )

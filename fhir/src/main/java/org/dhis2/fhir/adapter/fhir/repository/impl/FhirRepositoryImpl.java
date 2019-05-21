@@ -376,43 +376,50 @@ public class FhirRepositoryImpl implements FhirRepository
         final ProcessedItemInfo processedItemInfo = ProcessedFhirItemInfoUtils.create( resource );
         FhirRepositoryOperationOutcome operationOutcome = null;
         FhirToDhisTransformerRequest transformerRequest = fhirToDhisTransformerService.createTransformerRequest( fhirRequest, fhirClientResource, resource, contained );
+
         do
         {
             FhirToDhisTransformOutcome<? extends DhisResource> outcome;
             try ( final LockContext lockContext = lockManager.begin() )
             {
-                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
+                try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext( true ) )
                 {
                     outcome = fhirToDhisTransformerService.transform( transformerRequest );
                 }
+
                 if ( outcome == null )
                 {
                     transformerRequest = null;
                 }
                 else
                 {
-                    final DhisResource persistedDhisResource =
-                        dhisResourceRepository.save( outcome.getResource() );
+                    final DhisResource persistedDhisResource = dhisResourceRepository.save( outcome.getResource() );
+
                     if ( fhirRepositoryOperation == null )
                     {
                         fhirDhisAssignmentRepository.saveDhisResourceId(
                             outcome.getRule(), fhirClientResource.getFhirClient(),
                             resource.getIdElement(), outcome.getResource().getResourceId() );
                     }
+
                     if ( operationOutcome == null )
                     {
                         final String dhisFhirResourceId = DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() );
-                        if ( fhirRequest.isDhisFhirId() && ( resource.getIdElement().isEmpty() || resource.getIdElement().isLocal() ) )
+
+                        if ( fhirRequest.isDhisFhirId() && ( resource.getIdElement().isEmpty() || resource.getIdElement().isLocal() || !DhisFhirResourceId.isValid( resource.getIdElement().getIdPart() ) ) )
                         {
                             resource.setId( new IdDt( Objects.requireNonNull( fhirRequest.getResourceType() ).getResourceTypeName(), dhisFhirResourceId ) );
                         }
+
                         operationOutcome = new FhirRepositoryOperationOutcome( dhisFhirResourceId );
                     }
+
                     transformerRequest = outcome.getNextTransformerRequest();
                 }
             }
         }
         while ( (transformerRequest != null) && !fhirRequest.isFirstRuleOnly() );
+
         return operationOutcome;
     }
 

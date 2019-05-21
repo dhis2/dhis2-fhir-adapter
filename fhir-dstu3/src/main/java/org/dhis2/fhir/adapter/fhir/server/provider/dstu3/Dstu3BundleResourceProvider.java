@@ -32,6 +32,7 @@ import ca.uhn.fhir.rest.annotation.Transaction;
 import ca.uhn.fhir.rest.annotation.TransactionParam;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -40,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.repository.FhirBatchRequest;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperationIssueSeverity;
 import org.dhis2.fhir.adapter.fhir.repository.FhirOperationIssueType;
+import org.dhis2.fhir.adapter.fhir.repository.FhirOperationResult;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.server.provider.AbstractBundleResourceProvider;
 import org.hl7.fhir.dstu3.model.Bundle;
@@ -59,9 +61,9 @@ import java.util.List;
 public class Dstu3BundleResourceProvider extends AbstractBundleResourceProvider<Bundle>
 {
     public Dstu3BundleResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
-        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
+        @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository, @Nonnull RequestCacheService requestCacheService )
     {
-        super( fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
+        super( fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository, requestCacheService );
     }
 
     @Nonnull
@@ -120,7 +122,8 @@ public class Dstu3BundleResourceProvider extends AbstractBundleResourceProvider<
             final Bundle.BundleEntryComponent entry = bundle.addEntry();
             entry.getResponse().setStatus( getStatus( operation.getResult() ) );
 
-            if ( operation.getResult().getId() != null && !operation.getResult().getId().isEmpty() )
+            if ( operation.getResult().getStatusCode() == FhirOperationResult.CREATED_STATUS_CODE &&
+                operation.getResult().getId() != null && !operation.getResult().getId().isEmpty() )
             {
                 entry.getResponse().setLocation(
                     operation.getFhirResourceType().getResourceTypeName() + "/" + operation.getResult().getId().getIdPart() );
