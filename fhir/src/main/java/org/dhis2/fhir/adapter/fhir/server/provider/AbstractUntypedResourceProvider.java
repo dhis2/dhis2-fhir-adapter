@@ -166,6 +166,7 @@ public abstract class AbstractUntypedResourceProvider implements FhirResourcePro
     protected void validateUseCase( @Nonnull RequestDetails theRequestDetails )
     {
         final String tenantId = theRequestDetails.getTenantId();
+
         if ( !DEFAULT_USE_CASE_TENANT.equals( tenantId ) )
         {
             throw new InvalidRequestException( "Selected use case must be default (received " + tenantId + ")." );

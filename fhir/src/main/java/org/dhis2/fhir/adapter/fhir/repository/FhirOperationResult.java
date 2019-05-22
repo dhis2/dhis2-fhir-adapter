@@ -69,6 +69,16 @@ public class FhirOperationResult implements Serializable
 
     private FhirOperationIssue issue;
 
+    public FhirOperationResult()
+    {
+        super();
+    }
+
+    public FhirOperationResult( int statusCode )
+    {
+        this.statusCode = statusCode;
+    }
+
     public int getStatusCode()
     {
         return statusCode;

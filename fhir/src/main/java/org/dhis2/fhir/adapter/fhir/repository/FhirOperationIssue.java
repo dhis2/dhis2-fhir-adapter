@@ -72,4 +72,10 @@ public class FhirOperationIssue implements Serializable
     {
         return diagnostics;
     }
+
+    @Override
+    public String toString()
+    {
+        return "FhirOperationIssue{severity=" + severity + ", type=" + type + ", diagnostics='" + diagnostics + "\'}";
+    }
 }

@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -85,6 +86,30 @@ public class DhisFhirResourceId implements Serializable
     public DhisResourceId getDhisResourceId()
     {
         return new DhisResourceId( getType(), getId() );
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        DhisFhirResourceId that = (DhisFhirResourceId) o;
+
+        return getType() == that.getType() && getId().equals( that.getId() ) && getRuleId().equals( that.getRuleId() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( getType(), getId(), getRuleId() );
     }
 
     @Override

@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.repository;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Specifies the FHIR repository operation to be performed.
@@ -66,5 +67,29 @@ public class FhirRepositoryOperation implements Serializable
     public DhisFhirResourceId getDhisFhirResourceId()
     {
         return dhisFhirResourceId;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        FhirRepositoryOperation that = (FhirRepositoryOperation) o;
+
+        return getOperationType() == that.getOperationType() && Objects.equals( getDhisFhirResourceId(), that.getDhisFhirResourceId() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( getOperationType(), getDhisFhirResourceId() );
     }
 }

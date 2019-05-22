@@ -235,12 +235,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Override
-    public boolean delete( @Nonnull String eventId )
+    public boolean delete( @Nonnull String trackedEntityInstanceId )
     {
         Event instance;
         try
         {
-            restTemplate.delete( "/trackedEntityInstances/{id}", eventId );
+            restTemplate.delete( "/trackedEntityInstances/{id}", trackedEntityInstanceId );
         }
         catch ( HttpClientErrorException e )
         {

@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.hibernate.annotations.BatchSize;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -92,6 +93,16 @@ public class System extends VersionedBaseMetadata implements SystemDependent, Se
     private String fhirDisplayName;
 
     private Collection<SystemCode> systemCodes;
+
+    public System()
+    {
+        super();
+    }
+
+    public System( @Nonnull String systemUri )
+    {
+        this.systemUri = systemUri;
+    }
 
     @Basic
     @Column( name = "name", nullable = false, length = 230 )

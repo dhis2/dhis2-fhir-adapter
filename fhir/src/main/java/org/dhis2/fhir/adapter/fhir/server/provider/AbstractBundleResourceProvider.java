@@ -254,7 +254,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     @Nullable
     private DhisFhirResourceId extractDhisResourceId( @Nonnull FhirOperation o, boolean ignoreNotFound )
     {
-        DhisFhirResourceId dhisFhirResourceId;
+        DhisFhirResourceId dhisFhirResourceId = null;
 
         if ( hasConditionalReferenceUrl( o ) )
         {
@@ -272,7 +272,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
 
             dhisFhirResourceId = DhisFhirResourceId.parse( resource.getIdElement().getIdPart() );
         }
-        else
+        else if ( StringUtils.isNotBlank( o.getResourceId() ) )
         {
             try
             {
@@ -316,12 +316,14 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         if ( identifiers == null )
         {
             operation.getResult().badRequest( "Only identifiers are supported as conditional references in URLs." );
+
             return null;
         }
 
         if ( identifiers.size() > 1 )
         {
             operation.getResult().badRequest( "Conditional reference in URL must not contain more than one identifier." );
+
             return null;
         }
 
@@ -455,16 +457,16 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     }
 
     @Nullable
-    protected URI parseUri( @Nullable String url )
+    protected URI parseUri( @Nullable String uri )
     {
-        if ( url == null )
+        if ( uri == null )
         {
             return null;
         }
 
         try
         {
-            return new URI( url );
+            return new URI( uri );
         }
         catch ( URISyntaxException e )
         {
@@ -520,6 +522,9 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 break;
             case FhirOperationResult.NOT_FOUND_STATUS_CODE:
                 statusMessage = "Not found";
+                break;
+            case FhirOperationResult.UNPROCESSABLE_ENTITY_STATUS_CODE:
+                statusMessage = "Unprocessable entity";
                 break;
             case FhirOperationResult.INTERNAL_SERVER_ERROR_STATUS_CODE:
                 statusMessage = "Internal server error";

@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -77,6 +78,16 @@ public class FhirClientSystem extends VersionedBaseMetadata implements Serializa
 
     @Size( max = MAX_DEFAULT_VALUE_LENGTH )
     private String defaultValue;
+
+    public FhirClientSystem()
+    {
+        super();
+    }
+
+    public FhirClientSystem( @Nonnull System system )
+    {
+        this.system = system;
+    }
 
     @Basic
     @Column( name = "fhir_resource_type", nullable = false, length = 30 )
