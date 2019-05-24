@@ -111,8 +111,6 @@
   </dependencies>
 
   <build>
-    <finalName>dhis2-fhir-adapter</finalName>
-
     <plugins>
       <plugin>
         <groupId>com.mysema.maven</groupId>

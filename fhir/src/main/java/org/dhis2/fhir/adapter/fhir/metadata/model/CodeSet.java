@@ -62,7 +62,7 @@ import java.util.Objects;
 @Entity
 @Table( name = "fhir_code_set" )
 @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-public class CodeSet extends VersionedBaseMetadata implements Serializable
+public class CodeSet extends VersionedBaseMetadata implements CodeCategoryAware, Serializable
 {
     private static final long serialVersionUID = 1177970691904984600L;
 
@@ -136,7 +136,7 @@ public class CodeSet extends VersionedBaseMetadata implements Serializable
     }
 
     @JsonCacheIgnore
-    @Access( AccessType.PROPERTY )
+    @Access( AccessType.FIELD )
     @OneToMany( orphanRemoval = true, mappedBy = "codeSet", cascade = CascadeType.ALL )
     @OrderBy( "id" )
     @BatchSize( size = 100 )

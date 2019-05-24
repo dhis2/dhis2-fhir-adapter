@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -67,10 +68,19 @@ public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, Q
     }
 
     @RestResource( exported = false )
+    @Nonnull
+    Optional<SystemCode> findOneBySystemAndSystemCode( @Nonnull System system, @Nonnull String systemCode );
+
+    @RestResource( exported = false )
     @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE c.code IN (:codes) AND sc.enabled=true AND c.enabled=true AND s.enabled=true" )
     @Cacheable( keyGenerator = "systemCodeFindAllByCodesKeyGenerator" )
     @Nonnull
     Collection<SystemCode> findAllByCodes( @Param( "codes" ) @Nonnull Collection<String> codes );
+
+    @RestResource( exported = false )
+    @Query( "SELECT sc FROM #{#entityName} sc WHERE sc.systemCodeValue IN (:systemCodes)" )
+    @Nonnull
+    Collection<SystemCode> findAllBySystemCodeValues( @Param( "systemCodes" ) @Nonnull Collection<String> systemCodes );
 
     @RestResource( exported = false )
     @Query( "SELECT sc.systemCode FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +

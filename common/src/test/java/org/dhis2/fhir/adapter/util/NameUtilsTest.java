@@ -90,6 +90,12 @@ public class NameUtilsTest
     }
 
     @Test
+    public void toEnumNameUnchanged2()
+    {
+        Assert.assertEquals( "DSTU3", NameUtils.toEnumName( "DSTU3" ) );
+    }
+
+    @Test
     public void toClassNameNull()
     {
         Assert.assertNull( NameUtils.toClassName( null ) );

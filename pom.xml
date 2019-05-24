@@ -47,6 +47,7 @@
     <module>common</module>
     <module>dhis</module>
     <module>fhir</module>
+    <module>metadata-sheet</module>
     <module>fhir-dstu3</module>
     <module>fhir-r4</module>
     <module>app</module>
@@ -117,6 +118,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-indexer</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>

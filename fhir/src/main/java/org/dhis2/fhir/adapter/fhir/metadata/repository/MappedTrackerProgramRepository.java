@@ -37,6 +37,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,6 +45,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -70,6 +73,11 @@ public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrac
     @Cacheable( key = "{#root.methodName}" )
     @Nonnull
     Collection<Reference> findAllPolledProgramReferences();
+
+    @Nonnull
+    @RestResource( exported = false )
+    @Query( value = "SELECT e FROM #{#entityName} e WHERE e.programReference IN (:references)" )
+    Optional<MappedTrackerProgram> findOneByProgramReference( @Param( "references" ) @Nonnull Set<Reference> references );
 
     @Override
     @Nonnull

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomProgramStageRuleRepository;
 import org.hibernate.Hibernate;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -89,5 +91,16 @@ public class CustomProgramStageRuleRepositoryImpl implements CustomProgramStageR
             Hibernate.initialize( r.getDhisDataReferences() );
             return new RuleInfo<>( r, r.getDhisDataReferences() );
         } ).collect( Collectors.toList() );
+    }
+
+    @RestResource( exported = false )
+    @CacheEvict( allEntries = true, cacheManager = "metadataCacheManager", cacheNames = "programStageRule" )
+    @Transactional
+    @Override
+    public void deleteAllByProgram( @Nonnull MappedTrackerProgram program )
+    {
+        entityManager.createQuery( "DELETE FROM ProgramStageRule r WHERE r.programStage IN " +
+            "(SELECT ps FROM MappedTrackerProgramStage ps WHERE ps.program=:program)" ).setParameter( "program", program ).executeUpdate();
+
     }
 }

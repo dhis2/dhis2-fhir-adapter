@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.converter;
+package org.dhis2.fhir.adapter.metadata.sheet.processor;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,52 +28,68 @@ package org.dhis2.fhir.adapter.dhis.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.converter.ConversionException;
-import org.dhis2.fhir.adapter.converter.TypedConverter;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.util.NameUtils;
+import org.dhis2.fhir.adapter.dhis.model.DataElement;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * Converts string to a {@link Reference}. The reference starts with the reference
- * type that is separated by a colon from the reference value, e.g.:
- * <code>CODE:DE_4711</code>.
+ * Key combination of a program stage and a single data element.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-public class StringToReferenceConverter extends TypedConverter<String, Reference>
+final class ProgramStageDataElementKey implements Serializable
 {
-    public static final String SEPARATOR = ":";
+    private static final long serialVersionUID = 7613695189701608811L;
 
-    public StringToReferenceConverter()
+    private final ProgramStage programStage;
+
+    private final DataElement dataElement;
+
+    public ProgramStageDataElementKey( @Nonnull ProgramStage programStage, @Nonnull DataElement dataElement )
     {
-        super( String.class, Reference.class );
+        this.programStage = programStage;
+        this.dataElement = dataElement;
     }
 
-    @Nullable
-    @Override
-    public Reference doConvert( @Nonnull String source ) throws ConversionException
+    @Nonnull
+    public ProgramStage getProgramStage()
     {
-        final int index = source.indexOf( SEPARATOR );
-        final ReferenceType referenceType;
+        return programStage;
+    }
 
-        if ( (index <= 0) || (index + 1 == source.length()) )
+    @Nonnull
+    public DataElement getDataElement()
+    {
+        return dataElement;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
         {
-            throw new ConversionException( "Reference does not include required separator: " + source );
+            return true;
         }
 
-        try
+        if ( o == null || getClass() != o.getClass() )
         {
-            referenceType = NameUtils.toEnumValue( ReferenceType.class, source.substring( 0, index ) );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new ConversionException( "Reference type is invalid: " + source );
+            return false;
         }
 
-        return new Reference( source.substring( index + 1 ), referenceType );
+        final ProgramStageDataElementKey that = (ProgramStageDataElementKey) o;
+
+        return programStage.getId().equals( that.programStage.getId() ) && dataElement.getId().equals( that.dataElement.getId() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( programStage.getId(), dataElement.getId() );
     }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,30 +28,20 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
 /**
- * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object instances
- * are returned.
+ * Implemented by metadata classes that contain a code category.
  *
  * @author volsch
  */
-@Scriptable
-public interface DataElement extends DhisType
+public interface CodeCategoryAware
 {
-    String getId();
+    /**
+     * @return the assigned code category.
+     */
+    CodeCategory getCodeCategory();
 
-    String getName();
-
-    String getCode();
-
-    String getFormName();
-
-    ValueType getValueType();
-
-    boolean isOptionSetValue();
-
-    OptionSet getOptionSet();
+    /**
+     * @param codeCategory the code category to assign.
+     */
+    void setCodeCategory( CodeCategory codeCategory );
 }

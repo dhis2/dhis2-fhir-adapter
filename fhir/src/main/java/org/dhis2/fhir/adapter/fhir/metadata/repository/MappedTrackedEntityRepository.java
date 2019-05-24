@@ -28,18 +28,23 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -60,6 +65,11 @@ public interface MappedTrackedEntityRepository extends JpaRepository<MappedTrack
     {
         return MappedTrackedEntity.class;
     }
+
+    @Nonnull
+    @RestResource( exported = false )
+    @Query( value = "SELECT e FROM #{#entityName} e WHERE e.trackedEntityReference IN (:references)" )
+    Optional<MappedTrackedEntity> findOneByTrackedEntityReference( @Param( "references" ) @Nonnull Set<Reference> references );
 
     @Override
     @Nonnull

@@ -39,6 +39,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Contains the category of a {@linkplain Code code}. E.g. there may be multiple codes for the category "vaccine".
@@ -55,6 +56,8 @@ public class CodeCategory extends VersionedBaseMetadata implements Serializable
     public static final int MAX_NAME_LENGTH = 230;
 
     public static final int MAX_CODE_LENGTH = 50;
+
+    public static final UUID UNSPECIFIED_CATEGORY_ID = UUID.fromString( "8f0363dc-632d-4ccf-ba07-0da5eff6be97" );
 
     @NotBlank
     @Size( max = MAX_NAME_LENGTH )

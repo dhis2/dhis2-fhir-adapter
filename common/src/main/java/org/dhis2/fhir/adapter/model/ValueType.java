@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ public enum ValueType
     USERNAME( String.class ),
     FILE_RESOURCE( String.class ),
     COORDINATE( Location.class ),
-    ORGANIZATION_UNIT( Id.class ),
+    ORGANISATION_UNIT( Id.class ),
     AGE( ZonedDateTime.class ),
     URL( String.class ),
     IMAGE( String.class );

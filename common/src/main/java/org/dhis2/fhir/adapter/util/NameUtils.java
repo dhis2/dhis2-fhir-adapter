@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 
 /**
  * Name utilities for converting to enum constants and class names.
+ *
+ * @author volsch
  */
 public abstract class NameUtils
 {
@@ -90,13 +92,28 @@ public abstract class NameUtils
         {
             return stringValue;
         }
-        if ( StringUtils.isAllUpperCase( stringValue ) )
+        if ( containsNoLowerCase( stringValue ) )
         {
             return stringValue.replace( '-', '_' );
         }
 
         return Arrays.stream( StringUtils.splitByCharacterTypeCamelCase( stringValue.replace( '-', '_' ) ) )
             .filter( v -> !v.equals( "_" ) ).collect( Collectors.joining( "_" ) ).toUpperCase();
+    }
+
+    private static boolean containsNoLowerCase( @Nonnull String value )
+    {
+        final int length = value.length();
+
+        for ( int i = 0; i < length; i++ )
+        {
+            if ( Character.isLowerCase( value.charAt( i ) ) )
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private NameUtils()
