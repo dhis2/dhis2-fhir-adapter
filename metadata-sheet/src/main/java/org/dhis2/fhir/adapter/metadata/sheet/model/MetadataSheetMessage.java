@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.metadata.sheet.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,30 +28,61 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object instances
- * are returned.
+ * A message related to the processing of the metadata sheet.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-@Scriptable
-public interface DataElement extends DhisType
+public class MetadataSheetMessage implements Serializable
 {
-    String getId();
+    private static final long serialVersionUID = 1115066232069707915L;
 
-    String getName();
+    private final MetadataSheetMessageSeverity severity;
 
-    String getCode();
+    private final MetadataSheetLocation location;
 
-    String getFormName();
+    private final String message;
 
-    ValueType getValueType();
+    public MetadataSheetMessage( @Nonnull MetadataSheetMessageSeverity severity, @Nullable MetadataSheetLocation location, @Nonnull String message )
+    {
+        this.severity = severity;
+        this.location = location;
+        this.message = message;
+    }
 
-    boolean isOptionSetValue();
+    public MetadataSheetMessage( @Nonnull MetadataSheetMessageSeverity severity, @Nonnull String message )
+    {
+        this( severity, null, message );
+    }
 
-    OptionSet getOptionSet();
+    @Nonnull
+    public MetadataSheetMessageSeverity getSeverity()
+    {
+        return severity;
+    }
+
+    @Nullable
+    public MetadataSheetLocation getLocation()
+    {
+        return location;
+    }
+
+    @Nonnull
+    public String getMessage()
+    {
+        return message;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "MetadataSheetMessage{" + "severity=" + severity + ", location=" + location + ", message='" + message + "'}";
+    }
 }

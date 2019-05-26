@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ public class StringToReferenceConverterTest
         Assert.assertEquals( new Reference( "678", ReferenceType.CODE ), converter.convert( "CODE:678" ) );
     }
 
-    @Test( expected = IllegalArgumentException.class )
+    @Test( expected = ConversionException.class )
     public void convertInvalidCode()
     {
         converter.convert( "COD:678" );

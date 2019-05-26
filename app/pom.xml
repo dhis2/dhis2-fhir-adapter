@@ -71,6 +71,11 @@
     </dependency>
     <dependency>
       <groupId>org.dhis2.fhir.adapter</groupId>
+      <artifactId>dhis2-fhir-adapter-metadata-sheet</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dhis2.fhir.adapter</groupId>
       <artifactId>dhis2-fhir-adapter-fhir-dstu3</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -32,6 +32,12 @@ server:
   port: 8081
 
 spring:
+  servlet:
+    # Configuration of multipart requests. These are used for metadata sheet
+    # upload only.
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   # Settings for the database connection.
   datasource:
     # The JDBC URL of the database in which the Adapter tables are located.

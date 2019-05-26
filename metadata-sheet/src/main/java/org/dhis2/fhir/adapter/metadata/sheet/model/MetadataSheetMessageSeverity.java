@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.metadata.sheet.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,30 +28,15 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
 /**
- * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object instances
- * are returned.
+ * The severity of a message related to the metadata sheet.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-@Scriptable
-public interface DataElement extends DhisType
+public enum MetadataSheetMessageSeverity
 {
-    String getId();
-
-    String getName();
-
-    String getCode();
-
-    String getFormName();
-
-    ValueType getValueType();
-
-    boolean isOptionSetValue();
-
-    OptionSet getOptionSet();
+    INFO, WARN, ERROR, FATAL
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.metadata.sheet.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,30 +28,49 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object instances
- * are returned.
+ * Collects messages regarding the processing of a metadata sheet.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-@Scriptable
-public interface DataElement extends DhisType
+public class MetadataSheetMessageCollector implements Serializable
 {
-    String getId();
+    private static final long serialVersionUID = 7280954425605008232L;
 
-    String getName();
+    private final List<MetadataSheetMessage> messages = new ArrayList<>();
 
-    String getCode();
+    public MetadataSheetMessageCollector add( @Nonnull MetadataSheetMessageCollector collector )
+    {
+        messages.addAll( collector.getMessages() );
 
-    String getFormName();
+        return this;
+    }
 
-    ValueType getValueType();
+    public List<MetadataSheetMessage> getMessages()
+    {
+        return messages;
+    }
 
-    boolean isOptionSetValue();
+    public void addMessage( @Nonnull MetadataSheetMessage message )
+    {
+        messages.add( message );
+    }
 
-    OptionSet getOptionSet();
+    public boolean isError()
+    {
+        return messages.stream().anyMatch( m -> m.getSeverity() == MetadataSheetMessageSeverity.ERROR || m.getSeverity() == MetadataSheetMessageSeverity.FATAL );
+    }
+
+    public boolean isOk()
+    {
+        return !isError();
+    }
 }

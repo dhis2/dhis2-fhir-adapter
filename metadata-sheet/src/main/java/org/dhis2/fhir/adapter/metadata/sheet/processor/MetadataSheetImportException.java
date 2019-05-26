@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.metadata.sheet.processor;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,30 +28,41 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessage;
+import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessageCollector;
+import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessageSeverity;
+
+import javax.annotation.Nonnull;
 
 /**
- * Contains read-only access to a DHIS2 Data Element. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object instances
- * are returned.
+ * Thrown if an error occurs while importing the metadata sheet and import cannot
+ * be continued.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-@Scriptable
-public interface DataElement extends DhisType
+public class MetadataSheetImportException extends RuntimeException
 {
-    String getId();
+    private static final long serialVersionUID = -4839457854832396547L;
 
-    String getName();
+    private final MetadataSheetMessageCollector messageCollector;
 
-    String getCode();
+    public MetadataSheetImportException( @Nonnull String message )
+    {
+        this.messageCollector = new MetadataSheetMessageCollector();
+        this.messageCollector.addMessage( new MetadataSheetMessage( MetadataSheetMessageSeverity.FATAL, message ) );
+    }
 
-    String getFormName();
+    public MetadataSheetImportException( @Nonnull MetadataSheetMessageCollector messageCollector )
+    {
+        this.messageCollector = messageCollector;
+    }
 
-    ValueType getValueType();
-
-    boolean isOptionSetValue();
-
-    OptionSet getOptionSet();
+    @Nonnull
+    public MetadataSheetMessageCollector getMessageCollector()
+    {
+        return messageCollector;
+    }
 }

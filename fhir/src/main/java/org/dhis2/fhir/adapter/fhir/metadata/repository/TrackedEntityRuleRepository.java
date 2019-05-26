@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.springframework.cache.annotation.CacheConfig;
@@ -36,6 +37,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +45,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -68,6 +71,12 @@ public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntity
     @RestResource( exported = false )
     @Query( "SELECT r FROM #{#entityName} r JOIN r.trackedEntity te WHERE te IN (:trackedEntities)" )
     <S extends TrackedEntityRule> List<S> findAllByTrackedEntities( @Nonnull Collection<MappedTrackedEntity> trackedEntities );
+
+    @Nonnull
+    @RestResource( exported = false )
+    @Query( "SELECT r FROM #{#entityName} r WHERE r.fhirResourceType=:fhirResourceType AND r.trackedEntity=:trackedEntity AND r.enabled=true ORDER BY r.id" )
+    Optional<TrackedEntityRule> findFirstByTrackedEntity( @Nonnull @Param( "fhirResourceType" ) FhirResourceType fhirResourceType,
+        @Nonnull @Param( "trackedEntity" ) MappedTrackedEntity trackedEntity );
 
     @Override
     @Nonnull

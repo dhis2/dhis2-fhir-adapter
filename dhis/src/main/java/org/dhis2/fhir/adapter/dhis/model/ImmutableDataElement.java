@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Immutable implementation of {@link DataElement} that may delegate to a mutable
@@ -105,5 +106,20 @@ public class ImmutableDataElement implements DataElement, ImmutableDhisObject, S
     public OptionSet getOptionSet()
     {
         return (delegate.getOptionSet() == null) ? null : new ImmutableOptionSet( delegate.getOptionSet() );
+    }
+
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public Set<Reference> getAllReferences()
+    {
+        return delegate.getAllReferences();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isReference( @Nonnull Reference reference )
+    {
+        return delegate.isReference( reference );
     }
 }

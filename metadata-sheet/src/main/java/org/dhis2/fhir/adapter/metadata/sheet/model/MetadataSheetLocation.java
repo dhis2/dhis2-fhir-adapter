@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.metadata.sheet.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,108 +28,67 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
- * Writable implementation of {@link DataElement} that can also be used for
- * JSON serialization and deserialization.
+ * The location in a sheet for which a message is generated.<br>
+ *
+ * <b>This metadata sheet import tool is just a temporary solution
+ * and may be removed in the future completely.</b>
  *
  * @author volsch
  */
-public class WritableDataElement extends AbstractDhisType implements DataElement, Serializable
+public class MetadataSheetLocation implements Serializable
 {
-    private static final long serialVersionUID = -3933887626350878763L;
+    private static final long serialVersionUID = 8014117442538496813L;
 
-    private String id;
+    public static final int UNDEFINED_ROW = -1;
 
-    private String name;
+    public static final int UNDEFINED_CELL = -1;
 
-    private String code;
+    private final String sheetName;
 
-    private String formName;
+    private final int row;
 
-    private ValueType valueType;
+    private final int cell;
 
-    private boolean optionSetValue;
-
-    private WritableOptionSet optionSet;
-
-    @Override
-    public String getId()
+    public MetadataSheetLocation( @Nonnull String sheetName, int row, int cell )
     {
-        return id;
+        this.sheetName = sheetName;
+        this.row = row;
+        this.cell = cell;
     }
 
-    public void setId( String id )
+    public MetadataSheetLocation( @Nonnull String sheetName, int row )
     {
-        this.id = id;
+        this( sheetName, row, UNDEFINED_CELL );
     }
 
-    @Override
-    public String getName()
+    public MetadataSheetLocation( @Nonnull String sheetName )
     {
-        return name;
+        this( sheetName, UNDEFINED_ROW, UNDEFINED_CELL );
     }
 
-    public void setName( String name )
+    @Nonnull
+    public String getSheetName()
     {
-        this.name = name;
+        return sheetName;
     }
 
-    @Override
-    public String getCode()
+    public int getRow()
     {
-        return code;
+        return row;
     }
 
-    public void setCode( String code )
+    public int getCell()
     {
-        this.code = code;
+        return cell;
     }
 
     @Override
-    public String getFormName()
+    public String toString()
     {
-        return formName;
-    }
-
-    public void setFormName( String formName )
-    {
-        this.formName = formName;
-    }
-
-    @Override
-    public ValueType getValueType()
-    {
-        return valueType;
-    }
-
-    public void setValueType( ValueType valueType )
-    {
-        this.valueType = valueType;
-    }
-
-    @Override
-    public boolean isOptionSetValue()
-    {
-        return optionSetValue;
-    }
-
-    public void setOptionSetValue( boolean optionSetValue )
-    {
-        this.optionSetValue = optionSetValue;
-    }
-
-    @Override
-    public WritableOptionSet getOptionSet()
-    {
-        return optionSet;
-    }
-
-    public void setOptionSet( WritableOptionSet optionSet )
-    {
-        this.optionSet = optionSet;
+        return "MetadataSheetLocation{sheetName='" + sheetName + '\'' + ", row=" + row + ", cell=" + cell + '}';
     }
 }

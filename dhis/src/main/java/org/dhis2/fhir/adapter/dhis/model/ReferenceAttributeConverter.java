@@ -59,10 +59,12 @@ public class ReferenceAttributeConverter implements AttributeConverter<Reference
             return null;
         }
         final int index = dbData.indexOf( SEPARATOR );
+
         if ( (index <= 0) || (index + 1 == dbData.length()) )
         {
             throw new IllegalArgumentException( "Reference does not include required separator: " + dbData );
         }
+
         return new Reference( dbData.substring( index + 1 ), NameUtils.toEnumValue( ReferenceType.class, dbData.substring( 0, index ) ) );
     }
 }

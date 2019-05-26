@@ -40,6 +40,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -60,6 +61,10 @@ public interface CodeSetRepository extends JpaRepository<CodeSet, UUID>, Queryds
     {
         return CodeSet.class;
     }
+
+    @Nonnull
+    @RestResource( exported = false )
+    Optional<CodeSet> findOneByCode( @Nonnull String code );
 
     @Override
     @Nonnull
