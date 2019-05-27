@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.metadata.sheet.processor;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -61,10 +60,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Processes the metadata import of codes from a sheet.<br>
@@ -154,8 +151,7 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
             return messageCollector;
         }
 
-        final Set<String> genericCodes = new HashSet<>();
-        final Set<String> displayNames = new HashSet<>();
+        final Map<String, Code> codes = new HashMap<>();
         final Map<String, CodeSet> codeSets = new HashMap<>();
         final int lastRowNum = sheet.getLastRowNum();
 
@@ -174,10 +170,11 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
                 final String codeSetDisplayName = getString( row, CODE_SET_DISPLAY_NAME_COL );
                 final String codeSetMappedCode = getString( row, CODE_SET_MAPPED_CODE_COL );
                 final Boolean codeSetPreferred = getBoolean( sheet, rowNum, CODE_SET_PREFERRED_COL );
-                System system = null;
                 String genericCode = getString( row, GENERIC_CODE_COL );
+                System system = null;
+                Code resultingCode = null;
                 CodeSet codeSet;
-                CodeSetValue codeSetValue = null;
+                CodeSetValue codeSetValue;
 
                 if ( CVX_SYSTEM_URI.equals( systemUri ) )
                 {
@@ -200,9 +197,36 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
 
                     if ( system == null )
                     {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( CODES_SHEET_NAME, rowNum, SYSTEM_URI_COL ),
-                            "System URI has not been configured: " + systemUri ) );
+                        if ( systemUri.startsWith( System.DHIS2_FHIR_VALUE_SET_URI_PREFIX ) && systemUri.length() > System.DHIS2_FHIR_VALUE_SET_URI_PREFIX.length() )
+                        {
+                            final String value = systemUri.substring( System.DHIS2_FHIR_VALUE_SET_URI_PREFIX.length() );
+
+                            system = new System();
+                            system.setEnabled( true );
+                            system.setDescriptionProtected( false );
+                            system.setSystemUri( systemUri );
+                            system.setCode( StringUtils.left( value, System.MAX_CODE_LENGTH ) );
+                            system.setName( StringUtils.left( value, System.MAX_NAME_LENGTH ) );
+                            system.setFhirDisplayName( StringUtils.left( value.toLowerCase().replace( "_", " " ), System.MAX_FHIR_DISPLAY_NAME_LENGTH ) );
+                            system.setSystemCodes( new ArrayList<>() );
+
+                            systemRepository.save( system );
+                        }
+                        else
+                        {
+                            messageCollector.addMessage( new MetadataSheetMessage(
+                                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( CODES_SHEET_NAME, rowNum, SYSTEM_URI_COL ),
+                                "System URI has not been configured: " + systemUri ) );
+                        }
+                    }
+                    else if ( system.getSystemUri().startsWith( System.DHIS2_FHIR_VALUE_SET_URI_PREFIX ) )
+                    {
+                        if ( !system.getSystemCodes().isEmpty() )
+                        {
+                            systemCodeRepository.deleteAll( system.getSystemCodes() );
+                            systemCodeRepository.flush();
+                            system.getSystemCodes().clear();
+                        }
                     }
                 }
 
@@ -226,11 +250,37 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
                     }
                 }
 
-                if ( genericCode != null && !genericCodes.add( genericCode ) )
+                if ( genericCode != null )
                 {
-                    messageCollector.addMessage( new MetadataSheetMessage(
-                        MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( CODES_SHEET_NAME, rowNum, GENERIC_CODE_COL ),
-                        "Generic code is not unique within sheet." ) );
+                    resultingCode = codes.get( genericCode );
+
+                    if ( resultingCode == null )
+                    {
+                        resultingCode = codeRepository.findOneByCode( genericCode ).orElseGet( Code::new );
+
+                        resultingCode.setEnabled( true );
+                        resultingCode.setCode( StringUtils.left( StringUtils.defaultIfBlank( genericCode, code ), Code.MAX_CODE_LENGTH ) );
+                        resultingCode.setMappedCode( codeSetMappedCode );
+                        resultingCode.setName( StringUtils.left( genericCode.toLowerCase().replace( "_", " " ),
+                            SystemCode.MAX_DISPLAY_NAME_LENGTH ) );
+                        resultingCode.setDescription( description );
+
+                        updateCodeCategory( messageCollector, rowNum, resultingCode );
+
+                        if ( resultingCode.getSystemCodes() == null )
+                        {
+                            resultingCode.setSystemCodes( new ArrayList<>() );
+                        }
+
+                        if ( !resultingCode.getSystemCodes().isEmpty() )
+                        {
+                            systemCodeRepository.deleteAll( resultingCode.getSystemCodes() );
+                            resultingCode.getSystemCodes().clear();
+                        }
+
+                        codeRepository.saveAndFlush( resultingCode );
+                        codes.put( genericCode, resultingCode );
+                    }
                 }
 
                 if ( displayName == null )
@@ -238,12 +288,6 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
                     messageCollector.addMessage( new MetadataSheetMessage(
                         MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( CODES_SHEET_NAME, rowNum, DISPLAY_NAME_COL ),
                         "Code must be specified." ) );
-                }
-                else if ( !displayNames.add( displayName ) )
-                {
-                    messageCollector.addMessage( new MetadataSheetMessage(
-                        MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( CODES_SHEET_NAME, rowNum, DISPLAY_NAME_COL ),
-                        "Display name is not unique within sheet." ) );
                 }
 
                 if ( description == null )
@@ -295,15 +339,17 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
                                 }
 
                                 codeSet.getCodeSetValues().clear();
+                                codeSetRepository.saveAndFlush( codeSet );
 
                                 codeSets.put( codeSetCode, codeSet );
                             }
                         }
 
-                        if ( codeSet != null )
+                        if ( codeSet != null && resultingCode != null && !codeSet.containsCode( resultingCode ) )
                         {
                             codeSetValue = new CodeSetValue();
                             codeSetValue.setCodeSet( codeSet );
+                            codeSetValue.setCode( resultingCode );
                             codeSetValue.setEnabled( true );
                             codeSetValue.setPreferredExport( Objects.requireNonNull( codeSetPreferred ) );
                             codeSet.getCodeSetValues().add( codeSetValue );
@@ -316,31 +362,14 @@ public class MetadataSheetCodeImportProcessor extends AbstractMetadataSheetImpor
                     final SystemCode systemCode = systemCodeRepository.findOneBySystemAndSystemCode(
                         Objects.requireNonNull( system ), Objects.requireNonNull( code ) ).orElseGet( SystemCode::new );
 
-                    final Code resultingCode = ObjectUtils.defaultIfNull( systemCode.getCode(), new Code() );
-                    resultingCode.setEnabled( true );
-                    resultingCode.setCode( StringUtils.left( StringUtils.defaultIfBlank( genericCode, code ), Code.MAX_CODE_LENGTH ) );
-                    resultingCode.setMappedCode( codeSetMappedCode );
-                    resultingCode.setName( StringUtils.left( displayName, SystemCode.MAX_DISPLAY_NAME_LENGTH ) );
-                    resultingCode.setDescription( description );
+                    systemCode.setCode( resultingCode );
+                    systemCode.setSystem( system );
+                    systemCode.setSystemCode( StringUtils.left( code, SystemCode.MAX_SYSTEM_CODE_LENGTH ) );
+                    systemCode.setEnabled( true );
+                    systemCode.setDisplayName( StringUtils.left( displayName, SystemCode.MAX_DISPLAY_NAME_LENGTH ) );
+                    Objects.requireNonNull( resultingCode ).getSystemCodes().add( systemCode );
 
-                    updateCodeCategory( messageCollector, rowNum, resultingCode );
-
-                    if ( messageCollector.isOk() )
-                    {
-                        codeRepository.save( resultingCode );
-
-                        systemCode.setCode( resultingCode );
-                        systemCode.setSystem( system );
-                        systemCode.setSystemCode( StringUtils.left( code, SystemCode.MAX_SYSTEM_CODE_LENGTH ) );
-                        systemCode.setEnabled( true );
-                        systemCode.setDisplayName( StringUtils.left( displayName, SystemCode.MAX_DISPLAY_NAME_LENGTH ) );
-                        systemCodeRepository.save( systemCode );
-
-                        if ( codeSetValue != null )
-                        {
-                            codeSetValue.setCode( resultingCode );
-                        }
-                    }
+                    systemCodeRepository.save( systemCode );
                 }
             }
         }

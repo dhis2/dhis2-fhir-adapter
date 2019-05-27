@@ -73,7 +73,22 @@ public abstract class NameUtils
         {
             return null;
         }
-        return Enum.valueOf( enumClass, Objects.requireNonNull( toEnumName( value ) ) );
+
+        final String enumName = Objects.requireNonNull( toEnumName( value ) );
+
+        try
+        {
+            return Enum.valueOf( enumClass, enumName );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            if ( enumName.indexOf( '_' ) >= 0 )
+            {
+                return Enum.valueOf( enumClass, enumName.replace( "_", "" ) );
+            }
+
+            throw e;
+        }
     }
 
     @Nullable

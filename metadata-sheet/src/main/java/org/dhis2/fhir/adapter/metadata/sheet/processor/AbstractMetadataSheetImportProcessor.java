@@ -124,7 +124,7 @@ public abstract class AbstractMetadataSheetImportProcessor
         switch ( cell.getCellType() )
         {
             case NUMERIC:
-                return Double.toString( cell.getNumericCellValue() );
+                return Integer.toString( (int) cell.getNumericCellValue() );
             case BOOLEAN:
                 return Boolean.toString( cell.getBooleanCellValue() );
             case FORMULA:

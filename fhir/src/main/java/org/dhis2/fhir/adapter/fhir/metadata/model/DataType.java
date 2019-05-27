@@ -71,6 +71,7 @@ public enum DataType
     GENDER( Gender.class, new StringToEnumConverter<>( Gender.class ) ),
     CONSTANT( String.class, new ObjectConverter<>( String.class ) ),
     CODE( String.class, new ObjectConverter<>( String.class ) ),
+    CODE_SET( String.class, new ObjectConverter<>( String.class ) ),
     LOCATION( Location.class, new StringToLocationConverter() ),
     PATTERN( Pattern.class, new StringToPatternConverter() ),
     ORG_UNIT_REF( Reference.class, new StringToReferenceConverter() ),

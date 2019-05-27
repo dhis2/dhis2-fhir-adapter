@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * FHIR to DHIS2 transformer utility methods for code mappings and FHIR codeable concepts.
@@ -247,6 +248,33 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
             return null;
         }
         return (c.getMappedCode() == null) ? c.getCode() : c.getMappedCode();
+    }
+
+    @ScriptMethod( description = "Returns the mapped value set code for the specified codeable concept.",
+        args = {
+            @ScriptMethodArg( value = "codeSetCode", description = "The code of the code set to which the codeable concept must belong to." ),
+            @ScriptMethodArg( value = "codeableConcept", description = "The codeable concept to which the code is mapped." ),
+        },
+        returnDescription = "The associated mapped code (may be null)." )
+    @Nullable
+    public String getMappedValueSetCode( @Nonnull String codeSetCode, @Nullable ICompositeType codeableConcept )
+    {
+        if ( codeableConcept == null )
+        {
+            return null;
+        }
+
+        final List<SystemCodeValue> systemCodeValues = getSystemCodeValues( codeableConcept );
+
+        if ( systemCodeValues.isEmpty() )
+        {
+            return null;
+        }
+
+        final Code c = codeRepository.findFirstMappedByCodeSetAndSystemCodes( codeSetCode,
+            systemCodeValues.stream().map( SystemCodeValue::toString ).collect( Collectors.toList() ) ).orElse( null );
+
+        return c == null ? null : c.getMappedCode();
     }
 
     @Nullable

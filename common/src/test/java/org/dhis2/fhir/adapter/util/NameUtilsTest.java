@@ -164,8 +164,19 @@ public class NameUtilsTest
     }
 
     @Test
+    public void toEnumValueDash()
+    {
+        Assert.assertEquals( TestEnum.XYZ, NameUtils.toEnumValue( TestEnum.class, "xy-z" ) );
+    }
+
+    @Test
     public void toEnumValueString()
     {
         Assert.assertEquals( ChronoUnit.HALF_DAYS, NameUtils.toEnumValue( ChronoUnit.class, "half-DAYS" ) );
+    }
+
+    public enum TestEnum
+    {
+        XYZ
     }
 }

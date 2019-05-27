@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.hibernate.annotations.BatchSize;
 
+import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Basic;
@@ -171,6 +172,16 @@ public class CodeSet extends VersionedBaseMetadata implements CodeCategoryAware,
                 }
             } );
         }
+    }
+
+    public boolean containsCode( @Nullable Code code )
+    {
+        if ( code == null || codeSetValues == null )
+        {
+            return false;
+        }
+
+        return codeSetValues.stream().anyMatch( csv -> Objects.equals( csv.getCode().getId(), code.getId() ) );
     }
 
     @Override

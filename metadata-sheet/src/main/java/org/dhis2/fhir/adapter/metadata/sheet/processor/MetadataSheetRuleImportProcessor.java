@@ -497,6 +497,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     rule.setFhirUpdateEnabled( true );
                     rule.setFhirDeleteEnabled( true );
                     rule.setGrouping( false );
+                    rule.setEvaluationOrder( 10_000 - rowNum );
                     rule.setApplicableImpScript( f2dApplicableScript );
                     rule.setTransformImpScript( f2dTransformScript );
                     rule.setApplicableExpScript( d2fApplicableScript );
@@ -531,7 +532,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                         dataReference.setDescription( de.getElement().getName() );
                         dataReference.setScriptArgName( "dataElement" +
                             ( rule.getDhisDataReferences().isEmpty() ? "" : ( rule.getDhisDataReferences().size() + 1 ) ) );
-                        dataReference.setRequired( true );
+                        dataReference.setRequired( rule.getDhisDataReferences().isEmpty() );
 
                         rule.getDhisDataReferences().add( dataReference );
                     } );
@@ -585,6 +586,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
 
         final CodeSet codeSet = codeSetRepository.findOneByCode( StringUtils.left( codeSetCode, CodeSet.MAX_CODE_LENGTH ) ).orElseGet( CodeSet::new );
         final Set<String> processedCodes = new HashSet<>();
+        final Set<UUID> processedCodeIds = new HashSet<>();
 
         codeSet.setCode( StringUtils.left( codeSetCode, CodeSet.MAX_CODE_LENGTH ) );
         codeSet.setName( StringUtils.left( codeSetDisplayName, CodeSet.MAX_NAME_LENGTH ) );
@@ -611,9 +613,10 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
         }
 
         codeSet.getCodeSetValues().clear();
+        codeSetRepository.saveAndFlush( codeSet );
 
         systemCodes.forEach( sc -> {
-            if ( processedCodes.add( sc.getCode().getCode() ) )
+            if ( processedCodes.add( sc.getCode().getCode() ) && processedCodeIds.add( sc.getCode().getId() ) )
             {
                 final CodeSetValue codeSetValue = new CodeSetValue();
 
@@ -621,6 +624,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 codeSetValue.setCode( sc.getCode() );
                 codeSetValue.setEnabled( true );
                 codeSetValue.setPreferredExport( codeSetPreferred && sc.getSystemCodeValue().equals( preferredCodeSetCode ) );
+                codeSet.getCodeSetValues().add( codeSetValue );
             }
         } );
 

@@ -86,6 +86,8 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
 
     public static final int PROGRAM_STAGE_BEFORE_SCRIPT_CODE_COL = 2;
 
+    public static final int PROGRAM_STAGE_CREATE_SCRIPT_CODE_COL = 3;
+
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
     private final ProgramMetadataService programMetadataService;
@@ -290,8 +292,10 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
             {
                 final String programStageRefValue = getString( row, PROGRAM_STAGE_REF_COL );
                 final String beforeScriptCode = getString( row, PROGRAM_STAGE_BEFORE_SCRIPT_CODE_COL );
+                final String createScriptCode = getString( row, PROGRAM_STAGE_CREATE_SCRIPT_CODE_COL );
                 final Reference programStageRef = getReference( programStageRefValue );
                 ExecutableScript beforeScript = null;
+                ExecutableScript createScript = null;
 
                 if ( programStageRef == null )
                 {
@@ -329,6 +333,18 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
                     }
                 }
 
+                if ( createScriptCode != null )
+                {
+                    createScript = executableScriptRepository.findOneByCode( createScriptCode ).orElse( null );
+
+                    if ( createScript == null )
+                    {
+                        messageCollector.addMessage( new MetadataSheetMessage(
+                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( PROGRAM_STAGES_SHEET_NAME, rowNum, PROGRAM_STAGE_CREATE_SCRIPT_CODE_COL ),
+                            "Create script does not exist: " + createScriptCode ) );
+                    }
+                }
+
                 if ( messageCollector.isOk() )
                 {
                     final MappedTrackerProgramStage mappedTrackerProgramStage = mappedTrackerProgramStageRepository.findOneByProgramAndProgramStageReference(
@@ -339,6 +355,7 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
                     mappedTrackerProgramStage.setDescription( Objects.requireNonNull( programStage ).getName() );
                     mappedTrackerProgramStage.setProgramStageReference( getReference( programStage.getAllReferences() ) );
                     mappedTrackerProgramStage.setBeforeScript( beforeScript );
+                    mappedTrackerProgramStage.setCreationScript( createScript );
                     mappedTrackerProgramStage.setEnabled( true );
                     mappedTrackerProgramStage.setEventDateIsIncident( false );
                     mappedTrackerProgramStage.setCreationEnabled( true );

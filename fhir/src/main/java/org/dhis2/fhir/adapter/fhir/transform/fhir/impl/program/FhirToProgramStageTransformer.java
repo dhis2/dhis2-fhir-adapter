@@ -444,6 +444,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
         if ( ruleInfo.getRule().getProgramStage().getBeforeScript() != null )
         {
+            variables.get().put( ScriptVariable.EVENT.getVariableName(), new WritableScriptedEvent(
+                context, eventInfo.getProgram(), eventInfo.getProgramStage(), event, scriptedTrackedEntityInstance, valueConverter ) );
             variables.get().put( ScriptVariable.DATE_TIME.getVariableName(), getEffectiveDate( context, ruleInfo, resourceMapping.get(), variables.get() ) );
             final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping.get(), enrollment, variables.get() );
             variables.get().put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
