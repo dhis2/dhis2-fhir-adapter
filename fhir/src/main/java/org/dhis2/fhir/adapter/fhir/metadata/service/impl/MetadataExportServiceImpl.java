@@ -70,6 +70,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -178,7 +179,8 @@ public class MetadataExportServiceImpl implements MetadataExportService
                         new MetadataExportPropertyFilter( params, repositoryNames.keySet(), typedContainer ) ) );
 
                 final ArrayNode nodes = JsonNodeFactory.instance.arrayNode();
-                typedContainer.getContainer( type ).getObjects().forEach( o -> nodes.add( valueToTree( o, objectWriter ) ) );
+                new ArrayList<>( typedContainer.getContainer( type ).getObjects() )
+                    .forEach( o -> nodes.add( valueToTree( o, objectWriter ) ) );
 
                 if ( typedNodes.put( type, nodes ) != null )
                 {
