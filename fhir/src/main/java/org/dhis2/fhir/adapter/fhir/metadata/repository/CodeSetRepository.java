@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -64,6 +65,7 @@ public interface CodeSetRepository extends JpaRepository<CodeSet, UUID>, Queryds
 
     @Nonnull
     @RestResource( exported = false )
+    @Cacheable( key = "{#root.methodName, #a0}" )
     Optional<CodeSet> findOneByCode( @Nonnull String code );
 
     @Override

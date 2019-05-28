@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.springframework.cache.annotation.CacheConfig;
@@ -83,12 +84,20 @@ public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, Q
     Collection<SystemCode> findAllBySystemCodeValues( @Param( "systemCodes" ) @Nonnull Collection<String> systemCodes );
 
     @RestResource( exported = false )
-    @Query( "SELECT sc.systemCode FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +
+    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +
         "sc.enabled=true AND s.enabled=true AND s.systemUri=:systemUri AND c.enabled=true AND " +
         "((c.code=:code AND c.mappedCode IS NULL) OR c.mappedCode=:code)" )
     @Cacheable( key = "{#root.methodName, #a0, #a1}" )
     @Nonnull
     Optional<SystemCode> findOneByMappedCode( @Param( "systemUri" ) @Nonnull String system, @Param( "code" ) @Nonnull String code );
+
+    @RestResource( exported = false )
+    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE " +
+        "sc.enabled=true AND s.enabled=true AND c.enabled=true AND c.mappedCode=:mappedCode AND EXISTS " +
+        "(SELECT 1 FROM CodeSetValue csv WHERE csv.code=sc.code AND csv.enabled=true AND csv.preferredExport=true AND csv.codeSet=:codeSet) ORDER BY sc.id" )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName, #a0.id, #a1}" )
+    Collection<SystemCode> findAllExportedByMappedCode( @Param( "codeSet" ) @Nonnull CodeSet codeSet, @Param( "mappedCode" ) @Nonnull String mappedCode );
 
     @Override
     @Nonnull

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeSetRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
@@ -51,9 +52,9 @@ import java.util.Set;
 @Component
 public class R4CodeDhisToFhirTransformerUtils extends AbstractCodeDhisToFhirTransformerUtils
 {
-    public R4CodeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull SystemCodeRepository systemCodeRepository )
+    public R4CodeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeSetRepository codeSetRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
-        super( scriptExecutionContext, systemCodeRepository );
+        super( scriptExecutionContext, codeSetRepository, systemCodeRepository );
     }
 
     @Nonnull

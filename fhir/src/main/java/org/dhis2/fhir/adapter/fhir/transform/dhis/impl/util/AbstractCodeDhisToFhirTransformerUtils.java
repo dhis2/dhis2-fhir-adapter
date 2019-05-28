@@ -30,12 +30,15 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeSetRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
@@ -47,7 +50,9 @@ import org.hl7.fhir.instance.model.api.ICompositeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * DHIS2 to FHIR transformer utility methods for code mappings and FHIR codeable concepts.
@@ -61,11 +66,14 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
 {
     public static final String SCRIPT_ATTR_NAME = "codeUtils";
 
+    private final CodeSetRepository codeSetRepository;
+
     private final SystemCodeRepository systemCodeRepository;
 
-    protected AbstractCodeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull SystemCodeRepository systemCodeRepository )
+    protected AbstractCodeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeSetRepository codeSetRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
+        this.codeSetRepository = codeSetRepository;
         this.systemCodeRepository = systemCodeRepository;
     }
 
@@ -143,6 +151,29 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
 
         final ResourceSystem resourceSystem = getMandatoryResourceSystem( convertFhirResourceType( fhirResourceType ) );
         return (StringUtils.isNotBlank( resourceSystem.getCodePrefix() ) && code.startsWith( resourceSystem.getCodePrefix() )) ? code.substring( resourceSystem.getCodePrefix().length() ) : code;
+    }
+
+    @ScriptMethod( description = "Returns the codeable concept for the specified mapped code out of the specified code set.",
+        args = {
+            @ScriptMethodArg( value = "codeSetCode", description = "The code of the code set to which the mapped code and the codeable concept must belong to." ),
+            @ScriptMethodArg( value = "mappedValueSetCode", description = "The mapped value set code for which the codeable concept should be returned." ),
+        },
+        returnDescription = "The resulting codeable concept." )
+    @Nullable
+    public ICompositeType getMappedValueSetCode( @Nonnull String codeSetCode, @Nullable String mappedValueSetCode )
+    {
+        final CodeSet codeSet = codeSetRepository.findOneByCode( codeSetCode )
+            .orElseThrow( () -> new TransformerMappingException( "Code set with code does not exist: " + codeSetCode ) );
+
+        if ( mappedValueSetCode == null )
+        {
+            return null;
+        }
+
+        final Collection<SystemCode> systemCodes = systemCodeRepository.findAllExportedByMappedCode( codeSet, mappedValueSetCode );
+
+        return createCodeableConcept( new SystemCodeValues( null,
+            systemCodes.stream().map( SystemCode::getCalculatedSystemCodeValue ).collect( Collectors.toList() ) ) );
     }
 
     @Nonnull

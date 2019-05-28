@@ -76,7 +76,7 @@ public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredi
     @Nonnull
     @Cacheable( keyGenerator = "findMappedByCodeSetAndSystemCodes" )
     @Query( "SELECT c FROM #{#entityName} c JOIN c.systemCodes sc ON sc.enabled=true AND sc.systemCodeValue IN (:systemCodeValues) JOIN sc.system s ON s.enabled=true WHERE c.enabled=true AND c.mappedCode IS NOT NULL AND " +
-        "EXISTS (SELECT 1 FROM CodeSetValue csv JOIN csv.codeSet cs WHERE cs.code=:codeSetCode AND csv.preferredExport=true AND csv.enabled=true) ORDER BY c.id" )
+        "EXISTS (SELECT 1 FROM CodeSetValue csv JOIN csv.codeSet cs WHERE cs.code=:codeSetCode AND csv.enabled=true) ORDER BY c.id" )
     Optional<Code> findFirstMappedByCodeSetAndSystemCodes( @Nonnull @Param( "codeSetCode" ) String codeSetCode, @Nonnull @Param( "systemCodeValues" ) Collection<String> systemCodeValues );
 
     @RestResource( exported = false )

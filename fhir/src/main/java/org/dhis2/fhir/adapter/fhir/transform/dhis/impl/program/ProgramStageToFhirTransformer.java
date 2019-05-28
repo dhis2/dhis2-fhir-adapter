@@ -154,7 +154,7 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             if ( (resourceMapping.getExpStatusTransformScript() != null) &&
                 !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpStatusTransformScript(), variables, Boolean.class ) ) )
             {
-                logger.info( "Resulting DHIS status could not be transformed into FHIR resource {}.",
+                logger.info( "Resulting DHIS status could not be transformed into FHIR resource {} with type {}.",
                     trackedEntityFhirResource.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
                 return null;
             }
