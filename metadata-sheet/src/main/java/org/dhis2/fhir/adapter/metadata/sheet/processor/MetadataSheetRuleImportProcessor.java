@@ -408,6 +408,13 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                             "Code set preferred is invalid." ) );
                     }
 
+                    if ( codeSetCodes == null )
+                    {
+                        messageCollector.addMessage( new MetadataSheetMessage(
+                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_CODE_COL ),
+                            "Code set codes must be specified for new code set." ) );
+                    }
+
                     newCodeSetCode = true;
                 }
 
