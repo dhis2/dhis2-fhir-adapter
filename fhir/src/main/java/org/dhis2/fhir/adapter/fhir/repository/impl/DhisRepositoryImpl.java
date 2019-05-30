@@ -292,6 +292,12 @@ public class DhisRepositoryImpl implements DhisRepository
                     return result;
                 }
                 searchState = searchResult.getState();
+
+                if ( searchResult.getResult().isEmpty() )
+                {
+                    continue;
+                }
+
                 dhisResources.addAll( searchResult.getResult() );
             }
 

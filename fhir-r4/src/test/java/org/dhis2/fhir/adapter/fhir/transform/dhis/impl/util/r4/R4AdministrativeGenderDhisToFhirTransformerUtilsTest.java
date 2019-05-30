@@ -72,8 +72,7 @@ public class R4AdministrativeGenderDhisToFhirTransformerUtilsTest
     {
         final ConversionService conversionService = new DefaultConversionService();
         final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>(
-            Collections.singletonList( new R4StringToAdministrativeGenderConverter( constantResolver ) ) ),
-            conversionService );
+            Collections.singletonList( new R4StringToAdministrativeGenderConverter( constantResolver ) ) ) );
         utils = new R4AdministrativeGenderDhisToFhirTransformerUtils( scriptExecutionContext, valueConverter );
     }
 

@@ -43,6 +43,8 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -190,6 +192,27 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     public Integer getIntegerValue( @Nonnull Reference dataElementReference )
     {
         return delegate.getIntegerValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getBigDecimalValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getDateTimeValue( dataElementReference );
+    }
+
+    @Nullable
+    @Override
+    public LocalDate getDateValue( @Nonnull Reference dataElementReference )
+    {
+        return delegate.getDateValue( dataElementReference );
     }
 
     @Nullable

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ import java.time.format.DateTimeParseException;
  * @author volsch
  */
 @Component
-@ConvertedValueTypes( types = ValueType.DATETIME )
+@ConvertedValueTypes( types = { ValueType.DATETIME } )
 public class StringToZonedDateTimeConverter extends TypedConverter<String, ZonedDateTime>
 {
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;

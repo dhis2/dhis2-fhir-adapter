@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -105,6 +105,52 @@ public abstract class CastUtils
         if ( c3.isInstance( value ) )
         {
             return f3.apply( c3.cast( value ) );
+        }
+        throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
+    }
+
+    /**
+     * @param value the value that should be casted.
+     * @param c1    the first assumed type of the value.
+     * @param f1    the conversion function from the first assumed type to the returned type.
+     * @param c2    the second assumed type of the value.
+     * @param f2    the conversion function from the second assumed type to the returned type.
+     * @param c3    the third assumed type of the value.
+     * @param f3    the conversion function from the third assumed type to the returned type.
+     * @param c4    the third assumed type of the value.
+     * @param f4    the conversion function from the fourth assumed type to the returned type.
+     * @param <T>   the concrete return type of the cast.
+     * @param <V1>  the concrete type first assumed type of the specified value.
+     * @param <V2>  the concrete type second assumed type of the specified value.
+     * @param <V3>  the concrete type second assumed type of the specified value.
+     * @param <V4>  the concrete type second assumed type of the specified value.
+     * @return the casted value.
+     * @throws ClassCastException thrown if the value is neither <code>null</code>
+     *                            nor an instance of any specified class.
+     */
+    @Nullable
+    public static <T, V1, V2, V3, V4> T cast( @Nullable Object value, @Nonnull Class<V1> c1, @Nonnull Function<V1, T> f1, @Nonnull Class<V2> c2, @Nonnull Function<V2, T> f2, @Nonnull Class<V3> c3, @Nonnull Function<V3, T> f3,
+        @Nonnull Class<V4> c4, @Nonnull Function<V4, T> f4 ) throws ClassCastException
+    {
+        if ( value == null )
+        {
+            return null;
+        }
+        if ( c1.isInstance( value ) )
+        {
+            return f1.apply( c1.cast( value ) );
+        }
+        if ( c2.isInstance( value ) )
+        {
+            return f2.apply( c2.cast( value ) );
+        }
+        if ( c3.isInstance( value ) )
+        {
+            return f3.apply( c3.cast( value ) );
+        }
+        if ( c4.isInstance( value ) )
+        {
+            return f4.apply( c4.cast( value ) );
         }
         throw new ClassCastException( "Value of type " + value.getClass().getName() + " cannot be handled." );
     }

@@ -141,7 +141,7 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     }
 
     @JsonCacheIgnore
-    @Access( AccessType.PROPERTY )
+    @Access( AccessType.FIELD )
     @OneToMany( mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true )
     @OrderBy( "id" )
     @BatchSize( size = 100 )

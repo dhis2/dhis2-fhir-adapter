@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,8 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.regex.Pattern;
 
@@ -77,6 +79,15 @@ public interface ScriptedEvent extends ScriptedDhisResource
 
     @Nullable
     Integer getIntegerValue( @Nonnull Reference dataElementReference );
+
+    @Nullable
+    LocalDate getDateValue( @Nonnull Reference dataElementReference );
+
+    @Nullable
+    ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference );
+
+    @Nullable
+    BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference );
 
     @Nullable
     String getStringValue( @Nonnull Reference dataElementReference );

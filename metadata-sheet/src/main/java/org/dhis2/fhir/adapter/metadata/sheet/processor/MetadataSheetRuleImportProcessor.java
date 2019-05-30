@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.dhis2.fhir.adapter.dhis.model.DataElement;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
@@ -46,11 +47,14 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSetValue;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EventStatusUpdate;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgramStage;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleDhisDataReference;
+import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeCategoryRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeSetRepository;
@@ -58,6 +62,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepositor
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramStageRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetLocation;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessage;
@@ -111,13 +116,15 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
 
     public static final int CODE_SET_CODES_COL = 7;
 
-    public static final int F2D_APPLICABLE_SCRIPT_CODE_COL = 12;
+    public static final int F2D_APPLICABLE_SCRIPT_CODE_COL = 13;
 
-    public static final int F2D_TRANSFORM_SCRIPT_CODE_COL = 13;
+    public static final int F2D_TRANSFORM_SCRIPT_CODE_COL = 14;
 
-    public static final int D2F_APPLICABLE_SCRIPT_CODE_COL = 14;
+    public static final int D2F_APPLICABLE_SCRIPT_CODE_COL = 15;
 
-    public static final int D2F_TRANSFORM_SCRIPT_CODE_COL = 15;
+    public static final int D2F_TRANSFORM_SCRIPT_CODE_COL = 16;
+
+    public static final int VALUE_CODE_SET_CODE_COL = 8;
 
     public static final UUID DEFAULT_OBSERVATION_SEARCH_FILTER_SCRIPT_ID = UUID.fromString( "a97e64a7-81d1-4f62-84f2-da9a003f9d0b" );
 
@@ -141,12 +148,14 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
 
     private final ProgramStageRuleRepository programStageRuleRepository;
 
+    private final ScriptRepository scriptRepository;
+
     private final ExecutableScriptRepository executableScriptRepository;
 
     public MetadataSheetRuleImportProcessor( @Nonnull ProgramMetadataService programMetadataService, @Nonnull CodeCategoryRepository codeCategoryRepository,
         @Nonnull CodeSetRepository codeSetRepository, @Nonnull SystemCodeRepository systemCodeRepository,
         @Nonnull MappedTrackerProgramRepository mappedTrackerProgramRepository, @Nonnull MappedTrackerProgramStageRepository mappedTrackerProgramStageRepository,
-        @Nonnull ProgramStageRuleRepository programStageRuleRepository, @Nonnull ExecutableScriptRepository executableScriptRepository )
+        @Nonnull ProgramStageRuleRepository programStageRuleRepository, @Nonnull ScriptRepository scriptRepository, @Nonnull ExecutableScriptRepository executableScriptRepository )
     {
         this.programMetadataService = programMetadataService;
         this.codeCategoryRepository = codeCategoryRepository;
@@ -155,6 +164,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
         this.mappedTrackerProgramRepository = mappedTrackerProgramRepository;
         this.mappedTrackerProgramStageRepository = mappedTrackerProgramStageRepository;
         this.programStageRuleRepository = programStageRuleRepository;
+        this.scriptRepository = scriptRepository;
         this.executableScriptRepository = executableScriptRepository;
     }
 
@@ -229,6 +239,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 final String f2dTransformScriptCode = getString( row, F2D_TRANSFORM_SCRIPT_CODE_COL );
                 final String d2fApplicableScriptCode = getString( row, D2F_APPLICABLE_SCRIPT_CODE_COL );
                 final String d2fTransformScriptCode = getString( row, D2F_TRANSFORM_SCRIPT_CODE_COL );
+                final String valueCodeSetCode = getString( row, VALUE_CODE_SET_CODE_COL );
                 final Set<ProgramStageDataElement> dataElements = new LinkedHashSet<>();
 
                 String codeSetCode = StringUtils.upperCase( getString( row, CODE_SET_CODE_COL ) );
@@ -236,6 +247,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 Boolean codeSetPreferred = getBoolean( sheet, rowNum, CODE_SET_PREFERRED_COL );
                 List<String> codeSetCodes = getStringList( getString( row, CODE_SET_CODES_COL ) );
 
+                DataElement mainDataElement = null;
                 DhisResourceType dhisResourceType = null;
                 FhirResourceType fhirResourceType = null;
                 ProgramStage programStage = null;
@@ -246,6 +258,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 ExecutableScript f2dTransformScript = null;
                 ExecutableScript d2fApplicableScript = null;
                 ExecutableScript d2fTransformScript = null;
+                CodeSet valueCodeSet;
 
                 if ( programStageRef == null )
                 {
@@ -350,6 +363,11 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                             unprocessedKeys.remove( new ProgramStageDataElementKey( finalProgramStage, dataElement.getElement() ) );
                         }
                     } );
+
+                    if ( !dataElements.isEmpty() )
+                    {
+                        mainDataElement = dataElements.stream().findFirst().get().getElement();
+                    }
                 }
 
                 if ( codeSetCode == null )
@@ -388,39 +406,66 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 }
                 else if ( processedCodeSetCodes.add( codeSetCode ) )
                 {
-                    if ( codeSetDisplayName == null )
-                    {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_DISPLAY_NAME_COL ),
-                            "Code set display name is invalid." ) );
-                    }
-                    else if ( !codeSetDisplayNames.add( codeSetDisplayName ) )
-                    {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_CODE_COL ),
-                            "Code set display name has already been used for a different code set: " + codeSetDisplayName ) );
-                    }
+                    codeSet = codeSetRepository.findOneByCode( codeSetCode ).orElse( null );
 
-                    if ( codeSetPreferred == null )
+                    if ( codeSet == null )
                     {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_DISPLAY_NAME_COL ),
-                            "Code set preferred is invalid." ) );
-                    }
+                        if ( codeSetDisplayName == null )
+                        {
+                            messageCollector.addMessage( new MetadataSheetMessage(
+                                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_DISPLAY_NAME_COL ),
+                                "Code set display name is invalid." ) );
+                        }
+                        else if ( !codeSetDisplayNames.add( codeSetDisplayName ) )
+                        {
+                            messageCollector.addMessage( new MetadataSheetMessage(
+                                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_CODE_COL ),
+                                "Code set display name has already been used for a different code set: " + codeSetDisplayName ) );
+                        }
 
-                    if ( codeSetCodes == null )
+                        if ( codeSetPreferred == null )
+                        {
+                            messageCollector.addMessage( new MetadataSheetMessage(
+                                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_DISPLAY_NAME_COL ),
+                                "Code set preferred is invalid." ) );
+                        }
+
+                        if ( codeSetCodes == null )
+                        {
+                            messageCollector.addMessage( new MetadataSheetMessage(
+                                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_CODE_COL ),
+                                "Code set codes must be specified for new code set." ) );
+                        }
+
+                        newCodeSetCode = true;
+                    }
+                    else
                     {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, CODE_SET_CODE_COL ),
-                            "Code set codes must be specified for new code set." ) );
+                        codeSets.put( codeSetCode, codeSet );
                     }
-
-                    newCodeSetCode = true;
                 }
 
-                if ( f2dApplicableScriptCode != null )
+                if ( valueCodeSetCode != null )
                 {
-                    f2dApplicableScript = executableScriptRepository.findOneByCode( f2dApplicableScriptCode ).orElse( null );
+                    valueCodeSet = codeSetRepository.findOneByCode( StringUtils.left( valueCodeSetCode, CodeSet.MAX_CODE_LENGTH ) ).orElse( null );
+
+                    if ( valueCodeSet == null )
+                    {
+                        messageCollector.addMessage( new MetadataSheetMessage(
+                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, D2F_APPLICABLE_SCRIPT_CODE_COL ),
+                            "Value code set does not exist: " + valueCodeSetCode ) );
+                    }
+                }
+                else if ( !dataElements.isEmpty() && dataElements.stream().findFirst().get().getElement().isOptionSetValue() )
+                {
+                    messageCollector.addMessage( new MetadataSheetMessage(
+                        MetadataSheetMessageSeverity.WARN, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
+                        "Value code set code should be specified since data element reference an option set." ) );
+                }
+
+                if ( f2dApplicableScriptCode != null && mainDataElement != null )
+                {
+                    f2dApplicableScript = lookupExecutableScript( messageCollector, rowNum, mainDataElement, f2dApplicableScriptCode, valueCodeSetCode );
 
                     if ( f2dApplicableScript == null )
                     {
@@ -430,9 +475,9 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     }
                 }
 
-                if ( f2dTransformScriptCode != null )
+                if ( f2dTransformScriptCode != null && mainDataElement != null )
                 {
-                    f2dTransformScript = executableScriptRepository.findOneByCode( f2dTransformScriptCode ).orElse( null );
+                    f2dTransformScript = lookupExecutableScript( messageCollector, rowNum, mainDataElement, f2dTransformScriptCode, valueCodeSetCode );
 
                     if ( f2dTransformScript == null )
                     {
@@ -442,9 +487,9 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     }
                 }
 
-                if ( d2fApplicableScriptCode != null )
+                if ( d2fApplicableScriptCode != null && mainDataElement != null )
                 {
-                    d2fApplicableScript = executableScriptRepository.findOneByCode( d2fApplicableScriptCode ).orElse( null );
+                    d2fApplicableScript = lookupExecutableScript( messageCollector, rowNum, mainDataElement, d2fApplicableScriptCode, valueCodeSetCode );
 
                     if ( d2fApplicableScript == null )
                     {
@@ -454,9 +499,9 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     }
                 }
 
-                if ( d2fTransformScriptCode != null )
+                if ( d2fTransformScriptCode != null && mainDataElement != null )
                 {
-                    d2fTransformScript = executableScriptRepository.findOneByCode( d2fTransformScriptCode ).orElse( null );
+                    d2fTransformScript = lookupExecutableScript( messageCollector, rowNum, mainDataElement, d2fTransformScriptCode, valueCodeSetCode );
 
                     if ( d2fTransformScript == null )
                     {
@@ -638,5 +683,77 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
         codeSetRepository.save( codeSet );
 
         return codeSet;
+    }
+
+    @Nullable
+    protected ExecutableScript lookupExecutableScript( @Nonnull MetadataSheetMessageCollector messageCollector, int rowNum,
+        @Nonnull DataElement dataElement, @Nonnull String scriptCode, @Nullable String valueCodeSetCode )
+    {
+        ExecutableScript executableScript = executableScriptRepository.findOneByCode( scriptCode ).orElse( null );
+
+        if ( valueCodeSetCode != null )
+        {
+            if ( executableScript != null )
+            {
+                messageCollector.addMessage( new MetadataSheetMessage(
+                    MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
+                    "Value code set has been specified but executable script exists already: " + scriptCode ) );
+
+                return null;
+            }
+
+            Script script = scriptRepository.findOneByCode( scriptCode ).orElse( null );
+
+            if ( script == null )
+            {
+                messageCollector.addMessage( new MetadataSheetMessage(
+                    MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
+                    "Value code set has been specified but executable script exists already: " + scriptCode ) );
+
+                return null;
+            }
+
+            final ScriptArg codeSetCodeScriptArg = script.getArguments().stream().filter( a -> "codeSetCode".equals( a.getName() ) ).findFirst().orElse( null );
+
+            if ( codeSetCodeScriptArg == null )
+            {
+                messageCollector.addMessage( new MetadataSheetMessage(
+                    MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
+                    "Script does not define code set code argument: " + scriptCode ) );
+
+                return null;
+            }
+
+            final String executableScriptCode = dataElement.getId() + "_" + scriptCode;
+            final ExecutableScriptArg codeSetCodeArg = new ExecutableScriptArg();
+            executableScriptRepository.findOneByCode( executableScriptCode ).ifPresent( es ->
+            {
+                executableScriptRepository.delete( es );
+                executableScriptRepository.flush();
+            } );
+
+            executableScript = new ExecutableScript();
+            executableScript.setScript( script );
+            executableScript.setCode( executableScriptCode );
+            executableScript.setName( dataElement.getId() + " " + script.getName() );
+            executableScript.setDescription( script.getDescription() );
+            executableScript.setOverrideArguments( new ArrayList<>() );
+
+            codeSetCodeArg.setScript( executableScript );
+            codeSetCodeArg.setArgument( codeSetCodeScriptArg );
+            codeSetCodeArg.setEnabled( true );
+            codeSetCodeArg.setOverrideValue( valueCodeSetCode );
+            executableScript.getOverrideArguments().add( codeSetCodeArg );
+
+            executableScriptRepository.save( executableScript );
+        }
+        else if ( executableScript == null )
+        {
+            messageCollector.addMessage( new MetadataSheetMessage(
+                MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum ),
+                "Executable script does not exist: " + scriptCode ) );
+        }
+
+        return executableScript;
     }
 }

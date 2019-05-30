@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
  * @author volsch
  */
 @Component
-@ConvertedValueTypes( types = ValueType.DATE )
+@ConvertedValueTypes( types = { ValueType.DATE, ValueType.AGE } )
 public class Dstu3BaseDateTimeTypeToDateStringConverter extends AbstractPrimitiveTypeDateToDateStringConverter<BaseDateTimeType>
 {
     public Dstu3BaseDateTimeTypeToDateStringConverter()

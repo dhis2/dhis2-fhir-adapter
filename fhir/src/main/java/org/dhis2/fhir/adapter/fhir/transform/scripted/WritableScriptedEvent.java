@@ -57,6 +57,8 @@ import org.dhis2.fhir.adapter.util.NameUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -316,6 +318,29 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public Integer getIntegerValue( @Nonnull Reference dataElementReference )
     {
         return valueConverter.convert( getValue( dataElementReference ), Integer.class );
+    }
+
+    @Nullable
+    @Override
+    public LocalDate getDateValue( @Nonnull Reference dataElementReference )
+    {
+        return valueConverter.convert( getValue( dataElementReference ), LocalDate.class );
+    }
+
+    @Nullable
+    @Override
+    public ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference )
+    {
+        return valueConverter.convert( getValue( dataElementReference ), ZonedDateTime.class );
+    }
+
+    @Nullable
+    @Override
+    @ScriptMethod( description = "Returns the value of a data element as a big decimal value.",
+        args = @ScriptMethodArg( value = "dataElementReference", description = "The reference object to the data element of the event." ) )
+    public BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference )
+    {
+        return valueConverter.convert( getValue( dataElementReference ), BigDecimal.class );
     }
 
     @Nullable

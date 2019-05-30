@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,15 +32,19 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.converter.ConvertedValueTypes;
+import org.dhis2.fhir.adapter.converter.IsoStringToLocalDateConverter;
+import org.dhis2.fhir.adapter.converter.StringToZonedDateTimeConverter;
 import org.dhis2.fhir.adapter.converter.TypedConverter;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
@@ -62,9 +66,21 @@ public class ValueConverter
 
     private final ListMultimap<ValueType, TypedConverter<?, ?>> converters = ArrayListMultimap.create();
 
-    public ValueConverter( @Nonnull ObjectProvider<List<TypedConverter<?, ?>>> converters, @Qualifier( "defaultConversionService" ) @Nonnull ConversionService conversionService )
+    public ValueConverter( @Nonnull ObjectProvider<List<TypedConverter<?, ?>>> converters )
     {
+        final DefaultConversionService conversionService = new DefaultConversionService();
+        converters.ifAvailable( c -> {
+            c.forEach( converter -> {
+                conversionService.removeConvertible( converter.getFromClass(), converter.getToClass() );
+                conversionService.addConverter( converter );
+            } );
+        } );
+        conversionService.removeConvertible( String.class, LocalDate.class );
+        conversionService.addConverter( String.class, LocalDate.class, new IsoStringToLocalDateConverter() );
+        conversionService.removeConvertible( String.class, ZonedDateTime.class );
+        conversionService.addConverter( String.class, ZonedDateTime.class, new StringToZonedDateTimeConverter() );
         this.conversionService = conversionService;
+
         converters.ifAvailable( typedConverters -> typedConverters.stream().filter( tc -> tc.getClass().isAnnotationPresent( ConvertedValueTypes.class ) )
             .forEach( converter -> Arrays.stream( converter.getClass().getAnnotation( ConvertedValueTypes.class ).types() ).forEach( vt -> addConverter( vt, converter ) ) ) );
     }

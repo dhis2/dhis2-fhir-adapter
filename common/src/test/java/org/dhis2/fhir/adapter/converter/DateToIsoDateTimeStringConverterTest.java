@@ -28,53 +28,31 @@ package org.dhis2.fhir.adapter.converter;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
-import org.springframework.stereotype.Component;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
- * Converts an object to a zoned date time. The object is converted to a string and the first
- * representation of an ISO date time is extracted as zoned date time.
+ * Unit tests for {@link DateToIsoDateTimeStringConverter}.
  *
  * @author volsch
  */
-@Component
-@ConvertedValueTypes( types = { ValueType.DATETIME } )
-public class ObjectToZonedDateTimeConverter extends TypedConverter<Object, ZonedDateTime>
+public class DateToIsoDateTimeStringConverterTest
 {
-    private final Pattern dateTimePattern = Pattern.compile( ".*(\\d{4}-\\d{2}-\\d{2}T.*Z).*" );
+    private DateToIsoDateTimeStringConverter converter = new DateToIsoDateTimeStringConverter();
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-
-    public ObjectToZonedDateTimeConverter()
+    @Test
+    public void docConvert()
     {
-        super( Object.class, ZonedDateTime.class );
+        final Date date = new GregorianCalendar( 2018, 7, 15, 2, 18, 23 ).getTime();
+        Assert.assertEquals( "2018-08-15T02:18:23", converter.convert( date ) );
     }
 
-    @Override
-    @Nullable
-    public ZonedDateTime doConvert( @Nonnull Object source )
+    @Test
+    public void doConvertNull()
     {
-        final Matcher matcher = dateTimePattern.matcher( source.toString() );
-        if ( !matcher.matches() )
-        {
-            throw new ConversionException( "Could not parse ISO formatted date/time in string: " + source );
-        }
-        final String value = matcher.group( 1 );
-        try
-        {
-            return ZonedDateTime.from( formatter.parse( value ) );
-        }
-        catch ( DateTimeParseException e )
-        {
-            throw new ConversionException( "Could not parse ISO formatted local date in string: " + source, e );
-        }
+        Assert.assertNull( converter.convert( null ) );
     }
 }

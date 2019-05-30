@@ -70,8 +70,7 @@ public class R4GeoDhisToFhirTransformerUtilsTest
     {
         final ConversionService conversionService = new DefaultConversionService();
         final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>(
-            Collections.singletonList( new StringToLocationConverter() ) ),
-            conversionService );
+            Collections.singletonList( new StringToLocationConverter() ) ) );
         utils = new R4GeoDhisToFhirTransformerUtils( scriptExecutionContext, valueConverter );
     }
 

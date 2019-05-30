@@ -72,8 +72,7 @@ public class Dstu3AdministrativeGenderDhisToFhirTransformerUtilsTest
     {
         final ConversionService conversionService = new DefaultConversionService();
         final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>(
-            Collections.singletonList( new Dstu3StringToAdministrativeGenderConverter( constantResolver ) ) ),
-            conversionService );
+            Collections.singletonList( new Dstu3StringToAdministrativeGenderConverter( constantResolver ) ) ) );
         utils = new Dstu3AdministrativeGenderDhisToFhirTransformerUtils( scriptExecutionContext, valueConverter );
     }
 

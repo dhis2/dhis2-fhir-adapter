@@ -52,6 +52,8 @@ import org.mockito.junit.MockitoRule;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -202,7 +204,28 @@ public class R4ProgramStageFhirToDhisTransformerUtilsTest
 
         @Nullable
         @Override
+        public BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference )
+        {
+            return null;
+        }
+
+        @Nullable
+        @Override
         public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
+        {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference )
+        {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public LocalDate getDateValue( @Nonnull Reference dataElementReference )
         {
             return null;
         }

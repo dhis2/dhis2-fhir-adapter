@@ -126,6 +126,7 @@ public class R4DateTimeDhisToFhirTransformerUtils extends AbstractDateTimeDhisTo
         return CastUtils.cast( date,
             BaseDateTimeType.class, d -> LocalDateTime.ofInstant( d.getValue().toInstant(), zoneId ),
             Date.class, d -> LocalDateTime.from( d.toInstant().atZone( zoneId ) ),
+            LocalDate.class, d -> LocalDateTime.from( d.atStartOfDay( zoneId ).toLocalDateTime() ),
             Temporal.class, LocalDateTime::from );
     }
 

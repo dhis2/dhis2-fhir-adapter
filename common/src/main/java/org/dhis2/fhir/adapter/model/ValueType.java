@@ -69,11 +69,11 @@ public enum ValueType
     FILE_RESOURCE( String.class ),
     COORDINATE( Location.class ),
     ORGANISATION_UNIT( Id.class ),
-    AGE( ZonedDateTime.class ),
+    AGE( LocalDate.class ),
     URL( String.class ),
     IMAGE( String.class );
 
-    public static final Set<ValueType> DATE_TYPES = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( DATE, DATETIME ) ) );
+    public static final Set<ValueType> DATE_TYPES = Collections.unmodifiableSet( new HashSet<>( Arrays.asList( DATE, DATETIME, AGE ) ) );
 
     private final Class<?> javaClass;
 

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@ public class ValueConverterTest
     {
         final ObjectToZonedDateTimeConverter converter1 = new ObjectToZonedDateTimeConverter();
         final StringToZonedDateTimeConverter converter2 = new StringToZonedDateTimeConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter1, converter2 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter1, converter2 ) ) );
         testSameSourceClass( valueConverter );
     }
 
@@ -73,7 +73,7 @@ public class ValueConverterTest
     {
         final ObjectToZonedDateTimeConverter converter1 = new ObjectToZonedDateTimeConverter();
         final StringToZonedDateTimeConverter converter2 = new StringToZonedDateTimeConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter2, converter1 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter2, converter1 ) ) );
         testSameSourceClass( valueConverter );
     }
 
@@ -82,7 +82,7 @@ public class ValueConverterTest
     {
         final StringToIntegerConverter converter1 = new StringToIntegerConverter();
         final StringToZonedDateTimeConverter converter2 = new StringToZonedDateTimeConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter1, converter2 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Arrays.asList( converter1, converter2 ) ) );
 
         Assert.assertNotNull( valueConverter.convert( "2017-08-04T17:28:43Z", ValueType.DATETIME, ZonedDateTime.class ) );
         Assert.assertEquals( (Integer) 12, valueConverter.convert( "12", ValueType.INTEGER_POSITIVE, Integer.class ) );
@@ -92,7 +92,7 @@ public class ValueConverterTest
     public void testNull()
     {
         final StringToIntegerConverter converter1 = new StringToIntegerConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ) );
         Assert.assertNull( valueConverter.convert( null, ValueType.INTEGER_POSITIVE, Integer.class ) );
     }
 
@@ -100,7 +100,7 @@ public class ValueConverterTest
     public void testSameClass()
     {
         final StringToIntegerConverter converter1 = new StringToIntegerConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ) );
         Assert.assertEquals( "Test", valueConverter.convert( "Test", ValueType.INTEGER_POSITIVE, String.class ) );
     }
 
@@ -108,7 +108,7 @@ public class ValueConverterTest
     public void testNoConverter()
     {
         final StringToIntegerConverter converter1 = new StringToIntegerConverter();
-        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ), conversionService );
+        final ValueConverter valueConverter = new ValueConverter( new StaticObjectProvider<>( Collections.singletonList( converter1 ) ) );
         valueConverter.convert( new Date(), ValueType.DATETIME, String.class );
     }
 
