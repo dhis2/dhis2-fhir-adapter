@@ -70,6 +70,34 @@ public class R4HumanNameFhirToDhisTransformerUtilsTest
     }
 
     @Test
+    public void firstGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).addGiven( "Francis" ).addGiven( "Alice" ).setFamily( "Lobster" );
+        Assert.assertEquals( "Peter", utils.getFirstGiven( humanName ) );
+    }
+
+    @Test
+    public void noFirstGiven()
+    {
+        final HumanName humanName = new HumanName().setFamily( "Lobster" );
+        Assert.assertNull( utils.getFirstGiven( humanName ) );
+    }
+
+    @Test
+    public void secondGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).addGiven( "Francis" ).addGiven( "Alice" ).setFamily( "Lobster" );
+        Assert.assertEquals( "Francis", utils.getSecondGiven( humanName ) );
+    }
+
+    @Test
+    public void noSecondGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).setFamily( "Lobster" );
+        Assert.assertNull( utils.getSecondGiven( humanName ) );
+    }
+
+    @Test
     public void primaryExpired()
     {
         final List<HumanName> humanNames = new ArrayList<>();

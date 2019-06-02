@@ -229,6 +229,8 @@ public class TestConfiguration
         setup.getTrackedEntitySetup().getFirstName().setReferenceValue( "FIRST_NAME" );
         setup.getTrackedEntitySetup().getLastName().setReferenceType( ReferenceType.NAME );
         setup.getTrackedEntitySetup().getLastName().setReferenceValue( "Last Name" );
+        setup.getTrackedEntitySetup().getUniqueId().setEnabled( true );
+        setup.getTrackedEntitySetup().getMiddleName().setEnabled( false );
 
         final Setup setupR4 = new Setup();
 
@@ -256,7 +258,7 @@ public class TestConfiguration
         try
         {
             Assert.assertFalse( setupService.hasCompletedSetup() );
-            setupResult = setupService.apply( setup, additionalFhirResourceTypes, false, false );
+            setupResult = setupService.apply( setup, additionalFhirResourceTypes, true, false, false );
             setupResultR4 = setupService.createFhirClient( setupR4.getFhirClientSetup(), FhirVersion.R4, "_R4",
                 setupResult.getOrganizationSystem(), setupResult.getPatientSystem(), additionalFhirResourceTypes, false );
             Assert.assertTrue( setupService.hasCompletedSetup() );

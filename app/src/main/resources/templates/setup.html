@@ -173,23 +173,29 @@
       updateTrackedEntityAttr( 'birthDate', false, 'NAME', '' );
       updateTrackedEntityAttr( 'gender', false, 'NAME', '' );
       updateTrackedEntityAttr( 'villageName', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'caregiverFirstName', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'caregiverLastName', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'caregiverPhone', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverPhone', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverPhone', false, 'NAME', '' );
     }
 
     function displayDefaultTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
-      updateTrackedEntityAttr( 'uniqueId', true, 'ID', 'KSr2yTdu1AI' );
+      updateTrackedEntityAttr( 'uniqueId', false, 'ID', 'KSr2yTdu1AI' );
       updateTrackedEntityAttr( 'patientId', true, 'ID', 'Ewi7FUfcHAD' );
       updateTrackedEntityAttr( 'firstName', true, 'ID', 'TfdH5KvFmMy' );
       updateTrackedEntityAttr( 'lastName', true, 'ID', 'aW66s2QSosT' );
       updateTrackedEntityAttr( 'birthDate', true, 'ID', 'BiTsLcJQ95V' );
       updateTrackedEntityAttr( 'gender', true, 'ID', 'CklPZdOd6H1' );
       updateTrackedEntityAttr( 'villageName', true, 'ID', 'Y0i71Y6CVdy' );
-      updateTrackedEntityAttr( 'caregiverFirstName', true, 'ID', 'ftFBu8mHZ4H' );
-      updateTrackedEntityAttr( 'caregiverLastName', true, 'ID', 'EpbquVl5OD6' );
-      updateTrackedEntityAttr( 'caregiverPhone', true, 'ID', 'pjexi5YaAPa' );
+      updateTrackedEntityAttr( 'motherCaregiverFirstName', true, 'ID', 'ftFBu8mHZ4H' );
+      updateTrackedEntityAttr( 'motherCaregiverLastName', true, 'ID', 'EpbquVl5OD6' );
+      updateTrackedEntityAttr( 'motherCaregiverPhone', true, 'ID', 'pjexi5YaAPa' );
+      updateTrackedEntityAttr( 'fatherCaregiverFirstName', true, 'ID', 'pTgaQiv4xRo' );
+      updateTrackedEntityAttr( 'fatherCaregiverLastName', true, 'ID', 'ezslHxV1ybB' );
+      updateTrackedEntityAttr( 'fatherCaregiverPhone', true, 'ID', 'KnQryoomh60' );
     }
 
     function displaySierraLeoneDemoTrackedEntityType() {
@@ -201,9 +207,12 @@
       updateTrackedEntityAttr( 'birthDate', true, 'CODE', 'MMD_PER_DOB' );
       updateTrackedEntityAttr( 'gender', true, 'NAME', 'Gender' );
       updateTrackedEntityAttr( 'villageName', true, 'CODE', 'MMD_PER_ADR1' );
-      updateTrackedEntityAttr( 'caregiverFirstName', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'caregiverLastName', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'caregiverPhone', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'motherCaregiverPhone', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverFirstName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverLastName', false, 'NAME', '' );
+      updateTrackedEntityAttr( 'fatherCaregiverPhone', false, 'NAME', '' );
     }
     //-->
   </script>
@@ -444,6 +453,18 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName')}" th:errors="*{trackedEntitySetup.lastName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceType')}" th:errors="*{trackedEntitySetup.lastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceValue')}" th:errors="*{trackedEntitySetup.lastName.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityMiddleNameRefValue" style="width: 180px">Person's middle name:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.middleName.enabled}" disabled="disabled" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.middleName.referenceType}" title="Reference Type">
+          <option th:value="'ID'" th:text="'ID'"></option>
+          <option th:value="'CODE'" th:text="'Unique Code'"></option>
+          <option th:value="'NAME'" th:text="'Unique Name'"></option>
+        </select>
+        <input id="trackedEntityMiddleNameRefValue" type="text" th:field="*{trackedEntitySetup.middleName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+      </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.middleName')}" th:errors="*{trackedEntitySetup.middleName}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.middleName.referenceType')}" th:errors="*{trackedEntitySetup.middleName.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.middleName.referenceValue')}" th:errors="*{trackedEntitySetup.middleName.referenceValue}" class="error">Error</p>
       <p><label for="trackedEntityBirthDateRefValue" style="width: 180px">Person's birth date:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.birthDate.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.birthDate.referenceType}" title="Reference Type">
@@ -480,42 +501,78 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName')}" th:errors="*{trackedEntitySetup.villageName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceType')}" th:errors="*{trackedEntitySetup.villageName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceValue')}" th:errors="*{trackedEntitySetup.villageName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
-        <input type="checkbox" th:field="*{trackedEntitySetup.caregiverFirstName.enabled}" title="Enabled"/>
-        <select th:field="*{trackedEntitySetup.caregiverFirstName.referenceType}" title="Reference Type">
+      <p><label for="trackedEntityMotherCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverFirstName.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.motherCaregiverFirstName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
           <option th:value="'CODE'" th:text="'Unique Code'"></option>
           <option th:value="'NAME'" th:text="'Unique Name'"></option>
         </select>
-        <input id="trackedEntityCaregiverFirstNameRefValue" type="text" th:field="*{trackedEntitySetup.caregiverFirstName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+        <input id="trackedEntityMotherCaregiverFirstNameRefValue" type="text" th:field="*{trackedEntitySetup.motherCaregiverFirstName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName')}" th:errors="*{trackedEntitySetup.caregiverFirstName}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.caregiverFirstName.referenceType}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverFirstName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
-        <input type="checkbox" th:field="*{trackedEntitySetup.caregiverLastName.enabled}" title="Enabled"/>
-        <select th:field="*{trackedEntitySetup.caregiverLastName.referenceType}" title="Reference Type">
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityMotherCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverLastName.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.motherCaregiverLastName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
           <option th:value="'CODE'" th:text="'Unique Code'"></option>
           <option th:value="'NAME'" th:text="'Unique Name'"></option>
         </select>
-        <input id="trackedEntityCaregiverLastNameRefValue" type="text" th:field="*{trackedEntitySetup.caregiverLastName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+        <input id="trackedEntityMotherCaregiverLastNameRefValue" type="text" th:field="*{trackedEntitySetup.motherCaregiverLastName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName')}" th:errors="*{trackedEntitySetup.caregiverLastName}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.caregiverLastName.referenceType}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverLastName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
-        <input type="checkbox" th:field="*{trackedEntitySetup.caregiverPhone.enabled}" title="Enabled"/>
-        <select th:field="*{trackedEntitySetup.caregiverPhone.referenceType}" title="Reference Type">
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverPhone.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.motherCaregiverPhone.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
           <option th:value="'CODE'" th:text="'Unique Code'"></option>
           <option th:value="'NAME'" th:text="'Unique Name'"></option>
         </select>
-        <input id="trackedEntityCaregiverPhoneRefValue" type="text" th:field="*{trackedEntitySetup.caregiverPhone.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+        <input id="trackedEntityMotherCaregiverPhoneRefValue" type="text" th:field="*{trackedEntitySetup.motherCaregiverPhone.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone')}" th:errors="*{trackedEntitySetup.caregiverPhone}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone.referenceType')}" th:errors="*{trackedEntitySetup.caregiverPhone.referenceType}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.caregiverPhone.referenceValue')}" th:errors="*{trackedEntitySetup.caregiverPhone.referenceValue}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityFatherCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverFirstName.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.fatherCaregiverFirstName.referenceType}" title="Reference Type">
+          <option th:value="'ID'" th:text="'ID'"></option>
+          <option th:value="'CODE'" th:text="'Unique Code'"></option>
+          <option th:value="'NAME'" th:text="'Unique Name'"></option>
+        </select>
+        <input id="trackedEntityFatherCaregiverFirstNameRefValue" type="text" th:field="*{trackedEntitySetup.fatherCaregiverFirstName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+      </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityFatherCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverLastName.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.fatherCaregiverLastName.referenceType}" title="Reference Type">
+          <option th:value="'ID'" th:text="'ID'"></option>
+          <option th:value="'CODE'" th:text="'Unique Code'"></option>
+          <option th:value="'NAME'" th:text="'Unique Name'"></option>
+        </select>
+        <input id="trackedEntityFatherCaregiverLastNameRefValue" type="text" th:field="*{trackedEntitySetup.fatherCaregiverLastName.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+      </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName.referenceValue}" class="error">Error</p>
+      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverPhone.enabled}" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.fatherCaregiverPhone.referenceType}" title="Reference Type">
+          <option th:value="'ID'" th:text="'ID'"></option>
+          <option th:value="'CODE'" th:text="'Unique Code'"></option>
+          <option th:value="'NAME'" th:text="'Unique Name'"></option>
+        </select>
+        <input id="trackedEntityFatherCaregiverPhoneRefValue" type="text" th:field="*{trackedEntitySetup.fatherCaregiverPhone.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+      </p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverPhone')}" th:errors="*{trackedEntitySetup.fatherCaregiverPhone}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverPhone.referenceType')}" th:errors="*{trackedEntitySetup.fatherCaregiverPhone.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverPhone.referenceValue')}" th:errors="*{trackedEntitySetup.fatherCaregiverPhone.referenceValue}" class="error">Error</p>
     </div>
 
     <div style="margin-top: 40px">

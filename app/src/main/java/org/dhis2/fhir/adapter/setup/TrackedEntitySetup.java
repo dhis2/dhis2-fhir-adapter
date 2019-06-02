@@ -54,7 +54,7 @@ public class TrackedEntitySetup implements Serializable
 
     @Valid
     @NotNull
-    private ReferenceSetup uniqueId = new ReferenceSetup( ReferenceType.ID, "KSr2yTdu1AI" );
+    private ReferenceSetup uniqueId = new ReferenceSetup( ReferenceType.ID, "KSr2yTdu1AI", false );
 
     @Valid
     @NotNull
@@ -70,6 +70,10 @@ public class TrackedEntitySetup implements Serializable
 
     @Valid
     @NotNull
+    private ReferenceSetup middleName = new ReferenceSetup( ReferenceType.ID, "saFac1TKvwJ" );
+
+    @Valid
+    @NotNull
     private ReferenceSetup birthDate = new ReferenceSetup( ReferenceType.ID, "BiTsLcJQ95V" );
 
     @Valid
@@ -82,15 +86,27 @@ public class TrackedEntitySetup implements Serializable
 
     @Valid
     @NotNull
-    private ReferenceSetup caregiverFirstName = new ReferenceSetup( ReferenceType.ID, "ftFBu8mHZ4H" );
+    private ReferenceSetup motherCaregiverFirstName = new ReferenceSetup( ReferenceType.ID, "ftFBu8mHZ4H" );
 
     @Valid
     @NotNull
-    private ReferenceSetup caregiverLastName = new ReferenceSetup( ReferenceType.ID, "EpbquVl5OD6" );
+    private ReferenceSetup motherCaregiverLastName = new ReferenceSetup( ReferenceType.ID, "EpbquVl5OD6" );
 
     @Valid
     @NotNull
-    private ReferenceSetup caregiverPhone = new ReferenceSetup( ReferenceType.ID, "pjexi5YaAPa" );
+    private ReferenceSetup motherCaregiverPhone = new ReferenceSetup( ReferenceType.ID, "pjexi5YaAPa" );
+
+    @Valid
+    @NotNull
+    private ReferenceSetup fatherCaregiverFirstName = new ReferenceSetup( ReferenceType.ID, "pTgaQiv4xRo" );
+
+    @Valid
+    @NotNull
+    private ReferenceSetup fatherCaregiverLastName = new ReferenceSetup( ReferenceType.ID, "ezslHxV1ybB" );
+
+    @Valid
+    @NotNull
+    private ReferenceSetup fatherCaregiverPhone = new ReferenceSetup( ReferenceType.ID, "KnQryoomh60" );
 
     public ReferenceSetup getType()
     {
@@ -142,6 +158,16 @@ public class TrackedEntitySetup implements Serializable
         this.lastName = lastName;
     }
 
+    public ReferenceSetup getMiddleName()
+    {
+        return middleName;
+    }
+
+    public void setMiddleName( ReferenceSetup middleName )
+    {
+        this.middleName = middleName;
+    }
+
     public ReferenceSetup getBirthDate()
     {
         return birthDate;
@@ -172,34 +198,64 @@ public class TrackedEntitySetup implements Serializable
         this.villageName = villageName;
     }
 
-    public ReferenceSetup getCaregiverFirstName()
+    public ReferenceSetup getMotherCaregiverFirstName()
     {
-        return caregiverFirstName;
+        return motherCaregiverFirstName;
     }
 
-    public void setCaregiverFirstName( ReferenceSetup caregiverFirstName )
+    public void setMotherCaregiverFirstName( ReferenceSetup motherCaregiverFirstName )
     {
-        this.caregiverFirstName = caregiverFirstName;
+        this.motherCaregiverFirstName = motherCaregiverFirstName;
     }
 
-    public ReferenceSetup getCaregiverLastName()
+    public ReferenceSetup getMotherCaregiverLastName()
     {
-        return caregiverLastName;
+        return motherCaregiverLastName;
     }
 
-    public void setCaregiverLastName( ReferenceSetup caregiverLastName )
+    public void setMotherCaregiverLastName( ReferenceSetup motherCaregiverLastName )
     {
-        this.caregiverLastName = caregiverLastName;
+        this.motherCaregiverLastName = motherCaregiverLastName;
     }
 
-    public ReferenceSetup getCaregiverPhone()
+    public ReferenceSetup getMotherCaregiverPhone()
     {
-        return caregiverPhone;
+        return motherCaregiverPhone;
     }
 
-    public void setCaregiverPhone( ReferenceSetup caregiverPhone )
+    public void setMotherCaregiverPhone( ReferenceSetup motherCaregiverPhone )
     {
-        this.caregiverPhone = caregiverPhone;
+        this.motherCaregiverPhone = motherCaregiverPhone;
+    }
+
+    public ReferenceSetup getFatherCaregiverFirstName()
+    {
+        return fatherCaregiverFirstName;
+    }
+
+    public void setFatherCaregiverFirstName( ReferenceSetup fatherCaregiverFirstName )
+    {
+        this.fatherCaregiverFirstName = fatherCaregiverFirstName;
+    }
+
+    public ReferenceSetup getFatherCaregiverLastName()
+    {
+        return fatherCaregiverLastName;
+    }
+
+    public void setFatherCaregiverLastName( ReferenceSetup fatherCaregiverLastName )
+    {
+        this.fatherCaregiverLastName = fatherCaregiverLastName;
+    }
+
+    public ReferenceSetup getFatherCaregiverPhone()
+    {
+        return fatherCaregiverPhone;
+    }
+
+    public void setFatherCaregiverPhone( ReferenceSetup fatherCaregiverPhone )
+    {
+        this.fatherCaregiverPhone = fatherCaregiverPhone;
     }
 
     @Nonnull
@@ -234,17 +290,29 @@ public class TrackedEntitySetup implements Serializable
         {
             setups.add( villageName.getReference() );
         }
-        if ( caregiverFirstName.isEnabled() )
+        if ( motherCaregiverFirstName.isEnabled() )
         {
-            setups.add( caregiverFirstName.getReference() );
+            setups.add( motherCaregiverFirstName.getReference() );
         }
-        if ( caregiverLastName.isEnabled() )
+        if ( motherCaregiverLastName.isEnabled() )
         {
-            setups.add( caregiverLastName.getReference() );
+            setups.add( motherCaregiverLastName.getReference() );
         }
-        if ( caregiverPhone.isEnabled() )
+        if ( motherCaregiverPhone.isEnabled() )
         {
-            setups.add( caregiverPhone.getReference() );
+            setups.add( motherCaregiverPhone.getReference() );
+        }
+        if ( fatherCaregiverFirstName.isEnabled() )
+        {
+            setups.add( fatherCaregiverFirstName.getReference() );
+        }
+        if ( fatherCaregiverLastName.isEnabled() )
+        {
+            setups.add( fatherCaregiverLastName.getReference() );
+        }
+        if ( fatherCaregiverPhone.isEnabled() )
+        {
+            setups.add( fatherCaregiverPhone.getReference() );
         }
         return setups;
     }

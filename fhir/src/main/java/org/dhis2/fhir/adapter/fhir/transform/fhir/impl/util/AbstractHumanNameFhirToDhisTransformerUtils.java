@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,18 @@ public abstract class AbstractHumanNameFhirToDhisTransformerUtils extends Abstra
         args = @ScriptMethodArg( value = "humanName", description = "The human name from which the single given name should be extracted." ),
         returnDescription = "The extracted single given name." )
     public abstract String getSingleGiven( @Nullable ICompositeType humanName );
+
+    @Nullable
+    @ScriptMethod( description = "Return the first single given name from the specified FHIR human name.",
+        args = @ScriptMethodArg( value = "humanName", description = "The human name from which the first given name should be extracted." ),
+        returnDescription = "The extracted first given name." )
+    public abstract String getFirstGiven( @Nullable ICompositeType humanName );
+
+    @Nullable
+    @ScriptMethod( description = "Return the second single given name from the specified FHIR human name.",
+        args = @ScriptMethodArg( value = "humanName", description = "The human name from which the second given name should be extracted." ),
+        returnDescription = "The extracted second given name." )
+    public abstract String getSecondGiven( @Nullable ICompositeType humanName );
 
     @Nullable
     @ScriptMethod( description = "Extracts the name of the list of names that seems to be the most appropriate name.",

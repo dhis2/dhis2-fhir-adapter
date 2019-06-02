@@ -146,7 +146,7 @@ public class SetupService
     }
 
     @Transactional
-    public SetupResult apply( @Nonnull Setup setup, @Nonnull Set<FhirResourceType> additionalFhirResourceTypes, boolean createSubscriptions, boolean verifyDhis )
+    public SetupResult apply( @Nonnull Setup setup, @Nonnull Set<FhirResourceType> additionalFhirResourceTypes, boolean useRelatedPerson, boolean createSubscriptions, boolean verifyDhis )
     {
         SetupResult setupResult = null;
         if ( !setup.isFhirRestInterfaceOnly() )
@@ -164,7 +164,7 @@ public class SetupService
                 additionalFhirResourceTypes, createSubscriptions );
             createSystemCodes( setup.getOrganizationCodeSetup(), organizationSystem );
         }
-        updateTrackedEntity( setup.getTrackedEntitySetup(), verifyDhis );
+        updateTrackedEntity( setup.getTrackedEntitySetup(), useRelatedPerson, verifyDhis );
         return setupResult;
     }
 
@@ -318,7 +318,7 @@ public class SetupService
         executableScriptArgRepository.save( scriptArg );
     }
 
-    private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup, boolean verifyDhis )
+    private void updateTrackedEntity( @Nonnull TrackedEntitySetup trackedEntitySetup, boolean useRelatedPerson, boolean verifyDhis )
     {
         if ( verifyDhis )
         {
@@ -336,13 +336,26 @@ public class SetupService
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "uniqueIdAttribute" ).setDefaultValue( trackedEntitySetup.getUniqueId().getOptionalRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "firstNameAttribute" ).setDefaultValue( trackedEntitySetup.getFirstName().getMandatoryRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "lastNameAttribute" ).setDefaultValue( trackedEntitySetup.getLastName().getMandatoryRefVal() );
+        findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "middleNameAttribute" ).setDefaultValue( trackedEntitySetup.getMiddleName().getOptionalRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "birthDateAttribute" ).setDefaultValue( trackedEntitySetup.getBirthDate().getOptionalRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "genderAttribute" ).setDefaultValue( trackedEntitySetup.getGender().getOptionalRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "addressTextAttribute" ).setDefaultValue( trackedEntitySetup.getVillageName().getOptionalRefVal() );
 
-        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personFirstNameAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverFirstName().getOptionalRefVal() );
-        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personLastNameAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverLastName().getOptionalRefVal() );
-        findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personPhoneAttribute" ).setDefaultValue( trackedEntitySetup.getCaregiverPhone().getOptionalRefVal() );
+        if ( useRelatedPerson )
+        {
+            findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personFirstNameAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverFirstName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personLastNameAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverLastName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_RELATED_PERSON_DHIS_PERSON", "personPhoneAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverPhone().getOptionalRefVal() );
+        }
+        else
+        {
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "motherFirstNameAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverFirstName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "motherLastNameAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverLastName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "motherPhoneAttribute" ).setDefaultValue( trackedEntitySetup.getMotherCaregiverPhone().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "fatherFirstNameAttribute" ).setDefaultValue( trackedEntitySetup.getFatherCaregiverFirstName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "fatherLastNameAttribute" ).setDefaultValue( trackedEntitySetup.getFatherCaregiverLastName().getOptionalRefVal() );
+            findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "fatherPhoneAttribute" ).setDefaultValue( trackedEntitySetup.getFatherCaregiverPhone().getOptionalRefVal() );
+        }
     }
 
     @Nonnull

@@ -108,7 +108,7 @@ public class MetadataSheetImportController
         catch ( Exception e )
         {
             log.error( "Error while importing metadata.", e );
-            result.addMessage( new MetadataSheetMessage( MetadataSheetMessageSeverity.FATAL, "Error while importing metadata." ) );
+            result.addMessage( new MetadataSheetMessage( MetadataSheetMessageSeverity.FATAL, "Error while importing metadata: " + e.getMessage() ) );
         }
 
         model.addAttribute( "processedSheet", true );

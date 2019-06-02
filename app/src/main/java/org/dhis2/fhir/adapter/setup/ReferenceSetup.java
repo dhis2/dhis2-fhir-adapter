@@ -64,9 +64,14 @@ public class ReferenceSetup implements Serializable
 
     public ReferenceSetup( @NotNull ReferenceType referenceType, @NotBlank @Size( max = Reference.MAX_VALUE_LENGTH ) String referenceValue )
     {
+        this( referenceType, referenceValue, true );
+    }
+
+    public ReferenceSetup( @NotNull ReferenceType referenceType, @NotBlank @Size( max = Reference.MAX_VALUE_LENGTH ) String referenceValue, boolean enabled )
+    {
         this.referenceType = referenceType;
         this.referenceValue = referenceValue;
-        this.enabled = true;
+        this.enabled = enabled;
     }
 
     public boolean isEnabled()

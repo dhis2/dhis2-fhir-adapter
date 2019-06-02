@@ -75,7 +75,7 @@ public abstract class AbstractCodeFhirToDhisTransformerUtils extends AbstractFhi
 {
     public static final String SCRIPT_ATTR_NAME = "codeUtils";
 
-    private static final List<String> GET_CODE_METHOD_NAMES = Collections.unmodifiableList( Arrays.asList( "getCode", "getVaccineCode" ) );
+    private static final List<String> GET_CODE_METHOD_NAMES = Collections.unmodifiableList( Arrays.asList( "getCode", "getVaccineCode", "getMedicationCodeableConcept" ) );
 
     private final CodeRepository codeRepository;
 

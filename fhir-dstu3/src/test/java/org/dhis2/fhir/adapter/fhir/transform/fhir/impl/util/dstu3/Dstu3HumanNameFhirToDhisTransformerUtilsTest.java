@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,34 @@ public class Dstu3HumanNameFhirToDhisTransformerUtilsTest
     public void before()
     {
         utils = new Dstu3HumanNameFhirToDhisTransformerUtils( scriptExecutionContext, dateTimeFhirToDhisTransformerUtils );
+    }
+
+    @Test
+    public void firstGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).addGiven( "Francis" ).addGiven( "Alice" ).setFamily( "Lobster" );
+        Assert.assertEquals( "Peter", utils.getFirstGiven( humanName ) );
+    }
+
+    @Test
+    public void noFirstGiven()
+    {
+        final HumanName humanName = new HumanName().setFamily( "Lobster" );
+        Assert.assertNull( utils.getFirstGiven( humanName ) );
+    }
+
+    @Test
+    public void secondGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).addGiven( "Francis" ).addGiven( "Alice" ).setFamily( "Lobster" );
+        Assert.assertEquals( "Francis", utils.getSecondGiven( humanName ) );
+    }
+
+    @Test
+    public void noSecondGiven()
+    {
+        final HumanName humanName = new HumanName().addGiven( "Peter" ).setFamily( "Lobster" );
+        Assert.assertNull( utils.getSecondGiven( humanName ) );
     }
 
     @Test

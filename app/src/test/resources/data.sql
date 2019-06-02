@@ -439,6 +439,10 @@ INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandat
 VALUES ('ae13ceca86d74f608d5425587d53a5bd', 0, 'ea8879435e944e319441c7661fe1063e',
 'addressTextAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, 'ID:Y0i71Y6CVdy',
 'The reference of the tracked entity attribute that contains as most as possible from the address of the Person.');
+INSERT INTO fhir_script_argument(id, version, script_id, name, data_type, mandatory, default_value, description)
+VALUES ('4a156bee59354bcc80b8e944a08a2988', 0, 'ea8879435e944e319441c7661fe1063e',
+'middleNameAttribute', 'TRACKED_ENTITY_ATTRIBUTE_REF', FALSE, NULL,
+'The reference of the tracked entity attribute that contains the middle name of the Person.');
 INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('b2cfaf306ede41f2bd6c448e76c429a1', 0, 'ea8879435e944e319441c7661fe1063e',
 'output.setOptionalValue(args[''uniqueIdAttribute''], output.getIdentifier());
 output.setValue(args[''lastNameAttribute''], humanNameUtils.getPrimaryName(input.name).family, context.getFhirRequest().getLastUpdated());

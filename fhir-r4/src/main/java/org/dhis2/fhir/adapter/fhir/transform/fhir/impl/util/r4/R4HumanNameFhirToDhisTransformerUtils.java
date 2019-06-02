@@ -83,6 +83,28 @@ public class R4HumanNameFhirToDhisTransformerUtils extends AbstractHumanNameFhir
 
     @Override
     @Nullable
+    public String getFirstGiven( @Nullable ICompositeType humanName )
+    {
+        if ( ( humanName == null ) || ( (HumanName) humanName ).getGiven().isEmpty() )
+        {
+            return null;
+        }
+        return ( (HumanName) humanName ).getGiven().stream().findFirst().map( PrimitiveType::getValue ).orElse( null );
+    }
+
+    @Nullable
+    @Override
+    public String getSecondGiven( @Nullable ICompositeType humanName )
+    {
+        if ( ( humanName == null ) || ( (HumanName) humanName ).getGiven().isEmpty() )
+        {
+            return null;
+        }
+        return ( (HumanName) humanName ).getGiven().stream().skip( 1 ).findFirst().map( PrimitiveType::getValue ).orElse( null );
+    }
+
+    @Override
+    @Nullable
     public HumanName getPrimaryName( @Nonnull List<? extends ICompositeType> names )
     {
         return getOptionalPrimaryName( names ).orElse( new HumanName() );
