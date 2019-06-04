@@ -134,7 +134,7 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
     public MetadataImportResult imp( @Nonnull JsonNode jsonNode, @Nonnull MetadataImportParams params )
     {
         final MetadataImportResult result = new MetadataImportResult();
-        final MetadataImportContext context = new MetadataImportContext( result );
+        final MetadataImportContext context = new MetadataImportContext( params, result );
         final MetadataExport metadataExport;
 
         if ( jsonNode instanceof ObjectNode )

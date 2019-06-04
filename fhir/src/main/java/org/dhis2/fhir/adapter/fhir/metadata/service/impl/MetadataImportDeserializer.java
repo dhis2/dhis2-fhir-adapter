@@ -35,7 +35,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeMetadata;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ContainedMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptMetadata;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportMessage;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportSeverity;
 import org.dhis2.fhir.adapter.model.Metadata;
@@ -125,7 +127,7 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
             return metadata;
         }
 
-        final Metadata metadata = (Metadata) defaultDeserializer.deserialize( p, ctxt );
+        Metadata metadata = (Metadata) defaultDeserializer.deserialize( p, ctxt );
 
         if ( metadata == null )
         {
@@ -152,6 +154,17 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
 
         if ( metadata.getId() != null )
         {
+            if ( isNoUpdate( importContext, metadata ) )
+            {
+                final Metadata existingMetadata = metadataImportResolver.resolve( (Class<? extends Metadata>) handledType(), metadata.getId() );
+
+                if ( existingMetadata != null )
+                {
+                    // existing metadata must not be updated
+                    metadata = existingMetadata;
+                }
+            }
+
             final MetadataKey metadataKey = new MetadataKey( handledType(), metadata.getId() );
 
             if ( cache.put( metadataKey, metadata ) != null )
@@ -169,4 +182,13 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
         ( (ResolvableDeserializer) defaultDeserializer ).resolve( ctxt );
     }
 
+    protected boolean isNoUpdate( @Nonnull MetadataImportContext importContext, @Nonnull Metadata metadata )
+    {
+        if ( !importContext.getImportParams().isUpdateCodes() && metadata instanceof CodeMetadata )
+        {
+            return true;
+        }
+
+        return !importContext.getImportParams().isUpdateScripts() && metadata instanceof ScriptMetadata;
+    }
 }

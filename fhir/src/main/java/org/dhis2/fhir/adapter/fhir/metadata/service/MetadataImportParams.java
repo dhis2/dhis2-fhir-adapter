@@ -41,6 +41,10 @@ public class MetadataImportParams implements Serializable
 
     private boolean includeResourceMappings;
 
+    private boolean updateCodes;
+
+    private boolean updateScripts;
+
     public boolean isIncludeResourceMappings()
     {
         return includeResourceMappings;
@@ -49,5 +53,25 @@ public class MetadataImportParams implements Serializable
     public void setIncludeResourceMappings( boolean includeResourceMappings )
     {
         this.includeResourceMappings = includeResourceMappings;
+    }
+
+    public boolean isUpdateCodes()
+    {
+        return updateCodes;
+    }
+
+    public void setUpdateCodes( boolean updateCodes )
+    {
+        this.updateCodes = updateCodes;
+    }
+
+    public boolean isUpdateScripts()
+    {
+        return updateScripts;
+    }
+
+    public void setUpdateScripts( boolean updateScripts )
+    {
+        this.updateScripts = updateScripts;
     }
 }

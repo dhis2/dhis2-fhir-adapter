@@ -106,10 +106,14 @@ public class MetadataRestController
     @Nonnull
     @RequestMapping( method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     public ResponseEntity<MetadataImportResult> imp( @RequestBody @Nonnull JsonNode jsonNode,
-        @RequestParam( name = "includeResourceMappings", required = false, defaultValue = "false" ) boolean includeResourceMappings )
+        @RequestParam( name = "includeResourceMappings", required = false, defaultValue = "false" ) boolean includeResourceMappings,
+        @RequestParam( name = "updateCodes", required = false, defaultValue = "false" ) boolean updateCodes,
+        @RequestParam( name = "updateScripts", required = false, defaultValue = "false" ) boolean updateScripts )
     {
         final MetadataImportParams params = new MetadataImportParams();
         params.setIncludeResourceMappings( includeResourceMappings );
+        params.setUpdateCodes( updateCodes );
+        params.setUpdateScripts( updateScripts );
 
         MetadataImportResult result;
         try

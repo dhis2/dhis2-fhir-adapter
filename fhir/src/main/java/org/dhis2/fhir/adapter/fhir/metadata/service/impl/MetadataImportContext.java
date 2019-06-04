@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.service.impl;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportMessage;
+import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportParams;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportResult;
 
 import javax.annotation.Nonnull;
@@ -45,11 +46,20 @@ public class MetadataImportContext implements Serializable
 
     public static final String ATTR_NAME = "metadataImportContext";
 
+    private final MetadataImportParams importParams;
+
     private final MetadataImportResult importResult;
 
-    public MetadataImportContext( @Nonnull MetadataImportResult importResult )
+    public MetadataImportContext( @Nonnull MetadataImportParams importParams, @Nonnull MetadataImportResult importResult )
     {
+        this.importParams = importParams;
         this.importResult = importResult;
+    }
+
+    @Nonnull
+    public MetadataImportParams getImportParams()
+    {
+        return importParams;
     }
 
     public void add( @Nonnull MetadataImportMessage message )
