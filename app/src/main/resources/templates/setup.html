@@ -169,6 +169,7 @@
       updateTrackedEntityAttr( 'uniqueId', false, 'NAME', '' );
       updateTrackedEntityAttr( 'patientId', true, 'NAME', '' );
       updateTrackedEntityAttr( 'firstName', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'middleName', false, 'NAME', '' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', '' );
       updateTrackedEntityAttr( 'birthDate', false, 'NAME', '' );
       updateTrackedEntityAttr( 'gender', false, 'NAME', '' );
@@ -186,6 +187,7 @@
       updateTrackedEntityAttr( 'uniqueId', false, 'ID', 'KSr2yTdu1AI' );
       updateTrackedEntityAttr( 'patientId', true, 'ID', 'Ewi7FUfcHAD' );
       updateTrackedEntityAttr( 'firstName', true, 'ID', 'TfdH5KvFmMy' );
+      updateTrackedEntityAttr( 'middleName', true, 'ID', 'saFac1TKvwJ' );
       updateTrackedEntityAttr( 'lastName', true, 'ID', 'aW66s2QSosT' );
       updateTrackedEntityAttr( 'birthDate', true, 'ID', 'BiTsLcJQ95V' );
       updateTrackedEntityAttr( 'gender', true, 'ID', 'CklPZdOd6H1' );
@@ -203,6 +205,7 @@
       updateTrackedEntityAttr( 'uniqueId', false, 'CODE', '' );
       updateTrackedEntityAttr( 'patientId', true, 'NAME', 'National identifier' );
       updateTrackedEntityAttr( 'firstName', true, 'CODE', 'MMD_PER_NAM' );
+      updateTrackedEntityAttr( 'middleName', false, 'NAME', '' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', 'Last name' );
       updateTrackedEntityAttr( 'birthDate', true, 'CODE', 'MMD_PER_DOB' );
       updateTrackedEntityAttr( 'gender', true, 'NAME', 'Gender' );
@@ -454,7 +457,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceType')}" th:errors="*{trackedEntitySetup.lastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.lastName.referenceValue')}" th:errors="*{trackedEntitySetup.lastName.referenceValue}" class="error">Error</p>
       <p><label for="trackedEntityMiddleNameRefValue" style="width: 180px">Person's middle name:</label>
-        <input type="checkbox" th:field="*{trackedEntitySetup.middleName.enabled}" disabled="disabled" title="Enabled"/>
+        <input type="checkbox" th:field="*{trackedEntitySetup.middleName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.middleName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
           <option th:value="'CODE'" th:text="'Unique Code'"></option>
