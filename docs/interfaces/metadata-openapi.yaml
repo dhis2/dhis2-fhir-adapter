@@ -52,6 +52,26 @@ paths:
               type: string
               format: uri
         - in: query
+          name: includeTrackedEntities
+          description: |
+            Specifies if tracked entity mappings should be included in the export.
+            Tracked entity mappings require often profiling and should normally
+            not overridden on other systems.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: includeResourceMappings
+          description: |
+            Specifies if resource mappings should be included in the export.
+            Resource mappings require often profiling and should normally not
+            overridden on other systems.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
           name: download
           description: |
             Specifies if the resulting metadata should be offered as a file

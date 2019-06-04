@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.model.Metadata;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -57,7 +56,7 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_executable_script_argument" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class ExecutableScriptArg implements Serializable, Metadata<UUID>
+public class ExecutableScriptArg implements Serializable, ContainedMetadata, ScriptMetadata
 {
     private static final long serialVersionUID = 487628755797899218L;
 

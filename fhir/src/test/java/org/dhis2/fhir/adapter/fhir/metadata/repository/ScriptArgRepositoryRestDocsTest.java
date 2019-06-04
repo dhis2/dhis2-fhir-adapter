@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ public class ScriptArgRepositoryRestDocsTest extends AbstractJpaRepositoryRestDo
             .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
-            .andExpect( jsonPath( "name", is( "weightUnit" ) ) )
+            .andExpect( jsonPath( "name", is( "otherWeightUnit" ) ) )
             .andExpect( jsonPath( "description", is( "The resulting weight unit in which the value will be set on the data element." ) ) )
             .andExpect( jsonPath( "dataType", is( "WEIGHT_UNIT" ) ) )
             .andExpect( jsonPath( "array", is( false ) ) )

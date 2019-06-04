@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * {@link MetadataObjectContainer} for specific metadata object types.
@@ -48,18 +47,21 @@ public class TypedMetadataObjectContainer implements Serializable
 {
     private static final long serialVersionUID = -2050553626102331995L;
 
-    private final Map<Class<? extends Metadata>, MetadataObjectContainer<Metadata<UUID>>> typedContainers = new HashMap<>();
+    private final Map<Class<? extends Metadata>, MetadataObjectContainer<Metadata>> typedContainers = new HashMap<>();
 
-    public boolean addObject( @Nonnull Metadata<UUID> metadata )
+    public boolean addObject( @Nonnull Metadata metadata )
     {
-        @SuppressWarnings( "unchecked" ) final Metadata<UUID> unproxiedMetadata = (Metadata<UUID>) Hibernate.unproxy( metadata );
+        final Metadata unproxiedMetadata = (Metadata) Hibernate.unproxy( metadata );
 
         return getContainer( unproxiedMetadata.getClass() ).addObject( unproxiedMetadata );
     }
 
-    public void addObjects( @Nonnull Collection<? extends Metadata<UUID>> metadata )
+    public void addObjects( @Nonnull Collection<? extends Metadata> metadata )
     {
-        metadata.forEach( this::addObject );
+        if ( !metadata.isEmpty() )
+        {
+            metadata.forEach( this::addObject );
+        }
     }
 
     @Nonnull
@@ -69,7 +71,7 @@ public class TypedMetadataObjectContainer implements Serializable
     }
 
     @Nonnull
-    public MetadataObjectContainer<Metadata<UUID>> getContainer( @Nonnull Class<? extends Metadata> metadataType )
+    public MetadataObjectContainer<Metadata> getContainer( @Nonnull Class<? extends Metadata> metadataType )
     {
         return typedContainers.computeIfAbsent( metadataType, key -> new MetadataObjectContainer<>() );
     }

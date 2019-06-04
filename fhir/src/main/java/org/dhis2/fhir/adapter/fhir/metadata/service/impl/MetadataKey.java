@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.metadata.service.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,63 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Metadata;
-import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.security.access.prepost.PreAuthorize;
-
 import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
- * Base repository interface that returns the entity class
+ * Key of metadata.
  *
- * @param <T> the concrete type of the entity.
  * @author volsch
  */
-public interface AdapterRepository<T extends Metadata>
+class MetadataKey implements Serializable
 {
+    private static final long serialVersionUID = 5442471871834120058L;
+
+    private final Class<?> metadataClass;
+
+    private final UUID id;
+
+    public MetadataKey( @Nonnull Class<?> metadataClass, @Nonnull UUID id )
+    {
+        this.metadataClass = metadataClass;
+        this.id = id;
+    }
+
     @Nonnull
-    @RestResource( exported = false )
-    @PreAuthorize( "true" )
-    Class<T> getEntityType();
+    public Class<?> getMetadataClass()
+    {
+        return metadataClass;
+    }
+
+    @Nonnull
+    public UUID getId()
+    {
+        return id;
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        MetadataKey that = (MetadataKey) o;
+
+        return getMetadataClass().equals( that.getMetadataClass() ) && getId().equals( that.getId() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( getMetadataClass(), getId() );
+    }
 }

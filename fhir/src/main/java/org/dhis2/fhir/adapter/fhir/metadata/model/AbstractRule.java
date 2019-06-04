@@ -100,7 +100,7 @@ import java.util.List;
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
 } )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>
+public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>, NamedMetadata
 {
     private static final long serialVersionUID = 3426378271314934021L;
 
@@ -415,7 +415,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     }
 
     @JsonCacheIgnore
-    @OneToMany( mappedBy = "rule", cascade = CascadeType.ALL )
+    @OneToMany( mappedBy = "rule", orphanRemoval = true, cascade = CascadeType.ALL )
     @BatchSize( size = 100 )
     public List<RuleDhisDataReference> getDhisDataReferences()
     {

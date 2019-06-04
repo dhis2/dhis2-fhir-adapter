@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ public class ConstantRepositoryTest extends AbstractJpaRepositoryTest
         entity.setCode( "GENDER_MALE" );
         mockMvc.perform( MockMvcRequestBuilders.post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( objectMapper.writeValueAsString( entity ) ) )
-            .andExpect( status().isConflict() ).andExpect( jsonPath( "message", Matchers.is( "The specified code does already exist." ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].message", Matchers.is( "Code must be unique." ) ) );
     }
 
     @Test
@@ -80,6 +80,6 @@ public class ConstantRepositoryTest extends AbstractJpaRepositoryTest
         entity.setName( "Gender Male" );
         mockMvc.perform( MockMvcRequestBuilders.post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( objectMapper.writeValueAsString( entity ) ) )
-            .andExpect( status().isConflict() ).andExpect( jsonPath( "message", Matchers.is( "The specified name does already exist." ) ) );
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].message", Matchers.is( "Name must be unique." ) ) );
     }
 }

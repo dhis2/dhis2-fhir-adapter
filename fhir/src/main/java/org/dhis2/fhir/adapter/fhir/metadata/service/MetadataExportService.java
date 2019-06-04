@@ -40,5 +40,5 @@ import javax.annotation.Nonnull;
 public interface MetadataExportService
 {
     @Nonnull
-    JsonNode export( @Nonnull MetadataExportParams params );
+    JsonNode exp( @Nonnull MetadataExportParams params );
 }

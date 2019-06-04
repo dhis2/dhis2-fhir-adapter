@@ -42,14 +42,21 @@ import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link AbstractRule}.
  *
+ * @param <M> the concrete type of the metadata.
  * @author volsch
  */
-public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
+public abstract class AbstractBeforeCreateSaveRuleValidator<M extends AbstractRule> extends AbstractBeforeCreateSaveValidator<M> implements Validator
 {
+    protected AbstractBeforeCreateSaveRuleValidator( @Nonnull Class<M> metadataClass, @Nonnull EntityManager entityManager )
+    {
+        super( metadataClass, entityManager );
+    }
+
     protected void validate( Object target, @Nonnull TransformDataType transformDataType, @Nonnull Errors errors )
     {
         final AbstractRule rule = (AbstractRule) target;
@@ -78,6 +85,11 @@ public abstract class AbstractBeforeCreateSaveRuleValidator implements Validator
             int index = 0;
             for ( RuleDhisDataReference dataReference : rule.getDhisDataReferences() )
             {
+                if ( dataReference.getRule() == null )
+                {
+                    dataReference.setRule( rule );
+                }
+
                 errors.pushNestedPath( "dataReferences[" + index + "]" );
                 if ( (dataReference.getRule() != null) && (dataReference.getRule() != rule) )
                 {

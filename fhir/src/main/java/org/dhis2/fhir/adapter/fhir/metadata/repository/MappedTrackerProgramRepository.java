@@ -57,7 +57,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "mappedProgram" )
 @RepositoryRestResource( path = "trackerPrograms", collectionResourceRel = "trackerPrograms", itemResourceRel = "trackerProgram" )
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>, AdapterRepository<MappedTrackerProgram>
+public interface MappedTrackerProgramRepository extends JpaRepository<MappedTrackerProgram, UUID>, QuerydslPredicateExecutor<MappedTrackerProgram>, MetadataRepository<MappedTrackerProgram>
 {
     @Nonnull
     @Override

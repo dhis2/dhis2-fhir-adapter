@@ -40,6 +40,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,7 +53,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "codeSet" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface CodeSetRepository extends JpaRepository<CodeSet, UUID>, QuerydslPredicateExecutor<CodeSet>, AdapterRepository<CodeSet>
+public interface CodeSetRepository extends JpaRepository<CodeSet, UUID>, QuerydslPredicateExecutor<CodeSet>, MetadataRepository<CodeSet>
 {
     @Nonnull
     @Override
@@ -67,6 +68,10 @@ public interface CodeSetRepository extends JpaRepository<CodeSet, UUID>, Queryds
     @RestResource( exported = false )
     @Cacheable( key = "{#root.methodName, #a0}" )
     Optional<CodeSet> findOneByCode( @Nonnull String code );
+
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<CodeSet> findAllByCode( @Nonnull Collection<String> codes );
 
     @Override
     @Nonnull

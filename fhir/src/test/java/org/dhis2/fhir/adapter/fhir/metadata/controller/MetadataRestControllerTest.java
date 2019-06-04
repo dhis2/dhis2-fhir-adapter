@@ -68,61 +68,67 @@ public class MetadataRestControllerTest
     @Test
     public void getWithoutParameters()
     {
-        Mockito.when( metadataExportService.export( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
+        Mockito.when( metadataExportService.exp( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
             final MetadataExportParams params = invocation.getArgument( 0 );
             Assert.assertNotNull( params );
             Assert.assertTrue( params.getTrackerProgramIds().isEmpty() );
             Assert.assertTrue( params.getExcludedSystemUris().isEmpty() );
+            Assert.assertFalse( params.isIncludeTrackedEntities() );
+            Assert.assertFalse( params.isIncludeResourceMappings() );
             return JsonNodeFactory.instance.textNode( "Test1" );
         } );
 
         final ResponseEntity<JsonNode> responseEntity = metadataRestController.exp(
-            null, null, false );
+            null, null, false, false, false );
 
         Assert.assertEquals( HttpStatus.OK, responseEntity.getStatusCode() );
         Assert.assertTrue( responseEntity.getHeaders().isEmpty() );
         Assert.assertEquals( JsonNodeFactory.instance.textNode( "Test1" ), responseEntity.getBody() );
 
-        Mockito.verify( metadataExportService ).export( Mockito.notNull() );
+        Mockito.verify( metadataExportService ).exp( Mockito.notNull() );
     }
 
     @Test
     public void getWithArrayParameters()
     {
-        Mockito.when( metadataExportService.export( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
+        Mockito.when( metadataExportService.exp( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
             final MetadataExportParams params = invocation.getArgument( 0 );
             Assert.assertNotNull( params );
             Assert.assertThat( params.getTrackerProgramIds(),
                 Matchers.containsInAnyOrder( UUID.fromString( "ef1561ae-c564-47b2-88f2-069f9637ae98" ), UUID.fromString( "515a0e80-3d02-4c41-83d9-6de1a6037b5e" ), UUID.fromString( "8912318e-9805-4be4-87b0-5306a98be334" ) ) );
             Assert.assertThat( params.getExcludedSystemUris(),
                 Matchers.containsInAnyOrder( "http://loing.org", "http://snomedct.org" ) );
+            Assert.assertFalse( params.isIncludeTrackedEntities() );
+            Assert.assertFalse( params.isIncludeResourceMappings() );
             return JsonNodeFactory.instance.textNode( "Test1" );
         } );
 
         final ResponseEntity<JsonNode> responseEntity = metadataRestController.exp(
             Arrays.asList( UUID.fromString( "ef1561ae-c564-47b2-88f2-069f9637ae98" ), UUID.fromString( "515a0e80-3d02-4c41-83d9-6de1a6037b5e" ), UUID.fromString( "8912318e-9805-4be4-87b0-5306a98be334" ) ),
-            Arrays.asList( "http://loing.org", "http://snomedct.org" ), false );
+            Arrays.asList( "http://loing.org", "http://snomedct.org" ), false, false, false );
 
         Assert.assertEquals( HttpStatus.OK, responseEntity.getStatusCode() );
         Assert.assertTrue( responseEntity.getHeaders().isEmpty() );
         Assert.assertEquals( JsonNodeFactory.instance.textNode( "Test1" ), responseEntity.getBody() );
 
-        Mockito.verify( metadataExportService ).export( Mockito.notNull() );
+        Mockito.verify( metadataExportService ).exp( Mockito.notNull() );
     }
 
     @Test
     public void getParametersDownload()
     {
-        Mockito.when( metadataExportService.export( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
+        Mockito.when( metadataExportService.exp( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
             final MetadataExportParams params = invocation.getArgument( 0 );
             Assert.assertNotNull( params );
             Assert.assertTrue( params.getTrackerProgramIds().isEmpty() );
             Assert.assertTrue( params.getExcludedSystemUris().isEmpty() );
+            Assert.assertFalse( params.isIncludeTrackedEntities() );
+            Assert.assertFalse( params.isIncludeResourceMappings() );
             return JsonNodeFactory.instance.textNode( "Test1" );
         } );
 
         final ResponseEntity<JsonNode> responseEntity = metadataRestController.exp(
-            null, null, true );
+            null, null, false, false, true );
 
         Assert.assertEquals( HttpStatus.OK, responseEntity.getStatusCode() );
         Assert.assertEquals( 1, responseEntity.getHeaders().size() );
@@ -130,6 +136,52 @@ public class MetadataRestControllerTest
             responseEntity.getHeaders().getFirst( HttpHeaders.CONTENT_DISPOSITION ) );
         Assert.assertEquals( JsonNodeFactory.instance.textNode( "Test1" ), responseEntity.getBody() );
 
-        Mockito.verify( metadataExportService ).export( Mockito.notNull() );
+        Mockito.verify( metadataExportService ).exp( Mockito.notNull() );
+    }
+
+    @Test
+    public void getParametersIncludeResourceMappings()
+    {
+        Mockito.when( metadataExportService.exp( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
+            final MetadataExportParams params = invocation.getArgument( 0 );
+            Assert.assertNotNull( params );
+            Assert.assertTrue( params.getTrackerProgramIds().isEmpty() );
+            Assert.assertTrue( params.getExcludedSystemUris().isEmpty() );
+            Assert.assertFalse( params.isIncludeTrackedEntities() );
+            Assert.assertTrue( params.isIncludeResourceMappings() );
+            return JsonNodeFactory.instance.textNode( "Test1" );
+        } );
+
+        final ResponseEntity<JsonNode> responseEntity = metadataRestController.exp(
+            null, null, false, true, false );
+
+        Assert.assertEquals( HttpStatus.OK, responseEntity.getStatusCode() );
+        Assert.assertNull( responseEntity.getHeaders().getFirst( HttpHeaders.CONTENT_DISPOSITION ) );
+        Assert.assertEquals( JsonNodeFactory.instance.textNode( "Test1" ), responseEntity.getBody() );
+
+        Mockito.verify( metadataExportService ).exp( Mockito.notNull() );
+    }
+
+    @Test
+    public void getParametersIncludeTrackedEntities()
+    {
+        Mockito.when( metadataExportService.exp( Mockito.notNull() ) ).thenAnswer( (Answer<JsonNode>) invocation -> {
+            final MetadataExportParams params = invocation.getArgument( 0 );
+            Assert.assertNotNull( params );
+            Assert.assertTrue( params.getTrackerProgramIds().isEmpty() );
+            Assert.assertTrue( params.getExcludedSystemUris().isEmpty() );
+            Assert.assertTrue( params.isIncludeTrackedEntities() );
+            Assert.assertTrue( params.isIncludeResourceMappings() );
+            return JsonNodeFactory.instance.textNode( "Test1" );
+        } );
+
+        final ResponseEntity<JsonNode> responseEntity = metadataRestController.exp(
+            null, null, true, true, false );
+
+        Assert.assertEquals( HttpStatus.OK, responseEntity.getStatusCode() );
+        Assert.assertNull( responseEntity.getHeaders().getFirst( HttpHeaders.CONTENT_DISPOSITION ) );
+        Assert.assertEquals( JsonNodeFactory.instance.textNode( "Test1" ), responseEntity.getBody() );
+
+        Mockito.verify( metadataExportService ).exp( Mockito.notNull() );
     }
 }

@@ -1,6 +1,6 @@
 {
   "script": "$scriptId",
-  "name": "weightUnit",
+  "name": "otherWeightUnit",
   "description": "The resulting weight unit in which the value will be set on the data element.",
   "dataType": "WEIGHT_UNIT",
   "mandatory": true,

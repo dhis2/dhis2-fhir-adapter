@@ -34,9 +34,9 @@ import org.dhis2.fhir.adapter.script.ScriptCompilationException;
 import org.dhis2.fhir.adapter.script.ScriptEvaluator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link ScriptSource}.
@@ -44,26 +44,19 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveScriptSourceValidator implements Validator
+public class BeforeCreateSaveScriptSourceValidator extends AbstractBeforeCreateSaveValidator<ScriptSource> implements MetadataValidator<ScriptSource>
 {
     private final ScriptEvaluator scriptEvaluator;
 
-    public BeforeCreateSaveScriptSourceValidator( @Nonnull ScriptEvaluator scriptEvaluator )
+    public BeforeCreateSaveScriptSourceValidator( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull EntityManager entityManager )
     {
+        super( ScriptSource.class, entityManager );
         this.scriptEvaluator = scriptEvaluator;
     }
 
     @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public void doValidate( @Nonnull ScriptSource scriptSource, @Nonnull Errors errors )
     {
-        return ScriptSource.class.isAssignableFrom( clazz );
-    }
-
-    @Override
-    public void validate( Object target, @Nonnull Errors errors )
-    {
-        final ScriptSource scriptSource = (ScriptSource) target;
-
         if ( scriptSource.getScript() == null )
         {
             errors.rejectValue( "script", "ScriptSource.script.null", "Script is mandatory." );

@@ -52,7 +52,7 @@ import java.io.Serializable;
 @Entity
 @Table( name = "fhir_tracker_program_stage" )
 @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-public class MappedTrackerProgramStage extends VersionedBaseMetadata implements Serializable
+public class MappedTrackerProgramStage extends VersionedBaseMetadata implements Serializable, NamedMetadata
 {
     private static final long serialVersionUID = 7561285892767275117L;
 

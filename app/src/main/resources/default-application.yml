@@ -96,6 +96,11 @@ spring:
     # Specifies if SQL statement should be output. This should normally
     # be disabled and should not be changed.
     show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+        order_inserts: true
 
 management:
   health:

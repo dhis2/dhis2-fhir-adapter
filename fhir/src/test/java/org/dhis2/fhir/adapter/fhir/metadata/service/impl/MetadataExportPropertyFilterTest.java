@@ -42,15 +42,21 @@ import org.dhis2.fhir.adapter.model.Metadata;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import javax.annotation.Nonnull;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -73,16 +79,34 @@ public class MetadataExportPropertyFilterTest
 
     private SimpleFilterProvider filterProvider;
 
+    private TestReference testReferenceOther1;
+
+    private TestReference testReferenceOther2;
+
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
+        testReferenceOther1 = new TestReference();
+        testReferenceOther1.setId( UUID.fromString( "ad645806-e873-46f0-9797-87400357f544" ) );
+        testReferenceOther1.setValue( "Reference testReferenceOther2" );
+
+        testReferenceOther2 = new TestReference();
+        testReferenceOther2.setId( UUID.fromString( "65d58fdb-f2b3-2dc3-bd89-6d33abb047dd" ) );
+        testReferenceOther2.setValue( "Reference x2" );
+
+        params.setIncludeResourceMappings( true );
+
         mapper.disable( FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS );
         mapper.disable( WRITE_DATES_AS_TIMESTAMPS );
 
         filterProvider = new SimpleFilterProvider()
             .addFilter( AdapterBeanPropertyFilter.FILTER_NAME,
                 new MetadataExportPropertyFilter( params,
-                    new HashSet<>( Arrays.<Class<? extends Metadata>>asList( TestRelation.class, TestReference.class, CodeSet.class, Code.class, System.class, SystemCode.class ) ), container ) );
+                    new HashSet<>( Arrays.asList( TestRelation.class, TestReference.class, CodeSet.class, Code.class, System.class, SystemCode.class ) ), container,
+                    Collections.singletonList( new TestReferenceExportDependencyResolver() ) ) );
     }
 
     @Test
@@ -93,7 +117,7 @@ public class MetadataExportPropertyFilterTest
         bean.setValue( "Test Other" );
 
         final String json = mapper.writerFor( TestOther.class ).with( filterProvider ).writeValueAsString( bean );
-        JSONAssert.assertEquals( "{\"value\":\"Test Other\"}", json, true );
+        JSONAssert.assertEquals( "{\"id\":\"a03ab584-7d8f-48cf-a449-a759b404c9f3\",\"value\":\"Test Other\"}", json, true );
     }
 
     @Test
@@ -163,12 +187,12 @@ public class MetadataExportPropertyFilterTest
         relation.setManyToManyInverse( Arrays.asList( reference10, reference11 ) );
 
         final String json = mapper.writerFor( TestRelation.class ).with( filterProvider ).writeValueAsString( relation );
-        JSONAssert.assertEquals( "{\"manyToMany\":[\"530de64f-e4bd-47ed-bbb1-3c18e159cdca\",\"ad645806-e973-46f0-9797-87400357f544\"],\"manyToMany2\":[\"5f48f92c-7b3a-48c3-9496-1a2dac6333a5\",\"fbc37401-27c3-4182-a509-cfc676c0b28d\"]," +
-            "\"oneToOne\":\"906096b4-4dd9-4afa-88e4-cf08f23f02d9\",\"manyToOne\":\"65d58fdb-f2b3-4dc3-bd89-6d33abb047dd\",\"manyToOneNull\":null}", json, true );
+        JSONAssert.assertEquals( "{\"id\":\"174211c4-22ce-4099-b17a-33e90a516b95\",\"manyToMany\":[\"530de64f-e4bd-47ed-bbb1-3c18e159cdca\",\"ad645806-e973-46f0-9797-87400357f544\"],\"manyToMany2\":[\"5f48f92c-7b3a-48c3-9496-1a2dac6333a5\"," +
+            "\"fbc37401-27c3-4182-a509-cfc676c0b28d\"],\"oneToOne\":\"906096b4-4dd9-4afa-88e4-cf08f23f02d9\",\"manyToOne\":\"65d58fdb-f2b3-4dc3-bd89-6d33abb047dd\",\"manyToOneNull\":null}", json, true );
 
         Assert.assertThat( container.getContainer( TestReference.class ).getObjects(),
             Matchers.containsInAnyOrder( reference1, reference2, reference3, reference4, reference5, reference6,
-                reference7, reference8, reference9, reference10, reference11, reference12, reference13 ) );
+                reference7, reference8, reference9, reference10, reference11, reference12, reference13, testReferenceOther1, testReferenceOther2 ) );
     }
 
     @Test
@@ -237,7 +261,7 @@ public class MetadataExportPropertyFilterTest
     }
 
     @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-    public static class TestRelation implements Metadata<UUID>
+    public static class TestRelation implements Metadata
     {
         private static final long serialVersionUID = 2857188723010993874L;
 
@@ -382,7 +406,7 @@ public class MetadataExportPropertyFilterTest
     }
 
     @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-    public static class TestReference implements Metadata<UUID>
+    public static class TestReference implements Metadata
     {
         private static final long serialVersionUID = 5656419237823962434L;
 
@@ -415,6 +439,32 @@ public class MetadataExportPropertyFilterTest
         public String toString()
         {
             return "TestReference{id=" + id + '}';
+        }
+    }
+
+    protected class TestReferenceExportDependencyResolver implements MetadataExportDependencyResolver
+    {
+        @Override
+        public boolean supports( @Nonnull Class<? extends Metadata> metadataClass )
+        {
+            return TestReference.class.isAssignableFrom( metadataClass );
+        }
+
+        @Nonnull
+        @Override
+        public Collection<? extends Metadata> resolveAdditionalDependencies( @Nonnull Metadata metadata )
+        {
+            if ( UUID.fromString( "ad645806-e973-46f0-9797-87400357f544" ).equals( metadata.getId() ) )
+            {
+                return Collections.singleton( testReferenceOther1 );
+            }
+
+            if ( UUID.fromString( "65d58fdb-f2b3-4dc3-bd89-6d33abb047dd" ).equals( metadata.getId() ) )
+            {
+                return Collections.singleton( testReferenceOther2 );
+            }
+
+            return Collections.emptySet();
         }
     }
 }

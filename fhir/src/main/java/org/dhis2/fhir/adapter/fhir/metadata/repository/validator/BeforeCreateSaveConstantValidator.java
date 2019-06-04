@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Constant;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link Constant}.
@@ -43,19 +43,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveConstantValidator implements Validator
+public class BeforeCreateSaveConstantValidator extends AbstractBeforeCreateSaveValidator<Constant> implements MetadataValidator<Constant>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveConstantValidator( @Nonnull EntityManager entityManager )
     {
-        return Constant.class.isAssignableFrom( clazz );
+        super( Constant.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull Constant constant, @Nonnull Errors errors )
     {
-        final Constant constant = (Constant) target;
-
         if ( StringUtils.isBlank( constant.getName() ) )
         {
             errors.rejectValue( "name", "Constant.name.blank", "Name must not be blank." );

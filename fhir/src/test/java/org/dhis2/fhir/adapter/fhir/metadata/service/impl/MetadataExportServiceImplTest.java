@@ -106,6 +106,9 @@ public class MetadataExportServiceImplTest
     @Mock
     private CodeRepository codeRepository;
 
+    @Mock
+    private MetadataExportDependencyResolver metadataExportDependencyResolver;
+
     private BuildProperties buildProperties;
 
     private MetadataExportServiceImpl service;
@@ -160,7 +163,7 @@ public class MetadataExportServiceImplTest
         service = new MetadataExportServiceImpl( trackerProgramRepository, programStageRuleRepository, fhirResourceMappingRepository,
             Arrays.asList( trackerProgramRepository, programStageRuleRepository, trackedEntityRuleRepository, fhirResourceMappingRepository,
                 executableScriptRepository, scriptRepository, scriptArgRepository, codeSetRepository, codeRepository ),
-            buildProperties );
+            Collections.singletonList( metadataExportDependencyResolver ), buildProperties );
 
         code1 = new Code();
         code1.setId( UUID.randomUUID() );
@@ -246,7 +249,10 @@ public class MetadataExportServiceImplTest
             argThat( containsInAnyOrder( FhirResourceType.PATIENT, FhirResourceType.OBSERVATION, FhirResourceType.IMMUNIZATION ) ), Mockito.eq( FhirResourceType.PATIENT ) ) )
             .thenReturn( Arrays.asList( fhirResourceMappingPatient, fhirResourceMappingObservation, fhirResourceMappingImmunization ) );
 
-        final JsonNode node = service.export( new MetadataExportParams() );
+        final MetadataExportParams params = new MetadataExportParams();
+        params.setIncludeResourceMappings( true );
+
+        final JsonNode node = service.exp( params );
 
         Assert.assertTrue( node.isObject() );
         Assert.assertEquals( 7, node.size() );
@@ -286,9 +292,10 @@ public class MetadataExportServiceImplTest
             .thenReturn( Arrays.asList( fhirResourceMappingPatient, fhirResourceMappingImmunization ) );
 
         final MetadataExportParams params = new MetadataExportParams();
+        params.setIncludeResourceMappings( true );
         params.getTrackerProgramIds().add( trackerProgram2.getId() );
 
-        final JsonNode node = service.export( params );
+        final JsonNode node = service.exp( params );
 
         Assert.assertTrue( node.isObject() );
         Assert.assertEquals( 7, node.size() );
@@ -313,5 +320,50 @@ public class MetadataExportServiceImplTest
 
         Assert.assertNotNull( node.get( "codes" ) );
         Assert.assertEquals( 2, node.get( "codes" ).size() );
+    }
+
+    @Test
+    @SuppressWarnings( { "unchecked" } )
+    public void exportSingleWithoutResourceMappings()
+    {
+        Mockito.when( trackerProgramRepository.findAllById( (Collection<UUID>)
+            argThat( containsInAnyOrder( trackerProgram2.getId() ) ) ) ).thenReturn( Collections.singletonList( trackerProgram2 ) );
+        Mockito.when( programStageRuleRepository.findAllByProgram( (Collection<MappedTrackerProgram>)
+            argThat( containsInAnyOrder( trackerProgram2 ) ) ) ).thenReturn( Collections.singletonList( programStageRule3 ) );
+        Mockito.when( fhirResourceMappingRepository.findAllByFhirResourceTypes( (Collection<FhirResourceType>)
+            argThat( containsInAnyOrder( FhirResourceType.PATIENT, FhirResourceType.IMMUNIZATION ) ), Mockito.eq( FhirResourceType.PATIENT ) ) )
+            .thenReturn( Arrays.asList( fhirResourceMappingPatient, fhirResourceMappingImmunization ) );
+        Mockito.when( metadataExportDependencyResolver.supports( Mockito.eq( Code.class ) ) ).thenReturn( true );
+        Mockito.when( metadataExportDependencyResolver.resolveAdditionalDependencies( Mockito.any( Code.class ) ) ).thenReturn( Collections.emptySet() );
+
+        final MetadataExportParams params = new MetadataExportParams();
+        params.getTrackerProgramIds().add( trackerProgram2.getId() );
+
+        final JsonNode node = service.exp( params );
+
+        Assert.assertTrue( node.isObject() );
+        Assert.assertEquals( 6, node.size() );
+
+        Assert.assertNotNull( node.get( "versionInfo" ) );
+        Assert.assertEquals( 1, node.get( "versionInfo" ).size() );
+
+        Assert.assertNotNull( node.get( "trackerPrograms" ) );
+        Assert.assertEquals( 1, node.get( "trackerPrograms" ).size() );
+
+        Assert.assertNotNull( node.get( "trackedEntityRules" ) );
+        Assert.assertEquals( 1, node.get( "trackedEntityRules" ).size() );
+
+        Assert.assertNotNull( node.get( "programStageRules" ) );
+        Assert.assertEquals( 1, node.get( "programStageRules" ).size() );
+
+        Assert.assertNull( node.get( "fhirResourceMappings" ) );
+
+        Assert.assertNotNull( node.get( "codeSets" ) );
+        Assert.assertEquals( 1, node.get( "codeSets" ).size() );
+
+        Assert.assertNotNull( node.get( "codes" ) );
+        Assert.assertEquals( 2, node.get( "codes" ).size() );
+
+        Mockito.verify( metadataExportDependencyResolver, Mockito.times( 2 ) ).resolveAdditionalDependencies( Mockito.any( Code.class ) );
     }
 }

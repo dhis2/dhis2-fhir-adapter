@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link SystemCode}.
@@ -43,19 +43,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveSystemCodeValidator implements Validator
+public class BeforeCreateSaveSystemCodeValidator extends AbstractBeforeCreateSaveValidator<SystemCode> implements MetadataValidator<SystemCode>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveSystemCodeValidator( @Nonnull EntityManager entityManager )
     {
-        return SystemCode.class.isAssignableFrom( clazz );
+        super( SystemCode.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull SystemCode systemCode, @Nonnull Errors errors )
     {
-        final SystemCode systemCode = (SystemCode) target;
-
         if ( systemCode.getSystem() == null )
         {
             errors.rejectValue( "system", "SystemCode.system.null", "System is mandatory." );

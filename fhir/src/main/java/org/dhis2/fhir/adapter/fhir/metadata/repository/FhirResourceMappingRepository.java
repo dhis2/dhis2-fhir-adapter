@@ -56,7 +56,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "resourceMapping" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>, AdapterRepository<FhirResourceMapping>
+public interface FhirResourceMappingRepository extends JpaRepository<FhirResourceMapping, UUID>, QuerydslPredicateExecutor<FhirResourceMapping>, MetadataRepository<FhirResourceMapping>
 {
     @Nonnull
     @Override

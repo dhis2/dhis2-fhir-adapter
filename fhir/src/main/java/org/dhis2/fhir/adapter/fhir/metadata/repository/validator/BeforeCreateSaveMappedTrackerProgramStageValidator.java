@@ -36,11 +36,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link MappedTrackerProgramStage}.
@@ -48,19 +48,16 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveMappedTrackerProgramStageValidator implements Validator
+public class BeforeCreateSaveMappedTrackerProgramStageValidator extends AbstractBeforeCreateSaveValidator<MappedTrackerProgramStage> implements MetadataValidator<MappedTrackerProgramStage>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveMappedTrackerProgramStageValidator( @Nonnull EntityManager entityManager )
     {
-        return MappedTrackerProgramStage.class.isAssignableFrom( clazz );
+        super( MappedTrackerProgramStage.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull MappedTrackerProgramStage trackerProgramStage, @Nonnull Errors errors )
     {
-        final MappedTrackerProgramStage trackerProgramStage = (MappedTrackerProgramStage) target;
-
         if ( trackerProgramStage.getProgram() == null )
         {
             errors.rejectValue( "program", "MappedTrackerProgramStage.program.null", "Program is mandatory." );

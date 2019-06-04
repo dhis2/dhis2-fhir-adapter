@@ -51,7 +51,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScript" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface ExecutableScriptRepository extends JpaRepository<ExecutableScript, UUID>, QuerydslPredicateExecutor<ExecutableScript>, CustomExecutableScriptRepository, AdapterRepository<ExecutableScript>
+public interface ExecutableScriptRepository extends JpaRepository<ExecutableScript, UUID>, QuerydslPredicateExecutor<ExecutableScript>, CustomExecutableScriptRepository, MetadataRepository<ExecutableScript>
 {
     @Nonnull
     @Override

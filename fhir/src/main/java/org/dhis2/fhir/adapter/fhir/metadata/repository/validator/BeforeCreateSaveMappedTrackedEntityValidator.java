@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link MappedTrackedEntity}.
@@ -42,19 +42,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveMappedTrackedEntityValidator implements Validator
+public class BeforeCreateSaveMappedTrackedEntityValidator extends AbstractBeforeCreateSaveValidator<MappedTrackedEntity> implements MetadataValidator<MappedTrackedEntity>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveMappedTrackedEntityValidator( @Nonnull EntityManager entityManager )
     {
-        return MappedTrackedEntity.class.isAssignableFrom( clazz );
+        super( MappedTrackedEntity.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull MappedTrackedEntity mapped, @Nonnull Errors errors )
     {
-        final MappedTrackedEntity mapped = (MappedTrackedEntity) target;
-
         if ( StringUtils.isBlank( mapped.getName() ) )
         {
             errors.rejectValue( "name", "MappedTrackedEntity.name.blank", "Name must not be blank." );

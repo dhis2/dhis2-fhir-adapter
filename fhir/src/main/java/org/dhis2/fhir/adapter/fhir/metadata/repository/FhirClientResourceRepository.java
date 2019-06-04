@@ -56,7 +56,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "fhirClientResource" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('ADMINISTRATION')" )
-public interface FhirClientResourceRepository extends JpaRepository<FhirClientResource, UUID>, QuerydslPredicateExecutor<FhirClientResource>, CustomFhirClientResourceRepository, AdapterRepository<FhirClientResource>
+public interface FhirClientResourceRepository extends JpaRepository<FhirClientResource, UUID>, QuerydslPredicateExecutor<FhirClientResource>, CustomFhirClientResourceRepository, MetadataRepository<FhirClientResource>
 {
     @Nonnull
     @Override

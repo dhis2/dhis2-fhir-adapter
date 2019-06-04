@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@ public enum TransformDataType
     FHIR_LOCATION( FhirResourceType.LOCATION ),
     FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
     FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.PATIENT ),
+    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
     FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
     FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
     FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON );

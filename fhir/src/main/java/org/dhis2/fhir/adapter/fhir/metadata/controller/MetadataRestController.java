@@ -31,11 +31,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportParams;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportService;
+import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportParams;
+import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportResult;
+import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportService;
+import org.dhis2.fhir.adapter.fhir.metadata.service.impl.MetadataImportException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,18 +62,25 @@ public class MetadataRestController
 {
     private final MetadataExportService metadataExportService;
 
-    public MetadataRestController( @Nonnull MetadataExportService metadataExportService )
+    private final MetadataImportService metadataImportService;
+
+    public MetadataRestController( @Nonnull MetadataExportService metadataExportService, @Nonnull MetadataImportService metadataImportService )
     {
         this.metadataExportService = metadataExportService;
+        this.metadataImportService = metadataImportService;
     }
 
     @Nonnull
     @RequestMapping( method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
     public ResponseEntity<JsonNode> exp( @RequestParam( name = "trackerProgramId", required = false ) List<UUID> trackerProgramIds,
         @RequestParam( name = "excludedSystemUri", required = false ) List<String> excludedSystemUris,
+        @RequestParam( name = "includeTrackedEntities", required = false, defaultValue = "false" ) boolean includeTrackedEntities,
+        @RequestParam( name = "includeResourceMappings", required = false, defaultValue = "false" ) boolean includeResourceMappings,
         @RequestParam( name = "download", required = false, defaultValue = "false" ) boolean download )
     {
         final MetadataExportParams params = new MetadataExportParams();
+        params.setIncludeTrackedEntities( includeTrackedEntities );
+        params.setIncludeResourceMappings( includeResourceMappings );
 
         if ( trackerProgramIds != null )
         {
@@ -80,7 +92,7 @@ public class MetadataRestController
             params.getExcludedSystemUris().addAll( excludedSystemUris );
         }
 
-        final JsonNode node = metadataExportService.export( params );
+        final JsonNode node = metadataExportService.exp( params );
         final HttpHeaders headers = new HttpHeaders();
 
         if ( download )
@@ -89,5 +101,26 @@ public class MetadataRestController
         }
 
         return new ResponseEntity<>( node, headers, HttpStatus.OK );
+    }
+
+    @Nonnull
+    @RequestMapping( method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+    public ResponseEntity<MetadataImportResult> imp( @RequestBody @Nonnull JsonNode jsonNode,
+        @RequestParam( name = "includeResourceMappings", required = false, defaultValue = "false" ) boolean includeResourceMappings )
+    {
+        final MetadataImportParams params = new MetadataImportParams();
+        params.setIncludeResourceMappings( includeResourceMappings );
+
+        MetadataImportResult result;
+        try
+        {
+            result = metadataImportService.imp( jsonNode, params );
+        }
+        catch ( MetadataImportException e )
+        {
+            result = e.getResult();
+        }
+
+        return new ResponseEntity<>( result, result.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST );
     }
 }

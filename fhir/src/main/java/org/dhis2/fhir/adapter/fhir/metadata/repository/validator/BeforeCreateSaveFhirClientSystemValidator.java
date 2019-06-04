@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link FhirClientSystem}.
@@ -43,19 +43,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveFhirClientSystemValidator implements Validator
+public class BeforeCreateSaveFhirClientSystemValidator extends AbstractBeforeCreateSaveValidator<FhirClientSystem> implements MetadataValidator<FhirClientSystem>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveFhirClientSystemValidator( @Nonnull EntityManager entityManager )
     {
-        return FhirClientSystem.class.isAssignableFrom( clazz );
+        super( FhirClientSystem.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull FhirClientSystem fhirClientSystem, @Nonnull Errors errors )
     {
-        final FhirClientSystem fhirClientSystem = (FhirClientSystem) target;
-
         if ( fhirClientSystem.getFhirClient() == null )
         {
             errors.rejectValue( "fhirClient", "FhirClientSystem.fhirClient.null", "FHIR client is mandatory." );

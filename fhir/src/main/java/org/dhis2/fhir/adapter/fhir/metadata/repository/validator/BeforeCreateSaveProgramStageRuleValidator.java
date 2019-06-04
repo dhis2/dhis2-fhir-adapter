@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link ProgramStageRule}.
@@ -44,18 +45,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveProgramStageRuleValidator extends AbstractBeforeCreateSaveRuleValidator
+public class BeforeCreateSaveProgramStageRuleValidator extends AbstractBeforeCreateSaveRuleValidator<ProgramStageRule> implements MetadataValidator<ProgramStageRule>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveProgramStageRuleValidator( @Nonnull EntityManager entityManager )
     {
-        return ProgramStageRule.class.isAssignableFrom( clazz );
+        super( ProgramStageRule.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull ProgramStageRule rule, @Nonnull Errors errors )
     {
-        final ProgramStageRule rule = (ProgramStageRule) target;
         validate( rule, TransformDataType.DHIS_EVENT, errors );
 
         if ( rule.getApplicableEnrollmentStatus() == null )

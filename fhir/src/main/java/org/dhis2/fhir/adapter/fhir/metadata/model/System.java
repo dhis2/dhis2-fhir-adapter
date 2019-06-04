@@ -55,7 +55,7 @@ import java.util.Collection;
 @Entity
 @Table( name = "fhir_system" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class System extends VersionedBaseMetadata implements SystemDependent, Serializable
+public class System extends VersionedBaseMetadata implements SystemDependent, Serializable, NamedMetadata, CodedMetadata, CodeMetadata
 {
     private static final long serialVersionUID = 1072841132452061822L;
 

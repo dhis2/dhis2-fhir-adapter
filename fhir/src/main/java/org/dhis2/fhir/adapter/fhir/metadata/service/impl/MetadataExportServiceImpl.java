@@ -36,32 +36,26 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ser.PropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.AdapterRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.MetadataRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportParams;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportService;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataVersionInfo;
-import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.SecuredPropertyFilter;
 import org.dhis2.fhir.adapter.model.Metadata;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,13 +66,12 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS;
@@ -90,49 +83,27 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
  * @author volsch
  */
 @Service
-public class MetadataExportServiceImpl implements MetadataExportService
+public class MetadataExportServiceImpl extends AbstractMetadataService implements MetadataExportService
 {
     public static final String GIT_COMMIT_ID_PROPERTY_NAME = "git.commit.id";
 
-    private final MappedTrackerProgramRepository trackerProgramRepository;
-
-    private final ProgramStageRuleRepository programStageRuleRepository;
-
-    private final FhirResourceMappingRepository fhirResourceMappingRepository;
-
-    private final Map<Class<? extends Metadata>, String> repositoryNames;
+    private final List<MetadataExportDependencyResolver> metadataExportDependencyResolvers;
 
     private final BuildProperties buildProperties;
 
     private final ObjectMapper mapper;
 
-    private final PropertyFilter emptyPropertyFilter = new SimpleBeanPropertyFilter()
-    {
-    };
-
     public MetadataExportServiceImpl( @Nonnull MappedTrackerProgramRepository trackerProgramRepository,
         @Nonnull ProgramStageRuleRepository programStageRuleRepository,
         @Nonnull FhirResourceMappingRepository fhirResourceMappingRepository,
-        @Nonnull List<? extends AdapterRepository<? extends Metadata<UUID>>> repositories,
+        @Nonnull List<? extends MetadataRepository<? extends Metadata>> repositories,
+        @Nonnull List<MetadataExportDependencyResolver> metadataExportDependencyResolvers,
         @Nullable BuildProperties buildProperties )
     {
-        this.trackerProgramRepository = trackerProgramRepository;
-        this.programStageRuleRepository = programStageRuleRepository;
-        this.fhirResourceMappingRepository = fhirResourceMappingRepository;
-        this.buildProperties = buildProperties;
+        super( trackerProgramRepository, programStageRuleRepository, fhirResourceMappingRepository, repositories );
 
-        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
-        try
-        {
-            final List<? extends AdapterRepository<? extends Metadata<UUID>>> filteredRepositories = repositories.stream()
-                .filter( r -> AnnotationUtils.findAnnotation( r.getClass(), RepositoryRestResource.class ) != null ).collect( Collectors.toList() );
-            this.repositoryNames = filteredRepositories.stream().collect(
-                Collectors.toMap( AdapterRepository::getEntityType, this::getMetadataPluralNameByRepository ) );
-        }
-        finally
-        {
-            SecurityContextHolder.clearContext();
-        }
+        this.metadataExportDependencyResolvers = metadataExportDependencyResolvers;
+        this.buildProperties = buildProperties;
 
         mapper = new ObjectMapper();
         mapper.disable( FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS );
@@ -147,7 +118,7 @@ public class MetadataExportServiceImpl implements MetadataExportService
     @Nonnull
     @Override
     @Transactional( readOnly = true, isolation = Isolation.REPEATABLE_READ )
-    public JsonNode export( @Nonnull MetadataExportParams params )
+    public JsonNode exp( @Nonnull MetadataExportParams params )
     {
         final TypedMetadataObjectContainer typedContainer = new TypedMetadataObjectContainer();
 
@@ -158,25 +129,43 @@ public class MetadataExportServiceImpl implements MetadataExportService
         if ( !trackerPrograms.isEmpty() )
         {
             typedContainer.addObjects( programStageRuleRepository.findAllByProgram( trackerPrograms ) );
-            typedContainer.addObjects( trackerPrograms.stream().map( MappedTrackerProgram::getTrackedEntityRule )
-                .collect( Collectors.toList() ) );
+
+            if ( params.isIncludeTrackedEntities() )
+            {
+                typedContainer.addObjects( trackerPrograms.stream().map( MappedTrackerProgram::getTrackedEntityRule )
+                    .collect( Collectors.toList() ) );
+            }
         }
 
-        processFhirResourceTypes( typedContainer );
+        if ( params.isIncludeResourceMappings() )
+        {
+            processFhirResourceTypes( typedContainer );
+        }
 
         final Set<Class<? extends Metadata>> processedTypes = new HashSet<>();
         final Map<Class<? extends Metadata>, JsonNode> typedNodes = new HashMap<>();
+
+        if ( !params.isIncludeTrackedEntities() )
+        {
+            processedTypes.add( MappedTrackedEntity.class );
+        }
+
+        if ( !params.isIncludeResourceMappings() )
+        {
+            processedTypes.add( FhirResourceMapping.class );
+        }
 
         do
         {
             final Set<Class<? extends Metadata>> remainingTypes = new HashSet<>( typedContainer.getTypes() );
             remainingTypes.removeAll( processedTypes );
 
-            remainingTypes.forEach( type -> {
+            remainingTypes.stream().sorted( Comparator.comparing( MetadataExportField::getByClass ).reversed() ).forEach( type -> {
                 final ObjectWriter objectWriter = mapper.writerFor( type ).with( new SimpleFilterProvider()
                     .addFilter( SecuredPropertyFilter.FILTER_NAME, emptyPropertyFilter )
                     .addFilter( AdapterBeanPropertyFilter.FILTER_NAME,
-                        new MetadataExportPropertyFilter( params, repositoryNames.keySet(), typedContainer ) ) );
+                        new MetadataExportPropertyFilter( params, repositoryNames.keySet(), typedContainer,
+                            metadataExportDependencyResolvers ) ) );
 
                 final ArrayNode nodes = JsonNodeFactory.instance.arrayNode();
                 new ArrayList<>( typedContainer.getContainer( type ).getObjects() )
@@ -225,35 +214,6 @@ public class MetadataExportServiceImpl implements MetadataExportService
         fhirResourceMappingKeys.forEach( ( trackedEntityFhirResourceType, fhirResourceTypes ) ->
             typedContainer.getContainer( FhirResourceMapping.class ).addObjects(
                 fhirResourceMappingRepository.findAllByFhirResourceTypes( fhirResourceTypes, trackedEntityFhirResourceType ) ) );
-    }
-
-    @Nonnull
-    protected String getMetadataPluralName( @Nonnull Class<? extends Metadata> metadataClass )
-    {
-        final String name = repositoryNames.get( metadataClass );
-
-        if ( name == null )
-        {
-            throw new IllegalStateException( "No name has been defined for metadata class " + metadataClass.getName() + "." );
-        }
-
-        return name;
-    }
-
-    @Nonnull
-    protected String getMetadataPluralNameByRepository( @Nonnull AdapterRepository<? extends Metadata<UUID>> repository )
-    {
-        final RepositoryRestResource repositoryRestResource =
-            Objects.requireNonNull( AnnotationUtils.findAnnotation( repository.getClass(), RepositoryRestResource.class ) );
-
-        String plural = repositoryRestResource.collectionResourceRel();
-
-        if ( StringUtils.isBlank( plural ) )
-        {
-            plural = StringUtils.uncapitalize( repository.getEntityType().getSimpleName() ) + "s";
-        }
-
-        return plural;
     }
 
     @Nonnull

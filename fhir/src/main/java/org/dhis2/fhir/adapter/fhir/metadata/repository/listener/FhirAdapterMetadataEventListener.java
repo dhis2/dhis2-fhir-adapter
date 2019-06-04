@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,14 +76,14 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
         {
             if ( linked instanceof Metadata )
             {
-                final Metadata<?> linkedMetadata = (Metadata<?>) linked;
-                logger.info( "User {} added link from entity {} with ID {} to entity with ID {}.",
+                final Metadata linkedMetadata = (Metadata) linked;
+                logger.info( "User {} added link from entity {} with ID {} to entity {} with ID {}.",
                     username, linkedMetadata.getClass().getSimpleName(), linkedMetadata.getId(),
                     parent.getClass().getSimpleName(), parent.getId() );
             }
             else
             {
-                logger.info( "User {} added link from entity {} to entity with ID {}.",
+                logger.info( "User {} added link from entity {} to entity {} with ID {}.",
                     username, linked.getClass().getSimpleName(), parent.getClass().getSimpleName(), parent.getId() );
             }
         }
@@ -97,14 +97,14 @@ public class FhirAdapterMetadataEventListener extends AbstractRepositoryEventLis
         {
             if ( linked instanceof Metadata )
             {
-                final Metadata<?> linkedMetadata = (Metadata<?>) linked;
-                logger.info( "User {} removed link from entity {} with ID {} to entity with ID {}.",
+                final Metadata linkedMetadata = (Metadata) linked;
+                logger.info( "User {} removed link from entity {} with ID {} to entity {} with ID {}.",
                     username, linkedMetadata.getClass().getSimpleName(), linkedMetadata.getId(),
                     parent.getClass().getSimpleName(), parent.getId() );
             }
             else
             {
-                logger.info( "User {} removed link from entity {} to entity with ID {}.",
+                logger.info( "User {} removed link from entity {} to entity {} with ID {}.",
                     username, linked.getClass().getSimpleName(), parent.getClass().getSimpleName(), parent.getId() );
             }
         }

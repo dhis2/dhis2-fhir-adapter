@@ -50,7 +50,7 @@ import java.util.UUID;
  * @author volsch
  */
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "executableScriptArg" )
-public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>, QuerydslPredicateExecutor<ExecutableScriptArg>, AdapterRepository<ExecutableScriptArg>
+public interface ExecutableScriptArgRepository extends JpaRepository<ExecutableScriptArg, UUID>, QuerydslPredicateExecutor<ExecutableScriptArg>, MetadataRepository<ExecutableScriptArg>
 {
     @Nonnull
     @Override

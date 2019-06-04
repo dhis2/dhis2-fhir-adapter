@@ -56,7 +56,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntityRule, UUID>, QuerydslPredicateExecutor<TrackedEntityRule>, CustomTrackedEntityRuleRepository, AdapterRepository<TrackedEntityRule>
+public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntityRule, UUID>, QuerydslPredicateExecutor<TrackedEntityRule>, CustomTrackedEntityRuleRepository, MetadataRepository<TrackedEntityRule>
 {
     @Nonnull
     @Override
