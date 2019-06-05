@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link ScriptArg}.
@@ -43,19 +43,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveScriptArgValidator implements Validator
+public class BeforeCreateSaveScriptArgValidator extends AbstractBeforeCreateSaveValidator<ScriptArg> implements MetadataValidator<ScriptArg>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveScriptArgValidator( @Nonnull EntityManager entityManager )
     {
-        return ScriptArg.class.isAssignableFrom( clazz );
+        super( ScriptArg.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull ScriptArg scriptArg, @Nonnull Errors errors )
     {
-        final ScriptArg scriptArg = (ScriptArg) target;
-
         if ( scriptArg.getScript() == null )
         {
             errors.rejectValue( "script", "ScriptArg.script.null", "Script is mandatory." );

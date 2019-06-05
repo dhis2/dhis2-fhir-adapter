@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.controller;
 
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -58,7 +59,35 @@ public class MetadataExportControllerAppTest extends AbstractAppTest
     {
         mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" )
             .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
-                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() );
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntities\"" ) ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntityRules\"" ) ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"fhirResourceMappings\"" ) ) ) );
+    }
+
+    @Test
+    public void invokeAuthorizedIncludeResourceMappings() throws Exception
+    {
+        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" ).param( "includeResourceMappings", "true" )
+            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntities\"" ) ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntityRules\"" ) ) ) )
+            .andExpect( content().string( Matchers.containsString( "\"fhirResourceMappings\"" ) ) );
+    }
+
+    @Test
+    public void invokeAuthorizedIncludeTrackedEntities() throws Exception
+    {
+        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" ).param( "includeTrackedEntities", "true" )
+            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
+            .andExpect( content().string( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) )
+            .andExpect( content().string( Matchers.containsString( "\"trackedEntities\"" ) ) )
+            .andExpect( content().string( Matchers.containsString( "\"trackedEntityRules\"" ) ) )
+            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"fhirResourceMappings\"" ) ) ) );
     }
 
     @Test

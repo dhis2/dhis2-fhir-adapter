@@ -63,7 +63,7 @@ import java.util.SortedSet;
 @Table( name = "fhir_script_source" )
 @NamedQuery( name = ScriptSource.SCRIPT_SOURCE_BY_SCRIPT_VERSION, query = "SELECT ss FROM ScriptSource ss WHERE ss.script=:script AND :fhirVersion MEMBER OF ss.fhirVersions ORDER BY id" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class ScriptSource extends VersionedBaseMetadata implements Serializable
+public class ScriptSource extends VersionedBaseMetadata implements Serializable, ScriptMetadata
 {
     private static final long serialVersionUID = 6002604151209645784L;
 
@@ -120,7 +120,6 @@ public class ScriptSource extends VersionedBaseMetadata implements Serializable
         this.script = script;
     }
 
-    @SuppressWarnings( "JpaAttributeTypeInspection" )
     @ElementCollection
     @CollectionTable( name = "fhir_script_source_version", joinColumns = @JoinColumn( name = "script_source_id" ) )
     @Column( name = "fhir_version" )

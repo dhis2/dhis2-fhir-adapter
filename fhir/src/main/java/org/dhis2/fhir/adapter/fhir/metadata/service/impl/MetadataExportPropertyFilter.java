@@ -35,6 +35,8 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ContainedMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SameTypeReference;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemDependent;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataExportParams;
@@ -49,8 +51,9 @@ import javax.persistence.OneToOne;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
@@ -67,12 +70,16 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
 
     private final TypedMetadataObjectContainer typedContainer;
 
+    private final List<MetadataExportDependencyResolver> metadataExportDependencyResolvers;
+
     public MetadataExportPropertyFilter( @Nonnull MetadataExportParams params,
-        @Nonnull Set<Class<? extends Metadata>> rootTypes, @Nonnull TypedMetadataObjectContainer typedContainer )
+        @Nonnull Set<Class<? extends Metadata>> rootTypes, @Nonnull TypedMetadataObjectContainer typedContainer,
+        @Nonnull List<MetadataExportDependencyResolver> metadataExportDependencyResolvers )
     {
         this.params = params;
         this.rootTypes = rootTypes;
         this.typedContainer = typedContainer;
+        this.metadataExportDependencyResolvers = metadataExportDependencyResolvers;
     }
 
     @Override
@@ -90,7 +97,8 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
 
                     serializeMetadata( fieldValue, isSerializedField( fieldType, writer ), generator, writer );
                 }
-                else if ( !fieldType.isTypeOrSubTypeOf( Metadata.class ) && !Metadata.ID_FIELD_NAME.equals( writer.getName() ) )
+                else if ( !fieldType.isTypeOrSubTypeOf( Metadata.class ) &&
+                    !( Metadata.ID_FIELD_NAME.equals( writer.getName() ) && pojo instanceof ContainedMetadata ) )
                 {
                     writer.serializeAsField( pojo, generator, provider );
                 }
@@ -99,10 +107,6 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
             {
                 writer.serializeAsField( pojo, generator, provider );
             }
-        }
-        else if ( !generator.canOmitFields() )
-        {
-            writer.serializeAsOmittedField( pojo, generator, provider );
         }
     }
 
@@ -137,6 +141,8 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
             stream.forEach( m -> {
                 if ( isIncludedMetadataValue( m ) )
                 {
+                    addSameTypeReferences( m );
+                    addDependencies( m, typedContainer );
                     typedContainer.addObject( m );
 
                     if ( include )
@@ -160,7 +166,10 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
         }
         else if ( isIncludedMetadataValue( metadata ) )
         {
-            final Metadata<UUID> m = (Metadata<UUID>) metadata;
+            final Metadata m = (Metadata) metadata;
+
+            addSameTypeReferences( m );
+            addDependencies( m, typedContainer );
             typedContainer.addObject( m );
 
             if ( include )
@@ -170,7 +179,30 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
         }
     }
 
-    protected void serializeMetadata( @Nullable Metadata<?> metadata, @Nonnull JsonGenerator generator, @Nonnull PropertyWriter writer ) throws Exception
+    protected void addSameTypeReferences( @Nonnull Metadata metadata )
+    {
+        if ( metadata instanceof SameTypeReference )
+        {
+            addSameTypeReferences( metadata, new HashSet<>() );
+        }
+    }
+
+    protected void addSameTypeReferences( @Nonnull Metadata metadata, @Nonnull Set<MetadataKey> processedIds )
+    {
+        if ( metadata instanceof SameTypeReference )
+        {
+            ( (SameTypeReference<?>) metadata ).getSameTypeReferences().forEach( r -> {
+                if ( processedIds.add( new MetadataKey( r.getClass(), r.getId() ) ) )
+                {
+                    addSameTypeReferences( r, processedIds );
+                    addDependencies( r, typedContainer );
+                    typedContainer.addObject( r );
+                }
+            } );
+        }
+    }
+
+    protected void serializeMetadata( @Nullable Metadata metadata, @Nonnull JsonGenerator generator, @Nonnull PropertyWriter writer ) throws Exception
     {
         if ( metadata == null )
         {
@@ -240,12 +272,16 @@ public class MetadataExportPropertyFilter extends SimpleBeanPropertyFilter imple
         {
             final System system = ( (SystemDependent) value ).getSystem();
 
-            if ( system != null && params.getExcludedSystemUris().contains( system.getSystemUri() ) )
-            {
-                return false;
-            }
+            return system == null || !params.getExcludedSystemUris().contains( system.getSystemUri() );
         }
 
         return true;
+    }
+
+    protected void addDependencies( @Nonnull Metadata metadata, @Nonnull TypedMetadataObjectContainer container )
+    {
+        metadataExportDependencyResolvers.stream().filter( r -> r.supports( metadata.getClass() ) ).forEach( r ->
+            container.addObjects( r.resolveAdditionalDependencies( metadata ) )
+        );
     }
 }

@@ -34,9 +34,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptArg;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 import java.util.Objects;
 
 /**
@@ -45,19 +45,16 @@ import java.util.Objects;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveExecutableScriptArgValidator implements Validator
+public class BeforeCreateSaveExecutableScriptArgValidator extends AbstractBeforeCreateSaveValidator<ExecutableScriptArg> implements MetadataValidator<ExecutableScriptArg>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveExecutableScriptArgValidator( @Nonnull EntityManager entityManager )
     {
-        return ExecutableScriptArg.class.isAssignableFrom( clazz );
+        super( ExecutableScriptArg.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull ExecutableScriptArg executableScriptArg, @Nonnull Errors errors )
     {
-        final ExecutableScriptArg executableScriptArg = (ExecutableScriptArg) target;
-
         if ( executableScriptArg.getScript() == null )
         {
             errors.rejectValue( "script", "ExecutableScriptArg.script.null", "Script is mandatory." );

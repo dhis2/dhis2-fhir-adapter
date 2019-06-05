@@ -1,0 +1,20 @@
+{
+  "versionInfo": {
+    "exportedAt": "2019-06-05T09:13:57.850Z"
+  },
+  "codes": [
+    {
+      "id": "c00aaec0-b02d-480e-9fd6-58578e224e1d",
+      "version": 0,
+      "createdAt": "2019-06-05T09:11:53.024Z",
+      "lastUpdatedBy": null,
+      "lastUpdatedAt": "2019-06-05T09:11:53.024Z",
+      "name": "BCG",
+      "code": "VACCINE_19",
+      "mappedCode": null,
+      "description": "Bacillus Calmette-Guerin vaccine",
+      "enabled": true,
+      "codeCategory": "7090561e-f45b-411e-99c0-65fa1d145018"
+    }
+  ]
+}

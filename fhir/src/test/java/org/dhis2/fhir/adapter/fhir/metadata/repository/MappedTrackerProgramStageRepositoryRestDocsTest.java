@@ -107,7 +107,7 @@ public class MappedTrackerProgramStageRepositoryRestDocsTest extends AbstractJpa
             .perform( get( Objects.requireNonNull( location ) ).header( AUTHORIZATION_HEADER_NAME, DATA_MAPPING_AUTHORIZATION_HEADER_VALUE ) )
             .andExpect( status().isOk() )
             .andExpect( jsonPath( "lastUpdatedBy", is( "2h2maqu827d" ) ) )
-            .andExpect( jsonPath( "name", is( "Baby Postnatal" ) ) )
+            .andExpect( jsonPath( "name", is( "Other Baby Postnatal" ) ) )
             .andExpect( jsonPath( "enabled", is( true ) ) )
             .andExpect( jsonPath( "expEnabled", is( false ) ) )
             .andExpect( jsonPath( "fhirCreateEnabled", is( true ) ) )

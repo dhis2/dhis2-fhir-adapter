@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.Code;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link Code}.
@@ -42,19 +42,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveCodeValidator implements Validator
+public class BeforeCreateSaveCodeValidator extends AbstractBeforeCreateSaveValidator<Code> implements MetadataValidator<Code>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveCodeValidator( @Nonnull EntityManager entityManager )
     {
-        return Code.class.isAssignableFrom( clazz );
+        super( Code.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull Code code, @Nonnull Errors errors )
     {
-        final Code code = (Code) target;
-
         if ( code.getCodeCategory() == null )
         {
             errors.rejectValue( "codeCategory", "Code.codeCategory", "Code category is mandatory." );

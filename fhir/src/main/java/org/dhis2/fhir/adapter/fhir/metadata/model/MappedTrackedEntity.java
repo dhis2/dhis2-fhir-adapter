@@ -53,7 +53,7 @@ import java.io.Serializable;
 @Entity
 @Table( name = "fhir_tracked_entity" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class MappedTrackedEntity extends VersionedBaseMetadata implements Serializable
+public class MappedTrackedEntity extends VersionedBaseMetadata implements Serializable, NamedMetadata
 {
     private static final long serialVersionUID = -2784006479143123933L;
 

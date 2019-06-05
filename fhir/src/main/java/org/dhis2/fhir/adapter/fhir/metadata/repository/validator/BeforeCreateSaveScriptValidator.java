@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.Script;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link Script}.
@@ -43,19 +43,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveScriptValidator implements Validator
+public class BeforeCreateSaveScriptValidator extends AbstractBeforeCreateSaveValidator<Script> implements MetadataValidator<Script>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveScriptValidator( @Nonnull EntityManager entityManager )
     {
-        return Script.class.isAssignableFrom( clazz );
+        super( Script.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull Script script, @Nonnull Errors errors )
     {
-        final Script script = (Script) target;
-
         if ( StringUtils.isBlank( script.getName() ) )
         {
             errors.rejectValue( "name", "Script.name.blank", "Name must not be blank." );

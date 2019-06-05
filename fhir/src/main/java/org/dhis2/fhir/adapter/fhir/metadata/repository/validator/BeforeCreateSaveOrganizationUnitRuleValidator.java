@@ -39,6 +39,7 @@ import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link OrganizationUnitRule}.
@@ -46,18 +47,16 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveOrganizationUnitRuleValidator extends AbstractBeforeCreateSaveRuleValidator
+public class BeforeCreateSaveOrganizationUnitRuleValidator extends AbstractBeforeCreateSaveRuleValidator<OrganizationUnitRule> implements MetadataValidator<OrganizationUnitRule>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveOrganizationUnitRuleValidator( @Nonnull EntityManager entityManager )
     {
-        return OrganizationUnitRule.class.isAssignableFrom( clazz );
+        super( OrganizationUnitRule.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull OrganizationUnitRule rule, @Nonnull Errors errors )
     {
-        final OrganizationUnitRule rule = (OrganizationUnitRule) target;
         validate( rule, TransformDataType.DHIS_ORGANIZATION_UNIT, errors );
 
         if ( rule.getIdentifierLookupScript() == null )

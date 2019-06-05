@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 @Entity
 @Table( name = "fhir_script_argument" )
 @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-public class ScriptArg extends VersionedBaseMetadata implements Serializable
+public class ScriptArg extends VersionedBaseMetadata implements Serializable, NamedMetadata, ScriptMetadata
 {
     private static final long serialVersionUID = -5052962742547037363L;
 

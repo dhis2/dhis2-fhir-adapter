@@ -54,7 +54,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "constant" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface ConstantRepository extends JpaRepository<Constant, UUID>, QuerydslPredicateExecutor<Constant>, ConstantResolver, AdapterRepository<Constant>
+public interface ConstantRepository extends JpaRepository<Constant, UUID>, QuerydslPredicateExecutor<Constant>, ConstantResolver, MetadataRepository<Constant>
 {
     @Nonnull
     @Override

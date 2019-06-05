@@ -50,7 +50,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "codeCategory" )
 @RepositoryRestResource( path = "codeCategories", collectionResourceRel = "codeCategories", itemResourceRel = "codeCategory" )
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface CodeCategoryRepository extends JpaRepository<CodeCategory, UUID>, QuerydslPredicateExecutor<CodeCategory>, AdapterRepository<CodeCategory>
+public interface CodeCategoryRepository extends JpaRepository<CodeCategory, UUID>, QuerydslPredicateExecutor<CodeCategory>, MetadataRepository<CodeCategory>
 {
     @Nonnull
     @Override

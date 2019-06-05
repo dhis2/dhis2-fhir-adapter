@@ -29,11 +29,13 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheIgnore;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.hibernate.annotations.BatchSize;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Basic;
@@ -45,11 +47,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains the definition of an executable {@linkplain Script script} where values of
@@ -61,7 +66,7 @@ import java.util.List;
 @Entity
 @Table( name = "fhir_executable_script" )
 @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-public class ExecutableScript extends VersionedBaseMetadata implements Serializable
+public class ExecutableScript extends VersionedBaseMetadata implements Serializable, SameTypeReference<ExecutableScript>, NamedMetadata, CodedMetadata, ScriptMetadata
 {
     private static final long serialVersionUID = -2006842064596779970L;
 
@@ -183,5 +188,14 @@ public class ExecutableScript extends VersionedBaseMetadata implements Serializa
     public void setBaseExecutableScript( ExecutableScript baseExecutableScript )
     {
         this.baseExecutableScript = baseExecutableScript;
+    }
+
+    @Nonnull
+    @Override
+    @JsonIgnore
+    @Transient
+    public Set<ExecutableScript> getSameTypeReferences()
+    {
+        return getBaseExecutableScript() == null ? Collections.emptySet() : Collections.singleton( getBaseExecutableScript() );
     }
 }

@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.model.Metadata;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Basic;
@@ -60,7 +59,7 @@ import java.util.UUID;
     query = "SELECT c.id,cs.name FROM CodeSetValue csv JOIN csv.codeSet cs JOIN csv.code c WHERE csv.enabled=true AND csv.preferredExport=true AND csv.codeSet.id=:codeSetId AND " +
         "EXISTS (SELECT 1 FROM SystemCode sc JOIN sc.system s WHERE sc.code=c AND sc.enabled=true AND s.enabled=true) ORDER BY c.code,c.id" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class CodeSetValue implements Serializable, Metadata<UUID>
+public class CodeSetValue implements Serializable, ContainedMetadata
 {
     private static final long serialVersionUID = 8365594386802303061L;
 

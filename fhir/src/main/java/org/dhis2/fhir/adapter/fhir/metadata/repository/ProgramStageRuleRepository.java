@@ -53,7 +53,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface ProgramStageRuleRepository extends JpaRepository<ProgramStageRule, UUID>, QuerydslPredicateExecutor<ProgramStageRule>, CustomProgramStageRuleRepository, AdapterRepository<ProgramStageRule>
+public interface ProgramStageRuleRepository extends JpaRepository<ProgramStageRule, UUID>, QuerydslPredicateExecutor<ProgramStageRule>, CustomProgramStageRuleRepository, MetadataRepository<ProgramStageRule>
 {
     @Nonnull
     @Override

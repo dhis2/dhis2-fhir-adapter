@@ -52,7 +52,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "system" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>, AdapterRepository<System>
+public interface SystemRepository extends JpaRepository<System, UUID>, QuerydslPredicateExecutor<System>, MetadataRepository<System>
 {
     @Nonnull
     @Override

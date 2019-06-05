@@ -32,9 +32,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link System}.
@@ -42,19 +42,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveSystemValidator implements Validator
+public class BeforeCreateSaveSystemValidator extends AbstractBeforeCreateSaveValidator<System> implements MetadataValidator<System>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveSystemValidator( @Nonnull EntityManager entityManager )
     {
-        return System.class.isAssignableFrom( clazz );
+        super( System.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull System system, @Nonnull Errors errors )
     {
-        final System system = (System) target;
-
         if ( StringUtils.isBlank( system.getName() ) )
         {
             errors.rejectValue( "name", "System.name.blank", "Name must not be blank." );

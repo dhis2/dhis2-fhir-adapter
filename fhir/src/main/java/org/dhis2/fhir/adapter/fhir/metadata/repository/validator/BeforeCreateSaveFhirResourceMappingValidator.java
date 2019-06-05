@@ -35,11 +35,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link FhirResourceMapping}.
@@ -47,19 +47,16 @@ import javax.annotation.Nullable;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveFhirResourceMappingValidator implements Validator
+public class BeforeCreateSaveFhirResourceMappingValidator extends AbstractBeforeCreateSaveValidator<FhirResourceMapping> implements MetadataValidator<FhirResourceMapping>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveFhirResourceMappingValidator( @Nonnull EntityManager entityManager )
     {
-        return FhirResourceMapping.class.isAssignableFrom( clazz );
+        super( FhirResourceMapping.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull FhirResourceMapping fhirResourceMapping, @Nonnull Errors errors )
     {
-        final FhirResourceMapping fhirResourceMapping = (FhirResourceMapping) target;
-
         if ( fhirResourceMapping.getFhirResourceType() == null )
         {
             errors.rejectValue( "fhirResourceType", "FhirResourceMapping.fhirResourceType.null", "FHIR Resource Type is mandatory." );

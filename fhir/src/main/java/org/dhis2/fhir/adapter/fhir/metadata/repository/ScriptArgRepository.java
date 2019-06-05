@@ -50,7 +50,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "scriptArg" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface ScriptArgRepository extends JpaRepository<ScriptArg, UUID>, QuerydslPredicateExecutor<ScriptArg>, AdapterRepository<ScriptArg>
+public interface ScriptArgRepository extends JpaRepository<ScriptArg, UUID>, QuerydslPredicateExecutor<ScriptArg>, MetadataRepository<ScriptArg>
 {
     @Nonnull
     @Override

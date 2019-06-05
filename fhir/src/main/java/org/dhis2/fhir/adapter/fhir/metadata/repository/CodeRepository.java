@@ -55,7 +55,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "code" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('CODE_MAPPING')" )
-public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredicateExecutor<Code>, AdapterRepository<Code>
+public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredicateExecutor<Code>, MetadataRepository<Code>
 {
     @Nonnull
     @Override
@@ -82,6 +82,10 @@ public interface CodeRepository extends JpaRepository<Code, UUID>, QuerydslPredi
     @RestResource( exported = false )
     @Nonnull
     Optional<Code> findOneByCode( @Nonnull String code );
+
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<Code> findAllByCode( @Nonnull Collection<String> codes );
 
     @Override
     @Nonnull

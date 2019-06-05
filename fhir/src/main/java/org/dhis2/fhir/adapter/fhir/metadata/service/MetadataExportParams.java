@@ -46,6 +46,10 @@ public class MetadataExportParams implements Serializable
 
     private final Set<UUID> trackerProgramIds = new HashSet<>();
 
+    private boolean includeTrackedEntities;
+
+    private boolean includeResourceMappings;
+
     public Set<String> getExcludedSystemUris()
     {
         return excludedSystemUris;
@@ -54,5 +58,25 @@ public class MetadataExportParams implements Serializable
     public Set<UUID> getTrackerProgramIds()
     {
         return trackerProgramIds;
+    }
+
+    public boolean isIncludeTrackedEntities()
+    {
+        return includeTrackedEntities;
+    }
+
+    public void setIncludeTrackedEntities( boolean includeTrackedEntities )
+    {
+        this.includeTrackedEntities = includeTrackedEntities;
+    }
+
+    public boolean isIncludeResourceMappings()
+    {
+        return includeResourceMappings;
+    }
+
+    public void setIncludeResourceMappings( boolean includeResourceMappings )
+    {
+        this.includeResourceMappings = includeResourceMappings;
     }
 }

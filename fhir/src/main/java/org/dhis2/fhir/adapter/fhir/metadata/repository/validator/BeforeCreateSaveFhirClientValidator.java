@@ -36,9 +36,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionAdapterEndpoint;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SubscriptionDhisEndpoint;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,19 +47,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveFhirClientValidator implements Validator
+public class BeforeCreateSaveFhirClientValidator extends AbstractBeforeCreateSaveValidator<FhirClient> implements MetadataValidator<FhirClient>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveFhirClientValidator( @Nonnull EntityManager entityManager )
     {
-        return FhirClient.class.isAssignableFrom( clazz );
+        super( FhirClient.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull FhirClient fhirClient, @Nonnull Errors errors )
     {
-        final FhirClient fhirClient = (FhirClient) target;
-
         if ( FhirClient.FHIR_REST_INTERFACE_IDS.contains( fhirClient.getId() ) )
         {
             errors.rejectValue( "code", "FhirClient.code.reserved", "Adapter specific FHIR client cannot be created or updated." );

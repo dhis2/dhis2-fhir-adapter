@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link TrackedEntityRule}.
@@ -41,18 +42,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveTrackedEntityRuleValidator extends AbstractBeforeCreateSaveRuleValidator
+public class BeforeCreateSaveTrackedEntityRuleValidator extends AbstractBeforeCreateSaveRuleValidator<TrackedEntityRule> implements MetadataValidator<TrackedEntityRule>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveTrackedEntityRuleValidator( @Nonnull EntityManager entityManager )
     {
-        return TrackedEntityRule.class.isAssignableFrom( clazz );
+        super( TrackedEntityRule.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull TrackedEntityRule rule, @Nonnull Errors errors )
     {
-        final TrackedEntityRule rule = (TrackedEntityRule) target;
         validate( rule, TransformDataType.DHIS_TRACKED_ENTITY_INSTANCE, errors );
 
         if ( rule.getTrackedEntity() == null )

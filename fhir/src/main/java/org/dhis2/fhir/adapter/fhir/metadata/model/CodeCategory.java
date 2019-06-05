@@ -49,7 +49,7 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_code_category" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class CodeCategory extends VersionedBaseMetadata implements Serializable
+public class CodeCategory extends VersionedBaseMetadata implements Serializable, NamedMetadata, CodedMetadata, CodeMetadata
 {
     private static final long serialVersionUID = 2265589184934267879L;
 

@@ -52,6 +52,26 @@ paths:
               type: string
               format: uri
         - in: query
+          name: includeTrackedEntities
+          description: |
+            Specifies if tracked entity mappings should be included in the export.
+            Tracked entity mappings require often profiling and should normally
+            not overridden on other systems.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: includeResourceMappings
+          description: |
+            Specifies if resource mappings should be included in the export.
+            Resource mappings require often profiling and should normally not
+            overridden on other systems.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
           name: download
           description: |
             Specifies if the resulting metadata should be offered as a file
@@ -64,6 +84,55 @@ paths:
       responses:
         '200':
           description: metadata export as JSON object
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - code-data-mapping-users
+      summary: imports metadata
+      operationId: importMetadata
+      description: |
+        Imports the metadata. By default no code related, script related
+        and resource mapping related metadata is overridden.
+      parameters:
+        - in: query
+          name: updateResourceMappings
+          description: |
+            Specifies if resource mappings should be updated. If this is disabled,
+            only new resource mappings will be imported.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: updateCodes
+          description: |
+            Specifies if code related metadata should be updated. If this is disabled,
+            only new code related metadata will be imported.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: updateScripts
+          description: |
+            Specifies if script related metadata should be updated. If this is disabled,
+            only new script related metadata will be imported.
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: metadata import as JSON object
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: any data to be imported was invalid
           content:
             application/json:
               schema:

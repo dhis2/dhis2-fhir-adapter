@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeCategory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
  * Spring Data REST validator for {@link CodeCategory}.
@@ -42,19 +42,16 @@ import javax.annotation.Nonnull;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveCodeCategoryValidator implements Validator
+public class BeforeCreateSaveCodeCategoryValidator extends AbstractBeforeCreateSaveValidator<CodeCategory> implements MetadataValidator<CodeCategory>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveCodeCategoryValidator( @Nonnull EntityManager entityManager )
     {
-        return CodeCategory.class.isAssignableFrom( clazz );
+        super( CodeCategory.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull CodeCategory codeCategory, @Nonnull Errors errors )
     {
-        final CodeCategory codeCategory = (CodeCategory) target;
-
         if ( StringUtils.isBlank( codeCategory.getName() ) )
         {
             errors.rejectValue( "name", "CodeCategory.name.blank", "Name must not be blank." );

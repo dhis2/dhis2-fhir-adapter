@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSetValue;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -47,19 +47,16 @@ import java.util.UUID;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveCodeSetValidator implements Validator
+public class BeforeCreateSaveCodeSetValidator extends AbstractBeforeCreateSaveValidator<CodeSet> implements MetadataValidator<CodeSet>
 {
-    @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public BeforeCreateSaveCodeSetValidator( @Nonnull EntityManager entityManager )
     {
-        return CodeSet.class.isAssignableFrom( clazz );
+        super( CodeSet.class, entityManager );
     }
 
     @Override
-    public void validate( Object target, @Nonnull Errors errors )
+    public void doValidate( @Nonnull CodeSet codeSet, @Nonnull Errors errors )
     {
-        final CodeSet codeSet = (CodeSet) target;
-
         if ( StringUtils.isBlank( codeSet.getName() ) )
         {
             errors.rejectValue( "name", "CodeSet.name.blank", "Name must not be blank." );

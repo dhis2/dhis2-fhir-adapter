@@ -65,7 +65,7 @@ import java.io.Serializable;
 @NamedQuery( name = SystemCode.FIND_SYSTEM_CODES_BY_CODE_ID_NAMED_QUERY, query =
     "SELECT NEW org.dhis2.fhir.adapter.fhir.model.SystemCodeValue(s.systemUri, sc.systemCode, sc.displayName) FROM SystemCode sc JOIN sc.system s WHERE sc.code.id=:codeId AND sc.enabled=true AND s.enabled=true" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class SystemCode extends VersionedBaseMetadata implements SystemDependent, Serializable
+public class SystemCode extends VersionedBaseMetadata implements SystemDependent, Serializable, CodeMetadata
 {
     private static final long serialVersionUID = 7048763667494469394L;
 

@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
 import org.dhis2.fhir.adapter.validator.EnumValue;
 import org.hibernate.annotations.BatchSize;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -52,11 +53,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -69,7 +73,7 @@ import java.util.SortedSet;
 @Entity
 @Table( name = "fhir_script" )
 @JsonFilter( AdapterBeanPropertyFilter.FILTER_NAME )
-public class Script extends VersionedBaseMetadata implements Serializable
+public class Script extends VersionedBaseMetadata implements Serializable, SameTypeReference<Script>, CodedMetadata, ScriptMetadata
 {
     private static final long serialVersionUID = 2166269559735726192L;
 
@@ -231,7 +235,7 @@ public class Script extends VersionedBaseMetadata implements Serializable
 
     @RestIgnore
     @JsonCacheIgnore
-    @OneToMany( mappedBy = "script", orphanRemoval = true, cascade = CascadeType.ALL )
+    @OneToMany( mappedBy = "script", cascade = CascadeType.REMOVE )
     @OrderBy( "id" )
     @BatchSize( size = 100 )
     public List<ScriptSource> getSources()
@@ -255,5 +259,14 @@ public class Script extends VersionedBaseMetadata implements Serializable
     public void setBaseScript( Script baseScript )
     {
         this.baseScript = baseScript;
+    }
+
+    @Nonnull
+    @Override
+    @JsonIgnore
+    @Transient
+    public Set<Script> getSameTypeReferences()
+    {
+        return getBaseScript() == null ? Collections.emptySet() : Collections.singleton( getBaseScript() );
     }
 }

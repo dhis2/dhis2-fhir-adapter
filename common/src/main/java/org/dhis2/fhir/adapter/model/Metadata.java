@@ -29,16 +29,18 @@ package org.dhis2.fhir.adapter.model;
  */
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Interface that must be implemented by all FHIR adapter metadata.
  *
- * @param <I> the concrete type of the ID of the entity.
  * @author volsch
  */
-public interface Metadata<I> extends Identifiable<I>, Serializable
+public interface Metadata extends Identifiable<UUID>, Serializable
 {
     String ID_FIELD_NAME = "id";
 
-    I getId();
+    UUID getId();
+
+    void setId( UUID id );
 }

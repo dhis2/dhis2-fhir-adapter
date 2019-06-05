@@ -33,9 +33,10 @@ import org.dhis2.fhir.adapter.model.Metadata;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Container that contains metadata objects of a specific type.
@@ -43,21 +44,30 @@ import java.util.UUID;
  * @param <T> the concrete type of the metadata.
  * @author volsch
  */
-public class MetadataObjectContainer<T extends Metadata<UUID>> implements Serializable
+public class MetadataObjectContainer<T extends Metadata> implements Serializable
 {
     private static final long serialVersionUID = -4706561116134442934L;
 
     private final Set<T> objects = Sets.newIdentityHashSet();
 
+    private final List<T> orderedObjects = new ArrayList<>();
+
     @Nonnull
-    public Set<T> getObjects()
+    public List<T> getObjects()
     {
-        return objects;
+        return orderedObjects;
     }
 
     public boolean addObject( @Nonnull T metadata )
     {
-        return objects.add( metadata );
+        if ( objects.add( metadata ) )
+        {
+            orderedObjects.add( metadata );
+
+            return true;
+        }
+
+        return false;
     }
 
     public void addObjects( @Nonnull Collection<? extends T> metadata )

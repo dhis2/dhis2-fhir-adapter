@@ -33,9 +33,9 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScriptArg;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -47,26 +47,19 @@ import java.util.UUID;
  * @author volsch
  */
 @Component
-public class BeforeCreateSaveExecutableScriptValidator implements Validator
+public class BeforeCreateSaveExecutableScriptValidator extends AbstractBeforeCreateSaveValidator<ExecutableScript> implements MetadataValidator<ExecutableScript>
 {
     private final BeforeCreateSaveExecutableScriptArgValidator argValidator;
 
-    public BeforeCreateSaveExecutableScriptValidator( @Nonnull BeforeCreateSaveExecutableScriptArgValidator argValidator )
+    public BeforeCreateSaveExecutableScriptValidator( @Nonnull BeforeCreateSaveExecutableScriptArgValidator argValidator, @Nonnull EntityManager entityManager )
     {
+        super( ExecutableScript.class, entityManager );
         this.argValidator = argValidator;
     }
 
     @Override
-    public boolean supports( @Nonnull Class<?> clazz )
+    public void doValidate( @Nonnull ExecutableScript executableScript, @Nonnull Errors errors )
     {
-        return ExecutableScript.class.isAssignableFrom( clazz );
-    }
-
-    @Override
-    public void validate( Object target, @Nonnull Errors errors )
-    {
-        final ExecutableScript executableScript = (ExecutableScript) target;
-
         if ( executableScript.getScript() == null )
         {
             errors.rejectValue( "script", "ExecutableScript.script.null", "Script is mandatory." );
@@ -96,6 +89,11 @@ public class BeforeCreateSaveExecutableScriptValidator implements Validator
                 int index = 0;
                 for ( final ExecutableScriptArg arg : executableScript.getOverrideArguments() )
                 {
+                    if ( arg.getScript() == null )
+                    {
+                        arg.setScript( executableScript );
+                    }
+
                     errors.pushNestedPath( "overrideArguments[" + index + "]" );
                     if ( !Objects.equals( arg.getScript().getId(), executableScript.getId() ) )
                     {

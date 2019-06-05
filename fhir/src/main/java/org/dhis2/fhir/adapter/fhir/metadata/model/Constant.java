@@ -57,7 +57,7 @@ import java.io.Serializable;
     @UniqueConstraint( name = "fhir_constant_uk_code", columnNames = "code" )
 } )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class Constant extends VersionedBaseMetadata implements Serializable
+public class Constant extends VersionedBaseMetadata implements Serializable, NamedMetadata, CodedMetadata, CodeMetadata
 {
     private static final long serialVersionUID = -4219974054617859678L;
 
