@@ -726,18 +726,19 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
 
             final String executableScriptCode = dataElement.getId() + "_" + scriptCode;
             final ExecutableScriptArg codeSetCodeArg = new ExecutableScriptArg();
-            executableScriptRepository.findOneByCode( executableScriptCode ).ifPresent( es ->
-            {
-                executableScriptRepository.delete( es );
-                executableScriptRepository.flush();
-            } );
+            executableScript = executableScriptRepository.findOneByCode( executableScriptCode ).orElse( new ExecutableScript() );
 
-            executableScript = new ExecutableScript();
             executableScript.setScript( script );
             executableScript.setCode( executableScriptCode );
             executableScript.setName( dataElement.getId() + " " + script.getName() );
             executableScript.setDescription( script.getDescription() );
-            executableScript.setOverrideArguments( new ArrayList<>() );
+
+            if ( executableScript.getOverrideArguments() == null )
+            {
+                executableScript.setOverrideArguments( new ArrayList<>() );
+            }
+
+            executableScript.getOverrideArguments().clear();
 
             codeSetCodeArg.setScript( executableScript );
             codeSetCodeArg.setArgument( codeSetCodeScriptArg );
@@ -745,6 +746,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
             codeSetCodeArg.setOverrideValue( valueCodeSetCode );
             executableScript.getOverrideArguments().add( codeSetCodeArg );
 
+            executableScriptRepository.flush();
             executableScriptRepository.save( executableScript );
         }
         else if ( executableScript == null )
