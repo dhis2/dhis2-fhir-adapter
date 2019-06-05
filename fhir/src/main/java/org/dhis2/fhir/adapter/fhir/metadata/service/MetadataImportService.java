@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.metadata.service;
  */
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
 
@@ -40,5 +41,6 @@ import javax.annotation.Nonnull;
 public interface MetadataImportService
 {
     @Nonnull
+    @PreAuthorize( "hasRole('CODE_MAPPING') and hasRole('DATA_MAPPING')" )
     MetadataImportResult imp( @Nonnull JsonNode jsonNode, @Nonnull MetadataImportParams params );
 }

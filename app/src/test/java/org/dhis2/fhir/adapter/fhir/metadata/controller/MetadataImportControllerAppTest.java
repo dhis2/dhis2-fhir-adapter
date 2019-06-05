@@ -28,10 +28,12 @@ package org.dhis2.fhir.adapter.fhir.metadata.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.AbstractAppTest;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.annotation.Nonnull;
@@ -45,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author volsch
  */
-public class MetadataExportControllerAppTest extends AbstractAppTest
+public class MetadataImportControllerAppTest extends AbstractAppTest
 {
     @Nonnull
     @Override
@@ -57,43 +59,29 @@ public class MetadataExportControllerAppTest extends AbstractAppTest
     @Test
     public void invokeAuthorized() throws Exception
     {
-        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" )
+        mockMvc.perform( MockMvcRequestBuilders.post( "/api/metadata" ).contentType( MediaType.APPLICATION_JSON )
+            .content( IOUtils.resourceToByteArray( "org/dhis2/fhir/adapter/fhir/metadata/controller/metadata_import.json", getClass().getClassLoader() ) )
             .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
                 .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntities\"" ) ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntityRules\"" ) ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"fhirResourceMappings\"" ) ) ) );
+            .andExpect( jsonPath( "success", Matchers.is( true ) ) );
     }
 
-    @Test
-    public void invokeAuthorizedIncludeResourceMappings() throws Exception
-    {
-        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" ).param( "includeResourceMappings", "true" )
-            .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
-                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntities\"" ) ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"trackedEntityRules\"" ) ) ) )
-            .andExpect( content().string( Matchers.containsString( "\"fhirResourceMappings\"" ) ) );
-    }
 
     @Test
-    public void invokeAuthorizedIncludeTrackedEntities() throws Exception
+    public void invokeAuthorizedBadRequest() throws Exception
     {
-        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" ).param( "includeTrackedEntities", "true" )
+        mockMvc.perform( MockMvcRequestBuilders.post( "/api/metadata" ).contentType( MediaType.APPLICATION_JSON )
+            .content( IOUtils.resourceToByteArray( "org/dhis2/fhir/adapter/fhir/metadata/controller/invalid_metadata_import.json", getClass().getClassLoader() ) )
             .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "all:all_1"
-                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isOk() )
-            .andExpect( content().string( Matchers.containsString( "\"FHIR_PATIENT\"" ) ) )
-            .andExpect( content().string( Matchers.containsString( "\"trackedEntities\"" ) ) )
-            .andExpect( content().string( Matchers.containsString( "\"trackedEntityRules\"" ) ) )
-            .andExpect( content().string( Matchers.not( Matchers.containsString( "\"fhirResourceMappings\"" ) ) ) );
+                .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isBadRequest() )
+            .andExpect( jsonPath( "success", Matchers.is( false ) ) );
     }
 
     @Test
     public void invokeUnauthorized() throws Exception
     {
-        mockMvc.perform( MockMvcRequestBuilders.get( "/api/metadata" )
+        mockMvc.perform( MockMvcRequestBuilders.post( "/api/metadata" ).contentType( MediaType.APPLICATION_JSON )
+            .content( IOUtils.resourceToByteArray( "org/dhis2/fhir/adapter/fhir/metadata/controller/metadata_import.json", getClass().getClassLoader() ) )
             .header( "Authorization", "Basic " + Base64.getEncoder().encodeToString( "code_mapping:code_mapping_1"
                 .getBytes( StandardCharsets.UTF_8 ) ) ) ).andExpect( status().isForbidden() );
     }

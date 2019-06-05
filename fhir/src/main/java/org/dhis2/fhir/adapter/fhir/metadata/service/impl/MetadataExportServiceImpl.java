@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MetadataRepository;
@@ -139,7 +140,7 @@ public class MetadataExportServiceImpl extends AbstractMetadataService implement
 
         if ( params.isIncludeResourceMappings() )
         {
-            processFhirResourceTypes( typedContainer );
+            processFhirResourceTypes( typedContainer, params );
         }
 
         final Set<Class<? extends Metadata>> processedTypes = new HashSet<>();
@@ -148,6 +149,7 @@ public class MetadataExportServiceImpl extends AbstractMetadataService implement
         if ( !params.isIncludeTrackedEntities() )
         {
             processedTypes.add( MappedTrackedEntity.class );
+            processedTypes.add( TrackedEntityRule.class );
         }
 
         if ( !params.isIncludeResourceMappings() )
@@ -205,15 +207,16 @@ public class MetadataExportServiceImpl extends AbstractMetadataService implement
         return versionInfo;
     }
 
-    protected void processFhirResourceTypes( @Nonnull TypedMetadataObjectContainer typedContainer )
+    protected void processFhirResourceTypes( @Nonnull TypedMetadataObjectContainer typedContainer, @Nonnull MetadataExportParams params )
     {
         final Map<FhirResourceType, Set<FhirResourceType>> fhirResourceMappingKeys = new HashMap<>();
+
         typedContainer.getContainer( ProgramStageRule.class ).getObjects().stream().map( r -> (ProgramStageRule) r ).forEach( r ->
             fhirResourceMappingKeys.computeIfAbsent( r.getProgramStage().getProgram().getTrackedEntityFhirResourceType(),
                 resourceType -> new HashSet<>( Collections.singleton( resourceType ) ) ).add( r.getFhirResourceType() ) );
-        fhirResourceMappingKeys.forEach( ( trackedEntityFhirResourceType, fhirResourceTypes ) ->
-            typedContainer.getContainer( FhirResourceMapping.class ).addObjects(
-                fhirResourceMappingRepository.findAllByFhirResourceTypes( fhirResourceTypes, trackedEntityFhirResourceType ) ) );
+
+        fhirResourceMappingKeys.forEach( ( trackedEntityFhirResourceType, fhirResourceTypes ) -> typedContainer.getContainer( FhirResourceMapping.class ).addObjects(
+            fhirResourceMappingRepository.findAllByFhirResourceTypes( fhirResourceTypes, trackedEntityFhirResourceType ) ) );
     }
 
     @Nonnull

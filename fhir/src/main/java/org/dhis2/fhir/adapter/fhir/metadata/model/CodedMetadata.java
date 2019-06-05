@@ -38,4 +38,6 @@ import org.dhis2.fhir.adapter.model.Metadata;
 public interface CodedMetadata extends Metadata
 {
     String getCode();
+
+    void setCode( String code );
 }

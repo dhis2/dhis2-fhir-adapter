@@ -251,6 +251,7 @@ public class MetadataExportServiceImplTest
 
         final MetadataExportParams params = new MetadataExportParams();
         params.setIncludeResourceMappings( true );
+        params.setIncludeTrackedEntities( true );
 
         final JsonNode node = service.exp( params );
 
@@ -293,6 +294,7 @@ public class MetadataExportServiceImplTest
 
         final MetadataExportParams params = new MetadataExportParams();
         params.setIncludeResourceMappings( true );
+        params.setIncludeTrackedEntities( true );
         params.getTrackerProgramIds().add( trackerProgram2.getId() );
 
         final JsonNode node = service.exp( params );
@@ -337,6 +339,7 @@ public class MetadataExportServiceImplTest
         Mockito.when( metadataExportDependencyResolver.resolveAdditionalDependencies( Mockito.any( Code.class ) ) ).thenReturn( Collections.emptySet() );
 
         final MetadataExportParams params = new MetadataExportParams();
+        params.setIncludeTrackedEntities( true );
         params.getTrackerProgramIds().add( trackerProgram2.getId() );
 
         final JsonNode node = service.exp( params );

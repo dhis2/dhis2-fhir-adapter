@@ -1,0 +1,27 @@
+{
+  "versionInfo": {
+    "exportedAt": "2019-06-05T09:13:57.850Z"
+  },
+  "executableScripts": [
+    {
+      "id": "a57e0632-c4f9-4555-a5f1-8ad7c3b92efc",
+      "version": 0,
+      "createdAt": "2019-06-05T09:11:55.749Z",
+      "lastUpdatedBy": null,
+      "lastUpdatedAt": "2019-06-05T09:11:55.749Z",
+      "script": null,
+      "name": "Evaluates the immunization dose sequence 1 for FHIR to DHIS2",
+      "code": "EVAL_IMMUNIZATION_DOSE_SEQUENCE_1",
+      "description": "Evaluates the immunization dose sequence 1 for FHIR to DHIS2. In case the vaccine has not been given also no included dose sequence is used to evaluate to true.",
+      "overrideArguments": [
+        {
+          "id": "7db528c3-4e08-4f1b-ab20-4c02d499d41e",
+          "overrideValue": "1",
+          "argument": null,
+          "enabled": true
+        }
+      ],
+      "baseExecutableScript": null
+    }
+  ]
+}

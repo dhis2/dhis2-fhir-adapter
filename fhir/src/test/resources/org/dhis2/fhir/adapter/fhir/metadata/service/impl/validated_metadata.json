@@ -1,0 +1,81 @@
+{
+  "versionInfo": {
+    "exportedAt": "2019-06-05T09:13:57.850Z"
+  },
+  "programStageRules": [
+    {
+      "id": "72636959-0e7f-4873-b968-2152de3ec1e1",
+      "version": 0,
+      "createdAt": "2019-06-05T09:13:05.400Z",
+      "lastUpdatedBy": "M5zQapPyTZI",
+      "lastUpdatedAt": "2019-06-05T09:13:05.400Z",
+      "name": "SSLpOM0r1U7: 1 BCG 0.05mL",
+      "description": "Immunization and Birth Notification: Immunization: 1 BCG 0.05mL",
+      "enabled": true,
+      "evaluationOrder": 9999,
+      "dhisResourceType": "PROGRAM_STAGE_EVENT",
+      "fhirResourceType": "IMMUNIZATION",
+      "impEnabled": true,
+      "expEnabled": true,
+      "fhirCreateEnabled": true,
+      "fhirUpdateEnabled": true,
+      "fhirDeleteEnabled": true,
+      "stop": false, "containedAllowed": false,
+      "grouping": false,
+      "dhisDataReferences": [
+        {
+          "version": 0,
+          "createdAt": "2019-06-05T09:13:05.400Z",
+          "lastUpdatedBy": "M5zQapPyTZI",
+          "lastUpdatedAt": "2019-06-05T09:13:05.400Z",
+          "dataReference": {
+            "value": "bpBUOvqy1Jn",
+            "type": "ID"
+          },
+          "scriptArgName": "dataElement",
+          "description": "BCG 0.05mL",
+          "required": true
+        },
+        {
+          "version": 0,
+          "createdAt": "2019-06-05T09:13:05.400Z",
+          "lastUpdatedBy": "M5zQapPyTZI",
+          "lastUpdatedAt": "2019-06-05T09:13:05.400Z",
+          "dataReference": {
+            "value": "LTdvha8zapG",
+            "type": "ID"
+          },
+          "scriptArgName": "dataElement2",
+          "description": "BCG not given",
+          "required": false
+        }
+      ],
+      "enrollmentCreationEnabled": true,
+      "eventCreationEnabled": true,
+      "updateEventDate": false,
+      "beforePeriodDayType": null,
+      "beforePeriodDays": null,
+      "afterPeriodDayType": null,
+      "afterPeriodDays": null,
+      "applicableEnrollmentStatus": {
+        "active": true,
+        "completed": false,
+        "cancelled": false
+      },
+      "applicableEventStatus": {
+        "overdue": true,
+        "active": true,
+        "schedule": true,
+        "visited": false,
+        "completed": false,
+        "skipped": false
+      },
+      "eventStatusUpdate": {
+        "overdueToActive": false,
+        "scheduleToActive": false,
+        "completedToActive": false
+      },
+      "expDeleteEvaluateScript": null
+    }
+  ]
+}

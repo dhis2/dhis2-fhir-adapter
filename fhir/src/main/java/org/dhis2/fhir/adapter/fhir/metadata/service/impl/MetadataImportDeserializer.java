@@ -77,6 +77,7 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
     {
         if ( p.getCurrentToken() == JsonToken.VALUE_NULL )
         {
+            // should never happen
             return null;
         }
 
@@ -131,6 +132,7 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
 
         if ( metadata == null )
         {
+            // should never happen
             return null;
         }
 
@@ -189,6 +191,11 @@ public class MetadataImportDeserializer extends StdDeserializer<Metadata> implem
             return true;
         }
 
-        return !importContext.getImportParams().isUpdateScripts() && metadata instanceof ScriptMetadata;
+        if ( !importContext.getImportParams().isUpdateScripts() && metadata instanceof ScriptMetadata )
+        {
+            return true;
+        }
+
+        return false;
     }
 }

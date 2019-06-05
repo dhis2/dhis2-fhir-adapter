@@ -52,6 +52,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Contains the exported metadata that should be imported.
@@ -240,6 +241,28 @@ public class MetadataExport implements Serializable
 
     private <T extends Metadata> void set( @Nonnull Class<T> metadataClass, @Nullable List<T> metadata )
     {
-        objects.put( metadataClass, metadata );
+        if ( metadata == null )
+        {
+            objects.remove( metadataClass );
+        }
+        else
+        {
+            objects.put( metadataClass, metadata );
+        }
+    }
+
+    public <T extends Metadata> void accept( @Nonnull Class<T> metadataClass, @Nonnull Predicate<T> predicate )
+    {
+        final List<T> list = get( metadataClass );
+
+        if ( list != null )
+        {
+            list.removeIf( item -> !predicate.test( item ) );
+
+            if ( list.isEmpty() )
+            {
+                set( metadataClass, null );
+            }
+        }
     }
 }

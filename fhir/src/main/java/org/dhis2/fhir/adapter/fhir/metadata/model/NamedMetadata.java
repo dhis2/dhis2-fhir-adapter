@@ -38,4 +38,6 @@ import org.dhis2.fhir.adapter.model.Metadata;
 public interface NamedMetadata extends Metadata
 {
     String getName();
+
+    void setName( String name );
 }

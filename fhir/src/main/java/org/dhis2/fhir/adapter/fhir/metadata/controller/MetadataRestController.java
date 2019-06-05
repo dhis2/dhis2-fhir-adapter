@@ -72,6 +72,7 @@ public class MetadataRestController
 
     @Nonnull
     @RequestMapping( method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+    @PreAuthorize( "hasRole('CODE_MAPPING') and hasRole('DATA_MAPPING')" )
     public ResponseEntity<JsonNode> exp( @RequestParam( name = "trackerProgramId", required = false ) List<UUID> trackerProgramIds,
         @RequestParam( name = "excludedSystemUri", required = false ) List<String> excludedSystemUris,
         @RequestParam( name = "includeTrackedEntities", required = false, defaultValue = "false" ) boolean includeTrackedEntities,
@@ -105,13 +106,14 @@ public class MetadataRestController
 
     @Nonnull
     @RequestMapping( method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE )
+    @PreAuthorize( "hasRole('CODE_MAPPING') and hasRole('DATA_MAPPING')" )
     public ResponseEntity<MetadataImportResult> imp( @RequestBody @Nonnull JsonNode jsonNode,
-        @RequestParam( name = "includeResourceMappings", required = false, defaultValue = "false" ) boolean includeResourceMappings,
+        @RequestParam( name = "updateResourceMappings", required = false, defaultValue = "false" ) boolean updateResourceMappings,
         @RequestParam( name = "updateCodes", required = false, defaultValue = "false" ) boolean updateCodes,
         @RequestParam( name = "updateScripts", required = false, defaultValue = "false" ) boolean updateScripts )
     {
         final MetadataImportParams params = new MetadataImportParams();
-        params.setIncludeResourceMappings( includeResourceMappings );
+        params.setUpdateResourceMappings( updateResourceMappings );
         params.setUpdateCodes( updateCodes );
         params.setUpdateScripts( updateScripts );
 

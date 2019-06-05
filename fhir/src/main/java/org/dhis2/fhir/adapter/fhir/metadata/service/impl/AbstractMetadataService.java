@@ -40,7 +40,6 @@ import org.dhis2.fhir.adapter.model.Metadata;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -53,12 +52,11 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-@Service
-public class AbstractMetadataService
+public abstract class AbstractMetadataService
 {
     protected static final String VERSION_INFO_FIELD_NAME = "versionInfo";
 
-    protected static final String FHIR_RESOURCE_MAPPINGS_FIELD_NAME = "fhirResourceMapppings";
+    protected static final String FHIR_RESOURCE_MAPPINGS_FIELD_NAME = "fhirResourceMappings";
 
     protected final MappedTrackerProgramRepository trackerProgramRepository;
 
@@ -74,7 +72,7 @@ public class AbstractMetadataService
     {
     };
 
-    public AbstractMetadataService( @Nonnull MappedTrackerProgramRepository trackerProgramRepository,
+    protected AbstractMetadataService( @Nonnull MappedTrackerProgramRepository trackerProgramRepository,
         @Nonnull ProgramStageRuleRepository programStageRuleRepository,
         @Nonnull FhirResourceMappingRepository fhirResourceMappingRepository,
         @Nonnull List<? extends MetadataRepository<? extends Metadata>> repositories )

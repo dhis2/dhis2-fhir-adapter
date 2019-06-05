@@ -42,6 +42,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.CodeMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptMetadata;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MetadataRepository;
@@ -54,11 +56,15 @@ import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportService;
 import org.dhis2.fhir.adapter.fhir.metadata.service.MetadataImportSeverity;
 import org.dhis2.fhir.adapter.model.Metadata;
 import org.dhis2.fhir.adapter.model.VersionedBaseMetadata;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.validation.Errors;
 
 import javax.annotation.Nonnull;
@@ -66,10 +72,12 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -90,19 +98,23 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
 
     private final EntityManager entityManager;
 
+    private final CacheManager cacheManager;
+
     private final ObjectMapper mapper;
 
     public MetadataImportServiceImpl( @Nonnull MessageSource messageSource, @Nonnull MappedTrackerProgramRepository trackerProgramRepository,
         @Nonnull ProgramStageRuleRepository programStageRuleRepository,
         @Nonnull FhirResourceMappingRepository fhirResourceMappingRepository,
         @Nonnull List<? extends MetadataValidator<? extends Metadata>> validators,
-        @Nonnull List<? extends MetadataRepository<? extends Metadata>> repositories, @Nonnull EntityManager entityManager )
+        @Nonnull List<? extends MetadataRepository<? extends Metadata>> repositories,
+        @Nonnull EntityManager entityManager, @Nonnull @Qualifier( "metadataCacheManager" ) CacheManager cacheManager )
     {
         super( trackerProgramRepository, programStageRuleRepository, fhirResourceMappingRepository, repositories );
 
         this.messageSource = messageSource;
         this.validators = validators.stream().collect( Collectors.toMap( MetadataValidator::getMetadataClass, v -> v ) );
         this.entityManager = entityManager;
+        this.cacheManager = cacheManager;
 
         mapper = new ObjectMapper();
         mapper.disable( FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS );
@@ -133,7 +145,7 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
     @Transactional
     public MetadataImportResult imp( @Nonnull JsonNode jsonNode, @Nonnull MetadataImportParams params )
     {
-        final MetadataImportResult result = new MetadataImportResult();
+        final MetadataImportResult result = new MetadataImportResult( params );
         final MetadataImportContext context = new MetadataImportContext( params, result );
         final MetadataExport metadataExport;
 
@@ -142,7 +154,7 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
             final ObjectNode objectNode = (ObjectNode) jsonNode;
             objectNode.remove( VERSION_INFO_FIELD_NAME );
 
-            if ( !params.isIncludeResourceMappings() )
+            if ( !params.isUpdateResourceMappings() )
             {
                 objectNode.remove( FHIR_RESOURCE_MAPPINGS_FIELD_NAME );
             }
@@ -175,6 +187,7 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
 
         if ( !result.isAnyError() )
         {
+            removeFiltered( metadataExport, params );
             validate( metadataExport, result );
         }
 
@@ -189,20 +202,38 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
         }
 
         result.setSuccess( true );
+        TransactionSynchronizationManager.registerSynchronization(
+            new TransactionSynchronizationAdapter()
+            {
+                @Override
+                public void afterCommit()
+                {
+                    cacheManager.getCacheNames().forEach( cacheName -> Objects.requireNonNull( cacheManager.getCache( cacheName ) ).clear() );
+                }
+            } );
 
         return result;
     }
 
+    protected void removeFiltered( @Nonnull MetadataExport metadataExport, @Nonnull MetadataImportParams params )
+    {
+        for ( MetadataExportField f : MetadataExportField.values() )
+        {
+            if ( isSkippedUpdate( f.getMetadataClass(), params ) )
+            {
+                metadataExport.accept( f.getMetadataClass(), item -> !entityManager.contains( item ) );
+            }
+        }
+    }
+
     protected void validate( @Nonnull MetadataExport metadataExport, @Nonnull MetadataImportResult result )
     {
-        for ( final MetadataExportField field : MetadataExportField.values() )
-        {
+        Arrays.stream( MetadataExportField.values() ).forEach( field -> {
+            final MetadataValidator<?> validator = validators.get( field.getMetadataClass() );
             final List<? extends Metadata> items = metadataExport.get( field.getMetadataClass() );
 
-            if ( items != null )
+            if ( validator != null && items != null )
             {
-                final MetadataValidator<?> validator = validators.get( field.getMetadataClass() );
-
                 items.forEach( item -> {
                     final Errors errors = new MetadataValidationErrors( field.getPluralFieldName(), item );
 
@@ -211,13 +242,12 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
                         item.getId() == null ? null : item.getId().toString(), StringUtils.defaultIfBlank( messageSource.getMessage( e, Locale.getDefault() ), "Unknown" ) ) ) );
                 } );
             }
-        }
+        } );
     }
 
     protected void persist( @Nonnull MetadataExport metadataExport, @Nonnull MetadataImportResult result )
     {
-        for ( final MetadataExportField field : MetadataExportField.values() )
-        {
+        Arrays.stream( MetadataExportField.values() ).forEach( field -> {
             final List<? extends Metadata> items = metadataExport.get( field.getMetadataClass() );
 
             if ( items != null )
@@ -225,9 +255,15 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
                 evictAll( items );
 
                 @SuppressWarnings( "unchecked" ) final JpaRepository<Metadata, UUID> repository = (JpaRepository<Metadata, UUID>) repositories.get( field.getMetadataClass() );
+
+                if ( repository == null )
+                {
+                    throw new IllegalStateException( "No metadata repository for: " + field.getMetadataClass() );
+                }
+
                 repository.saveAll( items );
             }
-        }
+        } );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -270,5 +306,20 @@ public class MetadataImportServiceImpl extends AbstractMetadataService implement
                 }
             }
         } );
+    }
+
+    protected boolean isSkippedUpdate( @Nonnull Class<? extends Metadata> metadataClass, @Nonnull MetadataImportParams params )
+    {
+        if ( !params.isUpdateCodes() && CodeMetadata.class.isAssignableFrom( metadataClass ) )
+        {
+            return true;
+        }
+
+        if ( !params.isUpdateScripts() && ScriptMetadata.class.isAssignableFrom( metadataClass ) )
+        {
+            return true;
+        }
+
+        return false;
     }
 }

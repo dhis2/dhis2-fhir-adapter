@@ -39,20 +39,20 @@ public class MetadataImportParams implements Serializable
 {
     private static final long serialVersionUID = -3584875762236388996L;
 
-    private boolean includeResourceMappings;
+    private boolean updateResourceMappings;
 
     private boolean updateCodes;
 
     private boolean updateScripts;
 
-    public boolean isIncludeResourceMappings()
+    public boolean isUpdateResourceMappings()
     {
-        return includeResourceMappings;
+        return updateResourceMappings;
     }
 
-    public void setIncludeResourceMappings( boolean includeResourceMappings )
+    public void setUpdateResourceMappings( boolean updateResourceMappings )
     {
-        this.includeResourceMappings = includeResourceMappings;
+        this.updateResourceMappings = updateResourceMappings;
     }
 
     public boolean isUpdateCodes()

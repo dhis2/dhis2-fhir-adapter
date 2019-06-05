@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author volsch
  */
-@JsonPropertyOrder( { "success", "messages" } )
+@JsonPropertyOrder( { "params", "success", "messages" } )
 public class MetadataImportResult implements Serializable
 {
     private static final long serialVersionUID = 3272488558669365686L;
@@ -50,10 +50,17 @@ public class MetadataImportResult implements Serializable
     @JsonInclude( JsonInclude.Include.NON_EMPTY )
     private final List<MetadataImportMessage> messages = new ArrayList<>();
 
+    private final MetadataImportParams params;
+
     private boolean success;
 
     @JsonIgnore
     private boolean anyError;
+
+    public MetadataImportResult( @Nonnull MetadataImportParams params )
+    {
+        this.params = params;
+    }
 
     public void add( @Nonnull MetadataImportMessage message )
     {
@@ -84,5 +91,10 @@ public class MetadataImportResult implements Serializable
     public void setSuccess( boolean success )
     {
         this.success = success;
+    }
+
+    public MetadataImportParams getParams()
+    {
+        return params;
     }
 }

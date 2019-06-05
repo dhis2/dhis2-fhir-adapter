@@ -59,6 +59,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.test.context.TestSecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
@@ -383,6 +384,8 @@ public abstract class AbstractAppTest
         }
 
         resourceDlQueueCount = getQueueMessageCount( fhirResourceQueueJmsTemplate, RESOURCE_DL_QUEUE_NAME );
+
+        TestSecurityContextHolder.clearContext();
     }
 
     private void clearCache( @Nonnull CacheManager cacheManager )

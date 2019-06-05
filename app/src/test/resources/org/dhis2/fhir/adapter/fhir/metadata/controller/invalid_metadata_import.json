@@ -1,0 +1,19 @@
+{
+  "versionInfo": {
+    "exportedAt": "2019-06-05T09:13:57.850Z"
+  },
+  "codes": [
+    {
+      "version": 0,
+      "createdAt": "2019-06-05T09:13:05.048Z",
+      "lastUpdatedBy": "M5zQapPyTZI",
+      "lastUpdatedAt": "2019-06-05T09:13:05.048Z",
+      "name": "ll2513-1 la20034-7",
+      "code": "LL2513-1_LA20034-7",
+      "mappedCode": "3",
+      "description": "Clinic/doctor's office (LL2513-1)",
+      "enabled": true,
+      "codeCategory": "9e1c64d8-82df-40e5-927b-a34c115f14e9"
+    }
+  ]
+}
