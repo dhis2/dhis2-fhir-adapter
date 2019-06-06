@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,13 @@ public class IsoStringToLocalDateConverterTest
     {
         final LocalDate date = LocalDate.of( 2018, 7, 15 );
         Assert.assertEquals( date, converter.convert( "2018-07-15" ) );
+    }
+
+    @Test
+    public void docConvertWithTime()
+    {
+        final LocalDate date = LocalDate.of( 2018, 7, 15 );
+        Assert.assertEquals( date, converter.convert( "2018-07-15T17:00:01" ) );
     }
 
     @Test

@@ -308,7 +308,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         args = @ScriptMethodArg( value = "dataElementReference", description = "The reference object to the data element of the event." ) )
     public Boolean getBooleanValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), Boolean.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), Boolean.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @Nullable
@@ -317,21 +324,42 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         args = @ScriptMethodArg( value = "dataElementReference", description = "The reference object to the data element of the event." ) )
     public Integer getIntegerValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), Integer.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), Integer.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @Nullable
     @Override
     public LocalDate getDateValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), LocalDate.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), LocalDate.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @Nullable
     @Override
     public ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), ZonedDateTime.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), ZonedDateTime.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @Nullable
@@ -340,7 +368,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         args = @ScriptMethodArg( value = "dataElementReference", description = "The reference object to the data element of the event." ) )
     public BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), BigDecimal.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), BigDecimal.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @Nullable
@@ -349,7 +384,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         args = @ScriptMethodArg( value = "dataElementReference", description = "The reference object to the data element of the event." ) )
     public String getStringValue( @Nonnull Reference dataElementReference )
     {
-        return valueConverter.convert( getValue( dataElementReference ), String.class );
+        try
+        {
+            return valueConverter.convert( getValue( dataElementReference ), String.class );
+        }
+        catch ( ConversionException e )
+        {
+            throw new ConversionException( "Data element '" + dataElementReference + "' could not be converted: " + e.getMessage(), e );
+        }
     }
 
     @ScriptMethod( description = "Sets the value of a data element.",

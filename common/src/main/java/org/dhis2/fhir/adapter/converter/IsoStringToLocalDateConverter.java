@@ -51,6 +51,8 @@ public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalD
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE.withZone( zoneId );
 
+    private final DateTimeFormatter formatterWithTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone( zoneId );
+
     public IsoStringToLocalDateConverter()
     {
         super( String.class, LocalDate.class );
@@ -62,7 +64,14 @@ public class IsoStringToLocalDateConverter extends TypedConverter<String, LocalD
     {
         try
         {
-            return LocalDate.from( formatter.parse( source ) );
+            if ( source.indexOf( 'T' ) >= 0 )
+            {
+                return LocalDate.from( formatterWithTime.parse( source ) );
+            }
+            else
+            {
+                return LocalDate.from( formatter.parse( source ) );
+            }
         }
         catch ( DateTimeParseException e )
         {

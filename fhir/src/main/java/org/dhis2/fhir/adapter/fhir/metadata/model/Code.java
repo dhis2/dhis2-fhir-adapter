@@ -72,7 +72,7 @@ public class Code extends VersionedBaseMetadata implements CodeCategoryAware, Se
 
     public static final int MAX_CODE_LENGTH = 50;
 
-    public static final int MAX_MAPPED_CODE_LENGTH = 50;
+    public static final int MAX_MAPPED_CODE_LENGTH = 230;
 
     @NotBlank
     @Size( max = MAX_NAME_LENGTH )
