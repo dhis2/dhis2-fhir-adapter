@@ -1,4 +1,4 @@
-sudo -u postgres psql dhis2-fhir
+psql "host=localhost port=5432  dbname=dhis2-fhir user=dhis-fhir"
 
 CREATE TABLE fhir_enrollment_rule (
   id                              UUID         NOT NULL,
@@ -16,4 +16,6 @@ COMMENT ON COLUMN fhir_enrollment_rule.id IS 'References the rule to which this 
 COMMENT ON COLUMN fhir_enrollment_rule.program_id IS 'References the tracker program to which this enrollment belongs to.';
 COMMENT ON COLUMN fhir_enrollment_rule.org_lookup_script_id IS 'References the executable lookup script for DHIS2 Organization Units.';
 
+
+DROP TABLE my_rule;
 
