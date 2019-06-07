@@ -69,7 +69,7 @@ import java.util.List;
 /**
  * A rule defines a business rules and transformations from a FHIR resource to a DHIS2 resource and vice versa.
  *
- * @author volsch
+ * @author volsch, Charles Chigoriwa
  */
 @Entity( name = "AbstractRule" )
 @Table( name = "fhir_rule" )
@@ -97,7 +97,8 @@ import java.util.List;
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
-    @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" )
+    @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" ),
+    @JsonSubTypes.Type( value = EnrollmentRule.class, name = "ENROLLMENT" )
 } )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>, NamedMetadata

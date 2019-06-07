@@ -1,11 +1,15 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -221,14 +225,25 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         return resourceMappingRepository.findOneByFhirResourceType(ruleInfo.getRule().getFhirResourceType(), ruleInfo.getRule().getProgram().getTrackedEntityFhirResourceType())
                 .orElseThrow(() -> new FatalTransformerException("No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "."));
     }
-    
-    
+
     //TODO: To be put in a script (later)
-    private Reference getOrganizationUnitRef(FhirToDhisTransformerContext context,IBaseResource input){
-        //If Java you can cast           
-        
-        Reference ref=context.createReference(null, "CODE");
-        return ref;
+    private Reference getOrganizationUnitRef(FhirToDhisTransformerContext context, IBaseResource input) {
+        //If Java you can cast     
+
+        Class tClass = input.getClass();
+        Method gs1Method;
+        try {
+            gs1Method = tClass.getMethod("getString1", new Class[]{});
+            String str1 = (String) gs1Method.invoke(input, new Object[]{});
+
+            Reference ref = context.createReference(null, "CODE");
+            return ref;
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
+            Logger.getLogger(FhirToEnrollmentTransformer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+
     }
 
     //TODO: To be put in a script (later)
@@ -254,7 +269,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
     @Override
     protected boolean isAlwaysActiveResource(RuleInfo<EnrollmentRule> ruleInfo) {
-      return false;
+        return false;
     }
 
 }
