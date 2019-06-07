@@ -1,3 +1,5 @@
+sudo -u postgres psql dhis2-fhir
+
 CREATE TABLE fhir_enrollment_rule (
   id                              UUID         NOT NULL,
   program_id                      UUID         NOT NULL,
@@ -8,7 +10,7 @@ CREATE TABLE fhir_enrollment_rule (
   CONSTRAINT fhir_enrollment_rule_fk3 FOREIGN KEY (org_lookup_script_id) REFERENCES fhir_executable_script (id)
 );
 CREATE INDEX fhir_enrollment_rule_i1
-  ON fhir_enrollment_rule (enrollment_id);
+  ON fhir_enrollment_rule (program_id);
 COMMENT ON TABLE fhir_enrollment_rule IS 'Contains rules for DHIS2 Enrollment Resource Types.';
 COMMENT ON COLUMN fhir_enrollment_rule.id IS 'References the rule to which this Enrollment rule belongs to.';
 COMMENT ON COLUMN fhir_enrollment_rule.program_id IS 'References the tracker program to which this enrollment belongs to.';
