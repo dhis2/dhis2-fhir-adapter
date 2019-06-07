@@ -169,6 +169,16 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             return null;
         }
 
+        final Reference orgUnitReference = rigidEnrollmentOrganizationScript.getOrganizationUnitRef(context, input);
+
+        final Optional<OrganizationUnit> organizationUnit = getOrgUnit(context, orgUnitReference, scriptVariables);
+
+        if (!organizationUnit.isPresent()) {
+            return null;
+        }
+
+        enrollment.setOrgUnitId(organizationUnit.get().getOrgUnitId());
+
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable(variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class);
         final Program program = TransformerUtils.getScriptVariable(variables, ScriptVariable.PROGRAM, Program.class);
 
@@ -179,16 +189,6 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         if (!transform(context, ruleInfo, variables)) {
             return null;
         }
-
-        final Reference orgUnitReference = rigidEnrollmentOrganizationScript.getOrganizationUnitRef(context, input);
-
-        final Optional<OrganizationUnit> organizationUnit = getOrgUnit(context, orgUnitReference, scriptVariables);
-
-        if (!organizationUnit.isPresent()) {
-            return null;
-        }
-
-        enrollment.setOrgUnitId(organizationUnit.get().getOrgUnitId());
 
         return new FhirToDhisTransformOutcome<>(ruleInfo.getRule(), enrollment);
     }
@@ -245,7 +245,9 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             Object subject = getSubjectMethod.invoke(input, new Object[]{}); //Refere
             IBaseReference patientReference = ((IBaseReference) subject);
             IBaseResource patient = referenceUtils.getResource(patientReference, FhirResourceType.PATIENT);
-            return getTrackedEntityInstanceByIdentifier(context, ruleInfo, patient, scriptVariables, false);
+            if (patient != null) {
+                return getTrackedEntityInstanceByIdentifier(context, ruleInfo, patient, scriptVariables, false);
+            }
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             logger.debug("Error when getting author organization reference", ex);
         }
