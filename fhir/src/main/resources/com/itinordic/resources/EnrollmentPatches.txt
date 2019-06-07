@@ -19,3 +19,20 @@ COMMENT ON COLUMN fhir_enrollment_rule.org_lookup_script_id IS 'References the e
 
 DROP TABLE my_rule;
 
+
+curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01 -i -u 'admin:district' -XPUT \
+    -H 'Content-Type: application/json' \
+ -d '{
+  "name": "Care Plan to Enrollment",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "ENROLLMENT",
+  "fhirResourceType": "CARE_PLAN",
+  "impEnabled": true,
+  "expEnabled": false,
+  "fhirCreateEnabled": false,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "program": "http://localhost:8081/api/trackerPrograms/b7a6e8f8-88f6-11e9-8048-8767b4baa9a6"
+}'
+
