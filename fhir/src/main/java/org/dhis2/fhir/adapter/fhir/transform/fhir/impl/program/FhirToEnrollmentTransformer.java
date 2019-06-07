@@ -4,17 +4,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
@@ -33,6 +31,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -46,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransfo
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractCodeFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractOrganizationFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ReferenceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedTrackedEntityInstance;
@@ -54,7 +54,6 @@ import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.IDomainResource;
 
 /**
  *
@@ -74,18 +73,18 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
     private final FhirResourceMappingRepository resourceMappingRepository;
 
-    private final AbstractOrganizationFhirToDhisTransformerUtils organizationUtils;
+    private final RigidEnrollmentOrganizationScript rigidEnrollmentOrganizationScript;
 
-    private final AbstractIdentifierFhirToDhisTransformerUtils identifierUtils;
-
-    private final AbstractCodeFhirToDhisTransformerUtils codeUtils;
+    private final ReferenceFhirToDhisTransformerUtils referenceUtils;
 
     public FhirToEnrollmentTransformer(@Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
             @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
             @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter,
             @Nonnull AbstractOrganizationFhirToDhisTransformerUtils organizationUtils,
             @Nonnull AbstractIdentifierFhirToDhisTransformerUtils identifierUtils,
-            @Nonnull AbstractCodeFhirToDhisTransformerUtils codeUtils) {
+            @Nonnull AbstractCodeFhirToDhisTransformerUtils codeUtils,
+            @Nonnull RigidEnrollmentOrganizationScript rigidEnrollmentOrganizationScript,
+            @Nonnull ReferenceFhirToDhisTransformerUtils referenceUtils) {
         super(scriptExecutor, organizationUnitService, new StaticObjectProvider<>(trackedEntityService), fhirDhisAssignmentRepository);
         this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
@@ -93,9 +92,8 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.valueConverter = valueConverter;
         this.resourceMappingRepository = resourceMappingRepository;
-        this.organizationUtils = organizationUtils;
-        this.identifierUtils = identifierUtils;
-        this.codeUtils = codeUtils;
+        this.rigidEnrollmentOrganizationScript = rigidEnrollmentOrganizationScript;
+        this.referenceUtils = referenceUtils;
     }
 
     @Override
@@ -128,7 +126,6 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
         final Enrollment enrollment = new Enrollment(true);
         enrollment.setStatus(EnrollmentStatus.ACTIVE);
-        //enrollment.setOrgUnitId(orgUnit.get().getId());
         enrollment.setProgramId(program.getId());
         enrollment.setTrackedEntityInstanceId(trackedEntityInstance.getTrackedEntityInstance().getId());
         return enrollment;
@@ -159,9 +156,9 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
         final Map<String, Object> variables = new HashMap<>(scriptVariables);
         addBasicScriptVariables(variables, ruleInfo);
-        final FhirResourceMapping resourceMapping = getResourceMapping(ruleInfo);
-        final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance(context,
-                new RuleInfo<>(ruleInfo.getRule().getProgram().getTrackedEntityRule(), Collections.emptyList()), resourceMapping, variables, false).orElse(null);
+
+        final TrackedEntityInstance trackedEntityInstance = retrieveTrackedEntityInstance(context, input, new RuleInfo<>(ruleInfo.getRule().getProgram().getTrackedEntityRule(), Collections.emptyList()), scriptVariables).orElse(null);
+
         if (trackedEntityInstance == null) {
             return null;
         }
@@ -182,6 +179,16 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         if (!transform(context, ruleInfo, variables)) {
             return null;
         }
+
+        final Reference orgUnitReference = rigidEnrollmentOrganizationScript.getOrganizationUnitRef(context, input);
+
+        final Optional<OrganizationUnit> organizationUnit = getOrgUnit(context, orgUnitReference, scriptVariables);
+
+        if (!organizationUnit.isPresent()) {
+            return null;
+        }
+
+        enrollment.setOrgUnitId(organizationUnit.get().getOrgUnitId());
 
         return new FhirToDhisTransformOutcome<>(ruleInfo.getRule(), enrollment);
     }
@@ -226,50 +233,23 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
                 .orElseThrow(() -> new FatalTransformerException("No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "."));
     }
 
-    //TODO: To be put in a script (later)
-    private Reference getOrganizationUnitRef(FhirToDhisTransformerContext context, IBaseResource input) {
-        //If Java you can cast     
-
-        Class tClass = input.getClass();
-        Method gs1Method;
-        try {
-            gs1Method = tClass.getMethod("getString1", new Class[]{});
-            String str1 = (String) gs1Method.invoke(input, new Object[]{});
-
-            Reference ref = context.createReference(null, "CODE");
-            return ref;
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
-            Logger.getLogger(FhirToEnrollmentTransformer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
-
-    }
-
-    //TODO: To be put in a script (later)
-    private String getOrganizationUnitMappedCode(IBaseReference organizationReference) {
-        String mappedCode = null;
-        boolean useIdentifierCode = true;
-        if (organizationReference != null) {
-            List<? extends IBaseResource> hierarchy = organizationUtils.findHierarchy(organizationReference);
-            if (hierarchy != null) {
-                for (int i = 0; (mappedCode == null) && (i < hierarchy.size()); i++) {
-                    String code = identifierUtils.getResourceIdentifier((IDomainResource) hierarchy.get(i), FhirResourceType.ORGANIZATION);
-                    if (code != null) {
-                        mappedCode = codeUtils.getMappedCode(code, FhirResourceType.ORGANIZATION);
-                        if ((mappedCode == null) && useIdentifierCode) {
-                            mappedCode = organizationUtils.existsWithPrefix(code);
-                        }
-                    }
-                }
-            }
-        }
-        return mappedCode;
-    }
-
     @Override
     protected boolean isAlwaysActiveResource(RuleInfo<EnrollmentRule> ruleInfo) {
         return false;
+    }
+
+    private Optional<TrackedEntityInstance> retrieveTrackedEntityInstance(FhirToDhisTransformerContext context, IBaseResource input, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables) {
+        try {
+            Class carePlanClass = input.getClass();
+            Method getSubjectMethod = carePlanClass.getMethod("getSubject", new Class[]{});
+            Object subject = getSubjectMethod.invoke(input, new Object[]{}); //Refere
+            IBaseReference patientReference = ((IBaseReference) subject);
+            IBaseResource patient = referenceUtils.getResource(patientReference, FhirResourceType.PATIENT);
+            return getTrackedEntityInstanceByIdentifier(context, ruleInfo, patient, scriptVariables, false);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
+            logger.debug("Error when getting author organization reference", ex);
+        }
+        return Optional.empty();
     }
 
 }
