@@ -38,7 +38,7 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 })
 @JsonFilter(value = AdapterBeanPropertyFilter.FILTER_NAME)
 public class EnrollmentRule extends AbstractRule {
-    
+
     private static final long serialVersionUID = 3878610804052444321L;
 
     public static final String FIND_ALL_EXP_NAMED_QUERY = "EnrollmentRule.findAllExportedWithoutDataRef";
@@ -97,7 +97,8 @@ public class EnrollmentRule extends AbstractRule {
 
     @Override
     public boolean coversExecutedRule(@Nonnull AbstractRule executedRule) {
-        return false;
+        return executedRule instanceof EnrollmentRule && ((EnrollmentRule) executedRule)
+                .getProgram().getId().equals(getProgram().getId());
     }
 
 }
