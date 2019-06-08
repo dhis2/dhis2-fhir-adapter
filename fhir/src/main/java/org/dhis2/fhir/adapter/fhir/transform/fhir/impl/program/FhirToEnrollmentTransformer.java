@@ -238,6 +238,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         return false;
     }
 
+    //Hard Coded against CarePlan Resource: Consider using ResourceMapping
     private Optional<TrackedEntityInstance> retrieveTrackedEntityInstance(FhirToDhisTransformerContext context, IBaseResource input, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables) {
         try {
             Class carePlanClass = input.getClass();
