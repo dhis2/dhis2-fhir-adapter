@@ -69,8 +69,10 @@ public enum FhirResourceType
     RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
     PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
     MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) ),
-    CARE_PLAN( FhirVersion.ALL, "CarePlan", 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) );
+    CARE_PLAN( FhirVersion.ALL, "CarePlan", 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) ),
+    QUESTIONNAIRE_RESPONSE( FhirVersion.ALL, "QuestionnaireResponse", 35, Collections.emptySet(), Collections.singleton( "QuestionnaireResponse" ) );
 
+        
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
 
