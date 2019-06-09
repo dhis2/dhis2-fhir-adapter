@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 /**
  * The data type of the input or output variable of a transformation.
  *
- * @author volsch
+ * @author volsch, Charles Chigoriwa
  */
 public enum TransformDataType {
     DHIS_ORGANIZATION_UNIT(null),
