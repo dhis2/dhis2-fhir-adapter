@@ -36,3 +36,13 @@ curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4
   "program": "http://localhost:8081/api/trackerPrograms/b7a6e8f8-88f6-11e9-8048-8767b4baa9a6"
 }'
 
+####### FHIR Resource Mapping for Care Plan
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/3ddfc83e-0655-46db-8111-0a3370970125 -d '{
+ "name" : "Care Plan TEI Lookup",
+ "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Care Plan.",
+ "code" : "CARE_PLAN_TEI_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "FHIR_RESOURCE",
+ "inputType" : "FHIR_CARE_PLAN",
+ "variables" : [ "CONTEXT", "INPUT" ],
+}'

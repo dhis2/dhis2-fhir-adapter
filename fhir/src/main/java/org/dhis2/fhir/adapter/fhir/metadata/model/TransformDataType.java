@@ -27,7 +27,6 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 import javax.annotation.Nullable;
 
 /**
@@ -35,31 +34,30 @@ import javax.annotation.Nullable;
  *
  * @author volsch
  */
-public enum TransformDataType
-{
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON );
+public enum TransformDataType {
+    DHIS_ORGANIZATION_UNIT(null),
+    DHIS_TRACKED_ENTITY_INSTANCE(null),
+    DHIS_ENROLLMENT(null),
+    DHIS_EVENT(null),
+    FHIR_ENCOUNTER(FhirResourceType.ENCOUNTER),
+    FHIR_LOCATION(FhirResourceType.LOCATION),
+    FHIR_ORGANIZATION(FhirResourceType.ORGANIZATION),
+    FHIR_PATIENT(FhirResourceType.PATIENT),
+    FHIR_IMMUNIZATION(FhirResourceType.IMMUNIZATION),
+    FHIR_OBSERVATION(FhirResourceType.OBSERVATION),
+    FHIR_DIAGNOSTIC_REPORT(FhirResourceType.DIAGNOSTIC_REPORT),
+    FHIR_RELATED_PERSON(FhirResourceType.RELATED_PERSON),
+    FHIR_CARE_PLAN(FhirResourceType.CARE_PLAN),
+    FHIR_QUESTIONNAIRE_RESPONSE(FhirResourceType.QUESTIONNAIRE_RESPONSE);
 
     private final FhirResourceType fhirResourceType;
 
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
-    {
+    TransformDataType(@Nullable FhirResourceType fhirResourceType) {
         this.fhirResourceType = fhirResourceType;
     }
 
     @Nullable
-    public FhirResourceType getFhirResourceType()
-    {
+    public FhirResourceType getFhirResourceType() {
         return fhirResourceType;
     }
 }
