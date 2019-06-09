@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -27,6 +28,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
+import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -48,7 +50,10 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
+import org.dhis2.fhir.adapter.util.DateTimeUtils;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.springframework.stereotype.Component;
 
@@ -70,6 +75,8 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     private final ProgramMetadataService programMetadataService;
 
     private final FhirResourceMappingRepository resourceMappingRepository;
+
+    private final ZoneId zoneId = ZoneId.systemDefault();
 
     public FhirToEnrollmentTransformer(@Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
             @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
@@ -116,6 +123,11 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
         final FhirResourceMapping resourceMapping = getResourceMapping(ruleInfo);
 
+        final ZonedDateTime enrollmentDate = getEnrollmentDate(context, ruleInfo, resourceMapping, program, scriptVariables);
+        if (enrollmentDate == null) {
+            return null;
+        }
+
         // without an organization unit no enrollment can be created
         final Optional<OrganizationUnit> orgUnit = getOrgUnit(context, ruleInfo, resourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables);
         if (!orgUnit.isPresent()) {
@@ -127,6 +139,17 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         enrollment.setOrgUnitId(orgUnit.get().getId());
         enrollment.setProgramId(program.getId());
         enrollment.setTrackedEntityInstanceId(trackedEntityInstance.getTrackedEntityInstance().getId());
+
+        if (!updateIncidentDate(program, enrollment)) {
+            return null;
+        }
+        if (ruleInfo.getRule().getProgram().isEnrollmentDateIsIncident()) {
+            enrollment.setEnrollmentDate(enrollment.getIncidentDate());
+        }
+        if (enrollment.getStatus() == null) {
+            enrollment.setStatus(EnrollmentStatus.ACTIVE);
+        }
+
         return enrollment;
     }
 
@@ -167,18 +190,6 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Enrollment enrollment = getResource(fhirClientResource, context, ruleInfo, variables).orElse(null);
         if (enrollment == null) {
             return null;
-        }
-
-        if (enrollment.getEnrollmentDate() == null) {
-            ZonedDateTime updateDateTime = ZonedDateTime.ofInstant(input.getMeta().getLastUpdated().toInstant(),
-                    ZoneId.systemDefault());
-            enrollment.setEnrollmentDate(updateDateTime);
-        }
-
-        if (enrollment.getIncidentDate() == null) {
-            ZonedDateTime updateDateTime = ZonedDateTime.ofInstant(input.getMeta().getLastUpdated().toInstant(),
-                    ZoneId.systemDefault());
-            enrollment.setIncidentDate(updateDateTime);
         }
 
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable(variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class);
@@ -238,6 +249,44 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     @Override
     protected boolean isAlwaysActiveResource(RuleInfo<EnrollmentRule> ruleInfo) {
         return false;
+    }
+
+    @Nullable
+    protected ZonedDateTime getEnrollmentDate(@Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Program program, @Nonnull Map<String, Object> scriptVariables) {
+        ZonedDateTime enrollmentDate = valueConverter.convert(executeScript(context, ruleInfo, resourceMapping.getImpEnrollmentDateLookupScript(),
+                scriptVariables, Object.class), ValueType.DATETIME, ZonedDateTime.class);
+        if (enrollmentDate == null) {
+            final IAnyResource resource = TransformerUtils.getScriptVariable(scriptVariables, ScriptVariable.INPUT, IAnyResource.class);
+            if ((resource.getMeta() != null) && (resource.getMeta().getLastUpdated() != null)) {
+                logger.info("Enrollment date of program instance \"{}\" has not been returned by "
+                        + "enrollment date script (using last updated timestamp).", program.getName());
+                enrollmentDate = ZonedDateTime.ofInstant(resource.getMeta().getLastUpdated().toInstant(), zoneId);
+            }
+        }
+        if (enrollmentDate == null) {
+            logger.info("Enrollment date of program instance \"{}\" has not been returned by "
+                    + "enrollment date script (using current timestamp).", program.getName());
+            enrollmentDate = ZonedDateTime.now();
+        }
+        if (!program.isSelectEnrollmentDatesInFuture() && DateTimeUtils.isFutureDate(enrollmentDate)) {
+            logger.info("Enrollment date of of program instance \"{}\" is in the future and program does not allow dates in the future.", program.getName());
+            return null;
+        }
+        return enrollmentDate;
+    }
+
+    protected boolean updateIncidentDate(@Nonnull Program program, @Nonnull Enrollment enrollment) {
+        if (enrollment.getIncidentDate() == null) {
+            if (program.isDisplayIncidentDate()) {
+                logger.info("Incident date of program instance \"{}\" has not been returned by "
+                        + "event date script (using current timestamp).", program.getName());
+            }
+            enrollment.setIncidentDate(ZonedDateTime.now());
+        } else if (!program.isSelectIncidentDatesInFuture() && DateTimeUtils.isFutureDate(enrollment.getIncidentDate())) {
+            logger.info("Incident date of of program instance \"{}\" is in the future and program does not allow dates in the future.", program.getName());
+            return false;
+        }
+        return true;
     }
 
 }
