@@ -36,8 +36,8 @@ curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4
   "program": "http://localhost:8081/api/trackerPrograms/b7a6e8f8-88f6-11e9-8048-8767b4baa9a6"
 }'
 
-####### FHIR Resource Mapping for Care Plan
-curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/3ddfc83e-0655-46db-8111-0a3370970125 -d '{
+####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/63693674-8a77-11e9-a3fd-37ea6b7b7cdf -d '{
  "name" : "Care Plan TEI Lookup",
  "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Care Plan.",
  "code" : "CARE_PLAN_TEI_LOOKUP",
@@ -46,3 +46,26 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "inputType" : "FHIR_CARE_PLAN",
  "variables" : [ "CONTEXT", "INPUT" ],
 }'
+
+####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/b9df397c-8a77-11e9-b2b3-0b6052a6ae6a -d $'{
+  "sourceText" : "var fhirResource = referenceUtils.getResource(input.subject, 'Patient');\nfhirResource",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/63693674-8a77-11e9-a3fd-37ea6b7b7cdf"
+}'
+
+
+####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/eaa96ad0-8a79-11e9-af27-43bae92e2e20 -d '{
+  "name" : "Care Plan TEI Lookup",
+  "code" : "CARE_PLAN_TEI_LOOKUP",
+  "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Care Plan",
+  "script" : "http://localhost:8081/api/scripts/63693674-8a77-11e9-a3fd-37ea6b7b7cdf"
+}'
+
+
+
+
+
+
