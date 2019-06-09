@@ -1,5 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,14 +117,14 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final FhirResourceMapping resourceMapping = getResourceMapping(ruleInfo);
 
         // without an organization unit no enrollment can be created
-        final Optional<OrganizationUnit> orgUnit = getOrgUnit( context, ruleInfo, resourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables);
+        final Optional<OrganizationUnit> orgUnit = getOrgUnit(context, ruleInfo, resourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables);
         if (!orgUnit.isPresent()) {
             return null;
         }
 
         final Enrollment enrollment = new Enrollment(true);
         enrollment.setStatus(EnrollmentStatus.ACTIVE);
-        enrollment.setOrgUnitId( orgUnit.get().getId() );
+        enrollment.setOrgUnitId(orgUnit.get().getId());
         enrollment.setProgramId(program.getId());
         enrollment.setTrackedEntityInstanceId(trackedEntityInstance.getTrackedEntityInstance().getId());
         return enrollment;
@@ -165,6 +167,18 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Enrollment enrollment = getResource(fhirClientResource, context, ruleInfo, variables).orElse(null);
         if (enrollment == null) {
             return null;
+        }
+
+        if (enrollment.getEnrollmentDate() == null) {
+            ZonedDateTime updateDateTime = ZonedDateTime.ofInstant(input.getMeta().getLastUpdated().toInstant(),
+                    ZoneId.systemDefault());
+            enrollment.setEnrollmentDate(updateDateTime);
+        }
+
+        if (enrollment.getIncidentDate() == null) {
+            ZonedDateTime updateDateTime = ZonedDateTime.ofInstant(input.getMeta().getLastUpdated().toInstant(),
+                    ZoneId.systemDefault());
+            enrollment.setIncidentDate(updateDateTime);
         }
 
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable(variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class);
@@ -225,6 +239,5 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     protected boolean isAlwaysActiveResource(RuleInfo<EnrollmentRule> ruleInfo) {
         return false;
     }
-    
-    
+
 }
