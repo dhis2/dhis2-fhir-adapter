@@ -48,11 +48,13 @@ import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Charles Chigoriwa
  */
+@Component
 public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<Enrollment, EnrollmentRule> {
 
     private final EnrollmentService enrollmentService;
