@@ -139,7 +139,9 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         enrollment.setOrgUnitId(orgUnit.get().getId());
         enrollment.setProgramId(program.getId());
         enrollment.setTrackedEntityInstanceId(trackedEntityInstance.getTrackedEntityInstance().getId());
-
+        enrollment.setEnrollmentDate( enrollmentDate );
+       
+        
         if (!updateIncidentDate(program, enrollment)) {
             return null;
         }
