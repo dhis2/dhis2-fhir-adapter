@@ -167,7 +167,7 @@
     function displayCustomTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
       updateTrackedEntityAttr( 'uniqueId', false, 'NAME', '' );
-      updateTrackedEntityAttr( 'patientId', true, 'NAME', '' );
+      updateTrackedEntityAttr( 'nationalId', true, 'NAME', '' );
       updateTrackedEntityAttr( 'firstName', true, 'NAME', '' );
       updateTrackedEntityAttr( 'middleName', false, 'NAME', '' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', '' );
@@ -185,7 +185,7 @@
     function displayDefaultTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
       updateTrackedEntityAttr( 'uniqueId', false, 'ID', 'KSr2yTdu1AI' );
-      updateTrackedEntityAttr( 'patientId', true, 'ID', 'Ewi7FUfcHAD' );
+      updateTrackedEntityAttr( 'nationalId', true, 'ID', 'jD1NGmSntCt' );
       updateTrackedEntityAttr( 'firstName', true, 'ID', 'TfdH5KvFmMy' );
       updateTrackedEntityAttr( 'middleName', true, 'ID', 'saFac1TKvwJ' );
       updateTrackedEntityAttr( 'lastName', true, 'ID', 'aW66s2QSosT' );
@@ -203,7 +203,7 @@
     function displaySierraLeoneDemoTrackedEntityType() {
       updateTrackedEntityAttr( 'type', true, 'NAME', 'Person' );
       updateTrackedEntityAttr( 'uniqueId', false, 'CODE', '' );
-      updateTrackedEntityAttr( 'patientId', true, 'NAME', 'National identifier' );
+      updateTrackedEntityAttr( 'nationalId', true, 'NAME', 'National identifier' );
       updateTrackedEntityAttr( 'firstName', true, 'CODE', 'MMD_PER_NAM' );
       updateTrackedEntityAttr( 'middleName', false, 'NAME', '' );
       updateTrackedEntityAttr( 'lastName', true, 'NAME', 'Last name' );
@@ -420,18 +420,18 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId')}" th:errors="*{trackedEntitySetup.uniqueId}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId.referenceType')}" th:errors="*{trackedEntitySetup.uniqueId.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.uniqueId.referenceValue')}" th:errors="*{trackedEntitySetup.uniqueId.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityPatientIdRefValue" style="width: 180px">Person's patient ID:</label>
-        <input type="checkbox" th:field="*{trackedEntitySetup.patientId.enabled}" disabled="disabled" title="Enabled"/>
-        <select th:field="*{trackedEntitySetup.patientId.referenceType}" title="Reference Type">
+      <p><label for="trackedEntityNationalIdRefValue" style="width: 180px">Person's patient ID:</label>
+        <input type="checkbox" th:field="*{trackedEntitySetup.nationalId.enabled}" disabled="disabled" title="Enabled"/>
+        <select th:field="*{trackedEntitySetup.nationalId.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
           <option th:value="'CODE'" th:text="'Unique Code'"></option>
           <option th:value="'NAME'" th:text="'Unique Name'"></option>
         </select>
-        <input id="trackedEntityPatientIdRefValue" type="text" th:field="*{trackedEntitySetup.patientId.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
+        <input id="trackedEntityNationalIdRefValue" type="text" th:field="*{trackedEntitySetup.nationalId.referenceValue}" size="20" title="Reference Value (ID, Code, Name)"/>
       </p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId')}" th:errors="*{trackedEntitySetup.patientId}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId.referenceType')}" th:errors="*{trackedEntitySetup.patientId.referenceType}" class="error">Error</p>
-      <p th:if="${#fields.hasErrors('trackedEntitySetup.patientId.referenceValue')}" th:errors="*{trackedEntitySetup.patientId.referenceValue}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.nationalId')}" th:errors="*{trackedEntitySetup.nationalId}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.nationalId.referenceType')}" th:errors="*{trackedEntitySetup.nationalId.referenceType}" class="error">Error</p>
+      <p th:if="${#fields.hasErrors('trackedEntitySetup.nationalId.referenceValue')}" th:errors="*{trackedEntitySetup.nationalId.referenceValue}" class="error">Error</p>
       <p><label for="trackedEntityFirstNameRefValue" style="width: 180px">Person's first name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.firstName.enabled}" disabled="disabled" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.firstName.referenceType}" title="Reference Type">

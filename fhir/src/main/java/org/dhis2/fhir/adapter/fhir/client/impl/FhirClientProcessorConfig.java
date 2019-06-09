@@ -38,7 +38,7 @@ import java.io.Serializable;
 
 @Configuration
 @Component
-@ConfigurationProperties( "dhis2.fhir-adapter.client.processor" )
+@ConfigurationProperties( "dhis2.fhir-adapter.fhir-client.processor" )
 @Validated
 public class FhirClientProcessorConfig implements Serializable
 {

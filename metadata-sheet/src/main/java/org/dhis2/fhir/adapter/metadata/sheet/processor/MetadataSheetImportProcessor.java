@@ -30,10 +30,15 @@ package org.dhis2.fhir.adapter.metadata.sheet.processor;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessageCollector;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * Imports the metadata from the Excel workbook into the metadata repository.<br>
@@ -54,13 +59,17 @@ public class MetadataSheetImportProcessor
 
     private final MetadataSheetRuleImportProcessor ruleImportProcessor;
 
+    private final CacheManager cacheManager;
+
     public MetadataSheetImportProcessor( @Nonnull MetadataSheetScriptImportProcessor scriptImportProcessor, @Nonnull MetadataSheetProgramImportProcessor programImportProcessor,
-        @Nonnull MetadataSheetCodeImportProcessor codeImportProcessor, @Nonnull MetadataSheetRuleImportProcessor ruleImportProcessor )
+        @Nonnull MetadataSheetCodeImportProcessor codeImportProcessor, @Nonnull MetadataSheetRuleImportProcessor ruleImportProcessor,
+        @Nonnull @Qualifier( "metadataCacheManager" ) CacheManager cacheManager )
     {
         this.scriptImportProcessor = scriptImportProcessor;
         this.programImportProcessor = programImportProcessor;
         this.codeImportProcessor = codeImportProcessor;
         this.ruleImportProcessor = ruleImportProcessor;
+        this.cacheManager = cacheManager;
     }
 
     @Nonnull
@@ -96,6 +105,16 @@ public class MetadataSheetImportProcessor
         {
             throw new MetadataSheetImportException( messageCollector );
         }
+
+        TransactionSynchronizationManager.registerSynchronization(
+            new TransactionSynchronizationAdapter()
+            {
+                @Override
+                public void afterCommit()
+                {
+                    cacheManager.getCacheNames().forEach( cacheName -> Objects.requireNonNull( cacheManager.getCache( cacheName ) ).clear() );
+                }
+            } );
 
         return messageCollector;
     }

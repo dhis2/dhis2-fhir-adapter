@@ -331,7 +331,7 @@ public class SetupService
 
         final MappedTrackedEntity trackedEntity = findTrackedEntity( "Person" );
         trackedEntity.setTrackedEntityReference( trackedEntitySetup.getType().getReference() );
-        trackedEntity.setTrackedEntityIdentifierReference( trackedEntitySetup.getPatientId().getReference() );
+        trackedEntity.setTrackedEntityIdentifierReference( trackedEntitySetup.getNationalId().getReference() );
 
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "uniqueIdAttribute" ).setDefaultValue( trackedEntitySetup.getUniqueId().getOptionalRefVal() );
         findScriptArg( "TRANSFORM_FHIR_PATIENT_DHIS_PERSON", "firstNameAttribute" ).setDefaultValue( trackedEntitySetup.getFirstName().getMandatoryRefVal() );

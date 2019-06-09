@@ -40,6 +40,7 @@
 
   <logger name="org.hibernate" level="warn" />
   <logger name="org.hibernate.cfg.AnnotationBinder" level="error" />
+  <logger name="org.hibernate.engine.jdbc.batch.internal.BatchingBatch" level="off" />
   <logger name="org.hibernate.engine.jdbc.spi.SqlExceptionHelper" level="off" />
   <logger name="org.hibernate.internal.ExceptionMapperStandardImpl" level="off" />
   <logger name="org.hibernate.validator.internal.metadata.provider.AnnotationMetaDataProvider" level="error" />

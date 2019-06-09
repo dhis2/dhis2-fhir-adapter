@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -197,10 +198,20 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return null;
         }
 
-        if ( !transform( context, ruleInfo, variables ) )
+        try
         {
+            if ( !transform( context, ruleInfo, variables ) )
+            {
+                return null;
+            }
+        }
+        catch ( ConversionException e )
+        {
+            logger.warn( "Ignoring event {} for rule {} due to conversion error: {}", input.getId(), ruleInfo.getRule(), e.getMessage() );
+
             return null;
         }
+
         return createResult( context, ruleInfo, variables, resource, modifiedResource );
     }
 

@@ -317,6 +317,6 @@ public class ProgramStageRule extends AbstractRule
     public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
     {
         return executedRule instanceof ProgramStageRule && ( (ProgramStageRule) executedRule )
-            .getProgramStage().getProgram().getId().equals( getProgramStage().getProgram().getId() );
+            .getProgramStage().getId().equals( getProgramStage().getId() );
     }
 }

@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptSourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ScriptSourceRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetLocation;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessage;
@@ -86,12 +87,17 @@ public class MetadataSheetScriptImportProcessor extends AbstractMetadataSheetImp
 
     private ScriptRepository scriptRepository;
 
+    private ScriptSourceRepository scriptSourceRepository;
+
     private ExecutableScriptRepository executableScriptRepository;
 
-    public MetadataSheetScriptImportProcessor( @Nonnull ScriptEvaluator scriptEvaluator, @Nonnull ScriptRepository scriptRepository, @Nonnull ExecutableScriptRepository executableScriptRepository )
+    public MetadataSheetScriptImportProcessor( @Nonnull ScriptEvaluator scriptEvaluator,
+        @Nonnull ScriptRepository scriptRepository, @Nonnull ScriptSourceRepository scriptSourceRepository,
+        @Nonnull ExecutableScriptRepository executableScriptRepository )
     {
         this.scriptEvaluator = scriptEvaluator;
         this.scriptRepository = scriptRepository;
+        this.scriptSourceRepository = scriptSourceRepository;
         this.executableScriptRepository = executableScriptRepository;
     }
 
@@ -264,6 +270,7 @@ public class MetadataSheetScriptImportProcessor extends AbstractMetadataSheetImp
                         scriptSource.setSourceText( source );
 
                         scriptRepository.save( script );
+                        scriptSourceRepository.save( scriptSource );
 
                         final ExecutableScript executableScript = executableScriptRepository.findOneByCode( code ).orElseGet( ExecutableScript::new );
 

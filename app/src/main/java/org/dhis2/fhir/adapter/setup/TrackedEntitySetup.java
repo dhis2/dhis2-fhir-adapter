@@ -58,7 +58,7 @@ public class TrackedEntitySetup implements Serializable
 
     @Valid
     @NotNull
-    private ReferenceSetup patientId = new ReferenceSetup( ReferenceType.ID, "Ewi7FUfcHAD" );
+    private ReferenceSetup nationalId = new ReferenceSetup( ReferenceType.ID, "jD1NGmSntCt" );
 
     @Valid
     @NotNull
@@ -128,14 +128,14 @@ public class TrackedEntitySetup implements Serializable
         this.uniqueId = uniqueId;
     }
 
-    public ReferenceSetup getPatientId()
+    public ReferenceSetup getNationalId()
     {
-        return patientId;
+        return nationalId;
     }
 
-    public void setPatientId( ReferenceSetup patientId )
+    public void setNationalId( ReferenceSetup nationalId )
     {
-        this.patientId = patientId;
+        this.nationalId = nationalId;
     }
 
     public ReferenceSetup getFirstName()
@@ -266,9 +266,9 @@ public class TrackedEntitySetup implements Serializable
         {
             setups.add( uniqueId.getReference() );
         }
-        if ( patientId.isEnabled() )
+        if ( nationalId.isEnabled() )
         {
-            setups.add( patientId.getReference() );
+            setups.add( nationalId.getReference() );
         }
         if ( firstName.isEnabled() )
         {
