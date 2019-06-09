@@ -20,7 +20,7 @@ public interface CustomEnrollmentRuleRepository
 {
     @RestResource( exported = false )
     @Nonnull
-    Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nullable Collection<Reference> dataReferences );
+    Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences);
 
     @RestResource( exported = false )
     void deleteAllByProgram( @Nonnull MappedTrackerProgram program );

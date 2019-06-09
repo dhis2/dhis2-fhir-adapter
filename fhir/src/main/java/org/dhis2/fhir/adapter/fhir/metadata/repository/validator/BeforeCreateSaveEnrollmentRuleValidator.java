@@ -23,8 +23,5 @@ public class BeforeCreateSaveEnrollmentRuleValidator extends AbstractBeforeCreat
     @Override
     public void doValidate(@Nonnull EnrollmentRule rule, @Nonnull Errors errors) {
         validate(rule, TransformDataType.DHIS_ENROLLMENT, errors);
-
-        BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript(errors, "EnrollmentRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript());
-
     }
 }

@@ -40,24 +40,17 @@ public class CustomEnrollmentRuleRepositoryImpl implements CustomEnrollmentRuleR
 
     @Nonnull
     @RestResource( exported = false )
-    @Cacheable( keyGenerator = "enrollmentRuleFindAllExpKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "enrollmentRuleeRule" )
+    @Cacheable( keyGenerator = "enrollmentRuleFindAllExpKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "enrollmentRuleRule" )
     @Transactional( readOnly = true )
     @Override
-    public Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nullable Collection<Reference> dataReferences )
+    public Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences)
     {
         final List<EnrollmentRule> rules;
-        if ( (dataReferences == null) || dataReferences.isEmpty() )
-        {
+       
             rules = new ArrayList<>(
                 entityManager.createNamedQuery( EnrollmentRule.FIND_ALL_EXP_NAMED_QUERY, EnrollmentRule.class )
                     .setParameter( "programReferences", programReferences ).getResultList() );
-        }
-        else
-        {
-            rules = new ArrayList<>( entityManager.createNamedQuery( EnrollmentRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY, EnrollmentRule.class )
-                .setParameter( "programReferences", programReferences )
-                .setParameter( "dataReferences", dataReferences ).getResultList() );
-        }
+        
         return rules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );
             return new RuleInfo<>( r, r.getDhisDataReferences() );
