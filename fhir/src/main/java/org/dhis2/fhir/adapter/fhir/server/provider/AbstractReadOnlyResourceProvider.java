@@ -127,6 +127,6 @@ public abstract class AbstractReadOnlyResourceProvider<T extends IBaseResource> 
 
         return executeInSecurityContext( () ->
             getDhisRepository().search( getFhirClientResource().getFhirClient(), getFhirResourceType(),
-                count, convertedFilteredCodes, filter, lastUpdatedDateRange ) );
+                count, false, convertedFilteredCodes, filter, lastUpdatedDateRange ) );
     }
 }

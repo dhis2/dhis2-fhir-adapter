@@ -61,6 +61,6 @@ public interface DhisRepository
     Optional<IBaseResource> readByIdentifier( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull String identifier );
 
     @Nonnull
-    IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, Integer count, @Nullable Set<SystemCodeValue> filteredCodes, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange )
-        throws DhisToFhirDataProviderException;
+    IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Integer count, boolean unlimitedCount,
+        @Nullable Set<SystemCodeValue> filteredCodes, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange ) throws DhisToFhirDataProviderException;
 }

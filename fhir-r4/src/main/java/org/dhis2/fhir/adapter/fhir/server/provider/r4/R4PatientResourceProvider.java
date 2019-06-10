@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.fhir.server.provider.r4;
  */
 
 import ca.uhn.fhir.rest.annotation.Count;
+import ca.uhn.fhir.rest.annotation.IdParam;
+import ca.uhn.fhir.rest.annotation.Operation;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.RawParam;
 import ca.uhn.fhir.rest.annotation.Search;
@@ -40,8 +42,11 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepositor
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadWriteResourceProvider;
+import org.dhis2.fhir.adapter.fhir.server.provider.AbstractPatientResourceProvider;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Resource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -55,7 +60,7 @@ import java.util.Map;
  * @author volsch
  */
 @Component
-public class R4PatientResourceProvider extends AbstractReadWriteResourceProvider<Patient>
+public class R4PatientResourceProvider extends AbstractPatientResourceProvider<Patient>
 {
     public R4PatientResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository, @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
@@ -68,6 +73,18 @@ public class R4PatientResourceProvider extends AbstractReadWriteResourceProvider
     public FhirVersion getFhirVersion()
     {
         return FhirVersion.R4;
+    }
+
+    @Nonnull
+    @Operation( name = "$everything", idempotent = true )
+    public Bundle patientInstanceEverything( @Nonnull RequestDetails requestDetails, @IdParam IIdType patientId )
+    {
+        validateUseCase( requestDetails );
+
+        final Bundle bundle = new Bundle();
+        patientInstanceEverything( patientId, resources -> resources.forEach( r -> bundle.addEntry().setResource( (Resource) r ) ) );
+
+        return bundle;
     }
 
     @Search( allowUnknownParams = true )

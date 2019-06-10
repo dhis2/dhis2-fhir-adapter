@@ -232,11 +232,16 @@ public class DhisRepositoryImpl implements DhisRepository
     @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, DhisToFhirDataProviderException.class, UnauthorizedException.class, ForbiddenException.class } )
     @Nonnull
     @Override
-    public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, Integer count, @Nullable Set<SystemCodeValue> filteredCodes,
-        @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange ) throws DhisToFhirDataProviderException
+    public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Integer count, boolean unlimitedCount,
+        @Nullable Set<SystemCodeValue> filteredCodes, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange ) throws DhisToFhirDataProviderException
     {
         final int resultingCount;
-        if ( count == null )
+
+        if ( unlimitedCount )
+        {
+            resultingCount = Integer.MAX_VALUE;
+        }
+        else if ( count == null )
         {
             resultingCount = fhirRestInterfaceConfig.getDefaultSearchCount();
         }
