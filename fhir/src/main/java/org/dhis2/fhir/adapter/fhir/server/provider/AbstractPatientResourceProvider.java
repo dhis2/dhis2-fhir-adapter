@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.server.provider;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.rest.api.server.RequestDetails;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
@@ -41,7 +42,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Abstract implementation of patient resource provider.
@@ -73,7 +74,7 @@ public abstract class AbstractPatientResourceProvider<T extends IBaseResource> e
         super( resourceClass, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
-    protected void patientInstanceEverything( @Nonnull IIdType patientId, @Nonnull Consumer<List<IBaseResource>> resourceConsumer )
+    protected void patientInstanceEverything( @Nonnull IIdType patientId, @Nonnull BiConsumer<FhirResourceType, List<IBaseResource>> resourceConsumer )
     {
         final List<String> patientFilterValues = Collections.singletonList( "Patient/" + patientId.getIdPart() );
 
@@ -81,10 +82,16 @@ public abstract class AbstractPatientResourceProvider<T extends IBaseResource> e
             PATIENT_SEARCH_PARAMS.forEach( ( ( fhirResourceType, patientSearchParam ) -> {
                 final Map<String, List<String>> filter = Collections.singletonMap( patientSearchParam, patientFilterValues );
 
-                resourceConsumer.accept( getDhisRepository().search( getFhirClientResource( fhirResourceType ).getFhirClient(), fhirResourceType,
+                resourceConsumer.accept( fhirResourceType, getDhisRepository().search( getFhirClientResource( fhirResourceType ).getFhirClient(), fhirResourceType,
                     null, true, null, filter, null ).getResources( 0, Integer.MAX_VALUE ) );
             } ) );
             return null;
         } );
+    }
+
+    @Nonnull
+    protected String createFullUrl( @Nonnull RequestDetails requestDetail, @Nonnull FhirResourceType fhirResourceType, @Nonnull IBaseResource resource )
+    {
+        return requestDetail.getServerBaseForRequest() + "/" + fhirResourceType.getResourceTypeName() + "/" + resource.getIdElement().getIdPart();
     }
 }

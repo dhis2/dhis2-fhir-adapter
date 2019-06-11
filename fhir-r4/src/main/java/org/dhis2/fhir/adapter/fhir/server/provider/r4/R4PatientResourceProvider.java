@@ -82,7 +82,8 @@ public class R4PatientResourceProvider extends AbstractPatientResourceProvider<P
         validateUseCase( requestDetails );
 
         final Bundle bundle = new Bundle();
-        patientInstanceEverything( patientId, resources -> resources.forEach( r -> bundle.addEntry().setResource( (Resource) r ) ) );
+        patientInstanceEverything( patientId, ( fhirResourceType, resources ) -> resources.forEach( r -> bundle.addEntry().setResource( (Resource) r )
+            .setFullUrl( createFullUrl( requestDetails, fhirResourceType, r ) ) ) );
 
         return bundle;
     }
