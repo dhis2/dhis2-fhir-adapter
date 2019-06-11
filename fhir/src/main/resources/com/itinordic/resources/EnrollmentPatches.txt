@@ -120,7 +120,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
      "type": "ID"
   },
   "enabled": true,
-  "creationEnabled": false,
+  "creationEnabled": true,
   "enrollmentDateIsIncident": false,
   "expEnabled": false,
   "fhirCreateEnabled": false,

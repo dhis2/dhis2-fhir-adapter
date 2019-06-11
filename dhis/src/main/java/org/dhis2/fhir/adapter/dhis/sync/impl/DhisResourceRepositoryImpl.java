@@ -49,6 +49,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 
 /**
  * Implementation of {@link DhisResourceRepository}.
@@ -97,7 +98,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case PROGRAM_STAGE_EVENT:
                 return eventService.findOneById( dhisResourceId.getId() );
             case ENROLLMENT:
-                throw new UnsupportedOperationException( "Finding DHIS event resources is not supported currently." );
+                return enrollmentService.findOneById( dhisResourceId.getId() );
             default:
                 throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
         }
@@ -138,7 +139,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 saveTrackedEntityInstance( (TrackedEntityInstance) resource );
                 break;
             case ENROLLMENT:
-                throw new UnsupportedOperationException( "Saving DHIS enrollment resources is nut supported currently." );
+                saveEnrollment((Enrollment)resource);
             case PROGRAM_STAGE_EVENT:
                 saveEvent( (Event) resource );
                 break;
@@ -156,7 +157,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case TRACKED_ENTITY:
                 return trackedEntityService.delete( resource.getId() );
             case ENROLLMENT:
-                throw new UnsupportedOperationException( "Deleting DHIS enrollment resources is nut supported currently." );
+                return enrollmentService.delete( resource.getId() );
             case PROGRAM_STAGE_EVENT:
                 return eventService.delete( resource.getId() );
             default:
@@ -220,6 +221,37 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 }
             }
         }
+
+        return updated;
+    }
+    
+    private boolean saveEnrollment( @Nonnull Enrollment enrollment)
+    {
+        boolean updated = false;
+
+        if ( (enrollment.getTrackedEntityInstance() != null) && enrollment.getTrackedEntityInstance().isModified() )
+        {
+            logger.debug( "Persisting tracked entity instance." );
+            trackedEntityService.createOrUpdate( enrollment.getTrackedEntityInstance() );
+            logger.info( "Persisted tracked entity instance {}.", enrollment.getTrackedEntityInstance().getId() );
+            updated = true;
+        }
+
+        if (enrollment.isNewResource() )
+        {
+            logger.info( "Creating new enrollment." );
+            enrollmentService.create( enrollment );
+            logger.info( "Created new enrollment {}.", enrollment.getId());
+            updated = true;
+        }
+        else  if ( enrollment.isModified() )
+        {
+                logger.info( "Updating existing enrollment." );
+                enrollmentService.update(enrollment);
+                logger.info( "Updated existing enrollment {}.", enrollment.getId() );
+                updated = true;
+        }
+        
 
         return updated;
     }

@@ -36,6 +36,7 @@ import java.util.Optional;
  * on DHIS2.
  *
  * @author volsch
+ * @author Charles Chigoriwa
  */
 public interface EnrollmentService
 {
@@ -53,4 +54,6 @@ public interface EnrollmentService
 
     @Nonnull
     Enrollment update( @Nonnull Enrollment enrollment );
+    
+    public boolean delete( @Nonnull String enrollmentId );
 }
