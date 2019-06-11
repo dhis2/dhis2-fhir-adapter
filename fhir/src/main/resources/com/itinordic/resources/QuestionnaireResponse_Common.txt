@@ -1,0 +1,102 @@
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventDateLookupScript.Script ####################
+####### QuestionnaireResponse.FhirResourceMapping.ImpEffectiveDateLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014 -d '{
+ "name" : "Questionnaire Response Plan Date Lookup",
+ "description" : "Lookup of the exact date of the FHIR Questionnaire Response Plan.",
+ "code" : "QUESTIONNAIRE_RESPONSE_DATE_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "DATE_TIME",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ],
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEventDateLookupScript.ScriptSource ####################
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEffectiveDateLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/9032f79a-8c79-11e9-9397-f7457124da1d -d $'{
+  "sourceText" : "input.authored",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014"
+}'
+
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEventDateLookupScript.ExecutableScript ####################
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEffectiveDateLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07 -d '{
+  "name" : "Questionnaire Response Plan Date Lookup",
+  "code" : "QUESTIONNAIRE_RESPONSE_DATE_LOOKUP",
+  "description" : "Lookup of the exact date of the FHIR Questionnaire Response Plan",
+  "script" : "http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014"
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78 -d '{
+ "name" : "Questionnaire Response TEI Lookup",
+ "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Questionnaire Response.",
+ "code" : "QUESTIONNAIRE_RESPONSE_TEI_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "FHIR_RESOURCE",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ],
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/5c37dff4-8c7a-11e9-930b-c766f403131e -d $'{
+  "sourceText" : "var fhirResource = referenceUtils.getResource(input.subject, \'Patient\');\nfhirResource",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78"
+}'
+
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/50efe344-8c7a-11e9-834b-efb5d789587a -d '{
+  "name" : "Questionnaire Response TEI Lookup",
+  "code" : "QUESTIONNAIRE_RESPONSE_TEI_LOOKUP",
+  "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Questionnaire Response",
+  "script" : "http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78"
+}'
+
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad -d '{
+ "name" : "Org Unit Code from Questionnaire Response Resource",
+ "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource.",
+ "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "ORG_UNIT_REF",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ],
+}'
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/05356be4-8c7b-11e9-b840-1fa319366597 -d $'{
+  "sourceText" : "function getOrganizationUnitMappedCode(organizationReference)\n{\nvar mappedCode = null;\nif (organizationReference != null)\n{\nvar hierarchy = organizationUtils.findHierarchy(organizationReference);\nif (hierarchy != null)\n{for (var i = 0; (mappedCode == null) && (i <hierarchy.size()); i++)\n{\nvar code = identifierUtils.getResourceIdentifier(hierarchy.get(i), \'ORGANIZATION\');\nif (code != null)\n{mappedCode = codeUtils.getMappedCode(code, \'ORGANIZATION\');\nif ((mappedCode == null) && args[\'useIdentifierCode\'])\n{mappedCode = organizationUtils.existsWithPrefix(code);\n}\n}\n}\n}\n}\nreturn mappedCode;}\nvar ref = null;\nvar mappedCode = getOrganizationUnitMappedCode(resource.author);\nif (mappedCode != null){\nref = context.createReference(mappedCode, \'CODE\');\n}ref",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad"
+}'
+
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef -d '{
+  "name" : "Org Unit Code from Questionnaire Response Resource"",
+  "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP",
+  "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource.",
+  "script" : "http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad"
+}'
+
+####### QuestionnaireResponse.FhirResourceMapping ###########################
+curl 'http://localhost:8081/api/fhirResourceMappings' -i -u 'admin:district' -X POST \
+    -H 'Content-Type: application/json' \
+    -d '{
+  "fhirResourceType" : "QUESTIONNAIRE_RESPONSE",
+  "trackedEntityFhirResourceType" : "PATIENT",
+  "impTeiLookupScript" : "http://localhost:8081/api/executableScripts/50efe344-8c7a-11e9-834b-efb5d789587a",
+  "impEventDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
+  "impEffectiveDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
+  "impEventOrgLookupScript" : "http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef"
+ }'
+
+
+
