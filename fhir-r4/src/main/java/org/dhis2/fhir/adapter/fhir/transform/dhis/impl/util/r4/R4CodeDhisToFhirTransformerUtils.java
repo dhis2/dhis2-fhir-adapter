@@ -77,4 +77,11 @@ public class R4CodeDhisToFhirTransformerUtils extends AbstractCodeDhisToFhirTran
         }
         return codeableConcept;
     }
+
+    @Nonnull
+    @Override
+    protected Class<? extends ICompositeType> getCodeableConceptClass()
+    {
+        return CodeableConcept.class;
+    }
 }

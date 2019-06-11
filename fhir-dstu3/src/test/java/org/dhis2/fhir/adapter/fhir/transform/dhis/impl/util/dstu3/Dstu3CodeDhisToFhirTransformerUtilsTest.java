@@ -43,6 +43,8 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
+import org.hl7.fhir.dstu3.model.Immunization;
+import org.hl7.fhir.dstu3.model.Observation;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,6 +86,56 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
+
+    @Test
+    public void setRuleCodeableConceptNoCodeSet()
+    {
+        final ProgramStageRule programStageRule = new ProgramStageRule();
+        programStageRule.setName( "test rule name" );
+
+        final RuleInfo<?> ruleInfo = new RuleInfo<>( programStageRule, Collections.emptyList() );
+        final Observation observation = new Observation();
+
+        Assert.assertTrue( utils.setRuleCodeableConcept( ruleInfo, observation ) );
+
+        Assert.assertEquals( "test rule name", observation.getCode().getText() );
+        Assert.assertEquals( 0, observation.getCode().getCoding().size() );
+    }
+
+    @Test
+    public void setRuleCodeableConcept()
+    {
+        final CodeSet codeSet = new CodeSet();
+        codeSet.setId( UUID.randomUUID() );
+        codeSet.setCode( "MY_TEST_CODE_SET" );
+        codeSet.setName( "My test code set name" );
+        final ProgramStageRule programStageRule = new ProgramStageRule();
+        programStageRule.setApplicableCodeSet( codeSet );
+
+        final SystemCodeValues systemCodeValues = new SystemCodeValues( "testText",
+            Arrays.asList( new SystemCodeValue( "SNOMED CT", "837823" ),
+                new SystemCodeValue( "LOINC", "84878973-8", "Test Text" ) ) );
+        Mockito.when( systemCodeRepository.findPreferredByCodeSetId( Mockito.eq( codeSet.getId() ) ) )
+            .thenReturn( systemCodeValues );
+
+        final RuleInfo<?> ruleInfo = new RuleInfo<>( programStageRule, Collections.emptyList() );
+        final Immunization immunization = new Immunization();
+
+        Assert.assertTrue( utils.setRuleCodeableConcept( ruleInfo, immunization ) );
+
+        CodeableConcept codeableConcept = immunization.getVaccineCode();
+        Assert.assertEquals( "testText", codeableConcept.getText() );
+        Assert.assertEquals( 3, codeableConcept.getCoding().size() );
+        Assert.assertEquals( "SNOMED CT", codeableConcept.getCoding().get( 0 ).getSystem() );
+        Assert.assertEquals( "837823", codeableConcept.getCoding().get( 0 ).getCode() );
+        Assert.assertNull( codeableConcept.getCoding().get( 0 ).getDisplay() );
+        Assert.assertEquals( "LOINC", codeableConcept.getCoding().get( 1 ).getSystem() );
+        Assert.assertEquals( "84878973-8", codeableConcept.getCoding().get( 1 ).getCode() );
+        Assert.assertEquals( "Test Text", codeableConcept.getCoding().get( 1 ).getDisplay() );
+        Assert.assertEquals( "http://www.dhis2.org/dhis2-fhir-adapter/systems/code-set", codeableConcept.getCoding().get( 2 ).getSystem() );
+        Assert.assertEquals( "MY_TEST_CODE_SET", codeableConcept.getCoding().get( 2 ).getCode() );
+        Assert.assertEquals( "My test code set name", codeableConcept.getCoding().get( 2 ).getDisplay() );
+    }
 
     @Test
     public void getRuleCodeableConceptNull()

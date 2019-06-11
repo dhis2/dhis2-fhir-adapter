@@ -32,9 +32,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodeSet;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CodeSetRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
@@ -46,12 +48,20 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.ICompositeType;
+import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,9 +76,13 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
 {
     public static final String SCRIPT_ATTR_NAME = "codeUtils";
 
+    private static final List<String> SET_CODE_METHOD_NAMES = Collections.unmodifiableList( Arrays.asList( "setCode", "setVaccineCode", "setMedicationCodeableConcept" ) );
+
     private final CodeSetRepository codeSetRepository;
 
     private final SystemCodeRepository systemCodeRepository;
+
+    private volatile Map<Class<? extends IDomainResource>, Method> codeMethods = new HashMap<>();
 
     protected AbstractCodeDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull CodeSetRepository codeSetRepository, @Nonnull SystemCodeRepository systemCodeRepository )
     {
@@ -107,6 +121,54 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
             systemCodeValues = new SystemCodeValues( ruleInfo.getRule().getApplicableCodeSet().getName(), Collections.emptyList() );
         }
         return createCodeableConcept( systemCodeValues );
+    }
+
+
+    /**
+     * Sets the codeable concept of the rule to the resource. If the resource cannot handle codes, the method does nothing.
+     *
+     * @param ruleInfo the rule info from which the code should be extracted.
+     * @param resource the resource on which the code should be set.
+     * @return <code>true</code> if the code has been set, <code>false</code> otherwise (e.g. resource does not support a code).
+     */
+    public boolean setRuleCodeableConcept( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull IBaseResource resource )
+    {
+        if ( !( resource instanceof IDomainResource ) )
+        {
+            return false;
+        }
+
+        final Method codeMethod = getCodeMethod( (IDomainResource) resource );
+
+        if ( codeMethod == null )
+        {
+            return false;
+        }
+
+        SystemCodeValues systemCodeValues;
+
+        if ( ruleInfo.getRule().getApplicableCodeSet() == null )
+        {
+            systemCodeValues = new SystemCodeValues( ruleInfo.getRule().getName(), Collections.emptyList() );
+        }
+        else
+        {
+            systemCodeValues = systemCodeRepository.findPreferredByCodeSetId( ruleInfo.getRule().getApplicableCodeSet().getId() );
+
+            if ( systemCodeValues == null )
+            {
+                systemCodeValues = new SystemCodeValues( ruleInfo.getRule().getApplicableCodeSet().getName(), Collections.emptyList() );
+            }
+
+            systemCodeValues = new SystemCodeValues( systemCodeValues );
+
+            systemCodeValues.getSystemCodeValues().add( new SystemCodeValue( System.DHIS2_FHIR_CODE_SET_URI, ruleInfo.getRule().getApplicableCodeSet().getCode(),
+                ruleInfo.getRule().getApplicableCodeSet().getName() ) );
+        }
+
+        ReflectionUtils.invokeMethod( codeMethod, resource, createCodeableConcept( systemCodeValues ) );
+
+        return true;
     }
 
     @ScriptExecutionRequired
@@ -178,4 +240,37 @@ public abstract class AbstractCodeDhisToFhirTransformerUtils extends AbstractDhi
 
     @Nonnull
     protected abstract ICompositeType createCodeableConcept( @Nonnull SystemCodeValues systemCodeValues );
+
+    @Nonnull
+    protected abstract Class<? extends ICompositeType> getCodeableConceptClass();
+
+    @Nullable
+    private Method getCodeMethod( @Nonnull IDomainResource domainResource )
+    {
+        final Class<? extends IDomainResource> domainResourceClass = domainResource.getClass();
+        final Map<Class<? extends IDomainResource>, Method> codeMethods = this.codeMethods;
+
+        if ( codeMethods.containsKey( domainResourceClass ) )
+        {
+            return codeMethods.get( domainResourceClass );
+        }
+
+        Method method = null;
+
+        for ( final String methodName : SET_CODE_METHOD_NAMES )
+        {
+            method = ReflectionUtils.findMethod( domainResource.getClass(), methodName, getCodeableConceptClass() );
+
+            if ( method != null )
+            {
+                break;
+            }
+        }
+
+        final Map<Class<? extends IDomainResource>, Method> copiedCodeMethods = new HashMap<>( codeMethods );
+        copiedCodeMethods.put( domainResourceClass, method );
+        this.codeMethods = copiedCodeMethods;
+
+        return method;
+    }
 }

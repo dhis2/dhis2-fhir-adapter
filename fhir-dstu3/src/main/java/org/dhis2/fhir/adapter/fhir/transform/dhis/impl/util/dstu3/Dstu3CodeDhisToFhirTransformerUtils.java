@@ -77,4 +77,11 @@ public class Dstu3CodeDhisToFhirTransformerUtils extends AbstractCodeDhisToFhirT
         }
         return codeableConcept;
     }
+
+    @Nonnull
+    @Override
+    protected Class<? extends ICompositeType> getCodeableConceptClass()
+    {
+        return CodeableConcept.class;
+    }
 }

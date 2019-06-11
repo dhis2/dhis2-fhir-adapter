@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractCodeDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
@@ -189,12 +190,17 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
                     resourceMapping.getFhirResourceType() );
                 return null;
             }
+
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.CODE_UTILS, AbstractCodeDhisToFhirTransformerUtils.class )
+                .setRuleCodeableConcept( ruleInfo, resource );
         }
+
         if ( (context.getDhisRequest().isCompleteTransformation() || context.isGrouping()) &&
             (resourceMapping.getExpGroupTransformScript() != null) &&
             !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGroupTransformScript(), variables, Boolean.class ) ) )
         {
             logger.info( "Resulting grouping could not be transformed into FHIR resource {}.", resourceMapping.getFhirResourceType() );
+
             return null;
         }
 
