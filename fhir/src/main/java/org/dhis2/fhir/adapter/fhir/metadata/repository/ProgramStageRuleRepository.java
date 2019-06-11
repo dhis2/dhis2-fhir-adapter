@@ -28,7 +28,9 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgramStage;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,6 +38,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +46,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -68,6 +72,12 @@ public interface ProgramStageRuleRepository extends JpaRepository<ProgramStageRu
     @RestResource( exported = false )
     @Query( "SELECT r FROM #{#entityName} r JOIN r.programStage ps JOIN ps.program p WHERE p IN (:programs)" )
     <S extends ProgramStageRule> List<S> findAllByProgram( @Nonnull Collection<MappedTrackerProgram> programs );
+
+    @Nonnull
+    @RestResource( exported = false )
+    @Query( "SELECT r FROM #{#entityName} r WHERE r.programStage=:programStage AND r.fhirResourceType=:fhirResourceType" )
+    Optional<ProgramStageRule> findFirstByProgramStageFhirResource(
+        @Param( "programStage" ) @Nonnull MappedTrackerProgramStage programStage, @Param( "fhirResourceType" ) @Nonnull FhirResourceType fhirResourceType );
 
     @Override
     @Nonnull

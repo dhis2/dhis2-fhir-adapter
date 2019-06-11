@@ -97,10 +97,10 @@ public class CustomProgramStageRuleRepositoryImpl implements CustomProgramStageR
     @CacheEvict( allEntries = true, cacheManager = "metadataCacheManager", cacheNames = "programStageRule" )
     @Transactional
     @Override
-    public void deleteAllByProgram( @Nonnull MappedTrackerProgram program )
+    public void deleteAllNonGroupingByProgram( @Nonnull MappedTrackerProgram program )
     {
         entityManager.createQuery( "DELETE FROM ProgramStageRule r WHERE r.programStage IN " +
-            "(SELECT ps FROM MappedTrackerProgramStage ps WHERE ps.program=:program)" ).setParameter( "program", program ).executeUpdate();
+            "(SELECT ps FROM MappedTrackerProgramStage ps WHERE ps.program=:program) AND r.grouping=false" ).setParameter( "program", program ).executeUpdate();
 
     }
 }

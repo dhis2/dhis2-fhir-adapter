@@ -218,7 +218,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
             return messageCollector;
         }
 
-        programStageRuleRepository.deleteAllByProgram( mappedTrackerProgram );
+        programStageRuleRepository.deleteAllNonGroupingByProgram( mappedTrackerProgram );
 
         final Set<ProgramStageDataElementKey> unprocessedKeys = new HashSet<>();
         program.getStages().forEach( ps -> ps.getDataElements().forEach( de -> unprocessedKeys.add( new ProgramStageDataElementKey( ps, de.getElement() ) ) ) );
@@ -495,24 +495,6 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     }
                 }
 
-                if ( valueCodeSetCode != null )
-                {
-                    valueCodeSet = codeSetRepository.findOneByCode( StringUtils.left( valueCodeSetCode, CodeSet.MAX_CODE_LENGTH ) ).orElse( null );
-
-                    if ( valueCodeSet == null )
-                    {
-                        messageCollector.addMessage( new MetadataSheetMessage(
-                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, D2F_APPLICABLE_SCRIPT_CODE_COL ),
-                            "Value code set does not exist: " + valueCodeSetCode ) );
-                    }
-                }
-                else if ( !dataElements.isEmpty() && dataElements.stream().findFirst().get().getElement().isOptionSetValue() )
-                {
-                    messageCollector.addMessage( new MetadataSheetMessage(
-                        MetadataSheetMessageSeverity.WARN, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
-                        "Value code set code should be specified since data element reference an option set." ) );
-                }
-
                 if ( f2dApplicableScriptCode != null && mainDataElement != null )
                 {
                     f2dApplicableScript = lookupExecutableScript( messageCollector, rowNum, mainDataElement, f2dApplicableScriptCode, valueCodeSetCode );
@@ -559,6 +541,24 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                             MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, D2F_APPLICABLE_SCRIPT_CODE_COL ),
                             "FHIR to DHIS 2 transform script does not exist: " + d2fApplicableScriptCode ) );
                     }
+                }
+
+                if ( valueCodeSetCode != null )
+                {
+                    valueCodeSet = codeSetRepository.findOneByCode( StringUtils.left( valueCodeSetCode, CodeSet.MAX_CODE_LENGTH ) ).orElse( null );
+
+                    if ( valueCodeSet == null )
+                    {
+                        messageCollector.addMessage( new MetadataSheetMessage(
+                            MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, D2F_APPLICABLE_SCRIPT_CODE_COL ),
+                            "Value code set does not exist: " + valueCodeSetCode ) );
+                    }
+                }
+                else if ( !dataElements.isEmpty() && dataElements.stream().findFirst().get().getElement().isOptionSetValue() && ( f2dTransformScript != null || d2fTransformScript != null ) )
+                {
+                    messageCollector.addMessage( new MetadataSheetMessage(
+                        MetadataSheetMessageSeverity.WARN, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, VALUE_CODE_SET_CODE_COL ),
+                        "Value code set code should be specified since data element reference an option set." ) );
                 }
 
                 if ( messageCollector.isOk() )

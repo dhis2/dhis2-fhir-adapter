@@ -50,5 +50,5 @@ public interface CustomProgramStageRuleRepository
     Collection<RuleInfo<ProgramStageRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nonnull Collection<Reference> programStageReferences, @Nullable Collection<Reference> dataReferences );
 
     @RestResource( exported = false )
-    void deleteAllByProgram( @Nonnull MappedTrackerProgram program );
+    void deleteAllNonGroupingByProgram( @Nonnull MappedTrackerProgram program );
 }

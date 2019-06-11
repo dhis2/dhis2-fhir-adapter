@@ -38,16 +38,21 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ApplicableEnrollmentStatus;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ApplicableEventStatus;
+import org.dhis2.fhir.adapter.fhir.metadata.model.EventStatusUpdate;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackedEntity;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgramStage;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ExecutableScriptRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackedEntityRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramStageRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetLocation;
 import org.dhis2.fhir.adapter.metadata.sheet.model.MetadataSheetMessage;
@@ -57,9 +62,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Processes the metadata import of program and its program stages from a sheet.<br>
@@ -88,6 +95,10 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
 
     public static final int PROGRAM_STAGE_CREATE_SCRIPT_CODE_COL = 3;
 
+    public static final UUID DEFAULT_ENCOUNTER_SEARCH_FILTER_SCRIPT_ID = UUID.fromString( "bae38b4e-5d16-46e9-b579-a9a0900edb72" );
+
+    public static final UUID DEFAULT_ENCOUNTER_TRANSFORM_EXP_SCRIPT_ID = UUID.fromString( "5eab76a9-0ff4-43b0-a7d0-5a6e726ca80e" );
+
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
     private final ProgramMetadataService programMetadataService;
@@ -98,19 +109,22 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
 
     private final MappedTrackerProgramStageRepository mappedTrackerProgramStageRepository;
 
+    private final ProgramStageRuleRepository programStageRuleRepository;
+
     private final TrackedEntityRuleRepository trackedEntityRuleRepository;
 
     private final ExecutableScriptRepository executableScriptRepository;
 
     public MetadataSheetProgramImportProcessor( @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull ProgramMetadataService programMetadataService,
         @Nonnull MappedTrackerProgramRepository mappedTrackerProgramRepository, @Nonnull MappedTrackedEntityRepository mappedTrackedEntityRepository, @Nonnull MappedTrackerProgramStageRepository mappedTrackerProgramStageRepository,
-        @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository, @Nonnull ExecutableScriptRepository executableScriptRepository )
+        @Nonnull ProgramStageRuleRepository programStageRuleRepository, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository, @Nonnull ExecutableScriptRepository executableScriptRepository )
     {
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.programMetadataService = programMetadataService;
         this.mappedTrackedEntityRepository = mappedTrackedEntityRepository;
         this.mappedTrackerProgramRepository = mappedTrackerProgramRepository;
         this.mappedTrackerProgramStageRepository = mappedTrackerProgramStageRepository;
+        this.programStageRuleRepository = programStageRuleRepository;
         this.trackedEntityRuleRepository = trackedEntityRuleRepository;
         this.executableScriptRepository = executableScriptRepository;
     }
@@ -365,10 +379,46 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
                     mappedTrackerProgramStage.setFhirDeleteEnabled( true );
 
                     mappedTrackerProgramStageRepository.save( mappedTrackerProgramStage );
+                    createEncounterRule( mappedTrackerProgramStage );
                 }
             }
         }
 
         return messageCollector;
+    }
+
+    protected void createEncounterRule( @Nonnull MappedTrackerProgramStage mappedTrackerProgramStage )
+    {
+        final ExecutableScript expTransformExecutableScript = executableScriptRepository.findById( DEFAULT_ENCOUNTER_TRANSFORM_EXP_SCRIPT_ID )
+            .orElseThrow( () -> new MetadataSheetImportException( "Could not find default encounter export transformation script." ) );
+        final ExecutableScript filterExecutableScript = executableScriptRepository.findById( DEFAULT_ENCOUNTER_SEARCH_FILTER_SCRIPT_ID )
+            .orElseThrow( () -> new MetadataSheetImportException( "Could not find default encounter filter script." ) );
+
+        final ProgramStageRule rule = programStageRuleRepository.findFirstByProgramStageFhirResource( mappedTrackerProgramStage, FhirResourceType.ENCOUNTER )
+            .orElseGet( ProgramStageRule::new );
+
+        rule.setProgramStage( mappedTrackerProgramStage );
+        rule.setFhirResourceType( FhirResourceType.ENCOUNTER );
+        rule.setName( StringUtils.left( mappedTrackerProgramStage.getName() + ": Encounter", ProgramStageRule.MAX_NAME_LENGTH ) );
+        rule.setDescription( mappedTrackerProgramStage.getName() + ": Encounter" );
+        rule.setEvaluationOrder( 1_000_000 );
+        rule.setGrouping( true );
+        rule.setEnabled( true );
+        rule.setImpEnabled( false );
+        rule.setExpEnabled( true );
+        rule.setTransformExpScript( expTransformExecutableScript );
+        rule.setFilterScript( filterExecutableScript );
+        rule.setApplicableEnrollmentStatus( new ApplicableEnrollmentStatus() );
+        rule.setApplicableEventStatus( new ApplicableEventStatus() );
+        rule.setEventStatusUpdate( new EventStatusUpdate() );
+
+        if ( rule.getDhisDataReferences() == null )
+        {
+            rule.setDhisDataReferences( new ArrayList<>() );
+        }
+
+        rule.getDhisDataReferences().clear();
+
+        programStageRuleRepository.save( rule );
     }
 }

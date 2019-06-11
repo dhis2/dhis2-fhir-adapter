@@ -192,7 +192,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     @Nonnull
     private Map<String, Object> createArgs( @Nonnull ExecutableScriptInfo executableScriptInfo, @Nonnull Map<String, Object> arguments )
     {
-        final Map<String, Object> args = new HashMap<>();
+        final Map<String, Object> args = new HashMap<>( arguments );
         executableScriptInfo.getResultingScriptArgValues().forEach( v -> {
             final Object value;
             if ( arguments.containsKey( v.getName() ) )
