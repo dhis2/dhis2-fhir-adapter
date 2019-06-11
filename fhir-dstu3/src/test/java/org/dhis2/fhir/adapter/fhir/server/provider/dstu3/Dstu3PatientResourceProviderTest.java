@@ -152,7 +152,15 @@ public class Dstu3PatientResourceProviderTest
     @Test
     public void patientInstanceEverything()
     {
+        Mockito.when( requestDetails.getServerBaseForRequest() ).thenReturn( "http://test.org/fhir" );
         Mockito.when( requestDetails.getTenantId() ).thenReturn( "default" );
+
+        Mockito.when( observation.getIdElement() ).thenReturn( new IdType() );
+        Mockito.when( condition.getIdElement() ).thenReturn( new IdType() );
+        Mockito.when( immunization.getIdElement() ).thenReturn( new IdType() );
+        Mockito.when( encounter.getIdElement() ).thenReturn( new IdType() );
+        Mockito.when( diagnosticReport.getIdElement() ).thenReturn( new IdType() );
+        Mockito.when( medicationRequest.getIdElement() ).thenReturn( new IdType() );
 
         final UUID fhirClientId = FhirClient.getIdByFhirVersion( FhirVersion.DSTU3 );
 
