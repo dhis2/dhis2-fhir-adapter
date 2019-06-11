@@ -55,6 +55,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
  * Implementation of {@link DhisResourceRepository}.
  *
  * @author volsch
+ * @author Charles Chigoriwa
  */
 @Component
 public class DhisResourceRepositoryImpl implements DhisResourceRepository
