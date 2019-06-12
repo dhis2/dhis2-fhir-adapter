@@ -1312,164 +1312,164 @@ if ((input.getDisplayName() != null) && !input.getDisplayName().equals(input.get
 true' WHERE id='4bb9745e43c0455fbeee98e95c83df3d' AND version=0;
 
 UPDATE fhir_script_source SET source_text=
-'function getOrganizationUnitMappedCode(organizationReference)
+'function getCodeFromHierarchy(hierarchy, resourceType, resourceRef)
+{
+  var mappedCode = null;
+  if (hierarchy != null)
+  {
+    for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
+    {
+      var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), resourceType);
+      if (code != null)
+      {
+        mappedCode = codeUtils.getMappedCode(code, resourceType);
+        if ((mappedCode == null) && args[''useIdentifierCode''])
+        {
+          mappedCode = organizationUtils.existsWithPrefix(code);
+        }
+      }
+    }
+  }
+  return mappedCode;
+}
+function getOrganizationUnitMappedCode(organizationReference)
 {
   var mappedCode = null;
   if (organizationReference != null)
   {
     var hierarchy = organizationUtils.findHierarchy(organizationReference);
+    mappedCode = getCodeFromHierarchy(hierarchy, ''Organization'', organizationReference);
+  }
+  return mappedCode;
+}
+function getLocationMappedCode(locationReference)
+{
+  var mappedCode = null;
+  if (locationReference != null)
+  {
+    var hierarchy = locationUtils.findHierarchy(locationReference);
     if (hierarchy != null)
     {
+      getCodeFromHierarchy(hierarchy, ''Location'', locationReference);
       for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
       {
-        var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''ORGANIZATION'');
-        if (code != null)
+        var organizationReference = hierarchy.get(i).getManagingOrganization();
+        if (organizationReference != null)
         {
-          mappedCode = codeUtils.getMappedCode(code, ''ORGANIZATION'');
-          if ((mappedCode == null) && args[''useIdentifierCode''])
-          {
-            mappedCode = organizationUtils.existsWithPrefix(code);
-          }
+          mappedCode = getOrganizationUnitMappedCode(organizationReference);
         }
       }
     }
   }
   return mappedCode;
 }
-function getLocationReference(location)
+var fhirOrgUnitRef = null;
+var fhirOrgUnitType = null;
+if (input.managingOrganization)
 {
-  if (typeof input.locationFirstRep === ''undefined'')
-  {
-    return location;
-  }
-  else if (typeof input.locationFirstRep.location !== ''undefined'')
-  {
-    return input.locationFirstRep.location;
-  }
-  return null;
+  fhirOrgUnitRef = input.managingOrganization;
+  fhirOrgUnitType = ''Organization'';
 }
-function getMappedCode(resource)
+else if ( (typeof input.locationFirstRep !== ''undefined'') && (typeof input.locationFirstRep.location !== ''undefined'') )
 {
-  var  mappedCode = null ;
-  if (resource.managingOrganization)
+  fhirOrgUnitRef = input.locationFirstRep.location;
+  fhirOrgUnitType = ''Location'';
+}
+else if (input.location)
+{
+  fhirOrgUnitRef = input.location;
+  fhirOrgUnitType = ''Location'';
+}
+else if (input.performer && !input.getPerformerFirstRep().isEmpty() && (input.getPerformerFirstRep().getReferenceElement().getResourceType() == null || input.getPerformerFirstRep().getReferenceElement().getResourceType() == ''Organization''))
+{
+  fhirOrgUnitRef = input.getPerformerFirstRep();
+  fhirOrgUnitType = input.getPerformerFirstRep().getReferenceElement().getResourceType();
+  if (fhirOrgUnitType == null)
   {
-    mappedCode = getOrganizationUnitMappedCode(resource.managingOrganization);
+    fhirOrgUnitType = ''Organization'';
   }
-  else if (resource.location)
+}
+else if (input.serviceProvider)
+{
+  fhirOrgUnitRef = input.serviceProvider;
+  fhirOrgUnitType = ''Organization'';
+}
+else if (input.author)
+{
+  fhirOrgUnitRef = input.author;
+  fhirOrgUnitType = ''Organization'';
+}
+else if (input.encounter)
+{
+  var encounter = referenceUtils.getResource(input.encounter, ''Encounter'');
+  if (encounter != null)
   {
-    var locationReference = getLocationReference(resource.location);
-    if (locationReference != null)
-    {
-      var hierarchy = locationUtils.findHierarchy(locationReference);
-      if (hierarchy != null)
-      {
-        for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
-        {
-          var code = identifierUtils.getResourceIdentifier(hierarchy.get(i), ''LOCATION'');
-          if (code != null)
-          {
-            mappedCode = codeUtils.getMappedCode(code, ''LOCATION'');
-            if ((mappedCode == null) && args[''useIdentifierCode''])
-            {
-              mappedCode = locationUtils.existsWithPrefix(code);
-            }
-          }
-        }
-        for (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)
-        {
-          var organizationReference = hierarchy.get(i).getManagingOrganization();
-          if (organizationReference != null)
-          {
-            mappedCode = getOrganizationUnitMappedCode(organizationReference);
-          }
-        }
-      }
-    }
+    fhirOrgUnitRef = getLocationReference(encounter.location);
+    fhirOrgUnitType = ''Location'';
   }
-  else if (resource.performer && !resource.getPerformerFirstRep().isEmpty() && resource.getPerformerFirstRep().getReferenceElement().getResourceType() == ''Organization'')
-  {
-    mappedCode = getOrganizationUnitMappedCode(resource.getPerformerFirstRep());
-  }
-  else if (resource.serviceProvider)
-  {
-    mappedCode = getOrganizationUnitMappedCode(resource.serviceProvider);
-  }
-  return mappedCode;
 }
 var ref = null;
-if (context.getFhirRequest().isDhisFhirId())
+if (fhirOrgUnitRef != null)
 {
-  var fhirOrgUnitRef = null;
-  if (input.managingOrganization)
+  ref = fhirResourceUtils.getAdapterReference(fhirOrgUnitRef, fhirOrgUnitType);
+}
+if (ref == null)
+{
+  if (context.getFhirRequest().isDhisFhirId())
   {
-    fhirOrgUnitRef = input.managingOrganization;
-  }
-  else if (input.location)
-  {
-    fhirOrgUnitRef = input.location;
-  }
-  else if (input.performer && !input.getPerformerFirstRep().isEmpty() && input.getPerformerFirstRep().getReferenceElement().getResourceType() == ''Organization'')
-  {
-    fhirOrgUnitRef = input.getPerformerFirstRep();
-  }
-  else if (input.serviceProvider)
-  {
-    fhirOrgUnitRef = input.serviceProvider;
-  }
-  else if (input.encounter)
-  {
-    var encounter = referenceUtils.getResource(input.encounter, ''Encounter'');
-    if (encounter != null)
+    if (fhirOrgUnitRef == null)
     {
-      fhirOrgUnitRef = getLocationReference(encounter.location);
+      if (args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+      {
+        ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+      }
+      else if ((typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+      {
+        ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+      }
     }
-  }
-  if (fhirOrgUnitRef == null)
-  {
-    if (args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+    else
     {
-      ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
-    }
-    else if ((typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
-    {
-      ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+      if (fhirOrgUnitRef != null && fhirOrgUnitRef.identifier !== ''undefined'' && fhirOrgUnitRef.hasIdentifier())
+      {
+        ref = context.createReference(identifierUtils.getReferenceIdentifier(fhirOrgUnitRef, fhirOrgUnitType), ''code'');
+      }
+      if (ref == null)
+      {
+        ref = context.createReference(context.extractDhisId(fhirOrgUnitRef.getReferenceElement()), ''id'');
+      }
     }
   }
   else
   {
-    ref = context.createReference(context.extractDhisId(fhirOrgUnitRef.getReferenceElement()), ''id'');
-  }
-}
-else
-{
-  var mappedCode;
-  if (input.managingOrganization || input.location || (input.performer && !input.getPerformerFirstRep().isEmpty() && input.getPerformerFirstRep().getReferenceElement().getResourceType() == ''Organization'') || input.serviceProvider)
-  {
-    mappedCode = getMappedCode(input);
-  }
-  else if (input.encounter)
-  {
-    var encounter = referenceUtils.getResource(input.encounter, ''Encounter'');
-    if (encounter != null)
+    var mappedCode = null;
+    if (fhirOrgUnitRef != null)
     {
-      mappedCode = getMappedCode(encounter);
+      if (fhirOrgUnitType == ''Location'')
+      {
+        mappedCode = getLocationMappedCode(fhirOrgUnitRef);
+      }
+      else
+      {
+        mappedCode = getOrganizationUnitMappedCode(fhirOrgUnitRef);
+      }
     }
-  }
-  if (mappedCode == null)
-  {
-    mappedCode = args[''defaultCode''];
-  }
-  if (mappedCode != null)
-  {
-    ref = context.createReference(mappedCode, ''CODE'');
-  }
-  if ((ref == null) && args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
-  {
-    ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
-  }
-  else if ((ref == null) && (typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
-  {
-    ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+    if (mappedCode == null)
+    {
+      mappedCode = args[''defaultCode''];
+    }
+    if (mappedCode != null)
+    {
+      ref = context.createReference(mappedCode, ''CODE'');
+    }
+    if ((ref == null) && args[''useTei''] && (typeof trackedEntityInstance !== ''undefined''))
+    {
+      ref = context.createReference(trackedEntityInstance.organizationUnitId, ''ID'');
+    }
+    else if ((ref == null) && (typeof enrollment !== ''undefined'') && (enrollment.organizationUnitId != null))
+    {
+      ref = context.createReference(enrollment.organizationUnitId, ''ID'');
+    }
   }
 }
 ref' WHERE id='7b94febabcf64635929a01311b25d975' AND version=0;
@@ -2271,3 +2271,15 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code, base_exe
 VALUES ('a2b0c480d4b14a30abbc44f720402d5a', 0, '6f1a456adb0945038bb69bba687f13b4', 'Prepares Patient Search Filter', 'SEARCH_FILTER_PATIENT', '72451c8f7492470790b8a3e0796de19e');
 UPDATE fhir_rule SET filter_script_id='a2b0c480d4b14a30abbc44f720402d5a' WHERE fhir_resource_type='PATIENT' and dhis_resource_type='TRACKED_ENTITY'
 and filter_script_id IS NULL and id = '5f9ebdc9852e4c8387ca795946aabc35';
+
+UPDATE fhir_script_source SET source_text='fhirResourceUtils.getIdentifiedResource(input.subject, ''Patient'')'
+WHERE id='960d2e6c247948a2b04eb14879e71d14' AND version=0;
+
+UPDATE fhir_script_source SET source_text='fhirResourceUtils.getIdentifiedResource(input.patient, ''Patient'')'
+WHERE id='1f94dda828ec480f8c6bd8d734612414' AND version=0;
+
+UPDATE fhir_script_source SET source_text='fhirResourceUtils.getIdentifiedResource(input.patient, ''Patient'')'
+WHERE id='85b3c4606c2a4f50af46ff09bf2e69df' AND version=0;
+
+UPDATE fhir_script_source SET source_text='fhirResourceUtils.getIdentifiedResource(input.subject, ''Patient'')'
+WHERE id='67249e7b4ba7466ca770a78923fbf1c3' AND version=0;

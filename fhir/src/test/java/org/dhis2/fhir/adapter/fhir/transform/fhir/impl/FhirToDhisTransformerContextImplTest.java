@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.IdDt;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ImmutableFhirRequest;
 import org.junit.Assert;
@@ -59,7 +61,6 @@ public class FhirToDhisTransformerContextImplTest
     public void before()
     {
         context = new FhirToDhisTransformerContextImpl( fhirRequest, true );
-
     }
 
     @Test
@@ -91,6 +92,42 @@ public class FhirToDhisTransformerContextImplTest
         final ZonedDateTime nowAfter = ZonedDateTime.now();
         Assert.assertFalse( now.isBefore( nowBefore ) );
         Assert.assertFalse( now.isAfter( nowAfter ) );
+    }
+
+    @Test
+    public void extractDhisIdNull()
+    {
+        Assert.assertNull( context.extractDhisId( null ) );
+    }
+
+    @Test
+    public void extractDhisIdSimple()
+    {
+        Assert.assertEquals( "983jsh283jsa", context.extractDhisId( "983jsh283jsa" ) );
+    }
+
+    @Test
+    public void extractDhisIdComplex()
+    {
+        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( "te-LMYkcW3hE5b-5f9ebdc9852e4c8387ca795946aabc35" ) );
+    }
+
+    @Test
+    public void extractDhisIdLocale()
+    {
+        Assert.assertNull( context.extractDhisId( new IdDt( "#1" ) ) );
+    }
+
+    @Test
+    public void extractDhisIdType()
+    {
+        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( new IdDt( "Patient/te-LMYkcW3hE5b-5f9ebdc9852e4c8387ca795946aabc35" ) ) );
+    }
+
+    @Test( expected = TransformerDataException.class )
+    public void extractDhisIdTypeInvalid()
+    {
+        context.extractDhisId( new IdDt( "Patient/-LMYkcW3hE5b-5f9ebdc9852e4c8387ca795946aabc35" ) );
     }
 
     @Test

@@ -59,6 +59,8 @@ public class System extends VersionedBaseMetadata implements SystemDependent, Se
 {
     private static final long serialVersionUID = 1072841132452061822L;
 
+    public static final String DHIS2_FHIR_IDENTIFIER_URI = "http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier";
+
     public static final String DHIS2_FHIR_VALUE_SET_URI_PREFIX = "http://www.dhis2.org/dhis2-fhir-adapter/systems/value-set/";
 
     public static final String DHIS2_FHIR_CODE_SET_URI = "http://www.dhis2.org/dhis2-fhir-adapter/systems/code-set";

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.model;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,63 +28,30 @@ package org.dhis2.fhir.adapter.fhir.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
- * List of ordered system code values with an optional text representation.
- *
- * @author volsch
+ * Unit tests for {@link DhisResourceId}.
  */
-public class SystemCodeValues implements Serializable
+public class DhisResourceIdTest
 {
-    private static final long serialVersionUID = 8065532674239620314L;
-
-    private final String text;
-
-    private final List<SystemCodeValue> systemCodeValues;
-
-    @JsonCreator
-    public SystemCodeValues( @JsonProperty( "text" ) @Nullable String text, @JsonProperty( "systemCodeValues" ) @Nonnull List<SystemCodeValue> systemCodeValues )
+    @Test
+    public void isValidId()
     {
-        this.text = text;
-        this.systemCodeValues = systemCodeValues;
+        Assert.assertTrue( DhisResourceId.isValidId( "uAy82SAhj3ui1" ) );
     }
 
-    public SystemCodeValues( @Nonnull SystemCodeValues systemCodeValues )
+    @Test
+    public void isInvalidValidId()
     {
-        this.text = systemCodeValues.getText();
-        this.systemCodeValues = new ArrayList<>( systemCodeValues.getSystemCodeValues() );
+        Assert.assertFalse( DhisResourceId.isValidId( "uAy82SAhj3" ) );
     }
 
-    public SystemCodeValues( @Nonnull List<SystemCodeValue> systemCodeValues )
+    @Test
+    public void isInvalidValidIdDash()
     {
-        this.text = null;
-        this.systemCodeValues = systemCodeValues;
-    }
-
-    public SystemCodeValues()
-    {
-        this.text = null;
-        this.systemCodeValues = Collections.emptyList();
-    }
-
-    @Nullable
-    public String getText()
-    {
-        return text;
-    }
-
-    @Nonnull
-    public List<SystemCodeValue> getSystemCodeValues()
-    {
-        return systemCodeValues;
+        Assert.assertFalse( DhisResourceId.isValidId( "x-uAy82SAhj3u-x" ) );
     }
 }

@@ -39,7 +39,6 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,5 +101,5 @@ public interface FhirToDhisTransformerContext extends TransformerContext
         args = @ScriptMethodArg( value = "idElement", description = "The ID element from which the DHIS2 ID should be extracted." ),
         returnDescription = "The DHIS2 ID of the corresponding DHIS2 resource." )
     @Nullable
-    String extractDhisId( @Nullable IIdType idElement );
+    String extractDhisId( @Nullable Object idElement );
 }

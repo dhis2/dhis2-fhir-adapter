@@ -28,11 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ImmutableFhirRequest;
@@ -80,21 +80,41 @@ public class FhirToDhisTransformerContextImpl implements FhirToDhisTransformerCo
 
     @Nullable
     @Override
-    public String extractDhisId( @Nullable IIdType idElement )
+    public String extractDhisId( @Nullable Object idElement )
     {
-        if ( !getFhirRequest().isDhisFhirId() )
-        {
-            throw new TransformerMappingException( "Request does not use DHIS FHIR IDs." );
-        }
         if ( idElement == null )
         {
             return null;
         }
-        final String id = idElement.getIdPart();
+
+        final String id;
+
+        if ( idElement instanceof IIdType )
+        {
+            final IIdType idType = (IIdType) idElement;
+
+            if ( idType.isLocal() )
+            {
+                return null;
+            }
+
+            id = idType.getIdPart();
+        }
+        else
+        {
+            id = idElement.toString();
+        }
+
         if ( id == null )
         {
             return null;
         }
+
+        if ( DhisResourceId.isValidId( id ) )
+        {
+            return id;
+        }
+
         try
         {
             return DhisFhirResourceId.parse( id ).getId();

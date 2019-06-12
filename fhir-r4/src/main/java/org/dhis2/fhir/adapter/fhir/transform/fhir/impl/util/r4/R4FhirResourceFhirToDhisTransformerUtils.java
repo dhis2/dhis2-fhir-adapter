@@ -28,19 +28,36 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ReferenceFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.hl7.fhir.r4.model.Identifier;
+import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.ResourceFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * FHIR version DSTU3 implementation of {@link AbstractFhirResourceFhirToDhisTransformerUtils}.
@@ -51,9 +68,14 @@ import java.util.Set;
 @Scriptable
 public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResourceFhirToDhisTransformerUtils
 {
-    public R4FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private final FhirIdentifierUtils fhirIdentifierUtils;
+
+    public R4FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceUtils,
+        @Nonnull FhirClientSystemRepository fhirClientSystemRepository, @Nonnull FhirIdentifierUtils fhirIdentifierUtils )
     {
-        super( scriptExecutionContext );
+        super( scriptExecutionContext, referenceUtils, fhirClientSystemRepository );
+
+        this.fhirIdentifierUtils = fhirIdentifierUtils;
     }
 
     @Nonnull
@@ -65,7 +87,7 @@ public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResour
 
     @Nonnull
     @Override
-    public IBaseResource createResource( @Nonnull String resourceType )
+    public IBaseResource createResource( @Nonnull Object resourceType )
     {
         try
         {
@@ -75,5 +97,90 @@ public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResour
         {
             throw new FhirRepositoryException( "Unknown FHIR resource type: " + resourceType, e );
         }
+    }
+
+    @Nonnull
+    @Override
+    protected SystemCodeValues getIdentifiers( @Nonnull IBaseReference baseReference )
+    {
+        final Method method = fhirIdentifierUtils.getIdentifierMethod( baseReference );
+
+        if ( method == null )
+        {
+            return new SystemCodeValues();
+        }
+
+        final Identifier identifier = (Identifier) Objects.requireNonNull( ReflectionUtils.invokeMethod( method, baseReference ) );
+
+        return identifier.isEmpty() ? new SystemCodeValues() :
+            new SystemCodeValues( Collections.singletonList( new SystemCodeValue( identifier.getSystem(), identifier.getValue() ) ) );
+    }
+
+    @Override
+    protected boolean addIdentifiers( @Nonnull IBaseResource resource, @Nonnull SystemCodeValues identifiers )
+    {
+        if ( !( resource instanceof IDomainResource ) )
+        {
+            return false;
+        }
+
+        final Method method = fhirIdentifierUtils.getIdentifierMethod( (IDomainResource) resource );
+
+        if ( method == null )
+        {
+            return false;
+        }
+
+        @SuppressWarnings( "unchecked" ) final Collection<Identifier> resourceIdentifiers = (Collection<Identifier>) Objects.requireNonNull( ReflectionUtils.invokeMethod( method, resource ) );
+
+        identifiers.getSystemCodeValues().forEach( scv -> resourceIdentifiers.add( new Identifier().setSystem( scv.getSystem() ).setValue( scv.getCode() ) ) );
+
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    protected IBaseReference createReference( @Nullable IIdType id )
+    {
+        final Reference reference = new Reference();
+
+        if ( id != null && !id.isLocal() )
+        {
+            reference.setReferenceElement( id );
+        }
+
+        return reference;
+    }
+
+    @Override
+    protected boolean addIdentifier( @Nonnull IBaseReference reference, @Nonnull SystemCodeValue identifier )
+    {
+        final Reference r = (Reference) reference;
+
+        r.setIdentifier( null );
+        r.getIdentifier().setSystem( identifier.getSystem() ).setValue( identifier.getCode() );
+
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    protected SystemCodeValues getIdentifiers( @Nonnull IBaseResource baseResource )
+    {
+        if ( !( baseResource instanceof IDomainResource ) )
+        {
+            return new SystemCodeValues();
+        }
+
+        final Method method = fhirIdentifierUtils.getIdentifierMethod( (IDomainResource) baseResource );
+
+        if ( method == null )
+        {
+            return new SystemCodeValues();
+        }
+
+        @SuppressWarnings( "unchecked" ) final Collection<Identifier> resourceIdentifiers = (Collection<Identifier>) Objects.requireNonNull( ReflectionUtils.invokeMethod( method, baseResource ) );
+
+        return new SystemCodeValues( resourceIdentifiers.stream().map( i -> new SystemCodeValue( i.getSystem(), i.getValue() ) ).collect( Collectors.toList() ) );
     }
 }

@@ -61,6 +61,15 @@ public class ResourceSystem implements Serializable
         this.fhirDisplayName = fhirDisplayName;
     }
 
+    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system )
+    {
+        this.fhirResourceType = fhirResourceType;
+        this.system = system;
+        this.codePrefix = null;
+        this.defaultValue = null;
+        this.fhirDisplayName = null;
+    }
+
     @Nonnull
     public FhirResourceType getFhirResourceType()
     {
