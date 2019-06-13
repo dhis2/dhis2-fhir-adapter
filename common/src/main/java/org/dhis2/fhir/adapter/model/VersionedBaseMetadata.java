@@ -42,6 +42,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -137,5 +138,29 @@ public class VersionedBaseMetadata implements Serializable, UuidIdentifiable, Me
     {
         setLastUpdatedAt( Instant.now() );
         setLastUpdatedBy( AdapterSecurityUtils.getCurrentUsername() );
+    }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        VersionedBaseMetadata that = (VersionedBaseMetadata) o;
+
+        return Objects.equals( getId(), that.getId() ) && getId() != null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash( getId() );
     }
 }

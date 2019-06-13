@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
@@ -50,6 +51,7 @@ import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -92,7 +94,8 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Nonnull
     public List<RuleInfo<? extends AbstractRule>> findAllImpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
-        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY );
+        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_NAMED_QUERY,
+            AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.FIND_IMP_RULES_BY_FHIR_TYPE_CODE_SETS_NAMED_QUERY );
     }
 
     @Override
@@ -102,31 +105,51 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     @Nonnull
     public List<RuleInfo<? extends AbstractRule>> findAllExpByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues )
     {
-        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY );
+        return findAllByInputData( fhirResourceType, systemCodeValues, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_NAMED_QUERY,
+            AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODE_SETS_NAMED_QUERY );
     }
 
     @Nonnull
     protected List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues,
-        @Nonnull String findByFhirTypeQueryName, @Nonnull String findBySystemCodeQueryName )
+        @Nonnull String findByFhirTypeQueryName, @Nonnull String findBySystemCodeQueryName, @Nonnull String findByCodeSetCodeQueryName )
     {
-        final List<AbstractRule> rules;
+        final Set<AbstractRule> rules = new LinkedHashSet<>();
+
         if ( (systemCodeValues == null) || systemCodeValues.isEmpty() )
         {
-            rules = new ArrayList<>(
-                entityManager.createNamedQuery( findByFhirTypeQueryName, AbstractRule.class )
-                    .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
+            rules.addAll( entityManager.createNamedQuery( findByFhirTypeQueryName, AbstractRule.class )
+                .setParameter( "fhirResourceType", fhirResourceType ).getResultList() );
         }
         else
         {
-            final Set<String> systemCodes = systemCodeValues.stream().map( SystemCodeValue::toString )
-                .collect( Collectors.toCollection( TreeSet::new ) );
-            rules = new ArrayList<>( entityManager.createNamedQuery( findBySystemCodeQueryName, AbstractRule.class )
-                .setParameter( "fhirResourceType", fhirResourceType )
-                .setParameter( "systemCodeValues", systemCodes ).getResultList() );
+            final Set<String> resultingSystemCodes = systemCodeValues.stream()
+                .filter( scv -> !System.DHIS2_FHIR_CODE_SET_URI.equals( scv.getSystem() ) )
+                .map( SystemCodeValue::toString ).collect( Collectors.toCollection( TreeSet::new ) );
+            final Set<String> codeSetCodes = systemCodeValues.stream()
+                .filter( scv -> System.DHIS2_FHIR_CODE_SET_URI.equals( scv.getSystem() ) )
+                .map( SystemCodeValue::getCode ).collect( Collectors.toCollection( TreeSet::new ) );
+
+            if ( !resultingSystemCodes.isEmpty() )
+            {
+                rules.addAll( entityManager.createNamedQuery( findBySystemCodeQueryName, AbstractRule.class )
+                    .setParameter( "fhirResourceType", fhirResourceType )
+                    .setParameter( "systemCodeValues", resultingSystemCodes ).getResultList() );
+            }
+
+            if ( !codeSetCodes.isEmpty() )
+            {
+                rules.addAll( entityManager.createNamedQuery( findByCodeSetCodeQueryName, AbstractRule.class )
+                    .setParameter( "fhirResourceType", fhirResourceType )
+                    .setParameter( "codeSetCodes", codeSetCodes ).getResultList() );
+            }
         }
-        Collections.sort( rules );
-        return rules.stream().map( r -> {
+
+        final List<AbstractRule> sortedRules = new ArrayList<>( rules );
+        Collections.sort( sortedRules );
+
+        return sortedRules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );
+
             return new RuleInfo<>( r, r.getDhisDataReferences() );
         } ).collect( Collectors.toList() );
     }
