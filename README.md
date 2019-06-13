@@ -163,6 +163,10 @@ For the initial setup of the Adapter a simple user interface is provided. To acc
  
     java -jar dhis2-fhir-adapter.war --adapter-setup=true
     
+If the Adapter is started within as a web application inside Apache Tomcat, the corresponding system propert must be set. This can be done in file `setenv.sh` (see [Tomcat Running](https://tomcat.apache.org/tomcat-8.5-doc/RUNNING.txt)) with the following line:
+
+    export CATALINA_OPTS="$CATALINA_OPTS -Dadapter-setup=true"
+    
 With the default configuration the initial setup user interface can be accessed in any web browser by using `http://localhost:8081/setup`. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
  successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
  
