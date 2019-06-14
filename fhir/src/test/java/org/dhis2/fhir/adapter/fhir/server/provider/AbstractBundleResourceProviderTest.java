@@ -74,7 +74,7 @@ import java.util.Optional;
 import static org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient.FHIR_REST_INTERFACE_DSTU3_ID;
 
 /**
- * Unit tests for {@link AbstractBundleResourceProviderTest}.
+ * Unit tests for {@link AbstractBundleResourceProvider}.
  *
  * @author volsch
  */
@@ -105,6 +105,9 @@ public class AbstractBundleResourceProviderTest
 
     @Mock
     private IBaseResource baseResource6;
+
+    @Mock
+    private IBaseResource baseResource7;
 
     @Mock
     private FhirClientResourceRepository fhirClientResourceRepository;
@@ -187,6 +190,8 @@ public class AbstractBundleResourceProviderTest
         operations.add( invalidPostOperation );
         operations.add( invalidPutOperation );
 
+        operations.add( new FhirOperation( FhirOperationType.PUT, FhirResourceType.PATIENT, patientClientResource, null, baseResource7, null ) );
+
         final FhirBatchRequest batchRequest = new FhirBatchRequest( operations, false );
 
         Mockito.when( requestDetails.getTenantId() ).thenReturn( "default" );
@@ -196,20 +201,22 @@ public class AbstractBundleResourceProviderTest
         Mockito.when( bundleResourceProvider.createBatchResponse( Mockito.same( batchRequest ) ) ).thenReturn( resultBaseBundle );
 
         Mockito.when( fhirRepository.save( Mockito.same( patientClientResource ), Mockito.same( baseResource1 ), Mockito.eq( new FhirRepositoryOperation( FhirRepositoryOperationType.UPDATE ) ) ) )
-            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE1-d0e1472a05e647c9b36bff1f06fec351" ) );
+            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE1-d0e1472a05e647c9b36bff1f06fec351", false ) );
         Mockito.when( fhirRepository.delete( Mockito.same( patientClientResource ), Mockito.eq( DhisFhirResourceId.parse( "te-ldXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354" ) ) ) )
             .thenReturn( true );
         Mockito.when( fhirRepository.save( Mockito.same( observationClientResource ), Mockito.same( baseResource2 ), Mockito.eq( new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE ) ) ) )
-            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE9-d0e1472a05e647c9b36bff1f06fec359" ) );
+            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE9-d0e1472a05e647c9b36bff1f06fec359", true ) );
         Mockito.when( dhisRepository.readByIdentifier( Mockito.same( patientClientResource.getFhirClient() ), Mockito.eq( FhirResourceType.PATIENT ), Mockito.eq( "8972" ) ) )
             .thenReturn( Optional.empty() );
         Mockito.when( fhirRepository.save( Mockito.same( patientClientResource ), Mockito.same( baseResource3 ), Mockito.eq( new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE ) ) ) )
-            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE8-d0e1472a05e647c9b36bff1f06fec358" ) );
+            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE8-d0e1472a05e647c9b36bff1f06fec358", true ) );
         Mockito.when( baseResource4.getIdElement() ).thenReturn( new IdDt( "te-ldXIdLNUNE7-d0e1472a05e647c9b36bff1f06fec357" ) );
         Mockito.when( dhisRepository.readByIdentifier( Mockito.same( patientClientResource.getFhirClient() ), Mockito.eq( FhirResourceType.PATIENT ), Mockito.eq( "8973" ) ) )
             .thenReturn( Optional.of( baseResource4 ) );
         Mockito.when( fhirRepository.save( Mockito.same( patientClientResource ), Mockito.same( baseResource4 ), Mockito.eq( new FhirRepositoryOperation( FhirRepositoryOperationType.UPDATE ) ) ) )
-            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354" ) );
+            .thenReturn( new FhirRepositoryOperationOutcome( "te-ldXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354", false ) );
+        Mockito.when( fhirRepository.save( Mockito.same( patientClientResource ), Mockito.same( baseResource7 ), Mockito.eq( new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE_OR_UPDATE ) ) ) )
+            .thenReturn( new FhirRepositoryOperationOutcome( "te-lxXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354", false ) );
         Mockito.when( fhirRepository.delete( Mockito.same( patientClientResource ), Mockito.eq( DhisFhirResourceId.parse( "te-ldXIdLNUNE2-d0e1472a05e647c9b36bff1f06fec352" ) ) ) )
             .thenReturn( false );
 
@@ -253,6 +260,10 @@ public class AbstractBundleResourceProviderTest
 
         Assert.assertNotNull( operations.get( 10 ).getResult().getIssue() );
         Assert.assertThat( operations.get( 10 ).getResult().getIssue().toString(), Matchers.containsString( "Invalid data included" ) );
+
+        Assert.assertNull( operations.get( 11 ).getResult().getIssue() );
+        Assert.assertEquals( FhirOperationResult.OK_STATUS_CODE, operations.get( 11 ).getResult().getStatusCode() );
+        Assert.assertEquals( new IdDt( "te-lxXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354" ), operations.get( 11 ).getResult().getId() );
     }
 
     @Test
@@ -411,20 +422,6 @@ public class AbstractBundleResourceProviderTest
         Assert.assertTrue( fhirOperation.isProcessed() );
         Assert.assertEquals( FhirOperationResult.BAD_REQUEST_STATUS_CODE, fhirOperation.getResult().getStatusCode() );
         Assert.assertEquals( FhirOperationType.POST, fhirOperation.getOperationType() );
-    }
-
-    @Test
-    public void createOperationPutWithoutIdReference()
-    {
-        Mockito.when( bundleResourceProvider.getFhirVersion() ).thenReturn( FhirVersion.DSTU3 );
-        Mockito.when( fhirClientResourceRepository.findFirstCached( Mockito.eq( fhirClient.getId() ), Mockito.eq( FhirResourceType.PATIENT ) ) )
-            .thenReturn( Optional.of( patientClientResource ) );
-
-        final FhirOperation fhirOperation = bundleResourceProvider.createOperation( null, new Patient(), "put", null );
-
-        Assert.assertTrue( fhirOperation.isProcessed() );
-        Assert.assertEquals( FhirOperationResult.BAD_REQUEST_STATUS_CODE, fhirOperation.getResult().getStatusCode() );
-        Assert.assertEquals( FhirOperationType.PUT, fhirOperation.getOperationType() );
     }
 
     @Test

@@ -61,7 +61,6 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -151,7 +150,8 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             final String id = getDhisId( context, ruleInfo );
             if ( id == null )
             {
-                activeResource = ( context.getFhirRequest().getRequestMethod() != FhirRequestMethod.CREATE );
+                activeResource = ( context.getFhirRequest().getRequestMethod() == null ) ||
+                    !context.getFhirRequest().getRequestMethod().isCreateOnly();
             }
             else
             {
@@ -181,8 +181,7 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
 
         R resource = null;
-        if ( (context.getFhirRequest().getRequestMethod() == FhirRequestMethod.CREATE) ||
-            (context.getFhirRequest().getRequestMethod() == null) )
+        if ( ( context.getFhirRequest().getRequestMethod() == null ) || context.getFhirRequest().getRequestMethod().isCreate() )
         {
             final String id = getDhisId( context, ruleInfo );
             resource = createResource( context, ruleInfo, id, scriptVariables, false, false );

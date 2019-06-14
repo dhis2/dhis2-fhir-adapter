@@ -73,7 +73,6 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutco
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransformer;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
@@ -233,7 +232,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         {
             return null;
         }
-        if ( !oldEmpty && ( context.getFhirRequest().getRequestMethod() == FhirRequestMethod.CREATE ) )
+        if ( !oldEmpty && context.getFhirRequest().getRequestMethod() != null && context.getFhirRequest().getRequestMethod().isCreateOnly() )
         {
             throw new DhisDataExistsException( "Required data elements contain data already." );
         }

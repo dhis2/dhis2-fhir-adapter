@@ -28,36 +28,34 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * The outcome of the FHIR repository operation.
+ * Tests {@link FhirRepositoryOperationType}.
  *
  * @author volsch
  */
-public class FhirRepositoryOperationOutcome implements Serializable
+public class FhirRepositoryOperationTypeTest
 {
-    private static final long serialVersionUID = 2125643880620693319L;
-
-    private final String id;
-
-    private final boolean created;
-
-    public FhirRepositoryOperationOutcome( @Nonnull String id, boolean created )
+    @Test
+    public void create()
     {
-        this.id = id;
-        this.created = created;
+        Assert.assertTrue( FhirRepositoryOperationType.CREATE.isCreate() );
+        Assert.assertFalse( FhirRepositoryOperationType.CREATE.isUpdate() );
     }
 
-    @Nonnull
-    public String getId()
+    @Test
+    public void update()
     {
-        return id;
+        Assert.assertFalse( FhirRepositoryOperationType.UPDATE.isCreate() );
+        Assert.assertTrue( FhirRepositoryOperationType.UPDATE.isUpdate() );
     }
 
-    public boolean isCreated()
+    @Test
+    public void createOrUpdate()
     {
-        return created;
+        Assert.assertTrue( FhirRepositoryOperationType.CREATE_OR_UPDATE.isCreate() );
+        Assert.assertTrue( FhirRepositoryOperationType.CREATE_OR_UPDATE.isUpdate() );
     }
 }

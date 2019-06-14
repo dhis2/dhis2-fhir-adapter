@@ -393,6 +393,7 @@ public class FhirRepositoryImpl implements FhirRepository
                 }
                 else
                 {
+                    final boolean created = outcome.getResource().isNewResource();
                     final DhisResource persistedDhisResource = dhisResourceRepository.save( outcome.getResource() );
 
                     if ( fhirRepositoryOperation == null )
@@ -411,7 +412,7 @@ public class FhirRepositoryImpl implements FhirRepository
                             resource.setId( new IdDt( Objects.requireNonNull( fhirRequest.getResourceType() ).getResourceTypeName(), dhisFhirResourceId ) );
                         }
 
-                        operationOutcome = new FhirRepositoryOperationOutcome( dhisFhirResourceId );
+                        operationOutcome = new FhirRepositoryOperationOutcome( dhisFhirResourceId, created );
                     }
 
                     transformerRequest = outcome.getNextTransformerRequest();
@@ -424,7 +425,7 @@ public class FhirRepositoryImpl implements FhirRepository
     }
 
     @Nonnull
-    private FhirRequestMethod getRequestMethod( @Nonnull FhirRepositoryOperation fhirRepositoryOperation )
+    protected FhirRequestMethod getRequestMethod( @Nonnull FhirRepositoryOperation fhirRepositoryOperation )
     {
         switch ( fhirRepositoryOperation.getOperationType() )
         {
@@ -432,6 +433,8 @@ public class FhirRepositoryImpl implements FhirRepository
                 return FhirRequestMethod.CREATE;
             case UPDATE:
                 return FhirRequestMethod.UPDATE;
+            case CREATE_OR_UPDATE:
+                return FhirRequestMethod.CREATE_OR_UPDATE;
             default:
                 throw new AssertionError( "Unhandled operation type: " + fhirRepositoryOperation.getOperationType() );
         }

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  */
 public enum FhirRequestMethod
 {
-    CREATE( "CREATE" ), UPDATE( "UPDATE" );
+    CREATE( "CREATE", true, false ), UPDATE( "UPDATE", false, true ), CREATE_OR_UPDATE( "CREATE_OR_UPDATE", true, true );
 
     private static final Map<String, FhirRequestMethod> requestMethodsByCode = Arrays.stream( values() ).collect( Collectors.toMap( FhirRequestMethod::getCode, v -> v ) );
 
@@ -53,14 +53,30 @@ public enum FhirRequestMethod
 
     private final String code;
 
-    FhirRequestMethod( String code )
+    private final boolean create;
+
+    private final boolean update;
+
+    FhirRequestMethod( String code, boolean create, boolean update )
     {
         this.code = code;
+        this.create = create;
+        this.update = update;
     }
 
     @Nonnull
     public String getCode()
     {
         return code;
+    }
+
+    public boolean isCreate()
+    {
+        return create;
+    }
+
+    public boolean isCreateOnly()
+    {
+        return create && !update;
     }
 }

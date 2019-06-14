@@ -198,7 +198,15 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                         return;
                     }
 
-                    operationType = FhirRepositoryOperationType.CREATE;
+                    if ( hasConditionalReferenceUrl( o ) )
+                    {
+                        operationType = FhirRepositoryOperationType.CREATE;
+                    }
+                    else
+                    {
+                        // neither DHIS ID nor conditional reference is available, use rules to perform the operation
+                        operationType = FhirRepositoryOperationType.CREATE_OR_UPDATE;
+                    }
                 }
                 else if ( createOnly )
                 {
@@ -219,9 +227,21 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 {
                     o.getResult().badRequest( "Could not find a rule that matches the resource that should be created." );
                 }
-                else if ( operationType == FhirRepositoryOperationType.CREATE )
+                else if ( operationType.isCreate() )
                 {
-                    o.getResult().created( new IdDt( outcome.getId() ) );
+                    if ( outcome.isCreated() )
+                    {
+                        o.getResult().created( new IdDt( outcome.getId() ) );
+                    }
+                    else
+                    {
+                        if ( operationType == FhirRepositoryOperationType.CREATE_OR_UPDATE )
+                        {
+                            o.getResult().setId( new IdDt( outcome.getId() ) );
+                        }
+
+                        o.getResult().ok();
+                    }
                 }
                 else
                 {
@@ -422,7 +442,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         {
             operation.getResult().badRequest( "Conditional resources cannot be used to perform a POST" );
         }
-        else if ( ( operationType == FhirOperationType.PUT || operationType == FhirOperationType.DELETE ) && StringUtils.isEmpty( idPart ) && !hasConditionalReferenceUrl( operation ) )
+        else if ( operationType == FhirOperationType.DELETE && StringUtils.isEmpty( idPart ) && !hasConditionalReferenceUrl( operation ) )
         {
             operation.getResult().badRequest( "Either an ID must be specified or the URL must contain a condition." );
         }

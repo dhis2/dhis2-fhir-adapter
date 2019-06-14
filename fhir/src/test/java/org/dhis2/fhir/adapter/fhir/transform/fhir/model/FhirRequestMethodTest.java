@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,37 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * The outcome of the FHIR repository operation.
+ * Tests {@link FhirRequestMethod}.
  *
  * @author volsch
  */
-public class FhirRepositoryOperationOutcome implements Serializable
+public class FhirRequestMethodTest
 {
-    private static final long serialVersionUID = 2125643880620693319L;
-
-    private final String id;
-
-    private final boolean created;
-
-    public FhirRepositoryOperationOutcome( @Nonnull String id, boolean created )
+    @Test
+    public void create()
     {
-        this.id = id;
-        this.created = created;
+        Assert.assertEquals( "CREATE", FhirRequestMethod.CREATE.getCode() );
+        Assert.assertTrue( FhirRequestMethod.CREATE.isCreate() );
+        Assert.assertTrue( FhirRequestMethod.CREATE.isCreateOnly() );
     }
 
-    @Nonnull
-    public String getId()
+    @Test
+    public void update()
     {
-        return id;
+        Assert.assertEquals( "UPDATE", FhirRequestMethod.UPDATE.getCode() );
+        Assert.assertFalse( FhirRequestMethod.UPDATE.isCreate() );
+        Assert.assertFalse( FhirRequestMethod.UPDATE.isCreateOnly() );
     }
 
-    public boolean isCreated()
+    @Test
+    public void createOrUpdate()
     {
-        return created;
+        Assert.assertEquals( "CREATE_OR_UPDATE", FhirRequestMethod.CREATE_OR_UPDATE.getCode() );
+        Assert.assertTrue( FhirRequestMethod.CREATE_OR_UPDATE.isCreate() );
+        Assert.assertFalse( FhirRequestMethod.CREATE_OR_UPDATE.isCreateOnly() );
     }
 }

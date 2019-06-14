@@ -33,5 +33,25 @@ package org.dhis2.fhir.adapter.fhir.repository;
  */
 public enum FhirRepositoryOperationType
 {
-    CREATE, UPDATE
+    CREATE( true, false ), UPDATE( false, true ), CREATE_OR_UPDATE( true, true );
+
+    private final boolean create;
+
+    private final boolean update;
+
+    FhirRepositoryOperationType( boolean create, boolean update )
+    {
+        this.create = create;
+        this.update = update;
+    }
+
+    public boolean isCreate()
+    {
+        return create;
+    }
+
+    public boolean isUpdate()
+    {
+        return update;
+    }
 }
