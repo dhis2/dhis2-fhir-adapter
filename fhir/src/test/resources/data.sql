@@ -726,3 +726,15 @@ INSERT INTO fhir_executable_script (id, version, script_id, name, code)
 VALUES ('27f50aeb0f564256ae166118e931524b', 0, 'cf3072ec06ad4d62a8a075ad2ab330ba', 'Prepares Location Search Filter', 'SEARCH_FILTER_LOCATION');
 UPDATE fhir_rule SET filter_script_id='27f50aeb0f564256ae166118e931524b' WHERE id='b9546b024adc4868a4cdd5d7789f0df0';
 
+INSERT INTO fhir_code(id, version, code_category_id, code, name) VALUES ('d0a07a16547e4b5982697601e0dd68fd', 0, '8673a315dd274e4cbb8b1212808d4ca1', 'TEST_ORG_1', 'Test Org 1');
+INSERT INTO fhir_code(id, version, code_category_id, code, name) VALUES ('d2053c951e8a4a358eb4baeb384ae8be', 0, '8673a315dd274e4cbb8b1212808d4ca1', 'TEST_ORG_2', 'Test Org 2');
+
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, system_code_value, display_name)
+VALUES ( RANDOM_UUID(), 0, 'd0a07a16547e4b5982697601e0dd68fd', 'c4e9ac6acc8f4c73aab60fa6775c0ca3', '4711', 'http://example.sl/organizations|4711', 'My Org 1 1' );
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, system_code_value, display_name)
+VALUES ( RANDOM_UUID(), 0, 'd0a07a16547e4b5982697601e0dd68fd', 'db955a8aca584263bc56faa99085df93', '1234', 'http://www.dhis2.org/dhis2fhiradapter/systems/organizationidentifier|1234', 'My Org 1 2' );
+
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, system_code_value, display_name)
+VALUES ( RANDOM_UUID(), 0, 'd2053c951e8a4a358eb4baeb384ae8be', 'c4e9ac6acc8f4c73aab60fa6775c0ca3', '4712', 'http://example.sl/organizations|4712', 'My Org 2 1' );
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, system_code_value, display_name)
+VALUES ( RANDOM_UUID(), 0, 'd2053c951e8a4a358eb4baeb384ae8be', 'db955a8aca584263bc56faa99085df93', '5678', 'http://www.dhis2.org/dhis2fhiradapter/systems/organizationidentifier|5678', 'My Org 2 2' );

@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
@@ -71,9 +71,9 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtils extends AbstractFhirRes
     private final FhirIdentifierUtils fhirIdentifierUtils;
 
     public Dstu3FhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceUtils,
-        @Nonnull FhirClientSystemRepository fhirClientSystemRepository, @Nonnull FhirIdentifierUtils fhirIdentifierUtils )
+        @Nonnull SystemCodeRepository systemCodeRepository, @Nonnull FhirIdentifierUtils fhirIdentifierUtils )
     {
-        super( scriptExecutionContext, referenceUtils, fhirClientSystemRepository );
+        super( scriptExecutionContext, referenceUtils, systemCodeRepository );
 
         this.fhirIdentifierUtils = fhirIdentifierUtils;
     }

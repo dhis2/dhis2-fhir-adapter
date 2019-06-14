@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
@@ -54,8 +54,11 @@ import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DHIS2 to FHIR transformer utility methods for FHIR identifiers.
@@ -71,15 +74,15 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
 
     private final ReferenceFhirToDhisTransformerUtils referenceUtils;
 
-    private final FhirClientSystemRepository fhirClientSystemRepository;
+    private final SystemCodeRepository systemCodeRepository;
 
     protected AbstractFhirResourceFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ReferenceFhirToDhisTransformerUtils referenceUtils,
-        @Nonnull FhirClientSystemRepository fhirClientSystemRepository )
+        @Nonnull SystemCodeRepository systemCodeRepository )
     {
         super( scriptExecutionContext );
 
         this.referenceUtils = referenceUtils;
-        this.fhirClientSystemRepository = fhirClientSystemRepository;
+        this.systemCodeRepository = systemCodeRepository;
     }
 
     @Nonnull
@@ -145,9 +148,24 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
 
         if ( !identifiers.getSystemCodeValues().isEmpty() )
         {
-            containsSufficientIdentifier = identifiers.getSystemCodeValues().stream()
-                .anyMatch( scv -> System.DHIS2_FHIR_IDENTIFIER_URI.equals( scv.getSystem() ) ||
-                    ( resourceSystem != null && resourceSystem.getSystem().equals( scv.getSystem() ) ) );
+            containsSufficientIdentifier = containsSufficientIdentifier( identifiers, resourceSystem );
+
+            if ( !containsSufficientIdentifier )
+            {
+                final List<String> internalSystemUris = new ArrayList<>( 2 );
+
+                internalSystemUris.add( System.DHIS2_FHIR_IDENTIFIER_URI );
+
+                if ( resourceSystem != null )
+                {
+                    internalSystemUris.add( resourceSystem.getSystem() );
+                }
+
+                identifiers = new SystemCodeValues( systemCodeRepository.findAllInternalBySystemCodeValues(
+                    internalSystemUris, identifiers.getSystemCodeValues().stream().map( SystemCodeValue::toString ).collect( Collectors.toList() ) )
+                    .stream().map( sc -> new SystemCodeValue( sc.getSystem().getSystemUri(), sc.getSystemCode() ) ).collect( Collectors.toList() ) );
+                containsSufficientIdentifier = containsSufficientIdentifier( identifiers, resourceSystem );
+            }
         }
 
         if ( containsSufficientIdentifier || context.getFhirRequest().isDhisFhirId() )
@@ -156,6 +174,7 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
 
             identifiers.getSystemCodeValues().stream().filter( scv -> ( resourceSystem != null && resourceSystem.getSystem().equals( scv.getSystem() ) ) )
                 .forEach( scv -> addIdentifier( fhirReference, scv ) );
+            // may override the resource system identifier (has higher precedence)
             identifiers.getSystemCodeValues().stream().filter( scv -> System.DHIS2_FHIR_IDENTIFIER_URI.equals( scv.getSystem() ) )
                 .forEach( scv -> addIdentifier( fhirReference, scv ) );
         }
@@ -165,6 +184,13 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
         }
 
         return fhirReference;
+    }
+
+    private boolean containsSufficientIdentifier( @Nonnull SystemCodeValues identifiers, @Nullable ResourceSystem resourceSystem )
+    {
+        return identifiers.getSystemCodeValues().stream()
+            .anyMatch( scv -> System.DHIS2_FHIR_IDENTIFIER_URI.equals( scv.getSystem() ) ||
+                ( resourceSystem != null && resourceSystem.getSystem().equals( scv.getSystem() ) ) );
     }
 
     @Nullable

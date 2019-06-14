@@ -32,7 +32,8 @@ import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.SystemCode;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecution;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
@@ -40,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ReferenceFhirToDhisT
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequest;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.util.FhirIdentifierUtils;
+import org.hamcrest.Matchers;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Patient;
@@ -52,9 +54,11 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.hamcrest.MockitoHamcrest;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -74,7 +78,7 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtilsTest
     private ReferenceFhirToDhisTransformerUtils referenceUtils;
 
     @Mock
-    private FhirClientSystemRepository fhirClientSystemRepository;
+    private SystemCodeRepository systemCodeRepository;
 
     private final FhirIdentifierUtils fhirIdentifierUtils = new FhirIdentifierUtils();
 
@@ -93,7 +97,7 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtilsTest
     @Before
     public void setUp()
     {
-        utils = new Dstu3FhirResourceFhirToDhisTransformerUtils( scriptExecutionContext, referenceUtils, fhirClientSystemRepository, fhirIdentifierUtils );
+        utils = new Dstu3FhirResourceFhirToDhisTransformerUtils( scriptExecutionContext, referenceUtils, systemCodeRepository, fhirIdentifierUtils );
     }
 
     @Test
@@ -201,6 +205,34 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtilsTest
 
         Assert.assertNotNull( reference );
         Assert.assertTrue( new Reference( "Patient/1234" ).setIdentifier( new Identifier().setSystem( System.DHIS2_FHIR_IDENTIFIER_URI ).setValue( "5678" ) ).equalsDeep( reference ) );
+        Assert.assertNull( reference.getResource() );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Test
+    public void getIdentifierReferenceOtherSystem()
+    {
+        final System otherSystem = new System();
+        otherSystem.setSystemUri( "National ID" );
+
+        final SystemCode systemCode = new SystemCode();
+        systemCode.setSystem( otherSystem );
+        systemCode.setSystemCode( "4711" );
+
+        Mockito.doReturn( request ).when( context ).getFhirRequest();
+        Mockito.doReturn( false ).when( request ).isDhisFhirId();
+        Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID" ) ).when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
+        Mockito.doReturn( Collections.singletonList( systemCode ) ).when( systemCodeRepository ).findAllInternalBySystemCodeValues(
+            (Collection<String>) MockitoHamcrest.argThat( Matchers.containsInAnyOrder( System.DHIS2_FHIR_IDENTIFIER_URI, "National ID" ) ),
+            (Collection<String>) MockitoHamcrest.argThat( Matchers.containsInAnyOrder( "otherSystem|5678" ) ) );
+
+        final Reference reference = (Reference) utils.getIdentifiedReference( new Reference()
+            .setIdentifier( new Identifier().setSystem( "otherSystem" ).setValue( "5678" ) ), "Patient" );
+
+        Assert.assertNotNull( reference );
+        Assert.assertTrue( new Reference().setIdentifier( new Identifier().setSystem( "National ID" ).setValue( "4711" ) ).equalsDeep( reference ) );
         Assert.assertNull( reference.getResource() );
     }
 

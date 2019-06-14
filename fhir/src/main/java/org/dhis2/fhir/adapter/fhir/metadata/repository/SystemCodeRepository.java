@@ -79,6 +79,14 @@ public interface SystemCodeRepository extends JpaRepository<SystemCode, UUID>, Q
     Collection<SystemCode> findAllByCodes( @Param( "codes" ) @Nonnull Collection<String> codes );
 
     @RestResource( exported = false )
+    @Query( "SELECT sc FROM #{#entityName} sc JOIN sc.code c JOIN sc.system s WHERE s.systemUri IN (:internalSystemUris) AND sc.enabled=true AND c.enabled=true AND s.enabled=true AND EXISTS " +
+        "(SELECT 1 FROM #{#entityName} scOther WHERE scOther.code = c AND scOther.enabled=true AND scOther.systemCodeValue IN (:otherSystemCodes))" )
+    @Cacheable( keyGenerator = "systemCodeFindAllInternalBySystemCodeValuesKeyGenerator" )
+    @Nonnull
+    Collection<SystemCode> findAllInternalBySystemCodeValues( @Param( "internalSystemUris" ) Collection<String> internalSystemUris,
+        @Param( "otherSystemCodes" ) @Nonnull Collection<String> otherSystemCodes );
+
+    @RestResource( exported = false )
     @Query( "SELECT sc FROM #{#entityName} sc WHERE sc.systemCodeValue IN (:systemCodes)" )
     @Nonnull
     Collection<SystemCode> findAllBySystemCodeValues( @Param( "systemCodes" ) @Nonnull Collection<String> systemCodes );
