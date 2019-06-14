@@ -129,6 +129,158 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
   "script" : "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
 }'
 
+####### RiskAssessment.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/ad960ef6-8e60-11e9-ab76-5b3d12cab087 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "overrideArguments" : [ {
+    "overrideValue" : "u7VtxRYoG9v",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### TrackingForm.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/f9a9f2d0-8e60-11e9-b118-eba81e852485 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "overrideArguments" : [ {
+    "overrideValue" : "ttdbtU58bwG",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### RiskAssessment.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/f9f37fb2-8e61-11e9-9dcd-b7cba571af38 -d '{
+  "name": "Risk Assessment",  
+  "programStageReference": {
+    "value": "u7VtxRYoG9v",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c"              
+}'
+
+####### TrackingForm.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459 -d '{
+  "name": "Risk Assessment",  
+  "programStageReference": {
+    "value": "ttdbtU58bwG",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c"              
+}'
+
+####### RiskAssessment.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/c1d307e6-8e62-11e9-9ee9-c706a5908d89 -d '{
+  "name": "Risk Assessment: From Questionnaire Response to Event",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+    {
+      "dataReference": {
+        "value": "DE_2005736",
+        "type": "CODE"
+      },
+      "scriptArgName": "dataElement",
+      "required": true
+    }
+  ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/f9f37fb2-8e61-11e9-9dcd-b7cba571af38",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/ad960ef6-8e60-11e9-ab76-5b3d12cab087"
+  
+}'
+
+####### TrackingForm.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec -d '{
+  "name": Tracking Form: From Questionnaire Response to Event",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+    {
+      "dataReference": {
+        "value": "DE_2005736",
+        "type": "CODE"
+      },
+      "scriptArgName": "dataElement",
+      "required": true
+    }
+  ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/f9a9f2d0-8e60-11e9-b118-eba81e852485"
+ }'
+
+
+####### QuestionaireResponse.System #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/systems/ca35f14a-8e63-11e9-8637-b3998930b810 -d '{
+  "name": "Zimbabwe Questionnaire Response ID",
+  "code": "ZW_QUESTIONNAIRE_RESPONSE_ID",
+  "systemUri": "urn:ceshhar:uid",
+  "fhirDisplayName": "Zimbabwe Questionnaire Response ID"
+}'
+
+####### QuestionnaireResponse.ClientResource #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientResources/056c3922-8e64-11e9-a6cb-6ba3fca8a311 -d '{
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "exportOnly": false
+}'
+
+####### QuestionnaireResponse.ClientSystem #####################################
+curl -XPOST -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientSystems -d '{
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "system": "http://localhost:8081/api/systems/ca35f14a-8e63-11e9-8637-b3998930b810"
+}'
+
+####################Subscribe for questionnaire response notifications #################################
+curl -XPOST 'http://localhost:8080/hapi-fhir-jpaserver/fhir/Subscription' -i -H 'Content-Type: application/json' -d \
+  '{
+      "resourceType": "Subscription",
+      "criteria": "QuestionnaireResponse?",
+      "channel": {
+        "type": "rest-hook",
+        "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/056c3922-8e64-11e9-a6cb-6ba3fca8a311",
+        "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs"
+      }, 
+      "status": "requested"
+  }'
+
 
 
 
