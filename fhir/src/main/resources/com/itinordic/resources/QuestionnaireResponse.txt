@@ -87,7 +87,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 }'
 
 ####### QuestionnaireResponse.FhirResourceMapping ###########################
-curl 'http://localhost:8081/api/fhirResourceMappings' -i -u 'admin:district' -X POST \
+curl 'http://localhost:8081/api/fhirResourceMappings/a8780d32-8e6c-11e9-aff2-9f1647fb7ac7' -i -u 'admin:district' -X PUT \
     -H 'Content-Type: application/json' \
     -d '{
   "fhirResourceType" : "QUESTIONNAIRE_RESPONSE",

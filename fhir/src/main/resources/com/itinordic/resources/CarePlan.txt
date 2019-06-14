@@ -84,7 +84,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### CarePlan.FhirResourceMapping.ImpEnrollmentDateLookupScript.ScriptSource ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/22469726-8b54-11e9-b95a-93563f739422 -d $'{
-  "sourceText" : "input.created",
+  "sourceText" : "input.getPeriod().getStart()",
   "sourceType" : "JAVASCRIPT",
   "fhirVersions" : [ "DSTU3", "R4" ],
   "script" : "http://localhost:8081/api/scripts/f638ba4c-8b53-11e9-89e4-e70cb21cbc8c"
@@ -102,7 +102,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 
 ####### CarePlan.FhirResourceMapping ###########################
-curl 'http://localhost:8081/api/fhirResourceMappings' -i -u 'admin:district' -X POST \
+curl 'http://localhost:8081/api/fhirResourceMappings/827d967e-8e6c-11e9-b14c-8f22dc8058d4' -i -u 'admin:district' -X PUT \
     -H 'Content-Type: application/json' \
     -d '{
   "fhirResourceType" : "CARE_PLAN",
