@@ -138,9 +138,15 @@ public class TrackedEntityInstance implements DhisResource, Serializable
 
     public void setNewResource( boolean newResource )
     {
-
         this.newResource = newResource;
         this.modified = true;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        this.newResource = false;
+        this.modified = false;
     }
 
     public boolean isDeleted()

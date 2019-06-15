@@ -31,9 +31,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.TrackedEntityDhisResource;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.geo.Location;
 
@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author volsch
  */
-public class Enrollment implements DhisResource, Serializable
+public class Enrollment implements TrackedEntityDhisResource, Serializable
 {
     private static final long serialVersionUID = 6528591138270821481L;
 
@@ -112,6 +112,13 @@ public class Enrollment implements DhisResource, Serializable
     public boolean isNewResource()
     {
         return newResource;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        this.newResource = false;
+        this.modified = false;
     }
 
     @Nonnull

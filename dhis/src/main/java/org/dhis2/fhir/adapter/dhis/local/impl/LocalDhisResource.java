@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.dhis.local.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,55 +28,60 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
 
 /**
- * Base interface of DHIS2 Resources.
+ * The local DHIS2 resource and its state.
  *
+ * @param <T> the concrete type of the local DHIS2 resource.
  * @author volsch
  */
-public interface DhisResource extends Identifiable<String>, Serializable
+public class LocalDhisResource<T extends DhisResource>
 {
-    /**
-     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
-     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
-     */
-    String getOrgUnitId();
+    private T resource;
 
-    /**
-     * @return the unique ID of the resource (including the type of the resource).
-     */
-    DhisResourceId getResourceId();
+    private LocalDhisResourceState state;
 
-    /**
-     * @return if the resource has been marked as deleted.
-     */
-    boolean isDeleted();
+    public LocalDhisResource( @Nonnull T resource, @Nonnull LocalDhisResourceState state )
+    {
+        this.resource = resource;
+        this.state = state;
+    }
 
-    /**
-     * @return the timestamp when the resource has been updated the last time.
-     */
-    ZonedDateTime getLastUpdated();
-
-    /**
-     * @return the concrete resource type of the resource.
-     */
     @Nonnull
-    DhisResourceType getResourceType();
+    public T getResource()
+    {
+        return resource;
+    }
 
-    /**
-     * @return <code>true</code> if the resource is new and must be created,
-     * <code>false</code> if this resource is an existing resource that already
-     * contains a unique ID.
-     */
-    boolean isNewResource();
+    public void setResource( @Nonnull T resource )
+    {
+        this.resource = resource;
+    }
 
-    /**
-     * Resets that the resource is a new resource (after persisting the resource).
-     */
-    void resetNewResource();
+    @Nonnull
+    public LocalDhisResourceState getState()
+    {
+        return state;
+    }
+
+    public void setState( @Nonnull LocalDhisResourceState state )
+    {
+        this.state = state;
+    }
+
+    public void setDeleted()
+    {
+        switch ( getState() )
+        {
+            case SAVED_NEW:
+            case DELETED_NEW:
+                setState( LocalDhisResourceState.DELETED_NEW );
+                break;
+            default:
+                setState( LocalDhisResourceState.DELETED_EXISTING );
+        }
+    }
 }
