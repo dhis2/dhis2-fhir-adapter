@@ -56,16 +56,16 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### CarePlan.FhirResourceMapping.ImpEnrollmentOrgLookupScript.ScriptSource ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/492228a4-8ae8-11e9-97b2-8fb3efb2ff8f -d $'{
-  "sourceText" : "function getOrganizationUnitMappedCode(organizationReference)\n{\nvar mappedCode = null;\nif (organizationReference != null)\n{\nvar hierarchy = organizationUtils.findHierarchy(organizationReference);\nif (hierarchy != null)\n{for (var i = 0; (mappedCode == null) && (i <hierarchy.size()); i++)\n{\nvar code = identifierUtils.getResourceIdentifier(hierarchy.get(i), \'ORGANIZATION\');\nif (code != null)\n{mappedCode = codeUtils.getMappedCode(code, \'ORGANIZATION\');\nif ((mappedCode == null) && args[\'useIdentifierCode\'])\n{mappedCode = organizationUtils.existsWithPrefix(code);\n}\n}\n}\n}\n}\nreturn mappedCode;}\nvar ref = null;\nvar mappedCode = getOrganizationUnitMappedCode(resource.author);\nif (mappedCode != null){\nref = context.createReference(mappedCode, \'CODE\');\n}ref",
+  "sourceText" : "function getOrganizationUnitMappedCode(organizationReference)\n{\nvar mappedCode = null;\nif (organizationReference != null)\n{\nvar hierarchy = organizationUtils.findHierarchy(organizationReference);\nif (hierarchy != null)\n{\nfor (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)\n{\nvar code = identifierUtils.getResourceIdentifier(hierarchy.get(i), \'ORGANIZATION\');\nif (code != null)\n{\nmappedCode = codeUtils.getMappedCode(code, \'ORGANIZATION\');\nif ((mappedCode == null) && args[\'useIdentifierCode\'])\n{\nmappedCode = organizationUtils.existsWithPrefix(code);\n}\n}\n}\n}\n}\nreturn mappedCode;\n}\nvar ref = null;\nvar mappedCode = getOrganizationUnitMappedCode(input.author);\nif (mappedCode !== null) {\nref = context.createReference(mappedCode, \'CODE\');\n}else{\nvar identifierSystem=input.getAuthor().getIdentifier().getSystem();\nvar identifierValue=input.getAuthor().getIdentifier().getValue();\nif(identifierSystem===\'http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier\'){\nref = context.createReference(identifierValue, \'ID\');\n}\n}\nref",
   "sourceType" : "JAVASCRIPT",
   "fhirVersions" : [ "DSTU3", "R4" ],
   "script" : "http://localhost:8081/api/scripts/e78aaa2c-8ae6-11e9-b4f1-073c76ff0255"
 }'
 
 
-####### CarePlan.FhirResourceMapping.ImpEnrollmentDateLookupScript.ExecutableScript ####################
+####### CarePlan.FhirResourceMapping.ImpEnrollmentOrgLookupScript.ExecutableScript ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/5697f68a-8ae8-11e9-9c2c-673cb19bf44f -d '{
-  "name" : "Org Unit Code from Care Plan Resource"",
+  "name" : "Org Unit Code from Care Plan Resource",
   "code" : "CARE_PLAN_ORG_UNIT_LOOKUP",
   "description" : "Extracts the organization unit code reference from the input Care Plan Resource.",
   "script" : "http://localhost:8081/api/scripts/e78aaa2c-8ae6-11e9-b4f1-073c76ff0255"
