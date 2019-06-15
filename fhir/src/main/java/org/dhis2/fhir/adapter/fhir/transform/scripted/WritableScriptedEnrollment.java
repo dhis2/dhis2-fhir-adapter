@@ -49,11 +49,15 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 /**
  * Mutable enrollment resource that can be used by scripts safely.
  *
  * @author volsch
+ * @author Charles Chigoriwa
  */
 @Scriptable
 @ScriptType( value = "Enrollment", var = "enrollment", transformDataType = "DHIS_ENROLLMENT",
@@ -200,6 +204,29 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
             enrollment.setModified();
         }
         enrollment.setCoordinate( convertedCoordinate );
+        return true;
+    }
+    
+    //Added by Charles Chigoriwa
+    @ScriptMethod( description = "Sets status of the enrollment.",
+        args = @ScriptMethodArg( value = "status", description = "The status of the enrollment." ),
+        returnDescription = "Returns true each time (at end of script return of true can be avoided)." )
+    public boolean setStatus( @Nullable Object status )
+    {
+        final EnrollmentStatus convertedStatus;
+        try
+        {
+            convertedStatus = NameUtils.toEnumValue( EnrollmentStatus.class, status );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Event status has not been defined: " + status, e );
+        }
+        if ( !Objects.equals( enrollment.getStatus(), convertedStatus ) )
+        {
+            enrollment.setModified();
+        }
+        enrollment.setStatus( convertedStatus );
         return true;
     }
 

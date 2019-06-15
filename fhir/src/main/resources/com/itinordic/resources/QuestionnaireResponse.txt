@@ -508,6 +508,10 @@ curl -XPOST 'http://localhost:8080/hapi-fhir-jpaserver/fhir/Subscription' -i -H 
       "status": "requested"
   }'
 
+##################Manual Questionnaire Response Importation Trigger #####################
+curl -XPOST -H "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs" http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/056c3922-8e64-11e9-a6cb-6ba3fca8a311
+
+
 
 
 
