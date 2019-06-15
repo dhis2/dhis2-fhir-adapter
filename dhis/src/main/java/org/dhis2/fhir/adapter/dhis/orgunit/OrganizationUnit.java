@@ -86,6 +86,12 @@ public class OrganizationUnit implements DhisResource, Serializable
         return false;
     }
 
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done
+    }
+
     @JsonIgnore
     @Override
     public boolean isDeleted()

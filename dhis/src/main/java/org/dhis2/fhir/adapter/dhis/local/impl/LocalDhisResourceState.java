@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.dhis.local.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,55 +28,24 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
-
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-
 /**
- * Base interface of DHIS2 Resources.
+ * The concrete state of the local DHIS2 resource.
  *
  * @author volsch
  */
-public interface DhisResource extends Identifiable<String>, Serializable
+public enum LocalDhisResourceState
 {
-    /**
-     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
-     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
-     */
-    String getOrgUnitId();
+    FOUND( false ), SAVED_NEW( false ), SAVED_EXISTING( false ), DELETED_NEW( true ), DELETED_EXISTING( true );
 
-    /**
-     * @return the unique ID of the resource (including the type of the resource).
-     */
-    DhisResourceId getResourceId();
+    private final boolean deleted;
 
-    /**
-     * @return if the resource has been marked as deleted.
-     */
-    boolean isDeleted();
+    LocalDhisResourceState( boolean deleted )
+    {
+        this.deleted = deleted;
+    }
 
-    /**
-     * @return the timestamp when the resource has been updated the last time.
-     */
-    ZonedDateTime getLastUpdated();
-
-    /**
-     * @return the concrete resource type of the resource.
-     */
-    @Nonnull
-    DhisResourceType getResourceType();
-
-    /**
-     * @return <code>true</code> if the resource is new and must be created,
-     * <code>false</code> if this resource is an existing resource that already
-     * contains a unique ID.
-     */
-    boolean isNewResource();
-
-    /**
-     * Resets that the resource is a new resource (after persisting the resource).
-     */
-    void resetNewResource();
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
 }

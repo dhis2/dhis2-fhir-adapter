@@ -32,9 +32,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.TrackedEntityDhisResource;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.geo.Location;
@@ -49,7 +49,7 @@ import java.util.Objects;
 /**
  * Contains a DHIS2 Program Stage Instance (aka event).
  */
-public class Event implements DhisResource, Serializable, Comparable<Event>
+public class Event implements TrackedEntityDhisResource, Serializable, Comparable<Event>
 {
     private static final long serialVersionUID = 4966183580394235575L;
 
@@ -140,6 +140,13 @@ public class Event implements DhisResource, Serializable, Comparable<Event>
     public boolean isNewResource()
     {
         return newResource;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        this.newResource = false;
+        this.modified = false;
     }
 
     public boolean isDeleted()
