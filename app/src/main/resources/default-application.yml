@@ -32,6 +32,8 @@ server:
   port: 8081
 
 spring:
+  jmx:
+    default-domain: dhis2-fhir-adapter
   servlet:
     # Configuration of multipart requests. These are used for metadata sheet
     # upload only.
@@ -211,25 +213,25 @@ dhis2.fhir-adapter:
     metadata:
       type: caffeine
       caffeine:
-        spec: expireAfterAccess=60s,maximumSize=10000
+        spec: expireAfterAccess=3600s,maximumSize=50000
       redis:
-        time-to-live: 60s
+        time-to-live: 3600s
         key-prefix: fhir-adapter:metadata
     # Settings of the DHIS2 metadata cache.
     dhis:
       type: caffeine
       caffeine:
-        spec: expireAfterAccess=120s,maximumSize=10000
+        spec: expireAfterAccess=3600s,maximumSize=50000
       redis:
-        time-to-live: 120s
+        time-to-live: 3600s
         key-prefix: fhir-adapter:dhis
     # Settings of FHIR resource cache.
     fhir:
       type: caffeine
       caffeine:
-        spec: expireAfterAccess=500s,maximumSize=10000
+        spec: expireAfterAccess=600s,maximumSize=10000
       redis:
-        time-to-live: 500s
+        time-to-live: 600s
         key-prefix: fhir-adapter:fhir
   # Settings for FHIR subscriptions on FHIR servers as a FHIR client and the related
   # data processing.
