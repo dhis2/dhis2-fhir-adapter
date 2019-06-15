@@ -9,14 +9,6 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "variables" : [ "CONTEXT", "INPUT" ],
 }'
 
-#######Patient.OrgUnitLookupScript.ScriptSource ####################
-curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/657e1566-8fb7-11e9-a172-f391412ba90c -d $'{
-  "sourceText" : "function getOrganizationUnitMappedCode(organizationReference)\n{\nvar mappedCode = null;\nif (organizationReference != null)\n{\nvar hierarchy = organizationUtils.findHierarchy(organizationReference);\nif (hierarchy != null)\n{\nfor (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)\n{\nvar code = identifierUtils.getResourceIdentifier(hierarchy.get(i), \'ORGANIZATION\');\nif (code != null)\n{\nmappedCode = codeUtils.getMappedCode(code, \'ORGANIZATION\');\nif ((mappedCode == null) && args[\'useIdentifierCode\'])\n{\nmappedCode = organizationUtils.existsWithPrefix(code);\n}\n}\n}\n}\n}\nreturn mappedCode;\n}\nvar ref = null;\nvar mappedCode = getOrganizationUnitMappedCode(input.managingOrganization);\nif (mappedCode !== null) {\nref = context.createReference(mappedCode, \'CODE\');\n} else {\nvar identifierSystem = input.getManagingOrganization().getIdentifier().getSystem();\nvar identifierValue = input.getManagingOrganization().getIdentifier().getValue();\nif (identifierSystem === \'http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier\') {\nref = context.createReference(identifierValue, \'ID\');\n}\n}\nif (ref === null){\nmappedCode = args[\'defaultCode\'];\nif (mappedCode != null)\n{\nref = context.createReference(mappedCode, \'CODE\');\n}\n}\nref",
-  "sourceType" : "JAVASCRIPT",
-  "fhirVersions" : [ "DSTU3", "R4" ],
-  "script" : "http://localhost:8081/api/scripts/34fecf16-8fb7-11e9-9584-eb079e64a4cb"
-}'
-
 ####### Patient.OrgUnitLookupScript.ScriptArg ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptArgs/bfca9eee-8fb8-11e9-b5c3-07af794a26ad -d '{
   "name" : "defaultCode",
@@ -26,6 +18,16 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
   "description" : "Default Orgn Unit Code",
   "script" : "http://localhost:8081/api/scripts/34fecf16-8fb7-11e9-9584-eb079e64a4cb"
 }'
+
+
+#######Patient.OrgUnitLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/657e1566-8fb7-11e9-a172-f391412ba90c -d $'{
+  "sourceText" : "function getOrganizationUnitMappedCode(organizationReference)\n{\nvar mappedCode = null;\nif (organizationReference != null)\n{\nvar hierarchy = organizationUtils.findHierarchy(organizationReference);\nif (hierarchy != null)\n{\nfor (var i = 0; (mappedCode == null) && (i < hierarchy.size()); i++)\n{\nvar code = identifierUtils.getResourceIdentifier(hierarchy.get(i), \'ORGANIZATION\');\nif (code != null)\n{\nmappedCode = codeUtils.getMappedCode(code, \'ORGANIZATION\');\nif ((mappedCode == null) && args[\'useIdentifierCode\'])\n{\nmappedCode = organizationUtils.existsWithPrefix(code);\n}\n}\n}\n}\n}\nreturn mappedCode;\n}\nvar ref = null;\nvar mappedCode = getOrganizationUnitMappedCode(input.managingOrganization);\nif (mappedCode !== null) {\nref = context.createReference(mappedCode, \'CODE\');\n} else {\nvar identifierSystem = input.getManagingOrganization().getIdentifier().getSystem();\nvar identifierValue = input.getManagingOrganization().getIdentifier().getValue();\nif (identifierSystem === \'http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier\') {\nref = context.createReference(identifierValue, \'ID\');\n}\n}\nif (ref === null){\nmappedCode = args[\'defaultCode\'];\nif (mappedCode != null)\n{\nref = context.createReference(mappedCode, \'CODE\');\n}\n}\nref",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/34fecf16-8fb7-11e9-9584-eb079e64a4cb"
+}'
+
 
 
 ####### Patient.OrgUnitLookupScript.ExecutableScript ####################
