@@ -66,7 +66,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "EVALUATE",
  "returnType" : "ORG_UNIT_REF",
  "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
- "variables" : [ "CONTEXT", "INPUT" ],
+ "variables" : [ "CONTEXT", "INPUT" ]
 }'
 
 ####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.ScriptSource ####################
@@ -108,7 +108,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "returnType" : "BOOLEAN",
  "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
  "outputType" : "DHIS_EVENT",
- "variables" : [ "CONTEXT", "INPUT", "OUTPUT" ],
+ "variables" : [ "CONTEXT", "INPUT", "OUTPUT" ]
 }'
 
 ####### QuestionnaireResponse.Rule.TransformImpScript.ScriptArg ####################
@@ -173,7 +173,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### TrackingForm.ProgramStage ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459 -d '{
-  "name": "Risk Assessment",  
+  "name": "Tracking Form",  
   "programStageReference": {
     "value": "ttdbtU58bwG",
     "type": "ID"
@@ -190,7 +190,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### RiskAssessment.Rule ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/c1d307e6-8e62-11e9-9ee9-c706a5908d89 -d '{
-  "name": "Risk Assessment: From Questionnaire Response to Event",
+  "name": "RA QuestionnaireResponse to Event",
   "enabled": true,
   "evaluationOrder": 0,
   "dhisResourceType": "PROGRAM_STAGE_EVENT",
@@ -346,7 +346,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### TrackingForm.Rule ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec -d '{
-  "name": Tracking Form: From Questionnaire Response to Event",
+  "name": TF Questionnaire Response to Event",
   "enabled": true,
   "evaluationOrder": 4,
   "dhisResourceType": "PROGRAM_STAGE_EVENT",
@@ -477,7 +477,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/systems/ca35f14a-8e63-11e9-8637-b3998930b810 -d '{
   "name": "Zimbabwe Questionnaire Response ID",
   "code": "ZW_QUESTIONNAIRE_RESPONSE_ID",
-  "systemUri": "urn:ceshhar:uid",
+  "systemUri": "urn:ceshhar:uid2",
   "fhirDisplayName": "Zimbabwe Questionnaire Response ID"
 }'
 
