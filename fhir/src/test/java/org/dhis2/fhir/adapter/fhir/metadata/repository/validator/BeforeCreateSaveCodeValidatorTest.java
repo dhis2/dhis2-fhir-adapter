@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,16 +131,6 @@ public class BeforeCreateSaveCodeValidatorTest extends AbstractJpaRepositoryTest
     public void testMappedCodeBlank() throws Exception
     {
         entity.setMappedCode( "    " );
-        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
-            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
-                JsonEntityValue.create( "codeCategory", "codeCategories", codeCategory.getId().toString() ) ) ) )
-            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "mappedCode" ) ) );
-    }
-
-    @Test
-    public void testMappedCodeComma() throws Exception
-    {
-        entity.setMappedCode( "TEST,TEST" );
         mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
             .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
                 JsonEntityValue.create( "codeCategory", "codeCategories", codeCategory.getId().toString() ) ) ) )

@@ -390,7 +390,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 idResourceType = FhirResourceType.getByResourceTypeName( id.getResourceType() );
             }
 
-            if ( StringUtils.isNotBlank( id.getIdPart() ) )
+            if ( StringUtils.isNotBlank( id.getResourceType() ) && StringUtils.isNotBlank( id.getIdPart() ) )
             {
                 idPart = id.getIdPart();
             }
@@ -497,7 +497,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     @Nullable
     protected IIdType getIdFromFullUrl( @Nullable String fullUrl )
     {
-        if ( fullUrl == null )
+        if ( fullUrl == null || fullUrl.startsWith( "urn:" ) )
         {
             return null;
         }

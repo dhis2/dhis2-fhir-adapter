@@ -72,6 +72,8 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
 {
     public static final String SCRIPT_ATTR_NAME = "fhirResourceUtils";
 
+    protected static final String INTERNAL_REFERENCE_BEGIN = "urn:";
+
     private final ReferenceFhirToDhisTransformerUtils referenceUtils;
 
     private final SystemCodeRepository systemCodeRepository;

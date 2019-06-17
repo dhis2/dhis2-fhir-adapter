@@ -68,10 +68,6 @@ public class BeforeCreateSaveCodeValidator extends AbstractBeforeCreateSaveValid
         {
             errors.rejectValue( "code", "Code.code.blank", "Code must not be blank." );
         }
-        else if ( code.getCode().contains( "," ) )
-        {
-            errors.rejectValue( "code", "Code.code.comma", "Code must not contain commas." );
-        }
         if ( StringUtils.length( code.getCode() ) > Code.MAX_CODE_LENGTH )
         {
             errors.rejectValue( "code", "Code.code.length", new Object[]{ Code.MAX_CODE_LENGTH }, "Code must not be longer than {0} characters." );
@@ -79,10 +75,6 @@ public class BeforeCreateSaveCodeValidator extends AbstractBeforeCreateSaveValid
         if ( (code.getMappedCode() != null) && StringUtils.isBlank( code.getMappedCode() ) )
         {
             errors.rejectValue( "mappedCode", "Code.mappedCode.blank", "Mapped code must not be blank." );
-        }
-        else if ( (code.getMappedCode() != null) && code.getMappedCode().contains( "," ) )
-        {
-            errors.rejectValue( "mappedCode", "Code.mappedCode.comma", "Mapped code must not contain commas." );
         }
         if ( StringUtils.length( code.getMappedCode() ) > Code.MAX_MAPPED_CODE_LENGTH )
         {

@@ -302,7 +302,7 @@ public class AbstractBundleResourceProviderTest
         Assert.assertFalse( fhirOperation.isProcessed() );
         Assert.assertEquals( FhirOperationType.DELETE, fhirOperation.getOperationType() );
         Assert.assertEquals( FhirResourceType.PATIENT, fhirOperation.getFhirResourceType() );
-        Assert.assertEquals( "4711", fhirOperation.getResourceId() );
+        Assert.assertEquals( "4811", fhirOperation.getResourceId() );
     }
 
     @Test

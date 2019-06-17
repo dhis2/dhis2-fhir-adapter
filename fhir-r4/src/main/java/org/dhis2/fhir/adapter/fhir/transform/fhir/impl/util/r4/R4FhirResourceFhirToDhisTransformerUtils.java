@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang.StringUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
@@ -144,7 +145,7 @@ public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResour
     {
         final Reference reference = new Reference();
 
-        if ( id != null && !id.isLocal() )
+        if ( id != null && !id.isLocal() && !StringUtils.startsWith( id.getIdPart(), INTERNAL_REFERENCE_BEGIN ) )
         {
             reference.setReferenceElement( id );
         }
