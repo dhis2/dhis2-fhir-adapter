@@ -23,7 +23,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "EVALUATE",
  "returnType" : "FHIR_RESOURCE",
  "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ],
+ "variables" : [ "CONTEXT", "INPUT" ]
 }'
 
 ####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
