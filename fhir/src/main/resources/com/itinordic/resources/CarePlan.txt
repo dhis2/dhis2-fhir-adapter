@@ -14,16 +14,6 @@ COMMENT ON TABLE fhir_enrollment_rule IS 'Contains rules for DHIS2 Enrollment Re
 COMMENT ON COLUMN fhir_enrollment_rule.id IS 'References the rule to which this Enrollment rule belongs to.';
 COMMENT ON COLUMN fhir_enrollment_rule.program_id IS 'References the tracker program to which this enrollment belongs to.';
 
-INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_CARE_PLAN');
-INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_QUESTIONNAIRE_RESPONSE');
-
-INSERT INTO fhir_resource_type_enum VALUES('CARE_PLAN');
-INSERT INTO fhir_resource_type_enum VALUES('QUESTIONNAIRE_RESPONSE');
-
-
-
-
-
 
 ####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.Script ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/63693674-8a77-11e9-a3fd-37ea6b7b7cdf -d '{
@@ -33,7 +23,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "EVALUATE",
  "returnType" : "FHIR_RESOURCE",
  "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ]
+ "variables" : [ "CONTEXT", "INPUT" ],
 }'
 
 ####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
@@ -80,15 +70,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
   "description" : "Extracts the organization unit code reference from the input Care Plan Resource.",
   "script" : "http://localhost:8081/api/scripts/e78aaa2c-8ae6-11e9-b4f1-073c76ff0255"
 }'
-curl -XPUT -u hapi:Hapi123# -H 'Content-Type: application/json' http://localhost:8081/api/scripts/e78aaa2c-8ae6-11e9-b4f1-073c76ff0255 -i -d '{
- "name" : "Org Unit Code from Care Plan Resource",
- "description" : "Extracts the organization unit code reference from the input Care Plan Resource.",
- "code" : "CARE_PLAN_ORG_UNIT_LOOKUP",
- "scriptType" : "EVALUATE",
- "returnType" : "ORG_UNIT_REF",
- "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ]
-}'
+
 ####### CarePlan.FhirResourceMapping.ImpEnrollmentDateLookupScript.Script ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/f638ba4c-8b53-11e9-89e4-e70cb21cbc8c -d '{
  "name" : "Care Plan Date Lookup",
@@ -97,20 +79,12 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "EVALUATE",
  "returnType" : "DATE_TIME",
  "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ],
+ "variables" : [ "CONTEXT", "INPUT" ]
 }'
 
 ####### CarePlan.FhirResourceMapping.ImpEnrollmentDateLookupScript.ScriptSource ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/22469726-8b54-11e9-b95a-93563f739422 -d $'{
-  "sourceText" curl -XPUT -u hapi:Hapi123# -H 'Content-Type: application/json' http://localhost:8081/api/scripts/e78aaa2c-8ae6-11e9-b4f1-073c76ff0255 -i -d '{
- "name" : "Org Unit Code from Care Plan Resource",
- "description" : "Extracts the organization unit code reference from the input Care Plan Resource.",
- "code" : "CARE_PLAN_ORG_UNIT_LOOKUP",
- "scriptType" : "EVALUATE",
- "returnType" : "ORG_UNIT_REF",
- "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ]
-}': "input.getPeriod().getStart()",
+  "sourceText" : "input.getPeriod().getStart()",
   "sourceType" : "JAVASCRIPT",
   "fhirVersions" : [ "DSTU3", "R4" ],
   "script" : "http://localhost:8081/api/scripts/f638ba4c-8b53-11e9-89e4-e70cb21cbc8c"
@@ -147,8 +121,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "TRANSFORM_TO_DHIS",
  "returnType" : "BOOLEAN",
  "inputType" : "FHIR_CARE_PLAN",
- "outputType" : "DHIS_ENROLLMENT",
- "variables" : [ "CONTEXT", "INPUT", "OUTPUT" ]
+ "variables" : [ "CONTEXT", "INPUT" ]
 }'
 
 ####### CarePlan.Rule.TransformImpScript.ScriptSource ####################
