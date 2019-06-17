@@ -121,7 +121,8 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "TRANSFORM_TO_DHIS",
  "returnType" : "BOOLEAN",
  "inputType" : "FHIR_CARE_PLAN",
- "variables" : [ "CONTEXT", "INPUT" ]
+ "outputType" : "DHIS_ENROLLMENT",
+ "variables" : [ "CONTEXT", "INPUT","OUTPUT" ]
 }'
 
 ####### CarePlan.Rule.TransformImpScript.ScriptSource ####################
