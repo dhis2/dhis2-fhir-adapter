@@ -157,17 +157,9 @@ The adapter WAR can be run with a servlet container 3.1 or later (like Apache To
 Since the created WAR file is an executable WAR file, also the following command can be entered in folder app/target in the console:
 
     java -jar dhis2-fhir-adapter.war    
-
-For the initial setup of the Adapter a simple user interface is provided. To access the initial setup user interface, the initial setup must have been enabled when starting the adapter. The following command can be entered in the console to start the 
- Adapter with initial setup enabled:
- 
-    java -jar dhis2-fhir-adapter.war --adapter-setup=true
-    
-If the Adapter is started within as a web application inside Apache Tomcat, the corresponding system propert must be set. This can be done in file `setenv.sh` (see [Tomcat Running](https://tomcat.apache.org/tomcat-8.5-doc/RUNNING.txt)) with the following line:
-
-    export CATALINA_OPTS="$CATALINA_OPTS -Dadapter-setup=true"
-    
-With the default configuration the initial setup user interface can be accessed in any web browser by using `http://localhost:8081/setup`. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. After 
+        
+With the default configuration the initial setup user interface can be accessed in any web browser by using `http://localhost:8081/setup`. The web browser will ask for a username and password of a DHIS2 user that has privilege F_SYSTEM_SETTING. 
+After 
  successful authentication a setup form will be displayed with further instructions and examples. The initial setup can be made once only and the initial setup form will not be accessible anymore. 
  
 After successful initial setup the FHIR REST interfaces are accessible under the following base URIs. Basic and OAuth2 authentication and authorization of DHIS 2 is supported.

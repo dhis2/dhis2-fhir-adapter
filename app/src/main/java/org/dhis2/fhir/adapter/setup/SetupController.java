@@ -56,7 +56,7 @@ import java.util.Collections;
  * @author volsch
  */
 @Controller
-@ConditionalOnProperty( "adapter-setup" )
+@ConditionalOnProperty( value = "fhir-adapter-setup", matchIfMissing = true )
 @PreAuthorize( "hasRole('ALL')" )
 public class SetupController
 {
