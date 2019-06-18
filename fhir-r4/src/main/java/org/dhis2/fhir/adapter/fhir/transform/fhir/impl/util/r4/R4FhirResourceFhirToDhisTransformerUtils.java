@@ -113,7 +113,7 @@ public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResour
 
         final Identifier identifier = (Identifier) Objects.requireNonNull( ReflectionUtils.invokeMethod( method, baseReference ) );
 
-        return identifier.isEmpty() ? new SystemCodeValues() :
+        return StringUtils.isBlank( identifier.getSystem() ) && StringUtils.isBlank( identifier.getValue() ) ? new SystemCodeValues() :
             new SystemCodeValues( Collections.singletonList( new SystemCodeValue( identifier.getSystem(), identifier.getValue() ) ) );
     }
 
@@ -182,6 +182,8 @@ public class R4FhirResourceFhirToDhisTransformerUtils extends AbstractFhirResour
 
         @SuppressWarnings( "unchecked" ) final Collection<Identifier> resourceIdentifiers = (Collection<Identifier>) Objects.requireNonNull( ReflectionUtils.invokeMethod( method, baseResource ) );
 
-        return new SystemCodeValues( resourceIdentifiers.stream().map( i -> new SystemCodeValue( i.getSystem(), i.getValue() ) ).collect( Collectors.toList() ) );
+        return new SystemCodeValues( resourceIdentifiers.stream()
+            .filter( i -> StringUtils.isNotBlank( i.getSystem() ) && StringUtils.isNotBlank( i.getValue() ) )
+            .map( i -> new SystemCodeValue( i.getSystem(), i.getValue() ) ).collect( Collectors.toList() ) );
     }
 }
