@@ -37,7 +37,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
  "scriptType" : "EVALUATE",
  "returnType" : "FHIR_RESOURCE",
  "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
- "variables" : [ "CONTEXT", "INPUT" ],
+ "variables" : [ "CONTEXT", "INPUT" ]
 }'
 
 ####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
@@ -346,7 +346,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### TrackingForm.Rule ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec -d '{
-  "name": TF Questionnaire Response to Event Rule",
+  "name": "TF Questionnaire Response to Event Rule",
   "enabled": true,
   "evaluationOrder": 4,
   "dhisResourceType": "PROGRAM_STAGE_EVENT",
