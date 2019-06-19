@@ -77,7 +77,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     public FhirToEnrollmentTransformer(@Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager,
             @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
             @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter
-          ) {
+    ) {
         super(scriptExecutor, organizationUnitService, new StaticObjectProvider<>(trackedEntityService), fhirDhisAssignmentRepository);
         this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
@@ -102,7 +102,11 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Program program = TransformerUtils.getScriptVariable(scriptVariables, ScriptVariable.PROGRAM, Program.class);
         final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable(scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class);
         Enrollment enrollment = enrollmentService.findLatestActive(program.getId(), Objects.requireNonNull(trackedEntityInstance.getId())).orElse(null);
-        return Optional.of(enrollment);
+        if (enrollment != null) {
+            return Optional.of(enrollment);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -133,9 +137,8 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         enrollment.setOrgUnitId(orgUnit.get().getId());
         enrollment.setProgramId(program.getId());
         enrollment.setTrackedEntityInstanceId(trackedEntityInstance.getTrackedEntityInstance().getId());
-        enrollment.setEnrollmentDate( enrollmentDate );
-       
-        
+        enrollment.setEnrollmentDate(enrollmentDate);
+
         if (!updateIncidentDate(program, enrollment)) {
             return null;
         }
