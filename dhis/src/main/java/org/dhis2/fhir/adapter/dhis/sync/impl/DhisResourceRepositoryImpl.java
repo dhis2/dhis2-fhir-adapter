@@ -141,6 +141,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 break;
             case ENROLLMENT:
                 saveEnrollment((Enrollment)resource);
+                break;
             case PROGRAM_STAGE_EVENT:
                 saveEvent( (Event) resource );
                 break;
