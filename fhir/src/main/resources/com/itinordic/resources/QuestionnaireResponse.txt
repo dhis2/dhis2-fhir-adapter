@@ -42,7 +42,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/5c37dff4-8c7a-11e9-930b-c766f403131e -d $'{
-  "sourceText" : "var fhirResource = null;\\nfhirResource = fhirResourceUtils.createResource(\'\'Patient\'\');\\nfhirResource.setId(input.getSubject().getResource() == null ? input.getSubject().getReferenceElement() : input.getSubject().getResource().getId());\\nif (input.getSubject().hasIdentifier() && fhirResource.identifier !== \'\'undefined\'\')\\n{\\nfhirResource.addIdentifier(input.getSubject().getIdentifier());\\n}\\nfhirResource",
+  "sourceText" : "var fhirResource = null;\\nfhirResource = fhirResourceUtils.createResource(\'Patient\');\\nfhirResource.setId(input.getSubject().getResource() == null ? input.getSubject().getReferenceElement() : input.getSubject().getResource().getId());\\nif (input.getSubject().hasIdentifier() && fhirResource.identifier !== \'\'undefined\'\')\\n{\\nfhirResource.addIdentifier(input.getSubject().getIdentifier());\\n}\\nfhirResource",
   "sourceType" : "JAVASCRIPT",
   "fhirVersions" : [ "DSTU3", "R4" ],
   "script" : "http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78"
