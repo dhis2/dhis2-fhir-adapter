@@ -385,12 +385,12 @@
     </script>
     <h3>Tracked Entity</h3>
     <p>This section contains the setup for the transformation from FHIR Patient to a tracked entity type that has been configured on your DHIS2 installation. At least the patient ID (contains national ID that has been extracted from FHIR identifier), first
-      name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value. The reference to DHIS2 can be made by ID, unique name or unique code (if any).<br/>
+      name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value. The reference to DHIS2 can be made by ID, unique name or unique code (if any).<br/><br/>
       The default configuration (extracted from <a href="https://who.dhis2.org/documentation/" target="_blank">WHO Configuration Packages for DHIS2</a>) below uses tracked entity attributes that have been configured in the metadata package that can be
       obtained from this <a th:href="@{/dhis/metadata/person-attribute-metadata.json}" target="_blank">person attribute metadata link</a> and this <a th:href="@{/dhis/metadata/person-metadata.json}" target="_blank">person metadata link</a>. The metadata
       files are intended to be used with DHIS2 2.31. First the attribute metadata must be imported. Afterwards the person metadata must be imported or you can create your own tracked entity type based on the attributes. The tracked entity attributes of the
       imported metadata must be adjusted as needed and if the default configuration below is used it must also be ensured that just tracked entity attributes that are assigned to to the tracked entity type are checked. Please not that the default
-      configuration below may use may tracked entity attributes than tracked entity attributes that are included in the metadata files above.<br/>
+      configuration below may use may tracked entity attributes than tracked entity attributes that are included in the metadata files above.<br/><br/>
       Also the attributes that are defined in the Sierra Leone demo database can be used by clicking the link below.
     </p>
     <p><a href="#" onclick="displayCustomTrackedEntityType(); return false" class="config-switch">Custom Tracked Entity Type</a>
@@ -505,7 +505,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName')}" th:errors="*{trackedEntitySetup.villageName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceType')}" th:errors="*{trackedEntitySetup.villageName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.villageName.referenceValue')}" th:errors="*{trackedEntitySetup.villageName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityMotherCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
+      <p><label for="trackedEntityMotherCaregiverFirstNameRefValue" style="width: 180px">Mother/Caregiver's first name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverFirstName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.motherCaregiverFirstName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
@@ -517,7 +517,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverFirstName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityMotherCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
+      <p><label for="trackedEntityMotherCaregiverLastNameRefValue" style="width: 180px">Mother/Caregiver's last name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverLastName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.motherCaregiverLastName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
@@ -529,7 +529,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverLastName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
+      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Mother/Caregiver's phone number:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.motherCaregiverPhone.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.motherCaregiverPhone.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
@@ -541,7 +541,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone.referenceType')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.motherCaregiverPhone.referenceValue')}" th:errors="*{trackedEntitySetup.motherCaregiverPhone.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityFatherCaregiverFirstNameRefValue" style="width: 180px">Caregiver's first name:</label>
+      <p><label for="trackedEntityFatherCaregiverFirstNameRefValue" style="width: 180px">Father/Caregiver's first name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverFirstName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.fatherCaregiverFirstName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
@@ -553,7 +553,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName.referenceType')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverFirstName.referenceValue')}" th:errors="*{trackedEntitySetup.fatherCaregiverFirstName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityFatherCaregiverLastNameRefValue" style="width: 180px">Caregiver's last name:</label>
+      <p><label for="trackedEntityFatherCaregiverLastNameRefValue" style="width: 180px">Father/Caregiver's last name:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverLastName.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.fatherCaregiverLastName.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
@@ -565,7 +565,7 @@
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName.referenceType')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName.referenceType}" class="error">Error</p>
       <p th:if="${#fields.hasErrors('trackedEntitySetup.fatherCaregiverLastName.referenceValue')}" th:errors="*{trackedEntitySetup.fatherCaregiverLastName.referenceValue}" class="error">Error</p>
-      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Caregiver's phone number:</label>
+      <p><label for="trackedEntityMotherCaregiverPhoneRefValue" style="width: 180px">Father/Caregiver's phone number:</label>
         <input type="checkbox" th:field="*{trackedEntitySetup.fatherCaregiverPhone.enabled}" title="Enabled"/>
         <select th:field="*{trackedEntitySetup.fatherCaregiverPhone.referenceType}" title="Reference Type">
           <option th:value="'ID'" th:text="'ID'"></option>
