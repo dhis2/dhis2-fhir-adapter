@@ -386,10 +386,11 @@
     <h3>Tracked Entity</h3>
     <p>This section contains the setup for the transformation from FHIR Patient to a tracked entity type that has been configured on your DHIS2 installation. At least the patient ID (contains national ID that has been extracted from FHIR identifier), first
       name and last name attributes are required. The checkbox in each line can be used to disable the transformation of that value. The reference to DHIS2 can be made by ID, unique name or unique code (if any).<br/>
-      The default configuration (extracted from <a href="https://who.dhis2.org/documentation/" target="_blank">WHO Configuration Packages for DHIS2</a>) below uses the tracked entity attributes that have been configured in the metadata package that can be
+      The default configuration (extracted from <a href="https://who.dhis2.org/documentation/" target="_blank">WHO Configuration Packages for DHIS2</a>) below uses tracked entity attributes that have been configured in the metadata package that can be
       obtained from this <a th:href="@{/dhis/metadata/person-attribute-metadata.json}" target="_blank">person attribute metadata link</a> and this <a th:href="@{/dhis/metadata/person-metadata.json}" target="_blank">person metadata link</a>. The metadata
       files are intended to be used with DHIS2 2.31. First the attribute metadata must be imported. Afterwards the person metadata must be imported or you can create your own tracked entity type based on the attributes. The tracked entity attributes of the
-      imported metadata must be adjusted as needed and if the default configuration below is used it must also be ensured that just tracked entity attributes that are assigned to to the tracked entity type are checked.<br/>
+      imported metadata must be adjusted as needed and if the default configuration below is used it must also be ensured that just tracked entity attributes that are assigned to to the tracked entity type are checked. Please not that the default
+      configuration below may use may tracked entity attributes than tracked entity attributes that are included in the metadata files above.<br/>
       Also the attributes that are defined in the Sierra Leone demo database can be used by clicking the link below.
     </p>
     <p><a href="#" onclick="displayCustomTrackedEntityType(); return false" class="config-switch">Custom Tracked Entity Type</a>
