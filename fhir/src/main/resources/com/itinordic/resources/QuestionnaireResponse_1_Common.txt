@@ -1,0 +1,131 @@
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventDateLookupScript.Script ####################
+####### QuestionnaireResponse.FhirResourceMapping.ImpEffectiveDateLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014 -d '{
+ "name" : "Questionnaire Response Plan Date Lookup",
+ "description" : "Lookup of the exact date of the FHIR Questionnaire Response Plan.",
+ "code" : "QUESTIONNAIRE_RESPONSE_DATE_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "DATE_TIME",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ]
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEventDateLookupScript.ScriptSource ####################
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEffectiveDateLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/9032f79a-8c79-11e9-9397-f7457124da1d -d $'{
+  "sourceText" : "input.authored",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014"
+}'
+
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEventDateLookupScript.ExecutableScript ####################
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpEffectiveDateLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07 -d '{
+  "name" : "Questionnaire Response Plan Date Lookup",
+  "code" : "QUESTIONNAIRE_RESPONSE_DATE_LOOKUP",
+  "description" : "Lookup of the exact date of the FHIR Questionnaire Response Plan",
+  "script" : "http://localhost:8081/api/scripts/6b39c81a-8c79-11e9-82ee-8f0bc174e014"
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78 -d '{
+ "name" : "Questionnaire Response TEI Lookup",
+ "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Questionnaire Response.",
+ "code" : "QUESTIONNAIRE_RESPONSE_TEI_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "FHIR_RESOURCE",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ]
+}'
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/5c37dff4-8c7a-11e9-930b-c766f403131e -d $'{
+  "sourceText" : "var fhirResource = null;\\nfhirResource = fhirResourceUtils.createResource(\'Patient\');\\nfhirResource.setId(input.getSubject().getResource() == null ? input.getSubject().getReferenceElement() : input.getSubject().getResource().getId());\\nif (input.getSubject().hasIdentifier() && fhirResource.identifier !== \'undefined\')\\n{\\nfhirResource.addIdentifier(input.getSubject().getIdentifier());\\n}\\nfhirResource",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78"
+}'
+
+
+####### QuestionnaireResponsePlan.FhirResourceMapping.ImpTeiLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/50efe344-8c7a-11e9-834b-efb5d789587a -d '{
+  "name" : "Questionnaire Response TEI Lookup",
+  "code" : "QUESTIONNAIRE_RESPONSE_TEI_LOOKUP",
+  "description" : "Lookup of the Tracked Entity Instance FHIR Resource from FHIR Questionnaire Response",
+  "script" : "http://localhost:8081/api/scripts/39d7ce60-8c7a-11e9-8cfa-f3cb58930b78"
+}'
+
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad -d '{
+ "name" : "Org Unit Code from Questionnaire Response Resource",
+ "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource.",
+ "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP",
+ "scriptType" : "EVALUATE",
+ "returnType" : "ORG_UNIT_REF",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ]
+}'
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/05356be4-8c7b-11e9-b840-1fa319366597 -d $'{
+  "sourceText" : "var ref = null;\\nref = context.createReference(enrollment.getOrganizationUnitId(), \'ID\');\\nref",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad"
+}'
+
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEventOrgLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef -d '{
+  "name" : "Org Unit Code from Questionnaire Response Resource",
+  "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP",
+  "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource.",
+  "script" : "http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad"
+}'
+
+####### QuestionnaireResponse.FhirResourceMapping ###########################
+curl 'http://localhost:8081/api/fhirResourceMappings/a8780d32-8e6c-11e9-aff2-9f1647fb7ac7' -i -u 'admin:district' -X PUT \
+    -H 'Content-Type: application/json' \
+    -d '{
+  "fhirResourceType" : "QUESTIONNAIRE_RESPONSE",
+  "trackedEntityFhirResourceType" : "PATIENT",
+  "impTeiLookupScript" : "http://localhost:8081/api/executableScripts/50efe344-8c7a-11e9-834b-efb5d789587a",
+  "impEventDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
+  "impEffectiveDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
+  "impEventOrgLookupScript" : "http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef"
+ }'
+
+
+####### QuestionnaireResponse.Rule.TransformImpScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd -d '{
+ "name" : "Transforms FHIR Questionnaire Response to DHIS Event",
+ "description" : "Transforms FHIR Questionnaire Response to DHIS Event",
+ "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT",
+ "scriptType" : "TRANSFORM_TO_DHIS",
+ "returnType" : "BOOLEAN",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "outputType" : "DHIS_EVENT",
+ "variables" : [ "CONTEXT", "INPUT", "OUTPUT" ]
+}'
+
+####### QuestionnaireResponse.Rule.TransformImpScript.ScriptArg ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067 -d '{
+  "name" : "programStageId",
+  "dataType" : "STRING",
+  "mandatory" : true,  
+  "defaultValue" : "u7VtxRYoG9v",
+  "description" : "Program Stage Id Argument",
+  "script" : "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### QuestionnaireResponse.Rule.TransformImpScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/ae7892ce-8e12-11e9-ade8-33194434ce39 -d $'{
+  "sourceText" : "function isApplicable(input) {\\nvar extensions = input.getExtension();\\nif (extensions !== null) {\\nfor (var i = 0; i < extensions.size(); i++) {\\nvar extension = extensions.get(i);\\nvar url = extension.getUrl();\\nvar value = extension.getValueAsPrimitive().getValueAsString();\\nvar programStageId = args[\'programStageId\'];\\nif (url === \'api/programStages/\' + programStageId && value === programStageId) {\\nreturn true;\\n}\\n}\\n}\\nreturn false;\\n}\\nfunction getAnswerFirstValue(item) {\\nvar answerValue = null;\\nvar answers = item.getAnswer();\\nif (answers !== null && !answers.isEmpty()) {\\nvar answer = answers.get(0);\\nif (answer.hasValueDateType()) {\\nanswerValue = answer.getValueDateType().getValue();\\n} else if (answer.hasValueDecimalType()) {\\nanswerValue = answer.getValueDecimalType().getValue();\\n} else if (answer.hasValueBooleanType()) {\\nanswerValue = answer.getValueBooleanType().getValue();\\n} else if (answer.hasValueIntegerType()) {\\nanswerValue = answer.getValueIntegerType().getValue();\\n} else if (answer.hasValueStringType()) {\\nanswerValue = answer.getValueStringType().getValue();\\n} else if (answer.hasValueQuantity()) {\\nanswerValue = answer.getValueQuantity().getValue();\\n} else if (answer.hasValueDateTimeType()) {\\nanswerValue = answer.getValueDateTimeType().getValue();\\n} else if (answer.hasValueTimeType()) {\\nanswerValue = answer.getValueTimeType().getValue();\\n} else if (answer.hasValueTimeType()) {\\nanswerValue = answer.getValueTimeType().getValue();\\n}\\n}\\nreturn answerValue;\\n}\\nfunction getOutputStatus(input) {\\nvar outputStatus = null;\\nvar inputStatus = input.getStatus().toCode();\\nif (inputStatus === \'in-progress\') {\\noutputStatus = \'ACTIVE\';\\n} else if (inputStatus === \'completed\') {\\noutputStatus = \'COMPLETED\';\\n} else if (inputStatus === \'amended\') {\\noutputStatus = \'ACTIVE\';\\n} else if (inputStatus === \'entered-in-error\') {\\noutputStatus = \'SKIPPED\';\\n} else if (inputStatus === \'stopped\') {\\noutputStatus = \'SKIPPED\';\\n}\\nreturn outputStatus;\\n}\\nvar result = true;\\nif (!isApplicable(input)) {\\nresult = false;\\n} else {\\noutput.setStatus(getOutputStatus(input));\\nvar items = input.getItem();\\nfor (var i = 0; i < items.size(); i++) {\\nvar item = items.get(i);\\nvar linkId = item.getLinkId();\\nvar answerValue = getAnswerFirstValue(item);\\nif (args[linkId]) {\\noutput.setValue(args[linkId], answerValue);\\n}\\n}\\n}\\nresult",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+

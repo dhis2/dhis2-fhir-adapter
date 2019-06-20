@@ -1,0 +1,343 @@
+####### RiskAssessment.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/ad960ef6-8e60-11e9-ab76-5b3d12cab087 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "overrideArguments" : [ {
+    "overrideValue" : "u7VtxRYoG9v",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### TrackingForm.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/f9a9f2d0-8e60-11e9-b118-eba81e852485 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "overrideArguments" : [ {
+    "overrideValue" : "ttdbtU58bwG",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### RiskAssessment.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/f9f37fb2-8e61-11e9-9dcd-b7cba571af38 -d '{
+  "name": "Risk Assessment",  
+  "programStageReference": {
+    "value": "u7VtxRYoG9v",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c"              
+}'
+
+####### TrackingForm.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459 -d '{
+  "name": "Tracking Form",  
+  "programStageReference": {
+    "value": "ttdbtU58bwG",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c"              
+}'
+
+####### RiskAssessment.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/c1d307e6-8e62-11e9-9ee9-c706a5908d89 -d '{
+  "name": "RA QuestionnaireResponse to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+    {
+      "dataReference": {
+        "value": "bw7aNpdlIy7",
+        "type": "ID"
+      },
+      "scriptArgName": "bw7aNpdlIy7",
+      "required": true,
+      "description": "Young Age (<25 Years Old)"
+    },
+    {
+      "dataReference": {
+        "value": "DUO1lAW04H4",
+        "type": "ID"
+      },
+      "scriptArgName": "DUO1lAW04H4",
+      "required": true,
+      "description": "New to sex work (<6 months)"
+    },
+    {
+      "dataReference": {
+        "value": "gUvuQmDXNbW",
+        "type": "ID"
+      },
+      "scriptArgName": "gUvuQmDXNbW",
+      "required": true,
+      "description": "High client numbers (>10 per week)"
+    },
+    {
+      "dataReference": {
+        "value": "HC1atyBU5aG",
+        "type": "ID"
+      },
+      "scriptArgName": "HC1atyBU5aG",
+      "required": true,
+      "description": "Inconsistent condom use"
+    },
+    {
+      "dataReference": {
+        "value": "i9BSCcFHKwd",
+        "type": "ID"
+      },
+      "scriptArgName": "i9BSCcFHKwd",
+      "required": true,
+      "description": "Clients per week"
+    },
+    {
+      "dataReference": {
+        "value": "qssheSOBAyN",
+        "type": "ID"
+      },
+      "scriptArgName": "qssheSOBAyN",
+      "required": true,
+      "description": "Estimate of condoms needed"
+    },
+    {
+      "dataReference": {
+        "value": "nqF6P8kUIEy",
+        "type": "ID"
+      },
+      "scriptArgName": "nqF6P8kUIEy",
+      "required": true,
+      "description": "Any sex with client last week without condom?"
+    },
+    {
+      "dataReference": {
+        "value": "cTIzgRgoOi1",
+        "type": "ID"
+      },
+      "scriptArgName": "cTIzgRgoOi1",
+      "required": true,
+      "description": "Condom used last sex with client?"
+    },
+    {
+      "dataReference": {
+        "value": "s53NMk11HDC",
+        "type": "ID"
+      },
+      "scriptArgName": "s53NMk11HDC",
+      "required": true,
+      "description": "Problematic drinking/drugs/violence"
+    },
+    {
+      "dataReference": {
+        "value": "lCptuy36cQz",
+        "type": "ID"
+      },
+      "scriptArgName": "lCptuy36cQz",
+      "required": true,
+      "description": "Did you sometimes have sex with clients without a condom because you were drinking?"
+    },
+    {
+      "dataReference": {
+        "value": "LO7WsTowMLa",
+        "type": "ID"
+      },
+      "scriptArgName": "LO7WsTowMLa",
+      "required": true,
+      "description": "Do you ever think you have a drinking problem?"
+    },
+    {
+      "dataReference": {
+        "value": "epMP4hDbgv2",
+        "type": "ID"
+      },
+      "scriptArgName": "epMP4hDbgv2",
+      "required": true,
+      "description": "Do you think your drinking ever interferes with your condom use?"
+    },
+    {
+      "dataReference": {
+        "value": "BBeWYQyMKdu",
+        "type": "ID"
+      },
+      "scriptArgName": "BBeWYQyMKdu",
+      "required": true,
+      "description": "Did you experience any violence last week?"
+    },
+    {
+      "dataReference": {
+        "value": "uGpk1viiKq4",
+        "type": "ID"
+      },
+      "scriptArgName": "uGpk1viiKq4",
+      "required": true,
+      "description": "If yes, did you get any assistance from anyone?"
+    },
+    {
+      "dataReference": {
+        "value": "N8adMwGw3an",
+        "type": "ID"
+      },
+      "scriptArgName": "N8adMwGw3an",
+      "required": true,
+      "description": "Were you forced to have sex without a condom in the last week?"
+    }
+  ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/f9f37fb2-8e61-11e9-9dcd-b7cba571af38",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/ad960ef6-8e60-11e9-ab76-5b3d12cab087"
+  
+}'
+
+####### TrackingForm.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec -d '{
+  "name": "TF Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+    {
+      "dataReference": {
+        "value": "Uqsw1zEQuvF",
+        "type": "ID"
+      },
+      "scriptArgName": "Uqsw1zEQuvF",
+      "required": true,
+      "description": "HIV"
+    },
+    {
+      "dataReference": {
+        "value": "gwTDC1C09CO",
+        "type": "ID"
+      },
+      "scriptArgName": "gwTDC1C09CO",
+      "required": true,
+      "description": "Condoms"
+    },
+    {
+      "dataReference": {
+        "value": "oYOQRSwP2MJ",
+        "type": "ID"
+      },
+      "scriptArgName": "oYOQRSwP2MJ",
+      "required": true,
+      "description": "Condom demonstration"
+    },
+    {
+      "dataReference": {
+        "value": "bIh2MNcQ0da",
+        "type": "ID"
+      },
+      "scriptArgName": "bIh2MNcQ0da",
+      "required": true,
+      "description": "Sisters clinic"
+    },
+    {
+      "dataReference": {
+        "value": "xLhiv6JCqOX",
+        "type": "ID"
+      },
+      "scriptArgName": "xLhiv6JCqOX",
+      "required": true,
+      "description": "Community mobilisation meetings"
+    },
+    {
+      "dataReference": {
+        "value": "oVKjwKBH0nz",
+        "type": "ID"
+      },
+      "scriptArgName": "oVKjwKBH0nz",
+      "required": true,
+      "description": "Repeat testing"
+    },
+    {
+      "dataReference": {
+        "value": "OsGWCnruvyJ",
+        "type": "ID"
+      },
+      "scriptArgName": "OsGWCnruvyJ",
+      "required": true,
+      "description": "STI"
+    },
+    {
+      "dataReference": {
+        "value": "ig5JKHaq6Hl",
+        "type": "ID"
+      },
+      "scriptArgName": "ig5JKHaq6Hl",
+      "required": true,
+      "description": "Contraception"
+    },
+    {
+      "dataReference": {
+        "value": "AK7NdpJlY96",
+        "type": "ID"
+      },
+      "scriptArgName": "AK7NdpJlY96",
+      "required": true,
+      "description": "PrEP"
+    },
+    {
+      "dataReference": {
+        "value": "xVsirkYW5Fi",
+        "type": "ID"
+      },
+      "scriptArgName": "xVsirkYW5Fi",
+      "required": true,
+      "description": "ART"
+    },
+    {
+      "dataReference": {
+        "value": "KHugORFoZ5n",
+        "type": "ID"
+      },
+      "scriptArgName": "KHugORFoZ5n",
+      "required": true,
+      "description": "Male Condoms"
+    },
+    {
+      "dataReference": {
+        "value": "VbBjoMC07Xe",
+        "type": "ID"
+      },
+      "scriptArgName": "VbBjoMC07Xe",
+      "required": true,
+      "description": "Female Condoms"
+    }
+  ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/f9a9f2d0-8e60-11e9-b118-eba81e852485"
+ }'
+

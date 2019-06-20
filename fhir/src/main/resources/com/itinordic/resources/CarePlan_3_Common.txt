@@ -1,0 +1,45 @@
+####### CarePlan.System #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/systems/7a63ef64-8aee-11e9-8ca2-cf6f2693f542 -d '{
+  "name": "Zimbabwe Care Plan ID",
+  "code": "ZW_CARE_PLAN_ID",
+  "systemUri": "urn:ceshhar:uid",
+  "fhirDisplayName": "Zimbabwe Care Plan ID"
+}'
+
+####### CarePlan.ClientResource #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientResources/b28e733c-8aee-11e9-9928-4736812fb4de -d '{
+  "fhirResourceType": "CARE_PLAN",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "exportOnly": false
+}'
+
+####### CarePlan.ClientSystem #####################################
+curl -XPOST -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientSystems -d '{
+  "fhirResourceType": "CARE_PLAN",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "system": "http://localhost:8081/api/systems/7a63ef64-8aee-11e9-8ca2-cf6f2693f542"
+}'
+
+####################Subscribe for care plan notifications #################################
+curl -XPOST 'http://localhost:8080/hapi-fhir-jpaserver/fhir/Subscription' -i -H 'Content-Type: application/json' -d \
+  '{
+      "resourceType": "Subscription",
+      "criteria": "CarePlan?",
+      "channel": {
+        "type": "rest-hook",
+        "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b28e733c-8aee-11e9-9928-4736812fb4de",
+        "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs"
+      }, 
+      "status": "requested"
+  }'
+
+##################Manual Care Plan Importation Trigger #####################
+curl -XPOST -H "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs" http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/b28e733c-8aee-11e9-9928-4736812fb4de
+
+
+
+
+
+
+
+

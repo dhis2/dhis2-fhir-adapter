@@ -1,0 +1,42 @@
+####### QuestionaireResponse.System #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/systems/ca35f14a-8e63-11e9-8637-b3998930b810 -d '{
+  "name": "Zimbabwe Questionnaire Response ID",
+  "code": "ZW_QUESTIONNAIRE_RESPONSE_ID",
+  "systemUri": "urn:ceshhar:uid2",
+  "fhirDisplayName": "Zimbabwe Questionnaire Response ID"
+}'
+
+####### QuestionnaireResponse.ClientResource #####################################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientResources/056c3922-8e64-11e9-a6cb-6ba3fca8a311 -d '{
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "exportOnly": false
+}'
+
+####### QuestionnaireResponse.ClientSystem #####################################
+curl -XPOST -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/fhirClientSystems -d '{
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "fhirClient": "http://localhost:8081/api/fhirClients/73cd99c5-0ca8-42ad-a53b-1891fccce08f",
+  "system": "http://localhost:8081/api/systems/ca35f14a-8e63-11e9-8637-b3998930b810"
+}'
+
+####################Subscribe for questionnaire response notifications #################################
+curl -XPOST 'http://localhost:8080/hapi-fhir-jpaserver/fhir/Subscription' -i -H 'Content-Type: application/json' -d \
+  '{
+      "resourceType": "Subscription",
+      "criteria": "QuestionnaireResponse?",
+      "channel": {
+        "type": "rest-hook",
+        "endpoint": "http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/056c3922-8e64-11e9-a6cb-6ba3fca8a311",
+        "header": "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs"
+      }, 
+      "status": "requested"
+  }'
+
+##################Manual Questionnaire Response Importation Trigger #####################
+curl -XPOST -H "Authorization: Bearer jhsj832jDShf8ehShdu7ejhDhsilwmdsgs" http://localhost:8081/remote-fhir-rest-hook/73cd99c5-0ca8-42ad-a53b-1891fccce08f/056c3922-8e64-11e9-a6cb-6ba3fca8a311
+
+
+
+
+

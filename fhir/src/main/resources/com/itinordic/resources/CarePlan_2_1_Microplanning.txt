@@ -1,0 +1,55 @@
+####### MicroPlanning.CarePlan.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/c1973988-8fa6-11e9-93c2-b794ce5daafa -d '{
+  "name" : "Care Plan to Enrollment MP",
+  "code" : "TRANSFORM_CARE_PLAN_ENROLLMENT_MP",
+  "description" : "Transforms FHIR Care Plan to DHIS Enrollment Micro Planning",
+  "overrideArguments" : [ {
+    "overrideValue" : "yOGsQTP8vRE",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/04746342-9363-11e9-9c06-07d790c53bb8"
+  } ],
+  "script" : "http://localhost:8081/api/scripts/6abfadca-8fa6-11e9-b5ff-ff721eb1e3fe"
+}'
+
+####### MicroPlanning.TrackerProgram ###########################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c -d '{
+  "name": "Microplanning",
+  "programReference": {
+    "value": "yOGsQTP8vRE",
+     "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,
+  "enrollmentDateIsIncident": false,
+  "expEnabled": false,
+  "fhirCreateEnabled": false,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "trackedEntityFhirResourceType": "PATIENT",
+  "trackedEntityRule": "http://localhost:8081/api/trackedEntityRules/5f9ebdc9-852e-4c83-87ca-795946aabc35"
+}'
+
+####### MicroPlanning.CarePlanToEnrollment.EnrollmentRule ###########################
+curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01 -i -u 'admin:district' -XPUT \
+    -H 'Content-Type: application/json' \
+ -d '{
+  "name": "Care Plan to Enrollment MP",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "ENROLLMENT",
+  "fhirResourceType": "CARE_PLAN",
+  "impEnabled": true,
+  "expEnabled": false,
+  "fhirCreateEnabled": false,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "program": "http://localhost:8081/api/trackerPrograms/87831258-8aec-11e9-ac22-4fd71b810e5c",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/c1973988-8fa6-11e9-93c2-b794ce5daafa"
+}'
+
+
+
+
+
+
+
