@@ -1,0 +1,123 @@
+####### IPC.ServiceProvision.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/6f534b02-9416-11e9-879c-db7211dfdd45 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "overrideArguments" : [ {
+    "overrideValue" : "y9hCn0PmHlj",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### IPC.ServiceProvision.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/7a719caa-9416-11e9-9a0c-9fdd38887710 -d '{
+  "name": "Risk Assessment",  
+  "programStageReference": {
+    "value": "y9hCn0PmHlj",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/eae91a8a-93f3-11e9-96e3-9b96f5cca4ce"              
+}'
+
+####### IPC.ServiceProvision.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/846ce6c4-9416-11e9-8f67-9f684f2ef676 -d '{
+  "name": "IPC SP QuestionnaireResponse to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "O0bZyycENLa",
+                "type": "ID"
+            },
+            "scriptArgName": "O0bZyycENLa",
+            "required": true,
+            "description": "Condoms Distributed"
+        },
+        {
+            "dataReference": {
+                "value": "GhFA9uS4x2x",
+                "type": "ID"
+            },
+            "scriptArgName": "GhFA9uS4x2x",
+            "required": true,
+            "description": "Female condoms distributed"
+        },
+        {
+            "dataReference": {
+                "value": "sejmQFWuCAY",
+                "type": "ID"
+            },
+            "scriptArgName": "sejmQFWuCAY",
+            "required": true,
+            "description": "Male condoms distributed"
+        },
+        {
+            "dataReference": {
+                "value": "jWPLpni7kQM",
+                "type": "ID"
+            },
+            "scriptArgName": "jWPLpni7kQM",
+            "required": true,
+            "description": "Lubricant"
+        },
+        {
+            "dataReference": {
+                "value": "mnCzsePi4oe",
+                "type": "ID"
+            },
+            "scriptArgName": "mnCzsePi4oe",
+            "required": true,
+            "description": "Did client access any services from CeSHHAR?"
+        },
+        {
+            "dataReference": {
+                "value": "IJyuTNxwI74",
+                "type": "ID"
+            },
+            "scriptArgName": "IJyuTNxwI74",
+            "required": true,
+            "description": "Client accessed HTS?"
+        },
+        {
+            "dataReference": {
+                "value": "O79a3jF50HA",
+                "type": "ID"
+            },
+            "scriptArgName": "O79a3jF50HA",
+            "required": true,
+            "description": "Client accessed Family planning?"
+        },
+        {
+            "dataReference": {
+                "value": "TfvS4x2a0jR",
+                "type": "ID"
+            },
+            "scriptArgName": "TfvS4x2a0jR",
+            "required": true,
+            "description": "Client accessed STI Screening?"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/7a719caa-9416-11e9-9a0c-9fdd38887710",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/6f534b02-9416-11e9-879c-db7211dfdd45"
+  
+}'
+

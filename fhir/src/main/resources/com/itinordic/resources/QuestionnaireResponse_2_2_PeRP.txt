@@ -1,0 +1,514 @@
+####### Perp.Screening.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/96c2086a-9414-11e9-8e97-7be161282abd -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for PP Screening",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_PP_SCR",
+  "overrideArguments" : [ {
+    "overrideValue" : "Pp5bJm7YNjg",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### Perp.Followup.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/b665e7ea-9414-11e9-ba36-ff482efba691 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for PP Followup",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_PFU",
+  "overrideArguments" : [ {
+    "overrideValue" : "aVCe1GrUF6W",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### Perp.Screening.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/c36cc8dc-9414-11e9-a1b1-1bcdaec83645 -d '{
+  "name": "Screening",  
+  "programStageReference": {
+    "value": "Pp5bJm7YNjg",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/85856bdc-93f1-11e9-a50d-278a0b09aa02"              
+}'
+
+####### Perp.Followup.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/d3090774-9414-11e9-9d27-6f88c94f4a24 -d '{
+  "name": "Follow Up",  
+  "programStageReference": {
+    "value": "aVCe1GrUF6W",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/85856bdc-93f1-11e9-a50d-278a0b09aa02"              
+}'
+
+####### Perp.Screening.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/eb55b980-9414-11e9-849c-a3f332c0717c -d '{
+  "name": "PP Screening QuestionnaireResponse to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+   "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "nyblDcaqkAf",
+                "type": "ID"
+            },
+            "scriptArgName": "nyblDcaqkAf",
+            "required": true,
+            "description": "Have you ever had an HIV test?"
+        },
+        {
+            "dataReference": {
+                "value": "bepaAEKKVje",
+                "type": "ID"
+            },
+            "scriptArgName": "bepaAEKKVje",
+            "required": true,
+            "description": "When were you tested?"
+        },
+        {
+            "dataReference": {
+                "value": "wAFz1o9Bsx1",
+                "type": "ID"
+            },
+            "scriptArgName": "wAFz1o9Bsx1",
+            "required": true,
+            "description": "What was the result?"
+        },
+        {
+            "dataReference": {
+                "value": "o5zlYBBkGKd",
+                "type": "ID"
+            },
+            "scriptArgName": "o5zlYBBkGKd",
+            "required": true,
+            "description": "Do you have any documentation?"
+        },
+        {
+            "dataReference": {
+                "value": "jYex6toLK6w",
+                "type": "ID"
+            },
+            "scriptArgName": "jYex6toLK6w",
+            "required": true,
+            "description": "Are you currently pregnant?"
+        },
+        {
+            "dataReference": {
+                "value": "hQdGPcxeb5v",
+                "type": "ID"
+            },
+            "scriptArgName": "hQdGPcxeb5v",
+            "required": true,
+            "description": "When was your last menstrual period?"
+        },
+        {
+            "dataReference": {
+                "value": "SdlSnue7fcC",
+                "type": "ID"
+            },
+            "scriptArgName": "SdlSnue7fcC",
+            "required": true,
+            "description": "Are you using contraception?"
+        },
+        {
+            "dataReference": {
+                "value": "GUoGu3LntPo",
+                "type": "ID"
+            },
+            "scriptArgName": "GUoGu3LntPo",
+            "required": true,
+            "description": "If yes, which contraception"
+        },
+        {
+            "dataReference": {
+                "value": "BJWeKRGQ0h8",
+                "type": "ID"
+            },
+            "scriptArgName": "BJWeKRGQ0h8",
+            "required": true,
+            "description": "Are you taking any medicines?"
+        },
+        {
+            "dataReference": {
+                "value": "n2rWvdS8KlF",
+                "type": "ID"
+            },
+            "scriptArgName": "n2rWvdS8KlF",
+            "required": true,
+            "description": "If yes, which medicines?"
+        },
+        {
+            "dataReference": {
+                "value": "TCP1BdOjFXB",
+                "type": "ID"
+            },
+            "scriptArgName": "TCP1BdOjFXB",
+            "required": true,
+            "description": "Are you on ARVs?"
+        },
+        {
+            "dataReference": {
+                "value": "LnNqHhuT1z4",
+                "type": "ID"
+            },
+            "scriptArgName": "LnNqHhuT1z4",
+            "required": true,
+            "description": "Are you sexually active?"
+        },
+        {
+            "dataReference": {
+                "value": "Xb4UvbCIGBT",
+                "type": "ID"
+            },
+            "scriptArgName": "Xb4UvbCIGBT",
+            "required": true,
+            "description": "Do you use condoms every time you sex?"
+        },
+        {
+            "dataReference": {
+                "value": "rbUrWHZAwkE",
+                "type": "ID"
+            },
+            "scriptArgName": "rbUrWHZAwkE",
+            "required": true,
+            "description": "Have you read the PrEP information sheet?"
+        },
+        {
+            "dataReference": {
+                "value": "MlJWvPygzab",
+                "type": "ID"
+            },
+            "scriptArgName": "MlJWvPygzab",
+            "required": true,
+            "description": "Do you want to have PrEP?"
+        },
+        {
+            "dataReference": {
+                "value": "b4O27I8WIyj",
+                "type": "ID"
+            },
+            "scriptArgName": "b4O27I8WIyj",
+            "required": true,
+            "description": "Any questions about PrEP?"
+        },
+        {
+            "dataReference": {
+                "value": "qM0D0NPEgbE",
+                "type": "ID"
+            },
+            "scriptArgName": "qM0D0NPEgbE",
+            "required": true,
+            "description": "Any signs of primary Infection"
+        },
+        {
+            "dataReference": {
+                "value": "wmtbl3vTl73",
+                "type": "ID"
+            },
+            "scriptArgName": "wmtbl3vTl73",
+            "required": true,
+            "description": "Fever/Rash"
+        },
+        {
+            "dataReference": {
+                "value": "B9x929lgJb8",
+                "type": "ID"
+            },
+            "scriptArgName": "B9x929lgJb8",
+            "required": true,
+            "description": "Myalgia/Arthralgia"
+        },
+        {
+            "dataReference": {
+                "value": "DKtCNNmtAgA",
+                "type": "ID"
+            },
+            "scriptArgName": "DKtCNNmtAgA",
+            "required": true,
+            "description": "Genital ulcer disease"
+        },
+        {
+            "dataReference": {
+                "value": "G1v41JMBBRW",
+                "type": "ID"
+            },
+            "scriptArgName": "G1v41JMBBRW",
+            "required": true,
+            "description": "Urine for pregnancy test?"
+        },
+        {
+            "dataReference": {
+                "value": "QemX24TkMSS",
+                "type": "ID"
+            },
+            "scriptArgName": "QemX24TkMSS",
+            "required": true,
+            "description": "What is the pregnancy test result?"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/c36cc8dc-9414-11e9-a1b1-1bcdaec83645",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/96c2086a-9414-11e9-8e97-7be161282abd"
+  
+}'
+
+####### Perp.FollowUp.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/ff84d2ce-9414-11e9-ad3c-a74ed00986f4 -d '{
+  "name": "PP Follow Up Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "R3pCdfyhfQ6",
+                "type": "ID"
+            },
+            "scriptArgName": "R3pCdfyhfQ6",
+            "required": true,
+            "description": "Have you had any problems or illness since  your last visit?"
+        },
+        {
+            "dataReference": {
+                "value": "dbYU8YLNEcf",
+                "type": "ID"
+            },
+            "scriptArgName": "dbYU8YLNEcf",
+            "required": true,
+            "description": "Are you currently sexually active?"
+        },
+        {
+            "dataReference": {
+                "value": "lJ83s8GeMZR",
+                "type": "ID"
+            },
+            "scriptArgName": "lJ83s8GeMZR",
+            "required": true,
+            "description": "Have you used a condom every time you  had sex since your last visit?"
+        },
+        {
+            "dataReference": {
+                "value": "pMuY0Ugdj0I",
+                "type": "ID"
+            },
+            "scriptArgName": "pMuY0Ugdj0I",
+            "required": true,
+            "description": "Have you had a condom burst since your  last visit"
+        },
+        {
+            "dataReference": {
+                "value": "KwHFKejYgon",
+                "type": "ID"
+            },
+            "scriptArgName": "KwHFKejYgon",
+            "required": true,
+            "description": "Are you pregnant? "
+        },
+        {
+            "dataReference": {
+                "value": "THrTZ0vjQoA",
+                "type": "ID"
+            },
+            "scriptArgName": "THrTZ0vjQoA",
+            "required": true,
+            "description": "Are you currently using contraception?"
+        },
+        {
+            "dataReference": {
+                "value": "kgrka9zcZ27",
+                "type": "ID"
+            },
+            "scriptArgName": "kgrka9zcZ27",
+            "required": true,
+            "description": "If currently using contraception, which one"
+        },
+        {
+            "dataReference": {
+                "value": "hQdGPcxeb5v",
+                "type": "ID"
+            },
+            "scriptArgName": "hQdGPcxeb5v",
+            "required": true,
+            "description": "When was your last menstrual period?"
+        },
+        {
+            "dataReference": {
+                "value": "lpx7JUiCXDT",
+                "type": "ID"
+            },
+            "scriptArgName": "lpx7JUiCXDT",
+            "required": true,
+            "description": "Are you currently taking your medication as prescribed?"
+        },
+        {
+            "dataReference": {
+                "value": "gUzI4iGBByZ",
+                "type": "ID"
+            },
+            "scriptArgName": "gUzI4iGBByZ",
+            "required": true,
+            "description": "If yes, do you always take your medication at the appropriate time?"
+        },
+        {
+            "dataReference": {
+                "value": "fC1OYFRwEWw",
+                "type": "ID"
+            },
+            "scriptArgName": "fC1OYFRwEWw",
+            "required": true,
+            "description": "If not taking medicine, why did you stop? "
+        },
+        {
+            "dataReference": {
+                "value": "bB9huXTw1cI",
+                "type": "ID"
+            },
+            "scriptArgName": "bB9huXTw1cI",
+            "required": true,
+            "description": "If other reason for stopping, specify"
+        },
+        {
+            "dataReference": {
+                "value": "zEW0kl7xgfY",
+                "type": "ID"
+            },
+            "scriptArgName": "zEW0kl7xgfY",
+            "required": true,
+            "description": "Have you forgotten to take your medication at any time since your last appointment?"
+        },
+        {
+            "dataReference": {
+                "value": "D8QX2eLW64c",
+                "type": "ID"
+            },
+            "scriptArgName": "D8QX2eLW64c",
+            "required": true,
+            "description": "In the past week, how many times did you forget to take your prescribed dose? "
+        },
+        {
+            "dataReference": {
+                "value": "EkDUCcOq3qH",
+                "type": "ID"
+            },
+            "scriptArgName": "EkDUCcOq3qH",
+            "required": true,
+            "description": "Since your last visit, how many days have you gone by which you did not take your medication?"
+        },
+        {
+            "dataReference": {
+                "value": "SRPpTzaH6V7",
+                "type": "ID"
+            },
+            "scriptArgName": "SRPpTzaH6V7",
+            "required": true,
+            "description": "Any signs of primary Infection?"
+        },
+        {
+            "dataReference": {
+                "value": "p7y7J436sOx",
+                "type": "ID"
+            },
+            "scriptArgName": "p7y7J436sOx",
+            "required": true,
+            "description": "Fever"
+        },
+        {
+            "dataReference": {
+                "value": "uFCumIPswAJ",
+                "type": "ID"
+            },
+            "scriptArgName": "uFCumIPswAJ",
+            "required": true,
+            "description": "Myalgia"
+        },
+        {
+            "dataReference": {
+                "value": "UJvY09mzKl5",
+                "type": "ID"
+            },
+            "scriptArgName": "UJvY09mzKl5",
+            "required": true,
+            "description": "Sore throat"
+        },
+        {
+            "dataReference": {
+                "value": "oKimTqFqlbr",
+                "type": "ID"
+            },
+            "scriptArgName": "oKimTqFqlbr",
+            "required": true,
+            "description": "Arthralgia"
+        },
+        {
+            "dataReference": {
+                "value": "UGyD5Njjg5H",
+                "type": "ID"
+            },
+            "scriptArgName": "UGyD5Njjg5H",
+            "required": true,
+            "description": "Genital ulcer disease signs"
+        },
+        {
+            "dataReference": {
+                "value": "Iym2dBekDH6",
+                "type": "ID"
+            },
+            "scriptArgName": "Iym2dBekDH6",
+            "required": true,
+            "description": "PV discharge"
+        },
+        {
+            "dataReference": {
+                "value": "w7HLzQd8PZq",
+                "type": "ID"
+            },
+            "scriptArgName": "w7HLzQd8PZq",
+            "required": true,
+            "description": "HIV test result"
+        },
+        {
+            "dataReference": {
+                "value": "HIIBub2fcNN",
+                "type": "ID"
+            },
+            "scriptArgName": "HIIBub2fcNN",
+            "required": true,
+            "description": "Is patient eligible to continue PrEP?"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/d3090774-9414-11e9-9d27-6f88c94f4a24",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/b665e7ea-9414-11e9-ba36-ff482efba691"
+ }'
+

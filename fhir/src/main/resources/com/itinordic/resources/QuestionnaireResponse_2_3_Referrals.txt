@@ -1,0 +1,341 @@
+####### Referrals.ServiceRequest.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/130cc284-9415-11e9-a027-6b73bc7d84da -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "overrideArguments" : [ {
+    "overrideValue" : "FNukQSLMPcC",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### Referrals.Checkup(RMC).QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/1becae50-9415-11e9-89e2-574e40576d73 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "overrideArguments" : [ {
+    "overrideValue" : "rlSZJ1Bxwhh",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### Referrals.HTSCeSHHAR.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/267efcc4-9415-11e9-818b-47e2234ab486 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "overrideArguments" : [ {
+    "overrideValue" : "TYBIjY4fCtk",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+####### Referrals.FamilyPlanningCeSHHAR.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/30c541f2-9415-11e9-a889-0bd07948e764 -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "overrideArguments" : [ {
+    "overrideValue" : "aFM5KFx00mb",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+####### Referrals.STIScreeningCeSHHAR.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/3a6cf1dc-9415-11e9-ab6e-87ba5c5ed05c -d '{
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "overrideArguments" : [ {
+    "overrideValue" : "iAM8xuB5DYd",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/a8977436-8e14-11e9-91b5-bb83b81b5067"
+  } ],
+  "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
+}'
+
+
+
+####### Referrals.ServiceRequest.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/44bd1b58-9415-11e9-b3b9-3f88250f50c3 -d '{
+  "name": "Service Request",  
+  "programStageReference": {
+    "value": "FNukQSLMPcC",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/a995d290-93f2-11e9-bbb3-17f34218714a"              
+}'
+
+####### Referrals.CheckupRMC.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/50977ca2-9415-11e9-8a68-1f3b8e3bc335 -d '{
+  "name": "Checkup RMC",  
+  "programStageReference": {
+    "value": "rlSZJ1Bxwhh",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/a995d290-93f2-11e9-bbb3-17f34218714a"              
+}'
+
+####### Referrals.HTSCeSHHAR.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/5ab622ba-9415-11e9-b61b-4bf9491a94ae -d '{
+  "name": "HTS CeSHHAR",  
+  "programStageReference": {
+    "value": "TYBIjY4fCtk",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/a995d290-93f2-11e9-bbb3-17f34218714a"              
+}'
+
+
+####### Referrals.FamilyPlanningCeSHHAR.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/65d31874-9415-11e9-94c9-7baf40e240d5 -d '{
+  "name": "Family planning CeSHHAR",  
+  "programStageReference": {
+    "value": "aFM5KFx00mb",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/a995d290-93f2-11e9-bbb3-17f34218714a"              
+}'
+
+####### Referrals.STIScreeningCeSHHAR.ProgramStage ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/706b5e5e-9415-11e9-b3a1-732ead789995 -d '{
+  "name": "STI Screening CeSHHAR",  
+  "programStageReference": {
+    "value": "iAM8xuB5DYd",
+    "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,  
+  "eventDateIsIncident": false,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "program": "http://localhost:8081/api/trackerPrograms/a995d290-93f2-11e9-bbb3-17f34218714a"              
+}'
+
+####### Referrals.ServiceRequest.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/801e1b48-9415-11e9-b301-cb8ea99a320e -d '{
+  "name": "RA QuestionnaireResponse to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "YrGGcqpYMf4",
+                "type": "ID"
+            },
+            "scriptArgName": "YrGGcqpYMf4",
+            "required": true,
+            "description": "Status"
+        },
+        {
+            "dataReference": {
+                "value": "T3tLUTOYCPY",
+                "type": "ID"
+            },
+            "scriptArgName": "T3tLUTOYCPY",
+            "required": true,
+            "description": "Intent"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/44bd1b58-9415-11e9-b3b9-3f88250f50c3",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/130cc284-9415-11e9-a027-6b73bc7d84da"
+  
+}'
+
+####### Referrals.CheckupRMC.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/a19cef06-9415-11e9-9b2d-bb89ca1e8d39 -d '{
+  "name": "TF Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "IuEaIasm156",
+                "type": "ID"
+            },
+            "scriptArgName": "IuEaIasm156",
+            "required": true,
+            "description": "Occurrence Date"
+        },
+        {
+            "dataReference": {
+                "value": "YrGGcqpYMf4",
+                "type": "ID"
+            },
+            "scriptArgName": "YrGGcqpYMf4",
+            "required": true,
+            "description": "Status"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/50977ca2-9415-11e9-8a68-1f3b8e3bc335",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/1becae50-9415-11e9-89e2-574e40576d73"
+ }'
+
+####### Referrals.HTSCeSHHAR.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/b14a1e24-9415-11e9-86af-170c87148312 -d '{
+  "name": "TF Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "IuEaIasm156",
+                "type": "ID"
+            },
+            "scriptArgName": "IuEaIasm156",
+            "required": true,
+            "description": "Occurrence Date"
+        },
+        {
+            "dataReference": {
+                "value": "YrGGcqpYMf4",
+                "type": "ID"
+            },
+            "scriptArgName": "YrGGcqpYMf4",
+            "required": true,
+            "description": "Status"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/5ab622ba-9415-11e9-b61b-4bf9491a94ae",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/267efcc4-9415-11e9-818b-47e2234ab486"
+ }'
+
+####### Referrals.FamilyPlanningCeSHHAR .Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/c2bc346c-9415-11e9-b949-6fd62d3ac80d -d '{
+  "name": "TF Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+  "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "YrGGcqpYMf4",
+                "type": "ID"
+            },
+            "scriptArgName": "YrGGcqpYMf4",
+            "required": true,
+            "description": "Status"
+        },
+        {
+            "dataReference": {
+                "value": "IuEaIasm156",
+                "type": "ID"
+            },
+            "scriptArgName": "IuEaIasm156",
+            "required": true,
+            "description": "Occurrence Date"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/65d31874-9415-11e9-94c9-7baf40e240d5",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/30c541f2-9415-11e9-a889-0bd07948e764"
+ }'
+
+####### Referrals.STIScreeningCeSHHAR.Rule ######################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/d22b4f3c-9415-11e9-9e80-d7f18854014b -d '{
+  "name": "TF Questionnaire Response to Event Rule",
+  "enabled": true,
+  "evaluationOrder": 4,
+  "dhisResourceType": "PROGRAM_STAGE_EVENT",
+  "fhirResourceType": "QUESTIONNAIRE_RESPONSE",
+  "impEnabled": true,
+  "expEnabled": true,
+  "fhirCreateEnabled": true,
+  "fhirUpdateEnabled": true,
+  "fhirDeleteEnabled": true,
+   "dhisDataReferences": [
+        {
+            "dataReference": {
+                "value": "YrGGcqpYMf4",
+                "type": "ID"
+            },
+            "scriptArgName": "YrGGcqpYMf4",
+            "required": true,
+            "description": "Status"
+        },
+        {
+            "dataReference": {
+                "value": "IuEaIasm156",
+                "type": "ID"
+            },
+            "scriptArgName": "IuEaIasm156",
+            "required": true,
+            "description": "Occurrence Date"
+        }
+    ],
+  "enrollmentCreationEnabled": false,
+  "eventCreationEnabled": true,
+  "programStage": "http://localhost:8081/api/trackerProgramStages/706b5e5e-9415-11e9-b3a1-732ead789995",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/3a6cf1dc-9415-11e9-ab6e-87ba5c5ed05c"
+ }'
+
