@@ -102,11 +102,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Program program = TransformerUtils.getScriptVariable(scriptVariables, ScriptVariable.PROGRAM, Program.class);
         final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable(scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class);
         Enrollment enrollment = enrollmentService.findLatestActive(program.getId(), Objects.requireNonNull(trackedEntityInstance.getId())).orElse(null);
-        if (enrollment != null) {
-            return Optional.of(enrollment);
-        } else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(enrollment);
     }
 
     @Override

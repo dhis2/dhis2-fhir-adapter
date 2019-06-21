@@ -207,7 +207,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
         }
     ]
   ,
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/f9f37fb2-8e61-11e9-9dcd-b7cba571af38",
   "transformImpScript": "http://localhost:8081/api/executableScripts/ad960ef6-8e60-11e9-ab76-5b3d12cab087"
@@ -337,7 +337,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
         }
     ]
   ,
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/20324154-8e62-11e9-a0c7-7b037fac1459",
   "transformImpScript": "http://localhost:8081/api/executableScripts/f9a9f2d0-8e60-11e9-b118-eba81e852485"

@@ -86,6 +86,34 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
   "script" : "http://localhost:8081/api/scripts/ce14aa6c-8c7a-11e9-8c6c-4fe372067bad"
 }'
 
+####### QuestionnaireResponse.FhirResourceMapping.ImpEnrollmentOrgLookupScript.Script ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/0637caae-9451-11e9-97d8-0b9d2393bc84 -d '{
+ "name" : "Org Unit Code from Questionnaire Response Resource for Enroll",
+ "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource for Enroll.",
+ "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP_ENROLL",
+ "scriptType" : "EVALUATE",
+ "returnType" : "ORG_UNIT_REF",
+ "inputType" : "FHIR_QUESTIONNAIRE_RESPONSE",
+ "variables" : [ "CONTEXT", "INPUT" ]
+}'
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEnrollmentOrgLookupScript.ScriptSource ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scriptSources/149b31f8-9451-11e9-855f-2745718fbaee -d $'{
+  "sourceText" : "var ref = null;\\nref = context.createReference(trackedEntityInstance.getOrganizationUnitId(), \'ID\');\\nref",
+  "sourceType" : "JAVASCRIPT",
+  "fhirVersions" : [ "DSTU3", "R4" ],
+  "script" : "http://localhost:8081/api/scripts/0637caae-9451-11e9-97d8-0b9d2393bc84"
+}'
+
+
+####### QuestionnaireResponse.FhirResourceMapping.ImpEnrollmentOrgLookupScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/2394624c-9451-11e9-818c-7fb6d877f600 -d '{
+  "name" : "Org Unit Code from Questionnaire Response Resource for Enroll",
+  "code" : "QUESTIONNAIRE_RESPONSE_ORG_UNIT_LOOKUP_ENROL",
+  "description" : "Extracts the organization unit code reference from the input Questionnaire Response Resource for enrollment.",
+  "script" : "http://localhost:8081/api/scripts/0637caae-9451-11e9-97d8-0b9d2393bc84"
+}'
+
 ####### QuestionnaireResponse.FhirResourceMapping ###########################
 curl 'http://localhost:8081/api/fhirResourceMappings/a8780d32-8e6c-11e9-aff2-9f1647fb7ac7' -i -u 'admin:district' -X PUT \
     -H 'Content-Type: application/json' \
@@ -95,7 +123,8 @@ curl 'http://localhost:8081/api/fhirResourceMappings/a8780d32-8e6c-11e9-aff2-9f1
   "impTeiLookupScript" : "http://localhost:8081/api/executableScripts/50efe344-8c7a-11e9-834b-efb5d789587a",
   "impEventDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
   "impEffectiveDateLookupScript" : "http://localhost:8081/api/executableScripts/809c78e2-8c79-11e9-b311-1fbb6ccc8a07",
-  "impEventOrgLookupScript" : "http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef"
+  "impEventOrgLookupScript" : "http://localhost:8081/api/executableScripts/f7378856-8c7a-11e9-9cdf-e70b249b7fef",
+  "impEnrollmentOrgLookupScript" : "http://localhost:8081/api/executableScripts/2394624c-9451-11e9-818c-7fb6d877f600"
  }'
 
 

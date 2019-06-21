@@ -180,7 +180,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Intent"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/44bd1b58-9415-11e9-b3b9-3f88250f50c3",
   "transformImpScript": "http://localhost:8081/api/executableScripts/130cc284-9415-11e9-a027-6b73bc7d84da"
@@ -219,7 +219,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Status"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/50977ca2-9415-11e9-8a68-1f3b8e3bc335",
   "transformImpScript": "http://localhost:8081/api/executableScripts/1becae50-9415-11e9-89e2-574e40576d73"
@@ -257,7 +257,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Status"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/5ab622ba-9415-11e9-b61b-4bf9491a94ae",
   "transformImpScript": "http://localhost:8081/api/executableScripts/267efcc4-9415-11e9-818b-47e2234ab486"
@@ -295,7 +295,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Occurrence Date"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/65d31874-9415-11e9-94c9-7baf40e240d5",
   "transformImpScript": "http://localhost:8081/api/executableScripts/30c541f2-9415-11e9-a889-0bd07948e764"
@@ -333,7 +333,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Occurrence Date"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/706b5e5e-9415-11e9-b3a1-732ead789995",
   "transformImpScript": "http://localhost:8081/api/executableScripts/3a6cf1dc-9415-11e9-ab6e-87ba5c5ed05c"

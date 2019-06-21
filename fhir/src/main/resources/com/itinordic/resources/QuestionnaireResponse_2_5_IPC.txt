@@ -114,7 +114,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
             "description": "Client accessed STI Screening?"
         }
     ],
-  "enrollmentCreationEnabled": false,
+  "enrollmentCreationEnabled": true,
   "eventCreationEnabled": true,
   "programStage": "http://localhost:8081/api/trackerProgramStages/7a719caa-9416-11e9-9a0c-9fdd38887710",
   "transformImpScript": "http://localhost:8081/api/executableScripts/6f534b02-9416-11e9-879c-db7211dfdd45"
