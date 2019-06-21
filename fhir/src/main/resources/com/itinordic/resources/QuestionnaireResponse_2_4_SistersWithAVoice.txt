@@ -1,7 +1,7 @@
 ####### SistersWithAVoice.DemographicDetails.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/0acc8c98-9416-11e9-85a5-4fa490d9da9f -d '{
-  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
-  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Democraphic Details",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_SV_DD",
   "overrideArguments" : [ {
     "overrideValue" : "EJS4JxaUbhj",
     "enabled" : true,
@@ -14,7 +14,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 ####### SistersWithAVoice.STIRecording.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/1451a82a-9416-11e9-9fec-634c7c95ce94 -d '{
   "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
-  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_TF",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_SV_STI",
   "overrideArguments" : [ {
     "overrideValue" : "vkBJr0RtLDs",
     "enabled" : true,
@@ -23,9 +23,9 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
   "script": "http://localhost:8081/api/scripts/a3e35ac4-8e12-11e9-a820-ab7e1f1896fd"
 }'
 
-####### SistersWithAVoice.DemographicDetailst.ProgramStage ######################
+####### SistersWithAVoice.DemographicDetails.ProgramStage ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/1e10217a-9416-11e9-9f44-bf94af2feaea -d '{
-  "name": "Risk Assessment",  
+  "name": "Demographic Details",  
   "programStageReference": {
     "value": "EJS4JxaUbhj",
     "type": "ID"
@@ -42,7 +42,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 #######  SistersWithAVoice.STIRecording.ProgramStage ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/2c8cae58-9416-11e9-a72f-b3df2c62a2b5 -d '{
-  "name": "Tracking Form",  
+  "name": "STI Recording",  
   "programStageReference": {
     "value": "vkBJr0RtLDs",
     "type": "ID"

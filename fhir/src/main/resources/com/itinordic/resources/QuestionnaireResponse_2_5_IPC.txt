@@ -1,7 +1,7 @@
 ####### IPC.ServiceProvision.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/6f534b02-9416-11e9-879c-db7211dfdd45 -d '{
-  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Risk Assessment",
-  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_RISK",
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Service Provision",
+  "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_IPC_SP",
   "overrideArguments" : [ {
     "overrideValue" : "y9hCn0PmHlj",
     "enabled" : true,
@@ -13,7 +13,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### IPC.ServiceProvision.ProgramStage ######################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerProgramStages/7a719caa-9416-11e9-9a0c-9fdd38887710 -d '{
-  "name": "Risk Assessment",  
+  "name": "Service Provision",  
   "programStageReference": {
     "value": "y9hCn0PmHlj",
     "type": "ID"
