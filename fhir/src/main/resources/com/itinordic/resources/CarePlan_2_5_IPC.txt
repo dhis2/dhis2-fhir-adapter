@@ -1,0 +1,55 @@
+####### IPC.CarePlan.Rule.TransformImpScript.ExecutableScript ####################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/d6cb7eee-93f3-11e9-b70d-2f8b58f24b07 -d '{
+  "name" : "Care Plan to Enrollment IPC",
+  "code" : "TRANSFORM_CARE_PLAN_ENROLLMENT_IPC",
+  "description" : "Transforms FHIR Care Plan to DHIS Enrollment IPC",
+  "overrideArguments" : [ {
+    "overrideValue" : "h2gwftPAAUj",
+    "enabled" : true,
+    "argument": "http://localhost:8081/api/scriptArgs/04746342-9363-11e9-9c06-07d790c53bb8"
+  } ],
+  "script" : "http://localhost:8081/api/scripts/6abfadca-8fa6-11e9-b5ff-ff721eb1e3fe"
+}'
+
+####### IPC.TrackerProgram ###########################
+curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/trackerPrograms/eae91a8a-93f3-11e9-96e3-9b96f5cca4ce -d '{
+  "name": "IPC",
+  "programReference": {
+    "value": "h2gwftPAAUj",
+     "type": "ID"
+  },
+  "enabled": true,
+  "creationEnabled": true,
+  "enrollmentDateIsIncident": false,
+  "expEnabled": false,
+  "fhirCreateEnabled": false,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "trackedEntityFhirResourceType": "PATIENT",
+  "trackedEntityRule": "http://localhost:8081/api/trackedEntityRules/5f9ebdc9-852e-4c83-87ca-795946aabc35"
+}'
+
+####### IPC.CarePlanToEnrollment.EnrollmentRule ###########################
+curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01 -i -u 'admin:district' -XPUT \
+    -H 'Content-Type: application/json' \
+ -d '{
+  "name": "Care Plan to Enrollment IPC",
+  "enabled": true,
+  "evaluationOrder": 0,
+  "dhisResourceType": "ENROLLMENT",
+  "fhirResourceType": "CARE_PLAN",
+  "impEnabled": true,
+  "expEnabled": false,
+  "fhirCreateEnabled": false,
+  "fhirUpdateEnabled": false,
+  "fhirDeleteEnabled": false,
+  "program": "http://localhost:8081/api/trackerPrograms/eae91a8a-93f3-11e9-96e3-9b96f5cca4ce",
+  "transformImpScript": "http://localhost:8081/api/executableScripts/d6cb7eee-93f3-11e9-b70d-2f8b58f24b07"
+}'
+
+
+
+
+
+
+
