@@ -58,6 +58,9 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 }'
 
 ####### MicroPlanning.RiskAssessment.Rule ######################
+####NB: If exists start with
+curl -i -XDELETE -u admin:district http://localhost:8081/api/programStageRules/c1d307e6-8e62-11e9-9ee9-c706a5908d89
+
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/c1d307e6-8e62-11e9-9ee9-c706a5908d89 -d '{
   "name": "RA QuestionnaireResponse to Event Rule",
   "enabled": true,
@@ -215,6 +218,10 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 }'
 
 ####### MicroPlanning.TrackingForm.Rule ######################
+####NB: If exists start with
+curl -i -XDELETE -u admin:district http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec
+
+
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/programStageRules/289d0328-8e63-11e9-9f5b-631d739de4ec -d '{
   "name": "TF Questionnaire Response to Event Rule",
   "enabled": true,
