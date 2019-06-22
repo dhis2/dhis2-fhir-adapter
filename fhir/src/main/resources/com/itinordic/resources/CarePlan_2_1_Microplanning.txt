@@ -30,6 +30,9 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 }'
 
 ####### MicroPlanning.CarePlanToEnrollment.EnrollmentRule ###########################
+####NB: If exists start with
+curl -i -XDELETE -u admin:district http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01
+
 curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01 -i -u 'admin:district' -XPUT \
     -H 'Content-Type: application/json' \
  -d '{

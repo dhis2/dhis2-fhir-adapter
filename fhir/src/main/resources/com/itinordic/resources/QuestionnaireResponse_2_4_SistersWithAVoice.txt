@@ -13,7 +13,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 
 ####### SistersWithAVoice.STIRecording.QuestionnaireResponse.Rule.TransformImpScript.ExecutableScript ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/executableScripts/1451a82a-9416-11e9-9fec-634c7c95ce94 -d '{
-  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for Tracking Form",
+  "name" : "Transforms FHIR Questionnaire Response to DHIS Event for STI Recording",
   "code" : "TRANSFORM_FHIR_QUESTIONNAIRE_RESPONSE_DHIS_EVENT_SV_STI",
   "overrideArguments" : [ {
     "overrideValue" : "vkBJr0RtLDs",
