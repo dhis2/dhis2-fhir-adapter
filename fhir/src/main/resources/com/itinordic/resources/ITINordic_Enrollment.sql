@@ -10,4 +10,7 @@ CREATE INDEX fhir_enrollment_rule_i1
 COMMENT ON TABLE fhir_enrollment_rule IS 'Contains rules for DHIS2 Enrollment Resource Types.';
 COMMENT ON COLUMN fhir_enrollment_rule.id IS 'References the rule to which this Enrollment rule belongs to.';
 COMMENT ON COLUMN fhir_enrollment_rule.program_id IS 'References the tracker program to which this enrollment belongs to.';
-
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_CARE_PLAN');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_QUESTIONNAIRE_RESPONSE');
+INSERT INTO fhir_resource_type_enum VALUES('CARE_PLAN');
+INSERT INTO fhir_resource_type_enum VALUES('QUESTIONNAIRE_RESPONSE');

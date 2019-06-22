@@ -15,6 +15,16 @@ COMMENT ON COLUMN fhir_enrollment_rule.id IS 'References the rule to which this 
 COMMENT ON COLUMN fhir_enrollment_rule.program_id IS 'References the tracker program to which this enrollment belongs to.';
 
 
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_CARE_PLAN');
+INSERT INTO fhir_transform_data_type_enum VALUES('FHIR_QUESTIONNAIRE_RESPONSE');
+
+INSERT INTO fhir_resource_type_enum VALUES('CARE_PLAN');
+INSERT INTO fhir_resource_type_enum VALUES('QUESTIONNAIRE_RESPONSE');
+
+
+
+
+
 ####### CarePlan.FhirResourceMapping.ImpTeiLookupScript.Script ####################
 curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhost:8081/api/scripts/63693674-8a77-11e9-a3fd-37ea6b7b7cdf -d '{
  "name" : "Care Plan TEI Lookup",
