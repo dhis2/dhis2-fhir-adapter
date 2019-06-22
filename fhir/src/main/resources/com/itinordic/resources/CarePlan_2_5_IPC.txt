@@ -30,7 +30,7 @@ curl -XPUT -u admin:district -H 'Content-Type: application/json' http://localhos
 }'
 
 ####### IPC.CarePlanToEnrollment.EnrollmentRule ###########################
-curl http://localhost:8081/api/enrollmentRules/fabf20b6-88f5-11e9-b1f7-17745b0b4a01 -i -u 'admin:district' -XPUT \
+curl http://localhost:8081/api/enrollmentRules/c04d10b4-94e9-11e9-97ca-673f1e733617 -i -u 'admin:district' -XPUT \
     -H 'Content-Type: application/json' \
  -d '{
   "name": "Care Plan to Enrollment IPC",
