@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -43,6 +44,7 @@ import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.DateTimeUtils;
+import org.dhis2.fhir.adapter.util.NameUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,6 +56,7 @@ import java.util.Objects;
  * Mutable enrollment resource that can be used by scripts safely.
  *
  * @author volsch
+ * @author Charles Chigoriwa (ITINORDIC)
  */
 @Scriptable
 @ScriptType( value = "Enrollment", var = "enrollment", transformDataType = "DHIS_ENROLLMENT",
@@ -200,6 +203,32 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
             enrollment.setModified();
         }
         enrollment.setCoordinate( convertedCoordinate );
+        return true;
+    }
+
+    @ScriptMethod( description = "Sets status of the enrollment.",
+        args = @ScriptMethodArg( value = "status", description = "The status of the enrollment." ),
+        returnDescription = "Returns true each time (at end of script return of true can be avoided)." )
+    public boolean setStatus( @Nullable Object status )
+    {
+        final EnrollmentStatus convertedStatus;
+
+        try
+        {
+            convertedStatus = NameUtils.toEnumValue( EnrollmentStatus.class, status );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Event status has not been defined: " + status, e );
+        }
+
+        if ( !Objects.equals( enrollment.getStatus(), convertedStatus ) )
+        {
+            enrollment.setModified();
+        }
+
+        enrollment.setStatus( convertedStatus );
+
         return true;
     }
 

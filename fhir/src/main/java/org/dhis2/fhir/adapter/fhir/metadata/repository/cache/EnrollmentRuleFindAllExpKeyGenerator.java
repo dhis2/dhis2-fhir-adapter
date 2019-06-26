@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.cache;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,44 +28,40 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Key generator for
+ * {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomEnrollmentRuleRepository#findAllExp(Collection)}.
+ * Since cache may be serialized to external storage, cache is automatically a
+ * string representation.
  *
- * @author volsch
  * @author Charles Chigoriwa (ITINORDIC)
  */
-public enum TransformDataType
+@Component
+public class EnrollmentRuleFindAllExpKeyGenerator implements KeyGenerator
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON ),
-    FHIR_CONDITION( FhirResourceType.CONDITION ),
-    FHIR_MEDICATION_REQUEST( FhirResourceType.MEDICATION_REQUEST ),
-    FHIR_PRACTITIONER( FhirResourceType.PRACTITIONER ),
-    FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
-
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    @Override
+    @Nonnull
+    public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
     {
-        this.fhirResourceType = fhirResourceType;
-    }
+        @SuppressWarnings( "unchecked" ) final Collection<Reference> programReferences = (Collection<Reference>) params[0];
 
-    @Nullable
-    public FhirResourceType getFhirResourceType()
-    {
-        return fhirResourceType;
+        // references must have same order every time
+        final StringBuilder sb = new StringBuilder( "findAllExp" );
+
+        if ( programReferences != null )
+        {
+            programReferences.stream().map( Reference::toCacheString ).distinct().sorted()
+                .forEachOrdered( s -> sb.append( ',' ).append( s ) );
+        }
+
+        return sb.toString();
     }
 }

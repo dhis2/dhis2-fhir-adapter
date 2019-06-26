@@ -60,6 +60,7 @@ import java.util.Optional;
  * Implementation of {@link EnrollmentService}.
  *
  * @author volsch
+ * @author Charles Chigoriwa (ITINORDIC)
  */
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService
@@ -195,5 +196,26 @@ public class EnrollmentServiceImpl implements EnrollmentService
                 result.getStatus() );
         }
         return enrollment;
+    }
+
+    @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
+    @Override
+    public boolean delete( @Nonnull String enrollmentId )
+    {
+        try
+        {
+            restTemplate.delete( "/enrollments/{id}", enrollmentId );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( RestTemplateUtils.isNotFound( e ) )
+            {
+                return false;
+            }
+
+            throw e;
+        }
+
+        return true;
     }
 }

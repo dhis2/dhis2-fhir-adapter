@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,44 +28,31 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+
+import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Spring Data REST validator for {@link EnrollmentRule}.
  *
- * @author volsch
  * @author Charles Chigoriwa (ITINORDIC)
  */
-public enum TransformDataType
+@Component
+public class BeforeCreateSaveEnrollmentRuleValidator extends AbstractBeforeCreateSaveRuleValidator<EnrollmentRule> implements MetadataValidator<EnrollmentRule>
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON ),
-    FHIR_CONDITION( FhirResourceType.CONDITION ),
-    FHIR_MEDICATION_REQUEST( FhirResourceType.MEDICATION_REQUEST ),
-    FHIR_PRACTITIONER( FhirResourceType.PRACTITIONER ),
-    FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
 
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    public BeforeCreateSaveEnrollmentRuleValidator( @Nonnull EntityManager entityManager )
     {
-        this.fhirResourceType = fhirResourceType;
+        super( EnrollmentRule.class, entityManager );
     }
 
-    @Nullable
-    public FhirResourceType getFhirResourceType()
+    @Override
+    public void doValidate( @Nonnull EnrollmentRule rule, @Nonnull Errors errors )
     {
-        return fhirResourceType;
+        validate( rule, TransformDataType.DHIS_ENROLLMENT, errors );
     }
 }

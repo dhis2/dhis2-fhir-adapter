@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.metadata.repository;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,44 +28,26 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Custom repository for {@link EnrollmentRule}s.
  *
- * @author volsch
  * @author Charles Chigoriwa (ITINORDIC)
  */
-public enum TransformDataType
+public interface CustomEnrollmentRuleRepository
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON ),
-    FHIR_CONDITION( FhirResourceType.CONDITION ),
-    FHIR_MEDICATION_REQUEST( FhirResourceType.MEDICATION_REQUEST ),
-    FHIR_PRACTITIONER( FhirResourceType.PRACTITIONER ),
-    FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences );
 
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
-    {
-        this.fhirResourceType = fhirResourceType;
-    }
-
-    @Nullable
-    public FhirResourceType getFhirResourceType()
-    {
-        return fhirResourceType;
-    }
+    @RestResource( exported = false )
+    void deleteAllByProgram( @Nonnull MappedTrackerProgram program );
 }
