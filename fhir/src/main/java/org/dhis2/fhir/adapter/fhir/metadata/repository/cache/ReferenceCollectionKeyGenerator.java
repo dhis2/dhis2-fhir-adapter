@@ -35,31 +35,32 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
- * Key generator for
- * {@link org.dhis2.fhir.adapter.fhir.metadata.repository.CustomEnrollmentRuleRepository#findAllExp(Collection)}.
- * Since cache may be serialized to external storage, cache is automatically a
- * string representation.
+ * Key generator for methods that accept just a reference as key.
  *
- * @author Charles Chigoriwa (ITINORDIC)
+ * @author volsch
  */
 @Component
-public class EnrollmentRuleFindAllExpKeyGenerator implements KeyGenerator
+public class ReferenceCollectionKeyGenerator implements KeyGenerator
 {
     @Override
     @Nonnull
     public Object generate( @Nonnull Object target, @Nonnull Method method, @Nonnull Object... params )
     {
-        @SuppressWarnings( "unchecked" ) final Collection<Reference> programReferences = (Collection<Reference>) params[0];
+        @SuppressWarnings( "unchecked" ) final Collection<Reference> references = (Collection<Reference>) params[0];
+        final SortedSet<String> referenceStrings = references.stream().map( Reference::toCacheString )
+            .collect( Collectors.toCollection( TreeSet::new ) );
 
-        // references must have same order every time
-        final StringBuilder sb = new StringBuilder( "findAllExp" );
+        final StringBuilder sb = new StringBuilder( method.getName() );
 
-        if ( programReferences != null )
+        // codes must have same order every time
+        for ( final String string : referenceStrings )
         {
-            programReferences.stream().map( Reference::toCacheString ).distinct().sorted()
-                .forEachOrdered( s -> sb.append( ',' ).append( s ) );
+            sb.append( ',' ).append( string );
         }
 
         return sb.toString();

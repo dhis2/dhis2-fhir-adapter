@@ -31,7 +31,6 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
@@ -48,14 +47,17 @@ import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
@@ -87,10 +89,11 @@ import java.util.Optional;
 @Component
 public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<Enrollment, EnrollmentRule>
 {
-
     private final EnrollmentService enrollmentService;
 
     private final TrackedEntityMetadataService trackedEntityMetadataService;
+
+    private final TrackedEntityRuleRepository trackedEntityRuleRepository;
 
     private final ValueConverter valueConverter;
 
@@ -100,15 +103,16 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
-    public FhirToEnrollmentTransformer( @Nonnull ScriptExecutor scriptExecutor,
-        @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService, @Nonnull FhirResourceMappingRepository resourceMappingRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter )
+    public FhirToEnrollmentTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository,
+        @Nonnull TrackedEntityService trackedEntityService, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService,
+        @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ), fhirDhisAssignmentRepository );
+
         this.programMetadataService = programMetadataService;
         this.enrollmentService = enrollmentService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
+        this.trackedEntityRuleRepository = trackedEntityRuleRepository;
         this.valueConverter = valueConverter;
         this.resourceMappingRepository = resourceMappingRepository;
     }
@@ -132,9 +136,8 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     {
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
-        Enrollment enrollment = enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
 
-        return Optional.ofNullable( enrollment );
+        return enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) );
     }
 
     @Override
@@ -147,10 +150,10 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     @Override
     protected Enrollment createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
+        final FhirResourceType trackedEntityFhirResourceType = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_RESOURCE_TYPE, FhirResourceType.class );
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
-
-        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo, trackedEntityFhirResourceType );
 
         final ZonedDateTime enrollmentDate = getEnrollmentDate( context, ruleInfo, resourceMapping, program, scriptVariables );
 
@@ -177,11 +180,6 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         if ( !updateIncidentDate( program, enrollment ) )
         {
             return null;
-        }
-
-        if ( ruleInfo.getRule().getProgram().isEnrollmentDateIsIncident() )
-        {
-            enrollment.setEnrollmentDate( enrollment.getIncidentDate() );
         }
 
         if ( enrollment.getStatus() == null )
@@ -215,29 +213,33 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
     @Override
     public FhirToDhisTransformOutcome<Enrollment> transform( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context,
-        @Nonnull IBaseResource input, RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull IBaseResource input, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( !ruleInfo.getRule().getProgram().isEnabled() )
-        {
-            logger.debug( "Ignoring not enabled program \"{}\".",
-                ruleInfo.getRule().getProgram().getName() );
+        final Map<String, Object> variables = new HashMap<>( scriptVariables );
 
+        if ( !addBasicScriptVariables( context, ruleInfo, variables ) )
+        {
             return null;
         }
 
-        final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        addBasicScriptVariables( variables, ruleInfo );
+        final RuleInfo<TrackedEntityRule> trackedEntityRuleInfo = getTrackedEntityRuleInfo( context, ruleInfo, scriptVariables,
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class ),
+            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ) ).orElse( null );
 
-        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
-        final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context,
-            new RuleInfo<>( ruleInfo.getRule().getProgram().getTrackedEntityRule(), Collections.emptyList() ), resourceMapping, variables, false ).orElse( null );
+        if ( trackedEntityRuleInfo == null )
+        {
+            return null;
+        }
+
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo, trackedEntityRuleInfo.getRule().getFhirResourceType() );
+        final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context, trackedEntityRuleInfo, resourceMapping, variables, false ).orElse( null );
 
         if ( trackedEntityInstance == null )
         {
             return null;
         }
 
-        addScriptVariables( context, variables, ruleInfo, trackedEntityInstance );
+        addScriptVariables( context, variables, ruleInfo, trackedEntityRuleInfo, trackedEntityInstance );
         final Enrollment enrollment = getResource( fhirClientResource, context, ruleInfo, variables ).orElse( null );
 
         if ( enrollment == null )
@@ -266,33 +268,44 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         Enrollment enrollment = new Enrollment();
         enrollment.setId( dhisFhirResourceId.getId() );
 
-        return new FhirToDhisDeleteTransformOutcome<>(
-            ruleInfo.getRule(), enrollment, true );
+        return new FhirToDhisDeleteTransformOutcome<>( ruleInfo.getRule(), enrollment, true );
     }
 
-    protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<EnrollmentRule> ruleInfo ) throws TransformerException
+    protected boolean addBasicScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final Program program = programMetadataService.findProgramByReference( ruleInfo.getRule().getProgram().getProgramReference() )
-            .orElseThrow( () -> new TransformerMappingException( "Mapping " + ruleInfo + " requires program \""
-                + ruleInfo.getRule().getProgram().getProgramReference() + "\" that does not exist." ) );
-        variables.put( ScriptVariable.PROGRAM.getVariableName(), program );
+        final Program program = getProgram( context, ruleInfo, scriptVariables ).orElse( null );
+
+        if ( program == null )
+        {
+            return false;
+        }
+
+        scriptVariables.put( ScriptVariable.PROGRAM.getVariableName(), program );
+
+        final TrackedEntityType trackedEntityType = getTrackedEntityType( context, ruleInfo, scriptVariables, program ).orElse( null );
+
+        if ( trackedEntityType == null )
+        {
+            return false;
+        }
 
         final TrackedEntityAttributes attributes = trackedEntityMetadataService.getAttributes();
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService
-            .findTypeByReference( new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) )
-            .orElseThrow( () -> new TransformerMappingException( "Program \"" + program.getName()
-                + "\" references tracked entity type " + program.getTrackedEntityTypeId() + " that does not exist." ) );
-        variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), attributes );
-        variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
+        scriptVariables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), attributes );
+        scriptVariables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
+
+
+        return true;
     }
 
     protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<EnrollmentRule> ruleInfo,
-        @Nonnull TrackedEntityInstance trackedEntityInstance ) throws TransformerException
+        @Nonnull RuleInfo<TrackedEntityRule> trackedEntityRuleRuleInfo, @Nonnull TrackedEntityInstance trackedEntityInstance ) throws TransformerException
     {
-        if ( !context.getFhirRequest().isDhisFhirId() && ( trackedEntityInstance.getIdentifier() == null ) )
+        if ( !context.getFhirRequest().isDhisFhirId() && trackedEntityInstance.getIdentifier() == null )
         {
             throw new FatalTransformerException( "Identifier of tracked entity instance has not yet been set." );
         }
+
+        variables.put( ScriptVariable.TRACKED_ENTITY_RESOURCE_TYPE.getVariableName(), trackedEntityRuleRuleInfo.getRule().getFhirResourceType() );
         variables.put( ScriptVariable.TRACKED_ENTITY_INSTANCE.getVariableName(), new WritableScriptedTrackedEntityInstance(
             TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class ),
             TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ),
@@ -300,9 +313,9 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     }
 
     @Nonnull
-    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<EnrollmentRule> ruleInfo )
+    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull FhirResourceType trackedEntityFhirResourceType )
     {
-        return resourceMappingRepository.findOneByFhirResourceType( ruleInfo.getRule().getFhirResourceType(), ruleInfo.getRule().getProgram().getTrackedEntityFhirResourceType() )
+        return resourceMappingRepository.findOneByFhirResourceType( ruleInfo.getRule().getFhirResourceType(), trackedEntityFhirResourceType )
             .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "." ) );
     }
 
@@ -367,5 +380,64 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         }
 
         return true;
+    }
+
+    @Nonnull
+    protected Optional<Program> getProgram( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables )
+    {
+        final Reference programRef = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramRefLookupScript(), scriptVariables, Reference.class );
+
+        if ( programRef == null )
+        {
+            logger.info( "FHIR resource does not contain a reference to a Tracker Program." );
+
+            return Optional.empty();
+        }
+
+        final Program program = programMetadataService.findProgramByReference( programRef ).orElse( null );
+
+        if ( program == null )
+        {
+            throw new TransformerDataException( "Tracker program \"" + programRef + "\" does not exist." );
+        }
+
+        if ( !program.isRegistration() )
+        {
+            throw new TransformerDataException( "Tracker program \"" + programRef + "\" does not require registration." );
+        }
+
+        return Optional.of( program );
+    }
+
+    @Nonnull
+    protected Optional<TrackedEntityType> getTrackedEntityType( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull Program program )
+    {
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( Reference.createIdReference( program.getTrackedEntityTypeId() ) ).orElse( null );
+
+        if ( trackedEntityType == null )
+        {
+            logger.info( "Tracked entity type {} of tracker program {} does not exist.", program.getTrackedEntityTypeId(), program.getId() );
+
+            return Optional.empty();
+        }
+
+        return Optional.of( trackedEntityType );
+    }
+
+    @Nonnull
+    protected Optional<RuleInfo<TrackedEntityRule>> getTrackedEntityRuleInfo( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull Program program, @Nonnull TrackedEntityType trackedEntityType )
+    {
+        final TrackedEntityRule trackedEntityRule = trackedEntityRuleRepository.findFirstByTypeRefs( trackedEntityType.getAllReferences() ).orElse( null );
+
+        if ( trackedEntityRule == null )
+        {
+            logger.info( "Tracked entity type {} is not associated with a tracked entity rule.", program.getTrackedEntityTypeId() );
+
+            return Optional.empty();
+        }
+
+        return Optional.of( new RuleInfo<>( trackedEntityRule, Collections.emptyList() ) );
     }
 }

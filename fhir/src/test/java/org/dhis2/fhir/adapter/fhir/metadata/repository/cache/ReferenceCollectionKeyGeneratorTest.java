@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.cache;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -29,25 +29,31 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Custom repository for {@link EnrollmentRule}s.
+ * Tests {@link ReferenceCollectionKeyGenerator}.
  *
- * @author Charles Chigoriwa (ITINORDIC)
+ * @author volsch
  */
-public interface CustomEnrollmentRuleRepository
+public class ReferenceCollectionKeyGeneratorTest
 {
-    @RestResource( exported = false )
-    @Nonnull
-    Collection<RuleInfo<EnrollmentRule>> findAllExp( @Nonnull Collection<Reference> programReferences );
+    private final ReferenceCollectionKeyGenerator generator = new ReferenceCollectionKeyGenerator();
 
-    @RestResource( exported = false )
-    void deleteAllByProgram( @Nonnull MappedTrackerProgram program );
+    private Object target = new Object();
+
+    @Test
+    public void test() throws NoSuchMethodException
+    {
+        final List<Reference> references = Arrays.asList( new Reference( "xyz", ReferenceType.CODE ), new Reference( "abc", ReferenceType.ID ), new Reference( "def", ReferenceType.CODE ) );
+
+        final Object key = generator.generate( target, generator.getClass().getMethod( "toString" ), references );
+
+        Assert.assertEquals( "toString,CODE#def,CODE#xyz,ID#abc", key );
+    }
 }

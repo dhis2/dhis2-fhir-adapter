@@ -65,7 +65,7 @@ public class CustomTrackedEntityRuleRepositoryImpl implements CustomTrackedEntit
     @Nonnull
     @Transactional( readOnly = true )
     @RestResource( exported = false )
-    @Cacheable( keyGenerator = "trackedEntityRuleFindAllByTypeKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Cacheable( keyGenerator = "referenceCollectionKeyGenerator", cacheManager = "metadataCacheManager", cacheNames = "rule" )
     public Collection<RuleInfo<TrackedEntityRule>> findAllByType( @Nonnull Collection<Reference> typeReferences )
     {
         final List<TrackedEntityRule> trackedEntityRules = entityManager.createNamedQuery(

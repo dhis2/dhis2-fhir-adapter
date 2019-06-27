@@ -43,6 +43,7 @@ public enum ScriptVariable
     TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
     TRACKED_ENTITY_TYPE( "trackedEntityType" ),
     TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
+    TRACKED_ENTITY_RESOURCE_TYPE( "trackedEntityResourceType" ),
     PROGRAM( "program" ),
     PROGRAM_STAGE( "programStage" ),
     ENROLLMENT( "enrollment" ),

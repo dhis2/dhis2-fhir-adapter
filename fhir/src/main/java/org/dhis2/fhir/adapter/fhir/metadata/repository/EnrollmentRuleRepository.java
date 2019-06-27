@@ -29,19 +29,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.MappedTrackerProgram;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,7 +50,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface EnrollmentRuleRepository extends JpaRepository<EnrollmentRule, UUID>, QuerydslPredicateExecutor<EnrollmentRule>, CustomEnrollmentRuleRepository, MetadataRepository<EnrollmentRule>
+public interface EnrollmentRuleRepository extends JpaRepository<EnrollmentRule, UUID>, QuerydslPredicateExecutor<EnrollmentRule>, MetadataRepository<EnrollmentRule>
 {
     @Nonnull
     @Override
@@ -63,11 +60,6 @@ public interface EnrollmentRuleRepository extends JpaRepository<EnrollmentRule, 
     {
         return EnrollmentRule.class;
     }
-
-    @Nonnull
-    @RestResource( exported = false )
-    @Query( "SELECT r FROM #{#entityName} r JOIN r.program p WHERE p IN (:programs)" )
-    <S extends EnrollmentRule> List<S> findAllByProgram( @Nonnull Collection<MappedTrackerProgram> programs );
 
     @Override
     @Nonnull

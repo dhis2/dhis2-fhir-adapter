@@ -465,10 +465,12 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public int compareTo( @Nonnull AbstractRule o )
     {
         int value = o.getEvaluationOrder() - getEvaluationOrder();
+
         if ( value != 0 )
         {
             return value;
         }
+
         return getId().compareTo( o.getId() );
     }
 
