@@ -738,3 +738,102 @@ INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, syste
 VALUES ( RANDOM_UUID(), 0, 'd2053c951e8a4a358eb4baeb384ae8be', 'c4e9ac6acc8f4c73aab60fa6775c0ca3', '4712', 'http://example.sl/organizations|4712', 'My Org 2 1' );
 INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, system_code_value, display_name)
 VALUES ( RANDOM_UUID(), 0, 'd2053c951e8a4a358eb4baeb384ae8be', 'db955a8aca584263bc56faa99085df93', '5678', 'http://www.dhis2.org/dhis2fhiradapter/systems/organizationidentifier|5678', 'My Org 2 2' );
+
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('41d3bd48578847618274f8327f15fcbe', 0, 'Subject TEI Lookup', 'SUBJECT_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from subject in FHIR Resource.', 'EVALUATE', 'FHIR_RESOURCE', NULL, NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('41d3bd48578847618274f8327f15fcbe', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('41d3bd48578847618274f8327f15fcbe', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 0, '41d3bd48578847618274f8327f15fcbe', 'referenceUtils.getResource(input.subject, ''PATIENT'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('762b4137a98b4b10a0f5629d93e23461', 0, '41d3bd48578847618274f8327f15fcbe',
+'Subject TEI Lookup', 'SUBJECT_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from subject in FHIR Resource.');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type)
+VALUES ('f638ba4c8b5311e989e4e70cb21cbc8c', 0, 'CARE_PLAN_DATE_LOOKUP', 'Care Plan Date Lookup',
+'Lookup of the exact date of the FHIR Care Plan.', 'EVALUATE', 'DATE_TIME', 'FHIR_CARE_PLAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f638ba4c8b5311e989e4e70cb21cbc8c', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f638ba4c8b5311e989e4e70cb21cbc8c', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('224697268b5411e9b95a93563f739422', 0, 'f638ba4c8b5311e989e4e70cb21cbc8c',
+'input.getPeriod().getStart()', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('224697268b5411e9b95a93563f739422', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('0f79f2c88b5411e981f7ebd621029975', 0, 'f638ba4c8b5311e989e4e70cb21cbc8c', 'Care Plan TEI Lookup', 'CARE_PLAN_DATE_LOOKUP',
+        'Lookup of the exact date of the FHIR Care Plan');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type)
+VALUES ('44d6314675004db7b8bc666c4898523b', 0, 'CARE_PLAN_PROGRAM_REF_LOOKUP', 'Care Plan Tracker Program Lookup',
+'Lookup of the Tracker Program of the FHIR Care Plan.', 'EVALUATE', 'PROGRAM_REF', 'FHIR_CARE_PLAN');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('44d6314675004db7b8bc666c4898523b', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('44d6314675004db7b8bc666c4898523b', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('e13eeaef7a6d4083a233190bc8c1c975', 0, '44d6314675004db7b8bc666c4898523b',
+'var programRef = null; if (!input.getInstantiatesUri().isEmpty()) programRef = context.createReference(input.getInstantiatesUri().get(0).getValue(), ''id''); programRef', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('e13eeaef7a6d4083a233190bc8c1c975', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('79d297065c1c47c582456069036072f8', 0, '44d6314675004db7b8bc666c4898523b', 'Care Plan Tracker Program Lookup', 'CARE_PLAN_PROGRAM_REF_LOOKUP',
+        'Lookup of the Tracker Program of the FHIR Care Plan.');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('e885f646626940c5a8126c2aa081e239', 0, 'DEFAULT_CARE_PLAN_F2D', 'Default FHIR Care Plan to DHIS2 Enrollment Transformation',
+'Transforms FHIR Care Plan to DHIS2 Enrollment.', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_CARE_PLAN', 'DHIS_ENROLLMENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('e885f646626940c5a8126c2aa081e239', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('e885f646626940c5a8126c2aa081e239', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('e885f646626940c5a8126c2aa081e239', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('383a5fd3489041b593f36e00c14c2d43', 0, 'e885f646626940c5a8126c2aa081e239',
+'function getOutputStatus(input)
+{
+  var outputStatus = ''CANCELLED'';
+  var inputStatus = input.getStatus() == null ? null : input.getStatus().toCode();
+  if (inputStatus === ''draft'')
+  {
+    outputStatus = ''ACTIVE'';
+  }
+  else if (inputStatus === ''active'')
+  {
+    outputStatus = ''ACTIVE'';
+  }
+  else if (inputStatus === ''on-hold'')
+  {
+    outputStatus = ''ACTIVE'';
+  }
+  else if (inputStatus === ''revoked'')
+  {
+    outputStatus = ''CANCELLED'';
+  }
+  else if (inputStatus === ''completed'')
+  {
+    outputStatus = ''COMPLETED'';
+  }
+  else if (inputStatus === ''entered-in-error'')
+  {
+    outputStatus = ''CANCELLED'';
+  }
+  return outputStatus;
+}
+output.setStatus(getOutputStatus(input));
+output.setIncidentDate(input.created);
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('383a5fd3489041b593f36e00c14c2d43', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('aa956fdb01074cb7b5c1ab6567162d9d', 0, 'e885f646626940c5a8126c2aa081e239', 'Default FHIR Care Plan to DHIS2 Enrollment Transformation', 'DEFAULT_CARE_PLAN_F2D',
+        'Transforms FHIR Care Plan to DHIS2 Enrollment.');
+
+INSERT INTO fhir_resource_mapping(id, version, fhir_resource_type, tracked_entity_fhir_resource_type, imp_tei_lookup_script_id, imp_enrollment_org_lookup_script_id, imp_enrollment_date_lookup_script_id)
+VALUES('b6650f008462419bb9926775ca0a26cb', 0, 'CARE_PLAN', 'PATIENT', '762b4137a98b4b10a0f5629d93e23461', '25a97bb47b394ed48677db4bcaa28ccf', '0f79f2c88b5411e981f7ebd621029975');
+
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+VALUES('c4e17e7d880e45b59bc5568da8c79742', 0, 'CARE_PLAN', 'ENROLLMENT', 'Default FHIR Care Plan to DHIS2 Enrollment', 'Default rule that transforms a FHIR Care Plan to a DHIS2 Enrollment.',
+true, true, false, false, true, true, true, false, -2147483648, 'aa956fdb01074cb7b5c1ab6567162d9d');
+INSERT INTO fhir_enrollment_rule(id, program_ref_lookup_script_id) VALUES ('c4e17e7d880e45b59bc5568da8c79742', '79d297065c1c47c582456069036072f8');
+
+UPDATE fhir_rule SET evaluation_order = 100 WHERE fhir_resource_type = 'PATIENT' AND evaluation_order = 0;

@@ -80,81 +80,21 @@ public class BeforeCreateSaveFhirResourceMappingValidator extends AbstractBefore
 
     public static void checkValidOrgLookupScript( @NonNull Errors errors, @Nonnull String codePrefix, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, codePrefix + field + ".scriptType", "Assigned script type for organization unit lookup must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.ORG_UNIT_REF )
-        {
-            errors.rejectValue( field, codePrefix + field + ".returnType", "Assigned return type for organization unit lookup must be ORG_UNIT_REF." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, codePrefix + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for organization unit lookup must be the same as for the mapping {0}." );
-        }
+        checkValidScript( errors, codePrefix, field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.ORG_UNIT_REF );
     }
 
     public static void checkValidLocationLookupScript( @NonNull Errors errors, @Nonnull String codePrefix, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, codePrefix + field + ".scriptType", "Assigned script type for location lookup must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.LOCATION )
-        {
-            errors.rejectValue( field, codePrefix + field + ".returnType", "Assigned return type for location lookup must be LOCATION." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, codePrefix + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for location lookup must be the same as for the mapping {0}." );
-        }
+        checkValidScript( errors, codePrefix, field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.LOCATION );
     }
 
     protected static void checkValidDateLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".scriptType", "Assigned script type for date lookup must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.DATE_TIME )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".returnType", "Assigned return type for date lookup must be DATE_TIME." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for date lookup must be the same as for the mapping {0}." );
-        }
+        checkValidScript( errors, "FhirResourceMapping", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.DATE_TIME );
     }
 
     protected static void checkValidTeiLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".scriptType", "Assigned script type for tracked entity instance lookup must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.FHIR_RESOURCE )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".returnType", "Assigned return type for tracked entity instance lookup must be FHIR_RESOURCE." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "FhirResourceMapping." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for tracked entity instance lookup must be the same as for the mapping {0}." );
-        }
+        checkValidScript( errors, "FhirResourceMapping", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.FHIR_RESOURCE );
     }
 }

@@ -115,66 +115,17 @@ public abstract class AbstractBeforeCreateSaveRuleValidator<M extends AbstractRu
 
     protected static void checkValidApplicableInScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for applicable evaluation must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for applicable script must be BOOLEAN." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for applicable script must be the same as for the rule {0}." );
-        }
+        checkValidScript( errors, "AbstractRule", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.BOOLEAN );
     }
 
     protected static void checkValidTeiLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.EVALUATE )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for TEI evaluation must be EVALUATE." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.FHIR_RESOURCE )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for TEI evaluation script must be FHIR_RESOURCE." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for TEI evaluation script must be the same as for the rule {0}." );
-        }
+        checkValidScript( errors, "AbstractRule", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.FHIR_RESOURCE );
     }
 
     protected static void checkValidTransformInScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nonnull TransformDataType transformDataType, @Nullable ExecutableScript executableScript )
     {
-        if ( executableScript == null )
-        {
-            return;
-        }
-        if ( executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_TO_DHIS )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for incoming transformation must be TRANSFORM_TO_DHIS." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for incoming transformation script must be BOOLEAN." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for incoming transformation script must be the same as for the rule {0}." );
-        }
-        if ( executableScript.getScript().getOutputType() != transformDataType )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".outputType", new Object[]{ transformDataType }, "Assigned output type for incoming transformation script must be {0}." );
-        }
+        checkValidScript( errors, "AbstractRule", field, fhirResourceType, executableScript, ScriptType.TRANSFORM_TO_DHIS, DataType.BOOLEAN, transformDataType );
     }
 
     protected static void checkValidSearchFilterScript( @NonNull Errors errors, @Nonnull String field, @Nullable ExecutableScript executableScript )
@@ -183,18 +134,9 @@ public abstract class AbstractBeforeCreateSaveRuleValidator<M extends AbstractRu
         {
             return;
         }
-        if ( executableScript.getScript().getScriptType() != ScriptType.SEARCH_FILTER )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".scriptType", "Assigned script type for search filter must be SEARCH_FILTER." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".returnType", "Assigned return type for search filter script must be BOOLEAN." );
-        }
-        if ( executableScript.getScript().getInputType() != null )
-        {
-            errors.rejectValue( field, "AbstractRule." + field + ".inputType", "Input type must not be specified." );
-        }
+
+        checkValidScript( errors, "AbstractRule", field, null, executableScript, ScriptType.SEARCH_FILTER, DataType.BOOLEAN );
+
         if ( executableScript.getScript().getOutputType() != null )
         {
             errors.rejectValue( field, "AbstractRule." + field + ".outputType", "Output type must not be specified." );

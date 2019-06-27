@@ -1,0 +1,12 @@
+{
+  "name": "Care Plan Program Lookup (disabled)",
+  "description": "Care Plan Program Lookup",
+  "enabled": false,
+  "evaluationOrder": 0,
+  "dhisResourceType": "ENROLLMENT",
+  "fhirResourceType": "CARE_PLAN",
+  "applicableImpScript": null,
+  "applicableCodeSet": null,
+  "transformImpScript": "$transformImpScriptId",
+  "programRefLookupScript": "$programRefLookupScriptId"
+}

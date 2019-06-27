@@ -577,6 +577,24 @@ include::{snippets}/read-program-stage-rule/response-body.adoc[]
 
 include::{snippets}/read-program-stage-rule/response-fields.adoc[]
 
+[[api-resources-data-enrollment-rule]]
+==== Enrollment Rule
+The enrollment resource defines a rule that is able to transform
+a FHIR resource to a DHIS 2 enrollment.
+
+.Create resource curl snippet
+include::{snippets}/create-enrollment-rule/curl-request.adoc[]
+
+include::{snippets}/create-enrollment-rule/request-fields.adoc[]
+
+.Read resource curl snippet
+include::{snippets}/read-enrollment-rule/curl-request.adoc[]
+
+.Read resource response body
+include::{snippets}/read-enrollment-rule/response-body.adoc[]
+
+include::{snippets}/read-enrollment-rule/response-fields.adoc[]
+
 [[api-resources-administration]]
 === Adapter Administration Resources
 

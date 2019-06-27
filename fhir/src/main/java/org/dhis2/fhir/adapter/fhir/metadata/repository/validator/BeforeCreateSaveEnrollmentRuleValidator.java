@@ -28,12 +28,18 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
+import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 /**
@@ -54,5 +60,12 @@ public class BeforeCreateSaveEnrollmentRuleValidator extends AbstractBeforeCreat
     public void doValidate( @Nonnull EnrollmentRule rule, @Nonnull Errors errors )
     {
         validate( rule, TransformDataType.DHIS_ENROLLMENT, errors );
+
+        checkValidProgramRefLookupScript( errors, "programRefLookupScript", rule.getFhirResourceType(), rule.getProgramRefLookupScript() );
+    }
+
+    protected static void checkValidProgramRefLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
+    {
+        checkValidScript( errors, "EnrollmentRule", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.PROGRAM_REF );
     }
 }

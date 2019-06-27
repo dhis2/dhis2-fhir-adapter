@@ -198,6 +198,7 @@ public class TestConfiguration
 
         final Set<FhirResourceType> additionalFhirResourceTypes = new HashSet<>();
         additionalFhirResourceTypes.add( FhirResourceType.OBSERVATION );
+        additionalFhirResourceTypes.add( FhirResourceType.CARE_PLAN );
 
         final Setup setup = new Setup();
 

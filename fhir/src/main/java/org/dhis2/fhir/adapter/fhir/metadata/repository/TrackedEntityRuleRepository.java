@@ -83,9 +83,8 @@ public interface TrackedEntityRuleRepository extends JpaRepository<TrackedEntity
     @Nonnull
     @RestResource( exported = false )
     @Cacheable( keyGenerator = "referenceCollectionKeyGenerator" )
-    @Query( "SELECT r FROM #{#entityName} r JOIN r.trackedEntity te WHERE r.fhirResourceType=:fhirResourceType AND r.trackedEntity=:trackedEntity AND r.enabled=true AND " +
-        "te.enabled=true AND te.trackedEntityIdentifierReference IN (:trackedEntityTypeRefs) ORDER BY r.evaluationOrder,r.id" )
-    Optional<TrackedEntityRule> findFirstByTypeRefs( @Nonnull @Param( "trackedEntityTypeRefs" ) Collection<Reference> trackedEntityTypeRefs );
+    @Query( "SELECT r FROM #{#entityName} r JOIN r.trackedEntity te WHERE r.enabled=true AND te.enabled=true AND te.trackedEntityReference IN (:trackedEntityTypeRefs) ORDER BY r.evaluationOrder DESC,r.id" )
+    List<TrackedEntityRule> findByTypeRefs( @Nonnull @Param( "trackedEntityTypeRefs" ) Collection<Reference> trackedEntityTypeRefs );
 
     @Override
     @Nonnull

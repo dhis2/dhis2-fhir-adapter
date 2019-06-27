@@ -88,18 +88,9 @@ public class BeforeCreateSaveFhirClientResourceValidator extends AbstractBeforeC
         {
             return;
         }
-        if ( executableScript.getScript().getScriptType() != ScriptType.TRANSFORM_FHIR )
-        {
-            errors.rejectValue( field, "FhirClientResource." + field + ".scriptType", "Assigned script type for incoming transformation must be TRANSFORM_FHIR." );
-        }
-        if ( executableScript.getScript().getReturnType() != DataType.BOOLEAN )
-        {
-            errors.rejectValue( field, "FhirClientResource." + field + ".returnType", "Assigned return type for incoming transformation script must be BOOLEAN." );
-        }
-        if ( (executableScript.getScript().getInputType() != null) && (executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType) )
-        {
-            errors.rejectValue( field, "FhirClientResource." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for incoming transformation script must be the same as for the resource {0}." );
-        }
+
+        checkValidScript( errors, "AbstractRule", field, fhirResourceType, executableScript, ScriptType.TRANSFORM_FHIR, DataType.BOOLEAN );
+
         if ( (executableScript.getScript().getOutputType() != null) && (executableScript.getScript().getOutputType().getFhirResourceType() != fhirResourceType) )
         {
             errors.rejectValue( field, "FhirClientResource." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type for outgoing transformation script must be the same as for the resource {0}." );

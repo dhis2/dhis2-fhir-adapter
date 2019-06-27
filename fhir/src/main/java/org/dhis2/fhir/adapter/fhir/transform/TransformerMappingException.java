@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Thrown if the mapping relies on or produces inconsistent data.
+ *
+ * @author volsch
+ */
 public class TransformerMappingException extends TransformerException
 {
     private static final long serialVersionUID = -4985217184598251167L;

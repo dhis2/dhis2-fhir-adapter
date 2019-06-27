@@ -29,10 +29,16 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  */
 
 import org.dhis2.fhir.adapter.fhir.metadata.model.CodedMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.NamedMetadata;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
 import org.dhis2.fhir.adapter.model.Metadata;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -127,5 +133,40 @@ public abstract class AbstractBeforeCreateSaveValidator<M extends Metadata> impl
         }
 
         return result.stream().map( item -> (UUID) item ).noneMatch( item -> item.equals( id ) );
+    }
+
+    protected static void checkValidScript( @NonNull Errors errors, @Nonnull String type, @Nonnull String field, @Nullable FhirResourceType fhirResourceType,
+        @Nullable ExecutableScript executableScript, @Nonnull ScriptType scriptType, @Nonnull DataType dataType )
+    {
+        checkValidScript( errors, type, field, fhirResourceType, executableScript, scriptType, dataType, null );
+    }
+
+    protected static void checkValidScript( @NonNull Errors errors, @Nonnull String type, @Nonnull String field, @Nullable FhirResourceType fhirResourceType,
+        @Nullable ExecutableScript executableScript, @Nonnull ScriptType scriptType, @Nonnull DataType dataType, @Nullable TransformDataType transformDataType )
+    {
+        if ( executableScript == null )
+        {
+            return;
+        }
+
+        if ( executableScript.getScript().getScriptType() != scriptType )
+        {
+            errors.rejectValue( field, type + "." + field + ".scriptType", "Assigned script type must be " + scriptType + "." );
+        }
+
+        if ( executableScript.getScript().getReturnType() != dataType )
+        {
+            errors.rejectValue( field, type + "." + field + ".returnType", "Assigned return type must be " + dataType + "." );
+        }
+
+        if ( fhirResourceType != null && executableScript.getScript().getInputType() != null && executableScript.getScript().getInputType().getFhirResourceType() != fhirResourceType )
+        {
+            errors.rejectValue( field, type + "." + field + ".inputType", new Object[]{ fhirResourceType }, "Assigned input type must be the same as for the rule {0}." );
+        }
+
+        if ( transformDataType != null && executableScript.getScript().getOutputType() != transformDataType )
+        {
+            errors.rejectValue( field, type + "." + field + ".outputType", new Object[]{ transformDataType }, "Assigned output type for transformation script must be {0}." );
+        }
     }
 }

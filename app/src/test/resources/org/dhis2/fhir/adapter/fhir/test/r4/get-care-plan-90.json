@@ -1,0 +1,26 @@
+{
+  "resourceType": "CarePlan",
+  "id": "90",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+  },
+  "instantiatesUri": [
+    "EPDyQuoRnXk"
+  ],
+  "status": "active",
+  "intent": "plan",
+  "subject": {
+    "reference": "Patient/15"
+  },
+  "period": {
+    "start": "2018-11-11"
+  },
+  "created": "2018-11-10",
+  "author": {
+    "identifier": {
+      "system": "http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier",
+      "value": "ldXIdLNUNEn"
+    }
+  }
+}

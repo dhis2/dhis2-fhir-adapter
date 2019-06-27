@@ -58,6 +58,7 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
@@ -118,9 +119,10 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     }
 
     @Override
-    protected boolean isSyncRequired( FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return context.getFhirRequest().isSync();
+        // for currently supported use case no sync is required
+        return false;
     }
 
     @Override
@@ -167,7 +169,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
         if ( !orgUnit.isPresent() )
         {
-            return null;
+            throw new TransformerDataException( "Resource does not include a valid organization unit." );
         }
 
         final Enrollment enrollment = new Enrollment( true );
@@ -176,16 +178,6 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         enrollment.setProgramId( program.getId() );
         enrollment.setTrackedEntityInstanceId( Objects.requireNonNull( trackedEntityInstance.getTrackedEntityInstance() ).getId() );
         enrollment.setEnrollmentDate( enrollmentDate );
-
-        if ( !updateIncidentDate( program, enrollment ) )
-        {
-            return null;
-        }
-
-        if ( enrollment.getStatus() == null )
-        {
-            enrollment.setStatus( EnrollmentStatus.ACTIVE );
-        }
 
         return enrollment;
     }
@@ -223,14 +215,8 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         }
 
         final RuleInfo<TrackedEntityRule> trackedEntityRuleInfo = getTrackedEntityRuleInfo( context, ruleInfo, scriptVariables,
-            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class ),
-            TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ) ).orElse( null );
-
-        if ( trackedEntityRuleInfo == null )
-        {
-            return null;
-        }
-
+            TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class ),
+            TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ) );
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo, trackedEntityRuleInfo.getRule().getFhirResourceType() );
         final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context, trackedEntityRuleInfo, resourceMapping, variables, false ).orElse( null );
 
@@ -259,40 +245,40 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             return null;
         }
 
+        if ( enrollment.isModified() )
+        {
+            scriptedEnrollment.validate();
+        }
+
         return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), enrollment );
     }
 
     @Override
     public FhirToDhisDeleteTransformOutcome<Enrollment> transformDeletion( @Nonnull FhirClientResource fhirClientResource, RuleInfo<EnrollmentRule> ruleInfo, DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
-        Enrollment enrollment = new Enrollment();
+        final Enrollment enrollment = new Enrollment();
         enrollment.setId( dhisFhirResourceId.getId() );
 
         return new FhirToDhisDeleteTransformOutcome<>( ruleInfo.getRule(), enrollment, true );
     }
 
+    @Nonnull
+    @Override
+    protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
+        @Nonnull Map<String, Object> scriptVariables, boolean sync )
+    {
+        return super.getTrackedEntityInstance( context, ruleInfo, resourceMapping, scriptVariables, sync );
+    }
+
     protected boolean addBasicScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        final Program program = getProgram( context, ruleInfo, scriptVariables ).orElse( null );
-
-        if ( program == null )
-        {
-            return false;
-        }
-
+        final Program program = getProgram( context, ruleInfo, scriptVariables );
         scriptVariables.put( ScriptVariable.PROGRAM.getVariableName(), program );
 
-        final TrackedEntityType trackedEntityType = getTrackedEntityType( context, ruleInfo, scriptVariables, program ).orElse( null );
-
-        if ( trackedEntityType == null )
-        {
-            return false;
-        }
-
+        final TrackedEntityType trackedEntityType = getTrackedEntityType( context, ruleInfo, scriptVariables, program );
         final TrackedEntityAttributes attributes = trackedEntityMetadataService.getAttributes();
         scriptVariables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), attributes );
         scriptVariables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
-
 
         return true;
     }
@@ -316,12 +302,14 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull FhirResourceType trackedEntityFhirResourceType )
     {
         return resourceMappingRepository.findOneByFhirResourceType( ruleInfo.getRule().getFhirResourceType(), trackedEntityFhirResourceType )
-            .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "." ) );
+            .orElseThrow( () -> new TransformerMappingException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() +
+                " and tracked entity FHIR resource " + trackedEntityFhirResourceType + "." ) );
     }
 
     @Override
     protected boolean isAlwaysActiveResource( @Nonnull RuleInfo<EnrollmentRule> ruleInfo )
     {
+        // not use for currently supported use case (method is not invoked)
         return false;
     }
 
@@ -352,46 +340,21 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
 
         if ( !program.isSelectEnrollmentDatesInFuture() && DateTimeUtils.isFutureDate( enrollmentDate ) )
         {
-            logger.info( "Enrollment date of of program instance \"{}\" is in the future and program does not allow dates in the future.", program.getName() );
-
-            return null;
+            throw new TransformerDataException( "Enrollment date of of program instance \"" + program.getName()
+                + "\" is in the future and program does not allow dates in the future." );
         }
 
         return enrollmentDate;
     }
 
-    protected boolean updateIncidentDate( @Nonnull Program program, @Nonnull Enrollment enrollment )
-    {
-        if ( enrollment.getIncidentDate() == null )
-        {
-            if ( program.isDisplayIncidentDate() )
-            {
-                logger.info( "Incident date of program instance \"{}\" has not been returned by "
-                    + "event date script (using current timestamp).", program.getName() );
-            }
-
-            enrollment.setIncidentDate( ZonedDateTime.now() );
-        }
-        else if ( !program.isSelectIncidentDatesInFuture() && DateTimeUtils.isFutureDate( enrollment.getIncidentDate() ) )
-        {
-            logger.info( "Incident date of of program instance \"{}\" is in the future and program does not allow dates in the future.", program.getName() );
-
-            return false;
-        }
-
-        return true;
-    }
-
     @Nonnull
-    protected Optional<Program> getProgram( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables )
+    protected Program getProgram( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables )
     {
         final Reference programRef = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramRefLookupScript(), scriptVariables, Reference.class );
 
         if ( programRef == null )
         {
-            logger.info( "FHIR resource does not contain a reference to a Tracker Program." );
-
-            return Optional.empty();
+            throw new TransformerDataException( "FHIR resource does not contain a a reference to a tracker program." );
         }
 
         final Program program = programMetadataService.findProgramByReference( programRef ).orElse( null );
@@ -406,38 +369,35 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             throw new TransformerDataException( "Tracker program \"" + programRef + "\" does not require registration." );
         }
 
-        return Optional.of( program );
+        return program;
     }
 
     @Nonnull
-    protected Optional<TrackedEntityType> getTrackedEntityType( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+    protected TrackedEntityType getTrackedEntityType( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
         @Nonnull Program program )
     {
         final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( Reference.createIdReference( program.getTrackedEntityTypeId() ) ).orElse( null );
 
         if ( trackedEntityType == null )
         {
-            logger.info( "Tracked entity type {} of tracker program {} does not exist.", program.getTrackedEntityTypeId(), program.getId() );
-
-            return Optional.empty();
+            throw new TransformerMappingException( "Tracked entity type " + program.getTrackedEntityTypeId() + " of tracker program " + program.getId() + " does not exist." );
         }
 
-        return Optional.of( trackedEntityType );
+        return trackedEntityType;
     }
 
     @Nonnull
-    protected Optional<RuleInfo<TrackedEntityRule>> getTrackedEntityRuleInfo( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+    protected RuleInfo<TrackedEntityRule> getTrackedEntityRuleInfo( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
         @Nonnull Program program, @Nonnull TrackedEntityType trackedEntityType )
     {
-        final TrackedEntityRule trackedEntityRule = trackedEntityRuleRepository.findFirstByTypeRefs( trackedEntityType.getAllReferences() ).orElse( null );
+        final TrackedEntityRule trackedEntityRule = trackedEntityRuleRepository.findByTypeRefs( trackedEntityType.getAllReferences() )
+            .stream().findFirst().orElse( null );
 
         if ( trackedEntityRule == null )
         {
-            logger.info( "Tracked entity type {} is not associated with a tracked entity rule.", program.getTrackedEntityTypeId() );
-
-            return Optional.empty();
+            throw new TransformerMappingException( "Tracked entity type " + program.getTrackedEntityTypeId() + " is not associated with a tracked entity rule." );
         }
 
-        return Optional.of( new RuleInfo<>( trackedEntityRule, Collections.emptyList() ) );
+        return new RuleInfo<>( trackedEntityRule, Collections.emptyList() );
     }
 }

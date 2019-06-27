@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,22 +28,23 @@ package org.dhis2.fhir.adapter.fhir.transform;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment.AbstractCarePlanToEnrollmentTransformationAppTest;
+
+import javax.annotation.Nonnull;
+
 /**
- * Thrown to indicate that the data that should be transformed is invalid.
+ * Tests the transformation of a FHIR Care Plan to a DHIS 2 Program Instance.
  *
  * @author volsch
  */
-public class TransformerDataException extends TransformerException
+public class R4CarePlanToEnrollmentTransformationAppTest
+    extends AbstractCarePlanToEnrollmentTransformationAppTest
 {
-    private static final long serialVersionUID = -5352698669381493151L;
-
-    public TransformerDataException( String message )
+    @Nonnull
+    @Override
+    protected FhirVersion getFhirVersion()
     {
-        super( message );
-    }
-
-    public TransformerDataException( String message, Throwable cause )
-    {
-        super( message, cause );
+        return FhirVersion.R4;
     }
 }
