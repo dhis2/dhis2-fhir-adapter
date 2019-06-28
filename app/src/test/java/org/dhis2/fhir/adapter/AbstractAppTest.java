@@ -372,11 +372,12 @@ public abstract class AbstractAppTest
         final TransactionStatus transactionStatus = transactionManager.getTransaction( new DefaultTransactionDefinition() );
         try
         {
-            entityManager.createQuery( "DELETE FROM ProcessedDhisResource " ).executeUpdate();
-            entityManager.createQuery( "DELETE FROM StoredDhisResource " ).executeUpdate();
-            entityManager.createQuery( "DELETE FROM ProcessedFhirResource " ).executeUpdate();
-            entityManager.createQuery( "DELETE FROM StoredFhirResource " ).executeUpdate();
-            entityManager.createQuery( "DELETE FROM FhirDhisAssignment " ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM ProcessedDhisResource" ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM StoredDhisResource" ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM ProcessedFhirResource" ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM StoredFhirResource" ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM FhirDhisAssignment" ).executeUpdate();
+            entityManager.createQuery( "DELETE FROM SubscriptionFhirResource" ).executeUpdate();
         }
         finally
         {

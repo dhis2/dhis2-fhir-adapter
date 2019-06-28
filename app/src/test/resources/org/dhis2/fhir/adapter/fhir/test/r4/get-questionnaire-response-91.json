@@ -1,0 +1,36 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "91",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+  },
+  "questionnaire": "MsWxkiY6tMS",
+  "status": "in-progress",
+  "subject": {
+    "reference": "Patient/15"
+  },
+  "authored": "2018-11-10",
+  "author": {
+    "reference": "Organization/20"
+  },
+  "item": [
+    {
+      "linkId": "BnplxU2jGvX",
+      "answer": [
+        {
+          "valueInteger": 3666
+        }
+      ]
+    },
+    {
+      "linkId": "ft7iD5ZzPxJ",
+      "answer": [
+        {
+          "valueString": "1"
+        }
+      ]
+    }
+  ]
+}
+

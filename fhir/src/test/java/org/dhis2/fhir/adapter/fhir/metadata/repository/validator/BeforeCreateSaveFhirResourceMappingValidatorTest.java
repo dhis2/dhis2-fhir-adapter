@@ -73,6 +73,8 @@ public class BeforeCreateSaveFhirResourceMappingValidatorTest extends AbstractJp
 
     private ExecutableScript impTransformationScript;
 
+    private ExecutableScript impProgramStageRefLookupScript;
+
     private ExecutableScript impBooleanScript;
 
     private ExecutableScript impOtherDateLookupScript;
@@ -107,6 +109,9 @@ public class BeforeCreateSaveFhirResourceMappingValidatorTest extends AbstractJp
             .setParameter( "code", "OTHER_ORG_UNIT_LOOKUP" ).getSingleResult();
         impOtherGeoLookupScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
             .setParameter( "code", "OTHER_GEO_LOOKUP" ).getSingleResult();
+
+        impProgramStageRefLookupScript = entityManager.createQuery( "SELECT e FROM ExecutableScript e WHERE e.code=:code", ExecutableScript.class )
+            .setParameter( "code", "QR_PROGRAM_STAGE_REF_LOOKUP" ).getSingleResult();
 
         entity = new FhirResourceMapping();
         entity.setFhirResourceType( FhirResourceType.ENCOUNTER );
@@ -570,6 +575,32 @@ public class BeforeCreateSaveFhirResourceMappingValidatorTest extends AbstractJp
                 JsonEntityValue.create( "impEventOrgLookupScript", "executableScripts", impEventOrgLookupScript.getId().toString() ),
                 JsonEntityValue.create( "impEnrollmentOrgLookupScript", "executableScripts", impEnrollmentOrgLookupScript.getId().toString() ),
                 JsonEntityValue.create( "impEnrollmentGeoLookupScript", "executableScripts", impEnrollmentGeoLookupScript.getId().toString() ) ) ) )
+            .andExpect( status().isCreated() );
+    }
+
+    @Test
+    public void testImpProgramStageRefLookupScriptInvalid() throws Exception
+    {
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "impEffectiveDateLookupScript", "executableScripts", impEffectiveDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEnrollmentDateLookupScript", "executableScripts", impEnrollmentDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEventDateLookupScript", "executableScripts", impEventDateLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impTeiLookupScript", "executableScripts", impTeiLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEventOrgLookupScript", "executableScripts", impEventOrgLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impEnrollmentOrgLookupScript", "executableScripts", impEnrollmentOrgLookupScript.getId().toString() ),
+                JsonEntityValue.create( "impProgramStageRefLookupScript", "executableScripts", impProgramStageRefLookupScript.getId().toString() ) ) ) )
+            .andExpect( status().isBadRequest() ).andExpect( jsonPath( "errors[0].property", Matchers.is( "impProgramStageRefLookupScript" ) ) );
+    }
+
+    @Test
+    public void testImpProgramStageRefLookupScriptOk() throws Exception
+    {
+        entity.setFhirResourceType( FhirResourceType.QUESTIONNAIRE_RESPONSE );
+        entity.setTrackedEntityFhirResourceType( FhirResourceType.PRACTITIONER );
+        mockMvc.perform( post( RESOURCE_PATH ).header( AUTHORIZATION_HEADER_NAME, AUTHORIZATION_HEADER_VALUE )
+            .contentType( MediaType.APPLICATION_JSON ).content( replaceJsonEntityReferences( entity,
+                JsonEntityValue.create( "impProgramStageRefLookupScript", "executableScripts", impProgramStageRefLookupScript.getId().toString() ) ) ) )
             .andExpect( status().isCreated() );
     }
 

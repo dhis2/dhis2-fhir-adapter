@@ -75,6 +75,7 @@ public class BeforeCreateSaveFhirResourceMappingValidator extends AbstractBefore
             checkValidDateLookupScript( errors, "impEnrollmentDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEnrollmentDateLookupScript() );
             checkValidDateLookupScript( errors, "impEventDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEventDateLookupScript() );
             checkValidDateLookupScript( errors, "impEffectiveDateLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpEffectiveDateLookupScript() );
+            checkValidScript( errors, "FhirResourceMapping", "impProgramStageRefLookupScript", fhirResourceMapping.getFhirResourceType(), fhirResourceMapping.getImpProgramStageRefLookupScript(), ScriptType.EVALUATE, DataType.PROGRAM_STAGE_REF );
         }
     }
 

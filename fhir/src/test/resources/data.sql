@@ -837,3 +837,17 @@ true, true, false, false, true, true, true, false, -2147483648, 'aa956fdb01074cb
 INSERT INTO fhir_enrollment_rule(id, program_ref_lookup_script_id) VALUES ('c4e17e7d880e45b59bc5568da8c79742', '79d297065c1c47c582456069036072f8');
 
 UPDATE fhir_rule SET evaluation_order = 100 WHERE fhir_resource_type = 'PATIENT' AND evaluation_order = 0;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type)
+VALUES ('152434b081db49bba3c53c09caf29208', 0, 'QR_PROGRAM_STAGE_REF_LOOKUP', 'Questionnaire Response Tracker Program Stage Lookup',
+'Lookup of the Tracker Program Stage of the FHIR QuestionnaireResponse.', 'EVALUATE', 'PROGRAM_STAGE_REF', 'FHIR_QUESTIONNAIRE_RESPONSE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('152434b081db49bba3c53c09caf29208', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('152434b081db49bba3c53c09caf29208', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('eb2ef8ad93a042d5b8da2d2b0d3c6115', 0, '152434b081db49bba3c53c09caf29208',
+'var programStageRef = null; if (input.hasQuestionnaire()) programStageRef = context.createReference(input.getQuestionnaire(), ''id''); programStageRef', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('eb2ef8ad93a042d5b8da2d2b0d3c6115', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('385e52d28674403db42586b5d4e9faf0', 0, '152434b081db49bba3c53c09caf29208', 'Questionnaire Response Tracker Program Stage Lookup',
+        'QR_PROGRAM_STAGE_REF_LOOKUP', 'Lookup of the Tracker Program Stage of the FHIR QuestionnaireResponse.');

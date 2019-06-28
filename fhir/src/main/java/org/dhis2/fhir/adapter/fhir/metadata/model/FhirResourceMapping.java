@@ -89,6 +89,8 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
 
     private ExecutableScript expGroupTransformScript;
 
+    private ExecutableScript impProgramStageRefLookupScript;
+
     private boolean deleteWhenAbsent;
 
     @Basic
@@ -322,5 +324,18 @@ public class FhirResourceMapping extends VersionedBaseMetadata implements Serial
     public void setDeleteWhenAbsent( boolean deleteWhenAbsent )
     {
         this.deleteWhenAbsent = deleteWhenAbsent;
+    }
+
+    @JsonCacheId
+    @ManyToOne
+    @JoinColumn( name = "imp_program_stage_ref_lookup_script_id", referencedColumnName = "id" )
+    public ExecutableScript getImpProgramStageRefLookupScript()
+    {
+        return impProgramStageRefLookupScript;
+    }
+
+    public void setImpProgramStageRefLookupScript( ExecutableScript impProgramStageRefLookupScript )
+    {
+        this.impProgramStageRefLookupScript = impProgramStageRefLookupScript;
     }
 }

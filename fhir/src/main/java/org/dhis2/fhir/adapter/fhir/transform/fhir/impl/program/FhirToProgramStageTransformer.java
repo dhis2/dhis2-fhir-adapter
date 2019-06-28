@@ -135,6 +135,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ValueConverter valueConverter )
     {
         super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityService ), fhirDhisAssignmentRepository );
+
         this.lockManager = lockManager;
         this.programMetadataService = programMetadataService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
@@ -177,9 +178,14 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return null;
         }
 
-        final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        addBasicScriptVariables( variables, ruleInfo );
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+        final Map<String, Object> variables = new HashMap<>( scriptVariables );
+
+        if ( !addBasicScriptVariables( variables, context, ruleInfo, resourceMapping ) )
+        {
+            return null;
+        }
+
         final TrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context,
             new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ), resourceMapping, variables, false ).orElse( null );
         if ( trackedEntityInstance == null )
@@ -304,12 +310,23 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         return null;
     }
 
-    protected void addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo ) throws TransformerException
+    protected boolean addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping ) throws TransformerException
     {
         final Program program = programMetadataService.findProgramByReference( ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() )
             .orElseThrow( () -> new TransformerMappingException( "Mapping " + ruleInfo + " requires program \"" +
                 ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
         variables.put( ScriptVariable.PROGRAM.getVariableName(), program );
+
+        final ProgramStage programStage =
+            program.getOptionalStage( ruleInfo.getRule().getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " requires program stage \"" +
+                ruleInfo.getRule().getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + ruleInfo.getRule().getProgramStage().getProgram().getName() + "\"." ) );
+        variables.put( ScriptVariable.PROGRAM_STAGE.getVariableName(), programStage );
+
+        // FHIR resource may contain reference to program stage. In this case included reference must match currently processed reference
+        if ( !isApplicableProgramStageRef( context, ruleInfo, resourceMapping, programStage, variables ) )
+        {
+            return false;
+        }
 
         final TrackedEntityAttributes attributes = trackedEntityMetadataService.getAttributes();
         final TrackedEntityType trackedEntityType = trackedEntityMetadataService
@@ -318,6 +335,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
                 "\" references tracked entity type " + program.getTrackedEntityTypeId() + " that does not exist." ) );
         variables.put( ScriptVariable.TRACKED_ENTITY_ATTRIBUTES.getVariableName(), attributes );
         variables.put( ScriptVariable.TRACKED_ENTITY_TYPE.getVariableName(), trackedEntityType );
+
+        return true;
     }
 
     protected void addScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull Map<String, Object> variables, @Nonnull RuleInfo<ProgramStageRule> ruleInfo,
@@ -327,16 +346,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         {
             throw new FatalTransformerException( "Identifier of tracked entity instance has not yet been set." );
         }
+
         variables.put( ScriptVariable.TRACKED_ENTITY_INSTANCE.getVariableName(), new WritableScriptedTrackedEntityInstance(
             TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class ),
             TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ),
             trackedEntityInstance, valueConverter ) );
-
-        final Program program = TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class );
-        final ProgramStage programStage =
-            program.getOptionalStage( ruleInfo.getRule().getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " requires program stage \"" +
-                ruleInfo.getRule().getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + ruleInfo.getRule().getProgramStage().getProgram().getName() + "\"." ) );
-        variables.put( ScriptVariable.PROGRAM_STAGE.getVariableName(), programStage );
     }
 
     protected void updateCoordinates( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping,
@@ -989,5 +1003,24 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             return false;
         }
         return true;
+    }
+
+    protected boolean isApplicableProgramStageRef( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull ProgramStage programStage,
+        @Nonnull Map<String, Object> variables )
+    {
+        final Reference programStageRef = getProgramStageRef( context, ruleInfo, resourceMapping, variables );
+
+        if ( programStageRef == null )
+        {
+            return true;
+        }
+
+        return programStage.getAllReferences().contains( programStageRef );
+    }
+
+    @Nullable
+    protected Reference getProgramStageRef( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> variables )
+    {
+        return executeScript( context, ruleInfo, resourceMapping.getImpProgramStageRefLookupScript(), variables, Reference.class );
     }
 }

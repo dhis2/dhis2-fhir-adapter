@@ -2754,3 +2754,141 @@ true, true, false, false, true, true, true, false, -2147483648, 'aa956fdb01074cb
 INSERT INTO fhir_enrollment_rule(id, program_ref_lookup_script_id) VALUES ('c4e17e7d880e45b59bc5568da8c79742', '79d297065c1c47c582456069036072f8');
 
 UPDATE fhir_rule SET evaluation_order = 100 WHERE fhir_resource_type = 'PATIENT' AND evaluation_order = 0;
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type)
+VALUES ('e52272fd0e0c4a74b059e324455721d0', 0, 'QR_DATE_LOOKUP', 'Questionnaire Response Date Lookup',
+'Lookup of the exact date of the FHIR Questionnaire Response.', 'EVALUATE', 'DATE_TIME', 'FHIR_QUESTIONNAIRE_RESPONSE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('e52272fd0e0c4a74b059e324455721d0', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('e52272fd0e0c4a74b059e324455721d0', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('bc694d0666124cbeaac0aa526e25007c', 0, 'e52272fd0e0c4a74b059e324455721d0',
+'input.getAuthored()', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('bc694d0666124cbeaac0aa526e25007c', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('521b3a008ecc487ba7e3fe12b68e388a', 0, 'e52272fd0e0c4a74b059e324455721d0', 'Questionnaire Response Date Lookup', 'QR_DATE_LOOKUP',
+        'Lookup of the exact date of the FHIR Questionnaire Response.');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type)
+VALUES ('152434b081db49bba3c53c09caf29208', 0, 'QR_PROGRAM_STAGE_REF_LOOKUP', 'Questionnaire Response Tracker Program Stage Lookup',
+'Lookup of the Tracker Program Stage of the FHIR QuestionnaireResponse.', 'EVALUATE', 'PROGRAM_STAGE_REF', 'FHIR_QUESTIONNAIRE_RESPONSE');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('152434b081db49bba3c53c09caf29208', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('152434b081db49bba3c53c09caf29208', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('eb2ef8ad93a042d5b8da2d2b0d3c6115', 0, '152434b081db49bba3c53c09caf29208',
+'var programStageRef = null; if (input.hasQuestionnaire()) programStageRef = context.createReference(input.getQuestionnaire(), ''id''); programStageRef', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('eb2ef8ad93a042d5b8da2d2b0d3c6115', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('385e52d28674403db42586b5d4e9faf0', 0, '152434b081db49bba3c53c09caf29208', 'Questionnaire Response Tracker Program Stage Lookup',
+        'QR_PROGRAM_STAGE_REF_LOOKUP', 'Lookup of the Tracker Program Stage of the FHIR QuestionnaireResponse.');
+
+INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('930a7e03b3224fd9ae0c0213949ac60f', 0, 'DEFAULT_QR_F2D', 'Default FHIR Questionnaire Response to DHIS2 Event Transformation',
+'Transforms FHIR Questionnaire Response to DHIS2 Event.', 'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_QUESTIONNAIRE_RESPONSE', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('930a7e03b3224fd9ae0c0213949ac60f', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('930a7e03b3224fd9ae0c0213949ac60f', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('930a7e03b3224fd9ae0c0213949ac60f', 'OUTPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type)
+VALUES ('330214dbec214cd5b0046592b8f1e2bf', 0, '930a7e03b3224fd9ae0c0213949ac60f',
+'function getAnswerFirstValue(item)
+{
+  var answerValue = null;
+  var answers = item.getAnswer();
+  if (answers !== null && !answers.isEmpty())
+  {
+    var answer = answers.get(0);
+    if (answer.hasValueDateType())
+    {
+      answerValue = answer.getValueDateType().getValue();
+    }
+    else if (answer.hasValueDecimalType())
+    {
+      answerValue = answer.getValueDecimalType().getValue();
+    }
+    else if (answer.hasValueBooleanType())
+    {
+      answerValue = answer.getValueBooleanType().getValue();
+    }
+    else if (answer.hasValueIntegerType())
+    {
+      answerValue = answer.getValueIntegerType().getValue();
+    }
+    else if (answer.hasValueStringType())
+    {
+      answerValue = answer.getValueStringType().getValue();
+    }
+    else if (answer.hasValueQuantity())
+    {
+      answerValue = answer.getValueQuantity().getValue();
+    }
+    else if (answer.hasValueDateTimeType())
+    {
+      answerValue = answer.getValueDateTimeType().getValue();
+    }
+    else if (answer.hasValueTimeType())
+    {
+      answerValue = answer.getValueTimeType().getValue();
+    }
+    else if (answer.hasValueTimeType())
+    {
+      answerValue = answer.getValueTimeType().getValue();
+    }
+  }
+  return answerValue;
+}
+function getOutputStatus(input)
+{
+  var outputStatus = ''SKIPPED'';
+  var inputStatus = input.getStatus().toCode();
+  if (inputStatus === ''in-progress'')
+  {
+    outputStatus = ''ACTIVE'';
+  }
+  else if (inputStatus === ''completed'')
+  {
+    outputStatus = ''COMPLETED'';
+  }
+  else if (inputStatus === ''amended'')
+  {
+    outputStatus = ''ACTIVE'';
+  }
+  else if (inputStatus === ''entered-in-error'')
+  {
+    outputStatus = ''SKIPPED'';
+  }
+  else if (inputStatus === ''stopped'')
+  {
+    outputStatus = ''SKIPPED'';
+  }
+  return outputStatus;
+}
+output.setStatus(getOutputStatus(input));
+var items = input.getItem();
+for (var i = 0; i < items.size(); i++)
+{
+  var item = items.get(i);
+  var linkId = item.getLinkId();
+  var answerValue = getAnswerFirstValue(item);
+  var linkRef = context.createReference(linkId, ''id'');
+  if (programStage.getDataElement(linkRef) != null)
+  {
+    output.setValue(linkRef, answerValue);
+  }
+}
+true', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('330214dbec214cd5b0046592b8f1e2bf', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('2d5ec1318fbc44d395c52544f7ff284f', 0, '930a7e03b3224fd9ae0c0213949ac60f', 'Default FHIR Questionnaire Response to DHIS2 Event Transformation', 'DEFAULT_QR_F2D',
+        'Transforms FHIR Questionnaire Response to DHIS2 Event.');
+
+INSERT INTO fhir_resource_mapping(id, version, fhir_resource_type, tracked_entity_fhir_resource_type, imp_tei_lookup_script_id, imp_event_org_lookup_script_id, imp_event_date_lookup_script_id, imp_program_stage_ref_lookup_script_id,
+imp_enrollment_org_lookup_script_id, imp_enrollment_date_lookup_script_id)
+VALUES('417d0db376bc48bebc4223e7a7e663b0', 0, 'QUESTIONNAIRE_RESPONSE', 'PATIENT', '762b4137a98b4b10a0f5629d93e23461', '25a97bb47b394ed48677db4bcaa28ccf', '521b3a008ecc487ba7e3fe12b68e388a', '385e52d28674403db42586b5d4e9faf0',
+'25a97bb47b394ed48677db4bcaa28ccf', '521b3a008ecc487ba7e3fe12b68e388a');
+
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
+VALUES ('e113ec6ec61048aa9df2cf7739f40985', 0, 'Child Programme Birth Stage Questionnaire Response', NULL, TRUE, 0, 'QUESTIONNAIRE_RESPONSE', 'PROGRAM_STAGE_EVENT', '2d5ec1318fbc44d395c52544f7ff284f', TRUE, TRUE, TRUE, TRUE);
+INSERT INTO fhir_program_stage_rule (id, program_stage_id, enrollment_creation_enabled,event_creation_enabled)
+VALUES ('e113ec6ec61048aa9df2cf7739f40985','4c074c85be494b9d89739e16b9615dad', TRUE, TRUE);
