@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,16 @@ public class DhisEvents implements Serializable
     private static final long serialVersionUID = -5314790768013264322L;
 
     private List<Event> events;
+
+    public DhisEvents()
+    {
+        super();
+    }
+
+    public DhisEvents( List<Event> events )
+    {
+        this.events = events;
+    }
 
     public List<Event> getEvents()
     {

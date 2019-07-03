@@ -46,11 +46,44 @@ public class RequestCacheContextImpl implements RequestCacheContext
 {
     private final RequestCacheServiceImpl service;
 
-    private volatile Map<String, CacheManager> cacheManagers;
+    private Map<String, Object> attributes;
+
+    private Map<String, CacheManager> cacheManagers;
 
     public RequestCacheContextImpl( RequestCacheServiceImpl service )
     {
         this.service = service;
+    }
+
+    @Override
+    public void setAttribute( @Nonnull String name, Object value )
+    {
+        if ( attributes == null )
+        {
+            attributes = new HashMap<>();
+        }
+
+        attributes.put( name, value );
+    }
+
+    @Override
+    public <T> T getAttribute( @Nonnull String name, @Nonnull Class<? extends T> valueClass )
+    {
+        if ( attributes == null )
+        {
+            return null;
+        }
+
+        return valueClass.cast( attributes.get( name ) );
+    }
+
+    @Override
+    public void removeAttribute( @Nonnull String name )
+    {
+        if ( attributes != null )
+        {
+            attributes.remove( name );
+        }
     }
 
     @Nonnull
@@ -61,15 +94,19 @@ public class RequestCacheContextImpl implements RequestCacheContext
         {
             cacheManagers = new HashMap<>();
         }
+
         CacheManager cacheManager = cacheManagers.get( name );
+
         if ( cacheManager == null )
         {
             cacheManager = new ConcurrentMapCacheManager()
             {
 
             };
+
             cacheManagers.put( name, cacheManager );
         }
+
         return cacheManager;
     }
 

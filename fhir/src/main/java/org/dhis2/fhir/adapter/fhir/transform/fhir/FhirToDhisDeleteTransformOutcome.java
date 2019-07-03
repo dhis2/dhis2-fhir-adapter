@@ -48,7 +48,7 @@ public class FhirToDhisDeleteTransformOutcome<R extends DhisResource> extends Fh
 
     public FhirToDhisDeleteTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource, boolean delete )
     {
-        super( rule, resource );
+        super( rule, resource, false );
         this.delete = delete;
     }
 

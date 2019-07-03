@@ -93,6 +93,12 @@ public class WritableScriptedTrackedEntityInstance implements ScriptedTrackedEnt
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return trackedEntityInstance.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return false;

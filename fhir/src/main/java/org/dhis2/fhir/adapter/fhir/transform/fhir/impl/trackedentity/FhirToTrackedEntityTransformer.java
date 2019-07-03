@@ -170,7 +170,7 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
             Collections.singletonMap( RequiredValueType.ORG_UNIT_CODE, organizationUnit.get().getCode() ) );
         scriptedTrackedEntityInstance.validate();
 
-        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), trackedEntityInstance );
+        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), trackedEntityInstance, trackedEntityInstance.isNewResource() );
     }
 
     @Nullable

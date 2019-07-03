@@ -265,6 +265,12 @@ public class R4ProgramStageFhirToDhisTransformerUtilsTest
         }
 
         @Override
+        public boolean isLocal()
+        {
+            return false;
+        }
+
+        @Override
         public boolean isDeleted()
         {
             return false;

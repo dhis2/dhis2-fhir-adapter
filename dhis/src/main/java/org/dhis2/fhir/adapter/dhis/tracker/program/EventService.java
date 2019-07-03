@@ -36,7 +36,6 @@ import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -50,12 +49,12 @@ import java.util.function.Consumer;
 public interface EventService
 {
     @Nonnull
-    List<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
-        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
+    Collection<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
+        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
 
     @Nonnull
-    List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
-        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId );
+    Collection<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
 
     @Nonnull
     Optional<Event> findOneById( @Nonnull String eventId );

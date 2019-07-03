@@ -65,6 +65,12 @@ public class ImmutableScriptedEnrollment implements ScriptedEnrollment, Immutabl
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return delegate.isDeleted();

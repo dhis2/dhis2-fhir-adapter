@@ -92,6 +92,12 @@ public class OrganizationUnit implements DhisResource, Serializable
         // nothing to be done
     }
 
+    @Override
+    public boolean isLocal()
+    {
+        return false;
+    }
+
     @JsonIgnore
     @Override
     public boolean isDeleted()

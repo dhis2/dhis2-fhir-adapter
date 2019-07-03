@@ -58,6 +58,12 @@ public interface DhisResource extends Identifiable<String>, Serializable
     boolean isDeleted();
 
     /**
+     * @return if the resource has not yet been persisted on DHIS2 and exists
+     * non-persisted on adapter side only.
+     */
+    boolean isLocal();
+
+    /**
      * @return the timestamp when the resource has been updated the last time.
      */
     ZonedDateTime getLastUpdated();

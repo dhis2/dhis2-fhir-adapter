@@ -70,6 +70,12 @@ public class ImmutableProgramStage implements ProgramStage, ImmutableDhisObject,
         return delegate.getId();
     }
 
+    @Override
+    public void setId( String id )
+    {
+        throw new UnsupportedOperationException();
+    }
+
     @JsonIgnore
     @Override
     public String getCode()

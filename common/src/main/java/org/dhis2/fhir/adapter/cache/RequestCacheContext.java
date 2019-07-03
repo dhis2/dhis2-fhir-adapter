@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.cache;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,12 @@ import javax.annotation.Nonnull;
  */
 public interface RequestCacheContext extends AutoCloseable
 {
+    void setAttribute( @Nonnull String name, Object value );
+
+    <T> T getAttribute( @Nonnull String name, @Nonnull Class<? extends T> valueClass );
+
+    void removeAttribute( @Nonnull String name );
+
     @Nonnull
     CacheManager getCacheManager( @Nonnull String name );
 

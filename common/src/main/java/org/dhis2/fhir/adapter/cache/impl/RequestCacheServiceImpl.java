@@ -102,6 +102,39 @@ public class RequestCacheServiceImpl implements RequestCacheService
             this.requestCacheContext = requestCacheContext;
         }
 
+        @Override
+        public void setAttribute( @Nonnull String name, Object value )
+        {
+            if ( closed )
+            {
+                throw new IllegalStateException( "Request cache context has already been closed." );
+            }
+
+            requestCacheContext.setAttribute( name, value );
+        }
+
+        @Override
+        public <T> T getAttribute( @Nonnull String name, @Nonnull Class<? extends T> valueClass )
+        {
+            if ( closed )
+            {
+                throw new IllegalStateException( "Request cache context has already been closed." );
+            }
+
+            return requestCacheContext.getAttribute( name, valueClass );
+        }
+
+        @Override
+        public void removeAttribute( @Nonnull String name )
+        {
+            if ( closed )
+            {
+                throw new IllegalStateException( "Request cache context has already been closed." );
+            }
+
+            requestCacheContext.removeAttribute( name );
+        }
+
         @Nonnull
         @Override
         public CacheManager getCacheManager( @Nonnull String name )
@@ -110,6 +143,7 @@ public class RequestCacheServiceImpl implements RequestCacheService
             {
                 throw new IllegalStateException( "Request cache context has already been closed." );
             }
+
             return requestCacheContext.getCacheManager( name );
         }
 
@@ -120,6 +154,7 @@ public class RequestCacheServiceImpl implements RequestCacheService
             {
                 throw new IllegalStateException( "Request cache context has already been closed." );
             }
+
             closed = true;
         }
     }

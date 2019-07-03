@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,4 +39,12 @@ public interface Identifiable<T>
      * @return the unique identifier of the object.
      */
     T getId();
+
+    /**
+     * Sets the unique identifier. This operation may not be supported
+     * in every context and may throw an exception.
+     *
+     * @param id the unique identifier of the object.
+     */
+    void setId( T id );
 }

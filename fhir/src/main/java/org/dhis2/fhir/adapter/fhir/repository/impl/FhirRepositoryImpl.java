@@ -393,7 +393,7 @@ public class FhirRepositoryImpl implements FhirRepository
                 }
                 else
                 {
-                    final boolean created = outcome.getResource().isNewResource();
+                    final boolean created = outcome.isCreated();
                     final DhisResource persistedDhisResource = dhisResourceRepository.save( outcome.getResource() );
 
                     if ( fhirRepositoryOperation == null )

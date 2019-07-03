@@ -58,6 +58,9 @@ public class Enrollment implements TrackedEntityDhisResource, Serializable
     @JsonIgnore
     private boolean modified;
 
+    @JsonIgnore
+    private boolean local;
+
     @JsonProperty( "enrollment" )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
@@ -98,6 +101,7 @@ public class Enrollment implements TrackedEntityDhisResource, Serializable
     {
         this.newResource = newResource;
         this.modified = newResource;
+        this.local = newResource;
         this.events = new ArrayList<>();
     }
 
@@ -119,6 +123,22 @@ public class Enrollment implements TrackedEntityDhisResource, Serializable
     {
         this.newResource = false;
         this.modified = false;
+
+        if ( lastUpdated == null )
+        {
+            lastUpdated = ZonedDateTime.now();
+        }
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return local;
+    }
+
+    public void setLocal( boolean local )
+    {
+        this.local = local;
     }
 
     @Nonnull

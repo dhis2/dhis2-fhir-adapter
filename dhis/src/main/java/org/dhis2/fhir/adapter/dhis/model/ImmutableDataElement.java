@@ -66,6 +66,12 @@ public class ImmutableDataElement implements DataElement, ImmutableDhisObject, S
         return delegate.getId();
     }
 
+    @Override
+    public void setId( String id )
+    {
+        throw new UnsupportedOperationException();
+    }
+
     @JsonIgnore
     @Override
     public String getName()

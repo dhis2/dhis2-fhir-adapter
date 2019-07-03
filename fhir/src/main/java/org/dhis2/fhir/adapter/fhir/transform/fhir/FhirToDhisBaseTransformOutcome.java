@@ -48,10 +48,13 @@ public class FhirToDhisBaseTransformOutcome<R extends DhisResource> implements S
 
     private final R resource;
 
-    public FhirToDhisBaseTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
+    private final boolean created;
+
+    public FhirToDhisBaseTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource, boolean created )
     {
         this.rule = rule;
         this.resource = resource;
+        this.created = created;
     }
 
     @Nonnull
@@ -64,5 +67,10 @@ public class FhirToDhisBaseTransformOutcome<R extends DhisResource> implements S
     public R getResource()
     {
         return resource;
+    }
+
+    public boolean isCreated()
+    {
+        return created;
     }
 }

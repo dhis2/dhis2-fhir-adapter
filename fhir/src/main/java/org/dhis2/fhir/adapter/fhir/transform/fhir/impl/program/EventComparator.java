@@ -50,20 +50,26 @@ public class EventComparator implements Comparator<Event>
     public int compare( Event o1, Event o2 )
     {
         int value = o1.getStatus().compareTo( o2.getStatus() );
+
         if ( value != 0 )
         {
             return value;
         }
+
         value = o1.getEventDate().compareTo( o2.getEventDate() );
+
         if ( value != 0 )
         {
             return value;
         }
+
         value = ObjectUtils.compare( o1.getLastUpdated(), o2.getLastUpdated(), true );
+
         if ( value != 0 )
         {
             return value;
         }
-        return o1.getId().compareTo( o2.getId() );
+
+        return ObjectUtils.compare( o1.getId(), o2.getId(), true );
     }
 }

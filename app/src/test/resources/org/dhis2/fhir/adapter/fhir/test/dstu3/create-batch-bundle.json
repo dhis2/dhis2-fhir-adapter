@@ -1,0 +1,256 @@
+{
+  "resourceType": "Bundle",
+  "type": "batch",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:e6064e7a-f590-4da1-953d-0407356eb249",
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier",
+            "value": "PT_88589"
+          }
+        ],
+        "name": [
+          {
+            "family": "West",
+            "given": [
+              "Joe",
+              "Alan",
+              "Scott"
+            ]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "2018-11-11",
+        "address": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+                "extension": [
+                  {
+                    "url": "latitude",
+                    "valueDecimal": 8.4665341
+                  },
+                  {
+                    "url": "longitude",
+                    "valueDecimal": -13.262743
+                  }
+                ]
+              }
+            ],
+            "line": [
+              "Water Road 675",
+              "Apartment 62"
+            ],
+            "city": "Freetown",
+            "country": "Sierra Leone"
+          }
+        ],
+        "managingOrganization": {
+          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:e6064e7a-f590-4da1-953d-0407356eb240",
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://www.dhis2.org/dhis2fhiradapter/systems/patient-identifier",
+            "value": "PT_88588"
+          }
+        ],
+        "name": [
+          {
+            "family": "West",
+            "given": [
+              "Elizabeth"
+            ]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "2018-11-12",
+        "address": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
+                "extension": [
+                  {
+                    "url": "latitude",
+                    "valueDecimal": 8.4665341
+                  },
+                  {
+                    "url": "longitude",
+                    "valueDecimal": -13.262743
+                  }
+                ]
+              }
+            ],
+            "city": "Freetown",
+            "country": "Sierra Leone"
+          }
+        ],
+        "managingOrganization": {
+          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "70",
+        "meta": {
+          "versionId": "6",
+          "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "29463-7",
+              "display": "Weight"
+            }
+          ],
+          "text": "Any Body Weight Observations"
+        },
+        "subject": {
+          "reference": "urn:uuid:e6064e7a-f590-4da1-953d-0407356eb249"
+        },
+        "effectiveDateTime": "2018-11-11",
+        "performer": [
+          {
+            "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+          }
+        ],
+        "valueQuantity": {
+          "value": 3666.0,
+          "unit": "g",
+          "system": "http://unitsofmeasure.org",
+          "code": "g"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "73",
+        "meta": {
+          "versionId": "6",
+          "lastUpdated": "2018-11-19T21:31:14.644+01:00"
+        },
+        "contained": [
+          {
+            "resourceType": "Organization",
+            "id": "1",
+            "name": "Birth Unit",
+            "partOf": {
+              "reference": "Organization/21"
+            }
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "29463-7",
+              "display": "Weight"
+            }
+          ],
+          "text": "Any Body Weight Observations"
+        },
+        "subject": {
+          "reference": "urn:uuid:e6064e7a-f590-4da1-953d-0407356eb240"
+        },
+        "effectiveDateTime": "2018-11-12",
+        "performer": [
+          {
+            "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+          }
+        ],
+        "valueQuantity": {
+          "value": 3466.0,
+          "unit": "g",
+          "system": "http://unitsofmeasure.org",
+          "code": "g"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Immunization",
+        "status": "completed",
+        "vaccineCode": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/cvx",
+              "code": "02",
+              "display": "DTP"
+            }
+          ]
+        },
+        "patient": {
+          "reference": "urn:uuid:e6064e7a-f590-4da1-953d-0407356eb249"
+        },
+        "date": "2018-11-11T21:34:05+02:00",
+        "primarySource": true,
+        "location": {
+          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+        },
+        "vaccinationProtocol": [
+          {
+            "doseSequence": 2
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Immunization"
+      }
+    }
+  ]
+}

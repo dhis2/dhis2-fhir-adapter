@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
@@ -125,6 +126,9 @@ public class AbstractBundleResourceProviderTest
     private RequestCacheService requestCacheService;
 
     @Mock
+    private RequestCacheContext requestCacheContext;
+
+    @Mock
     private RequestDetails requestDetails;
 
     private FhirClient fhirClient = new FhirClient();
@@ -164,6 +168,7 @@ public class AbstractBundleResourceProviderTest
     public void processInternal() throws Exception
     {
         Mockito.when( bundleResourceProvider.getFhirVersion() ).thenReturn( FhirVersion.DSTU3 );
+        Mockito.when( requestCacheService.createRequestCacheContext() ).thenReturn( requestCacheContext );
 
         final FhirOperation invalidDeleteOperation = new FhirOperation( FhirOperationType.DELETE, FhirResourceType.PATIENT, null, null, null, null );
         invalidDeleteOperation.getResult().badRequest( "Invalid data included" );
@@ -270,6 +275,7 @@ public class AbstractBundleResourceProviderTest
     public void processInternalReferenceNotFound() throws Exception
     {
         Mockito.when( bundleResourceProvider.getFhirVersion() ).thenReturn( FhirVersion.DSTU3 );
+        Mockito.when( requestCacheService.createRequestCacheContext() ).thenReturn( requestCacheContext );
 
         final List<FhirOperation> operations = new ArrayList<>();
         operations.add( new FhirOperation( FhirOperationType.DELETE, FhirResourceType.PATIENT, patientClientResource, null, null,

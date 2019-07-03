@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -262,7 +263,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         event.setTrackedEntityInstance( trackedEntityInstance );
         scriptedProgramStageEvents.stream().filter( se -> se.isNewResource() || se.isModified() || se.isAnyDataValueModified() ).forEach( WritableScriptedEvent::validate );
 
-        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), event );
+        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), event, event.isNewResource() || oldEmpty );
     }
 
     @Nullable
@@ -800,6 +801,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         {
             return Collections.emptyList();
         }
+
         return events.stream().filter( e -> programStage.getId().equals( e.getProgramStageId() ) ).sorted( new EventComparator() )
             .map( e -> new WritableScriptedEvent( transformerContext, program, programStage, e, scriptedTrackedEntityInstance, valueConverter ) ).collect( Collectors.toList() );
     }
@@ -907,31 +909,37 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         lockManager.getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
             .lock( "in-te:" + trackedEntityInstance.getId() );
 
-        final Enrollment enrollment;
+        Enrollment enrollment;
         if ( sync || refreshed )
         {
-            enrollment = enrollmentService.findLatestActiveRefreshed( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
+            enrollment = enrollmentService.findLatestActiveRefreshed( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ), trackedEntityInstance.isLocal() ).orElse( null );
         }
         else
         {
-            enrollment = enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) ).orElse( null );
+            enrollment = enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ), trackedEntityInstance.isLocal() ).orElse( null );
         }
 
         List<Event> events = Collections.emptyList();
+
         if ( enrollment != null )
         {
+            final Collection<Event> foundEvents;
 
-            final List<Event> foundEvents;
+            // prevent modifying cached instance (especially included events)
+            enrollment = SerializationUtils.clone( enrollment );
+
             if ( refreshed )
             {
-                foundEvents = eventService.findRefreshed( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
+                foundEvents = eventService.findRefreshed( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId(), enrollment.isLocal() );
             }
             else
             {
-                foundEvents = eventService.find( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId() );
+                foundEvents = eventService.find( program.getId(), programStage.getId(), enrollment.getId(), trackedEntityInstance.getId(), enrollment.isLocal() );
             }
 
-            events = foundEvents.stream().peek( e -> e.setEnrollment( enrollment ) ).sorted( Collections.reverseOrder( new EventComparator() ) ).collect( Collectors.toList() );
+            final Enrollment _enrollment = enrollment;
+            events = foundEvents.stream().map( SerializationUtils::clone ).peek( e -> e.setEnrollment( _enrollment ) )
+                .sorted( Collections.reverseOrder( new EventComparator() ) ).collect( Collectors.toList() );
             enrollment.setEvents( events );
         }
 

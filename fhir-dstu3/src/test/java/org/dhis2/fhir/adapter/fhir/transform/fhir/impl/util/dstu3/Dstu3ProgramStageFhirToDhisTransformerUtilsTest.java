@@ -270,6 +270,12 @@ public class Dstu3ProgramStageFhirToDhisTransformerUtilsTest
             return false;
         }
 
+        @Override
+        public boolean isLocal()
+        {
+            return false;
+        }
+
         @Nullable
         @Override
         public ZonedDateTime getLastUpdated()

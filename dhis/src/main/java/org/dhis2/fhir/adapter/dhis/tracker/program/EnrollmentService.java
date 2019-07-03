@@ -41,19 +41,16 @@ import java.util.Optional;
 public interface EnrollmentService
 {
     @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
 
     @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId );
+    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
 
     @Nonnull
     Optional<Enrollment> findOneById( @Nonnull String id );
 
     @Nonnull
-    Enrollment create( @Nonnull Enrollment enrollment );
-
-    @Nonnull
-    Enrollment update( @Nonnull Enrollment enrollment );
+    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
 
     boolean delete( @Nonnull String enrollmentId );
 }
