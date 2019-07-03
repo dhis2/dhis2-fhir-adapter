@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,18 +30,24 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.io.IOUtils;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeDeserializer;
 import org.dhis2.fhir.adapter.jackson.ZonedDateTimeSerializer;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -72,6 +78,15 @@ public class EnrollmentServiceImplTest
 
     private EnrollmentService service;
 
+    @Mock
+    private EventService eventService;
+
+    @Mock
+    private RequestCacheService requestCacheService;
+
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
     @Before
     public void setUp()
     {
@@ -83,7 +98,7 @@ public class EnrollmentServiceImplTest
 
         restTemplate = new RestTemplateBuilder().rootUri( "http://localhost:8080/api" ).messageConverters( messageConverter ).build();
         mockServer = MockRestServiceServer.createServer( restTemplate );
-        service = new EnrollmentServiceImpl( restTemplate );
+        service = new EnrollmentServiceImpl( restTemplate, eventService, requestCacheService );
     }
 
     @Test
@@ -92,7 +107,7 @@ public class EnrollmentServiceImplTest
         mockServer.expect( requestTo( "http://localhost:8080/api/enrollments.json?program=93783&programStatus=ACTIVE&trackedEntityInstance=88737&ouMode=ACCESSIBLE&fields=:all&order=lastUpdated:desc&pageSize=1" ) )
             .andExpect( method( HttpMethod.GET ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/enrollments.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Enrollment> ou = service.findLatestActive( "93783", "88737" );
+        Optional<? extends Enrollment> ou = service.findLatestActive( "93783", "88737", false );
         Assert.assertTrue( ou.isPresent() );
 
         Assert.assertEquals( "N4cVHaUjfJO", ou.get().getId() );

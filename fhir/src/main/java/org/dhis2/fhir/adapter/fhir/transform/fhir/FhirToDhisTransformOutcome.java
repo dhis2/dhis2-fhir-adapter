@@ -46,15 +46,15 @@ public class FhirToDhisTransformOutcome<R extends DhisResource> extends FhirToDh
 
     private final FhirToDhisTransformerRequest nextTransformerRequest;
 
-    public FhirToDhisTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource )
+    public FhirToDhisTransformOutcome( @Nonnull AbstractRule rule, @Nonnull R resource, boolean created )
     {
-        super( rule, resource );
+        super( rule, resource, created );
         this.nextTransformerRequest = null;
     }
 
     public FhirToDhisTransformOutcome( @Nonnull FhirToDhisTransformOutcome<R> outcome, @Nullable FhirToDhisTransformerRequest nextTransformerRequest )
     {
-        super( outcome.getRule(), outcome.getResource() );
+        super( outcome.getRule(), outcome.getResource(), outcome.isCreated() );
         this.nextTransformerRequest = nextTransformerRequest;
     }
 

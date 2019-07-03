@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,16 @@ public class TrackedEntityInstances implements Serializable
     private static final long serialVersionUID = -129293730256216700L;
 
     private List<TrackedEntityInstance> trackedEntityInstances;
+
+    public TrackedEntityInstances()
+    {
+        super();
+    }
+
+    public TrackedEntityInstances( List<TrackedEntityInstance> trackedEntityInstances )
+    {
+        this.trackedEntityInstances = trackedEntityInstances;
+    }
 
     public List<TrackedEntityInstance> getTrackedEntityInstances()
     {

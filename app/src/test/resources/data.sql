@@ -1755,6 +1755,103 @@ VALUES ('b10bf5a234a24769a55ec7cffc895c93', 'R4');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code)
 VALUES ('e859a64f349d4e67bba0f2460e61fb6e', 0, '8a700412354c4c59aef2e996d52c36c3', 'Transforms Body Height FHIR Observation', 'TRANSFORM_BODY_HEIGHT_FHIR_OB');
 
+-- Script that performs the lookup of TEI FHIR Resource from FHIR Immunization
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('d4e2822a442246a3badccf5604c6e11f', 0, 'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.', 'EVALUATE', 'FHIR_RESOURCE', 'FHIR_IMMUNIZATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a442246a3badccf5604c6e11f', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('d4e2822a442246a3badccf5604c6e11f', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('85b3c4606c2a4f50af46ff09bf2e69df', 0, 'd4e2822a442246a3badccf5604c6e11f', 'referenceUtils.getResource(input.patient, ''PATIENT'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('85b3c4606c2a4f50af46ff09bf2e69df', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('85b3c4606c2a4f50af46ff09bf2e69df', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a08caa8a1cc94f51b6b8814af781a442', 0, 'd4e2822a442246a3badccf5604c6e11f',
+'Immunization TEI Lookup', 'IMMUNIZATION_TEI_LOOKUP', 'Lookup of the Tracked Entity Instance FHIR Resource from FHIR Immunization.');
+
+-- Script that extracts GEO location from Immunization
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('a5079830f04c4575af5d1d6fa0bf844b', 0, 'GEO Location from Immunization', 'EXTRACT_FHIR_IMMUNIZATION_GEO_LOCATION',
+'Extracts the GEO location form FHIR Immunization.',
+'EVALUATE', 'LOCATION', 'FHIR_IMMUNIZATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830f04c4575af5d1d6fa0bf844b', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('a5079830f04c4575af5d1d6fa0bf844b', 'INPUT');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('6427e6de84264ab1b66aedd5b0e5f410', 0, 'a5079830f04c4575af5d1d6fa0bf844b',
+'var location = null;
+var locationResource = referenceUtils.getResource(input.getLocation(), ''LOCATION'');
+if ((locationResource != null) && locationResource.hasPosition())
+{
+  var position = locationResource.getPosition();
+  location = geoUtils.create(position.getLongitude(), position.getLatitude());
+}
+location', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('6427e6de84264ab1b66aedd5b0e5f410', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('6427e6de84264ab1b66aedd5b0e5f410', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('298b4a7294ce4f4c83adc8d73436a402', 0, 'a5079830f04c4575af5d1d6fa0bf844b',  'GEO Location from Immunization', 'EXTRACT_FHIR_IMMUNIZATION_GEO_LOCATION',
+'Extracts the GEO location form FHIR Immunization.');
+
+-- Script that gets the exact date from FHIR Immunization
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('15c2a8b8b8f0443aaddacfb87a1a4378', 0, 'Immunization Date Lookup', 'IMMUNIZATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Immunization.', 'EVALUATE', 'DATE_TIME', 'FHIR_IMMUNIZATION', NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('15c2a8b8b8f0443aaddacfb87a1a4378', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('15c2a8b8b8f0443aaddacfb87a1a4378', 'INPUT');
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('71056dc16bd3491d908cc1494090ed65', 0, '15c2a8b8b8f0443aaddacfb87a1a4378', 'dateTimeUtils.getPreciseDate(input.hasDateElement() ? input.getDateElement() : null)', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
+VALUES ('71056dc16bd3491d908cc1494090ed65', 'DSTU3');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('c0e2c559ff8843768063031f971072dc', 0, '15c2a8b8b8f0443aaddacfb87a1a4378',
+'Immunization Date Lookup', 'IMMUNIZATION_DATE_LOOKUP', 'Lookup of the exact date of the FHIR Immunization.');
+
+INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
+VALUES ('f3d6c09761d748e0894e3ab30cad1299', 0, '15c2a8b8b8f0443aaddacfb87a1a4378', 'dateTimeUtils.getPreciseDate(input.hasOccurrence() ? input.getOccurrence() : null)', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version(script_source_id, fhir_version) VALUES ('f3d6c09761d748e0894e3ab30cad1299', 'R4');
+
+-- Script that extracts Organisation Unit Reference from Tracked Entity Instance
+INSERT INTO fhir_script (id, version, name, code, description, script_type, return_type, input_type, output_type)
+VALUES ('0e780e509a7e4d4aa9fd1b8607d17fbb', 0, 'Org Unit Reference Code from Patient Organization', 'EXTRACT_TEI_DHIS_ORG_UNIT_ID',
+'Extracts the organization unit ID reference from the tracked entity instance.', 'EVALUATE', 'ORG_UNIT_REF', NULL, NULL);
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('0e780e509a7e4d4aa9fd1b8607d17fbb', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('0e780e509a7e4d4aa9fd1b8607d17fbb', 'TRACKED_ENTITY_INSTANCE');
+INSERT INTO fhir_script_source (id, version, script_id, source_text, source_type) VALUES ('0cd71988e1164c11bed498ff608dbfb6', 0, '0e780e509a7e4d4aa9fd1b8607d17fbb',
+'context.createReference(trackedEntityInstance.organizationUnitId, ''ID'')', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('0cd71988e1164c11bed498ff608dbfb6', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('0cd71988e1164c11bed498ff608dbfb6', 'R4');
+INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
+VALUES ('a52945b594b948d49c49f67b43d9dfbc', 0, '0e780e509a7e4d4aa9fd1b8607d17fbb', 'Org Unit Reference Code from Patient Organization', 'EXTRACT_TEI_DHIS_ORG_UNIT_ID',
+'Extracts the organization unit ID reference from the tracked entity instance.');
+
+-- FHIR resource mapping for FHIR Immunization
+INSERT INTO fhir_resource_mapping (id,version,fhir_resource_type,tracked_entity_fhir_resource_type,imp_tei_lookup_script_id,imp_enrollment_org_lookup_script_id,imp_event_org_lookup_script_id,
+imp_enrollment_date_lookup_script_id,imp_event_date_lookup_script_id,imp_enrollment_geo_lookup_script_id,imp_event_geo_lookup_script_id,imp_effective_date_lookup_script_id)
+VALUES ('44a6c99cc83c4061acd239e4101de147', 0, 'IMMUNIZATION', 'PATIENT', 'a08caa8a1cc94f51b6b8814af781a442',
+'a52945b594b948d49c49f67b43d9dfbc', 'a52945b594b948d49c49f67b43d9dfbc',
+'c0e2c559ff8843768063031f971072dc', 'c0e2c559ff8843768063031f971072dc',
+'298b4a7294ce4f4c83adc8d73436a402', '298b4a7294ce4f4c83adc8d73436a402',
+'c0e2c559ff8843768063031f971072dc');
+
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('2601edcbf7bc4710ab640f4edd9a2378', 0, 'CVX (Vaccine Administered)', 'SYSTEM_CVX', 'http://hl7.org/fhir/sid/cvx',
+'Available at http://www2a.cdc.gov/vaccines/iis/iisstandards/vaccines.asp?rpt=cvx. Developed by The CDC''s National Center of Immunization and Respiratory Diseases (NCIRD).');
+
+INSERT INTO fhir_code_category (id, version, name, code, description)
+VALUES ('7090561ef45b411e99c065fa1d145018', 0, 'Vaccine', 'VACCINE', 'Available vaccines.');
+INSERT INTO fhir_code(id, version, code_category_id, name, code, description) VALUES ('f2f15a436c574d57a32dd12b468cef7e', 0, '7090561ef45b411e99c065fa1d145018', 'OPV', 'VACCINE_02', 'trivalent poliovirus vaccine, live, oral');
+INSERT INTO fhir_system_code(id, version, code_id, system_id, system_code, display_name, system_code_value) VALUES ('bca3b4584bb64fafa7e8d736adcafe82', 0, 'f2f15a436c574d57a32dd12b468cef7e', '2601edcbf7bc4710ab640f4edd9a2378', '02', 'OPV',
+'http://hl7.org/fhir/sid/cvx|02');
+
+-- Code set with all OPV vaccines
+INSERT INTO fhir_code_set(id, version, code_category_id, name, code, description)
+VALUES ('bf62319cd93c444da47cb91133b3f99a', 0, '7090561ef45b411e99c065fa1d145018', 'All OPV', 'ALL_OPV', 'All OPV vaccines.');
+INSERT INTO fhir_code_set_value(id, code_set_id, code_id, enabled)
+  SELECT uuid(), 'bf62319cd93c444da47cb91133b3f99a', id, true FROM fhir_code WHERE code IN ('VACCINE_02', 'VACCINE_179', 'VACCINE_178', 'VACCINE_182');
+
 -- Tracker Program Child Programme
 INSERT INTO fhir_tracker_program (id,version,name,program_ref,tracked_entity_rule_id,enabled,creation_enabled,creation_applicable_script_id,creation_script_id,enrollment_date_is_incident,tracked_entity_fhir_resource_type, exp_enabled, fhir_create_enabled,
 fhir_update_enabled, fhir_delete_enabled)
@@ -1778,6 +1875,47 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('a6636c83f23648cdbb2b592147db9a34', 0, 'Child Programme: Infant Weight', NULL, TRUE, 10, 'OBSERVATION', 'PROGRAM_STAGE_EVENT', 'd37dfecbce884fa49a7844ffe874c140', '0104ad19ba8248dcbbd138dd5f0d8a2c', TRUE, TRUE, TRUE, TRUE, '06005c16cbc84a50abb07b16140c109c');
 INSERT INTO fhir_program_stage_rule (id, program_stage_id, before_period_day_type, after_period_day_type, after_period_days,enrollment_creation_enabled,event_creation_enabled)
 VALUES ('a6636c83f23648cdbb2b592147db9a34','526b4e01774747efa25df32ccd739e87', 'ORIG_DUE_DATE', 'ORIG_DUE_DATE', 1,TRUE,TRUE);
+
+INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f18acd12bc854f79935d353904eadc0b', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'TRANSFORM_FHIR_IMMUNIZATION_OS', 'Transforms FHIR Immunization to option set data element', 'Transforms FHIR Immunization to an option set data element.',
+'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_IMMUNIZATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f18acd12bc854f79935d353904eadc0b', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f18acd12bc854f79935d353904eadc0b', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable) VALUES ('f18acd12bc854f79935d353904eadc0b', 'OUTPUT');
+INSERT INTO fhir_script_argument(id, version, created_at, last_updated_at, last_updated_by, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('44134ba8d77f4c4d90c6b434ffbe7958', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f18acd12bc854f79935d353904eadc0b',
+'dataElement', 'DATA_ELEMENT_REF', TRUE, FALSE, NULL, 'Data element with given vaccine on which option set value must be set.');
+INSERT INTO fhir_script_argument(id, version, created_at, last_updated_at, last_updated_by, script_id, name, data_type, mandatory, array_value, default_value, description)
+VALUES ('404ae6f6618749148f4b80a72764c1d8', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f18acd12bc854f79935d353904eadc0b',
+'optionValuePattern', 'PATTERN', FALSE, FALSE, NULL, 'Regular expression pattern to extract subsequent integer option value from option code. If the pattern is not specified the whole code will be used as an integer value.');
+INSERT INTO fhir_script_source (id, version, created_at, last_updated_at, last_updated_by, script_id, source_text, source_type)
+VALUES ('081c4642bb8344abb90faa206ad347aa', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f18acd12bc854f79935d353904eadc0b',
+'output.setIntegerOptionValue(args[''dataElement''], immunizationUtils.getMaxDoseSequence(input), 1, false, args[''optionValuePattern''], (input.hasPrimarySource()?!input.getPrimarySource():null))', 'JAVASCRIPT');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('081c4642bb8344abb90faa206ad347aa', 'DSTU3');
+INSERT INTO fhir_script_source_version (script_source_id, fhir_version)
+VALUES ('081c4642bb8344abb90faa206ad347aa', 'R4');
+
+INSERT INTO fhir_script (id, version, created_at, last_updated_at, last_updated_by, code, name, description, script_type, return_type, input_type, output_type)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'TEST', 'Test script', 'Test script.',
+        'TRANSFORM_TO_DHIS', 'BOOLEAN', 'FHIR_IMMUNIZATION', 'DHIS_EVENT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'CONTEXT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'INPUT');
+INSERT INTO fhir_script_variable (script_id, variable)
+VALUES ('f18acd12bc854f79935d353904eadc0c', 'OUTPUT');
+
+INSERT INTO fhir_executable_script (id, version, created_at, last_updated_at, last_updated_by, script_id, name, code, description)
+VALUES ('1a2950cf08424dd39453284fb08789d3', 0, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), '2h2maqu827d', 'f18acd12bc854f79935d353904eadc0b', 'CP: OPV Dose', 'CP_OPV_DOSE', 'Transforms FHIR Immunization for OPV vaccines.');
+INSERT INTO fhir_executable_script_argument(id, executable_script_id, script_argument_id, override_value, enabled)
+VALUES ('4a8ba21510e946f2921fda3973836119', '1a2950cf08424dd39453284fb08789d3', '44134ba8d77f4c4d90c6b434ffbe7958', 'CODE:DE_2006104', TRUE);
+
+-- Rule Tracker Program Child Programme, Birth: OPV Dose
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, applicable_imp_script_id, applicable_code_set_id, transform_imp_script_id)
+VALUES ('91ae6f5fdb07439197cd407a77794a1b', 0, 'Child Programme: OPV', NULL, TRUE, 0, 'IMMUNIZATION', 'PROGRAM_STAGE_EVENT', NULL, 'bf62319cd93c444da47cb91133b3f99a', '1a2950cf08424dd39453284fb08789d3');
+INSERT INTO fhir_program_stage_rule (id, program_stage_id,enrollment_creation_enabled,event_creation_enabled)
+VALUES ('91ae6f5fdb07439197cd407a77794a1b','4c074c85be494b9d89739e16b9615dad',TRUE,TRUE);
 
 -- Script that sets the FHIR observation to the status of the DHIS event
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type, input_type, output_type)
@@ -2892,3 +3030,12 @@ INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order
 VALUES ('e113ec6ec61048aa9df2cf7739f40985', 0, 'Child Programme Birth Stage Questionnaire Response', NULL, TRUE, 0, 'QUESTIONNAIRE_RESPONSE', 'PROGRAM_STAGE_EVENT', '2d5ec1318fbc44d395c52544f7ff284f', TRUE, TRUE, TRUE, TRUE);
 INSERT INTO fhir_program_stage_rule (id, program_stage_id, enrollment_creation_enabled,event_creation_enabled)
 VALUES ('e113ec6ec61048aa9df2cf7739f40985','4c074c85be494b9d89739e16b9615dad', TRUE, TRUE);
+
+-- Tracker Program Child Programme, Birth: OPV Dose
+INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
+SELECT 'e66efbcb7142445a8e1ad1ef524977c1', 0, id, 'CODE:DE_2006104', 'dataElement', true
+FROM fhir_rule
+WHERE id = '91ae6f5fdb07439197cd407a77794a1b';
+DELETE
+FROM fhir_executable_script_argument
+WHERE id = '4a8ba21510e946f2921fda3973836119';

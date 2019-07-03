@@ -99,6 +99,12 @@ public class JsonCachePropertyFilter extends SimpleBeanPropertyFilter
         }
 
         @Override
+        public void setId( UUID id )
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public UUID getId()
         {
             return uuid;

@@ -92,6 +92,12 @@ public class ImmutableScriptedOrganizationUnit implements ScriptedOrganizationUn
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return delegate.isDeleted();

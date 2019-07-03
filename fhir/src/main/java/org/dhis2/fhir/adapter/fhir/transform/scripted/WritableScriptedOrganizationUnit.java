@@ -67,6 +67,12 @@ public class WritableScriptedOrganizationUnit implements ScriptedOrganizationUni
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return organizationUnit.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return false;

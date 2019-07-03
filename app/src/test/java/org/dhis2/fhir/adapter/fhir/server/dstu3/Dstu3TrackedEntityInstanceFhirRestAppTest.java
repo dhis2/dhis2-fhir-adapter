@@ -50,6 +50,7 @@ import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import static org.dhis2.fhir.adapter.test.PatternMatcher.matchesPattern;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -314,7 +315,8 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
     public void createPatientInvalidAuthorization() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/*.json?strategy=CREATE" ) ) )
+            .andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
@@ -334,7 +336,7 @@ public class Dstu3TrackedEntityInstanceFhirRestAppTest extends AbstractTrackedEn
     public void createPatient() throws Exception
     {
         expectTrackedEntityMetadataRequests();
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances/*.json?strategy=CREATE" ) ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )

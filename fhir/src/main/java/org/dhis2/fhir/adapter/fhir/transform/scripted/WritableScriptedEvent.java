@@ -112,6 +112,12 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return event.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return event.isDeleted();

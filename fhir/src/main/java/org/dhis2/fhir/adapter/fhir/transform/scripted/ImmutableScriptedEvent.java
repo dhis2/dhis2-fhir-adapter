@@ -73,6 +73,12 @@ public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObjec
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return delegate.isDeleted();

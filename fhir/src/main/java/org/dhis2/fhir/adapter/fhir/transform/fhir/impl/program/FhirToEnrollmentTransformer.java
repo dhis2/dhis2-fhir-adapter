@@ -139,7 +139,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
 
-        return enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ) );
+        return enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ), trackedEntityInstance.isLocal() );
     }
 
     @Override
@@ -250,7 +250,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             scriptedEnrollment.validate();
         }
 
-        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), enrollment );
+        return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), enrollment, enrollment.isNewResource() );
     }
 
     @Override

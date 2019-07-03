@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.local.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The local DHIS2 resource and its state.
@@ -42,11 +43,14 @@ public class LocalDhisResource<T extends DhisResource>
 {
     private T resource;
 
+    private Object resourceKey;
+
     private LocalDhisResourceState state;
 
-    public LocalDhisResource( @Nonnull T resource, @Nonnull LocalDhisResourceState state )
+    public LocalDhisResource( @Nonnull T resource, @Nullable Object resourceKey, @Nonnull LocalDhisResourceState state )
     {
         this.resource = resource;
+        this.resourceKey = resourceKey;
         this.state = state;
     }
 
@@ -56,9 +60,20 @@ public class LocalDhisResource<T extends DhisResource>
         return resource;
     }
 
+    @Nullable
+    public Object getResourceKey()
+    {
+        return resourceKey;
+    }
+
     public void setResource( @Nonnull T resource )
     {
         this.resource = resource;
+    }
+
+    public void setResourceKey( Object resourceKey )
+    {
+        this.resourceKey = resourceKey;
     }
 
     @Nonnull

@@ -31,18 +31,25 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.util.CodeGenerator;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
@@ -61,6 +68,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -79,19 +87,23 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Service
-public class EventServiceImpl implements EventService
+public class EventServiceImpl implements EventService, LocalDhisRepositoryPersistCallback<Event>
 {
     protected static final String FIELDS =
         "deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated," +
             "dataValues[dataElement,value,providedElsewhere,lastUpdated,storedBy]";
 
-    protected static final String CREATE_URI = "/events.json?strategy=CREATE";
-
     protected static final String ID_URI = "/events/{id}.json";
 
     protected static final String FIND_ID_URI = "/events/{id}.json?fields=" + FIELDS;
 
+    protected static final String CREATE_URI = ID_URI + "?importStrategy=CREATE";
+
+    protected static final String CREATES_URI = "/events.json?importStrategy=CREATE";
+
     protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
+
+    protected static final String UPDATES_URI = "/events.json?importStrategy=UPDATE&mergeMode=MERGE";
 
     protected static final String UPDATE_DATA_VALUE_URI = "/events/{id}/{dataElementId}.json?mergeMode=MERGE";
 
@@ -108,18 +120,28 @@ public class EventServiceImpl implements EventService
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
+    private final LocalDhisResourceRepositoryTemplate<Event> resourceRepositoryTemplate;
+
     @Autowired
-    public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull PolledProgramRetriever polledProgramRetriever )
+    public EventServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull RequestCacheService requestCacheService, @Nonnull PolledProgramRetriever polledProgramRetriever )
     {
         this.restTemplate = restTemplate;
         this.polledProgramRetriever = polledProgramRetriever;
+
+        this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( Event.class, requestCacheService, this );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Override
     public boolean delete( @Nonnull String eventId )
     {
+        return resourceRepositoryTemplate.deleteById( eventId );
+    }
+
+    protected boolean _delete( @Nonnull String eventId )
+    {
         Event instance;
+
         try
         {
             restTemplate.delete( "/events/{id}", eventId );
@@ -130,9 +152,23 @@ public class EventServiceImpl implements EventService
             {
                 return false;
             }
+
             throw e;
         }
+
         return true;
+    }
+
+    @Override
+    public void persistDeleteById( @Nonnull Collection<String> ids, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean persistDeleteById( @Nonnull String id )
+    {
+        return _delete( id );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
@@ -141,17 +177,85 @@ public class EventServiceImpl implements EventService
     @CacheEvict( key = "{'find', #a0.programId, #a0.programStageId, #a0.enrollmentId, #a0.trackedEntityInstanceId}", cacheManager = "dhisCacheManager", cacheNames = "events" )
     public Event createOrMinimalUpdate( @Nonnull Event event )
     {
+        return resourceRepositoryTemplate.save( event );
+    }
+
+    protected Event _createOrMinimalUpdate( @Nonnull Event event )
+    {
         return event.isNewResource() ? create( event ) : minimalUpdate( event );
+    }
+
+    @Override
+    public void persistSave( @Nonnull Collection<Event> resources, boolean create, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
+    {
+        if ( resources.isEmpty() )
+        {
+            return;
+        }
+
+        final List<Event> events = new ArrayList<>( resources );
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new DhisEvents( events ), ImportSummaryWebMessage.class );
+
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final int size = events.size();
+
+        if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of events." );
+        }
+
+        for ( int i = 0; i < size; i++ )
+        {
+            final ImportSummary importSummary = result.getResponse().getImportSummaries().get( i );
+            final Event event = events.get( i );
+            final LocalDhisRepositoryPersistResult persistResult;
+
+            if ( importSummary.getStatus() == ImportStatus.ERROR )
+            {
+                persistResult = new LocalDhisRepositoryPersistResult( false, event, "Failed to persist tracked entity instance." );
+            }
+            else
+            {
+                event.resetNewResource();
+                event.setLocal( false );
+
+                persistResult = new LocalDhisRepositoryPersistResult( true, event );
+            }
+
+            if ( resultConsumer != null )
+            {
+                resultConsumer.accept( persistResult );
+            }
+        }
+    }
+
+    @Override
+    @Nonnull
+    public Event persistSave( @Nonnull Event resource )
+    {
+        return _createOrMinimalUpdate( resource );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
-    @CachePut( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
-    public List<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
+    @CachePut( key = "{'find', #a0, #a1, #a2, #a3}", condition = "#a4 == false", cacheManager = "dhisCacheManager", cacheNames = "events" )
+    public Collection<Event> findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
+        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId, boolean localOnly )
+    {
+        return resourceRepositoryTemplate.find( trackedEntityInstanceId,
+            e -> programId.equals( e.getProgramId() ) && programStageId.equals( e.getProgramStageId() ) && enrollmentId.equals( e.getEnrollmentId() ),
+            () -> _findRefreshed( programId, programStageId, enrollmentId, trackedEntityInstanceId ),
+            localOnly, "findRefreshed", programId, programStageId, enrollmentId, trackedEntityInstanceId );
+    }
+
+    @Nonnull
+    protected Collection<Event> _findRefreshed( @Nonnull String programId, @Nonnull String programStageId,
         @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
     {
         final ResponseEntity<DhisEvents> result = restTemplate.getForEntity( FIND_URI, DhisEvents.class, programId, trackedEntityInstanceId );
+
         return Objects.requireNonNull( result.getBody() ).getEvents().stream().filter( e -> enrollmentId.equals( e.getEnrollmentId() ) &&
             programStageId.equals( e.getProgramStageId() ) ).collect( Collectors.toList() );
     }
@@ -159,11 +263,11 @@ public class EventServiceImpl implements EventService
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
-    @Cacheable( key = "{'find', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "events" )
-    public List<Event> find( @Nonnull String programId, @Nonnull String programStageId,
-        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId )
+    @Cacheable( key = "{'find', #a0, #a1, #a2, #a3}", condition = "#a4 == false", cacheManager = "dhisCacheManager", cacheNames = "events" )
+    public Collection<Event> find( @Nonnull String programId, @Nonnull String programStageId,
+        @Nonnull String enrollmentId, @Nonnull String trackedEntityInstanceId, boolean localOnly )
     {
-        return findRefreshed( programId, programStageId, enrollmentId, trackedEntityInstanceId );
+        return findRefreshed( programId, programStageId, enrollmentId, trackedEntityInstanceId, localOnly );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -171,7 +275,13 @@ public class EventServiceImpl implements EventService
     @Override
     public Optional<Event> findOneById( @Nonnull String eventId )
     {
+        return resourceRepositoryTemplate.findOneById( eventId, this::_findOneById );
+    }
+
+    protected Event _findOneById( @Nonnull String eventId )
+    {
         Event instance;
+
         try
         {
             instance = Objects.requireNonNull( restTemplate.getForObject( FIND_ID_URI, Event.class, eventId ) );
@@ -180,11 +290,13 @@ public class EventServiceImpl implements EventService
         {
             if ( RestTemplateUtils.isNotFound( e ) )
             {
-                return Optional.empty();
+                return null;
             }
+
             throw e;
         }
-        return Optional.of( instance );
+
+        return instance;
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -214,9 +326,16 @@ public class EventServiceImpl implements EventService
     protected Event create( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
+
+        if ( event.getId() == null )
+        {
+            event.setId( CodeGenerator.generateUid() );
+        }
+
         try
         {
-            response = restTemplate.postForEntity( CREATE_URI, event, ImportSummaryWebMessage.class );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
+                ImportSummaryWebMessage.class, event.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -224,14 +343,21 @@ public class EventServiceImpl implements EventService
             {
                 throw new DhisConflictException( "Event could not be created: " + e.getResponseBodyAsString(), e );
             }
+
             throw e;
         }
+
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+
         if ( result.isNotSuccessful() )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful event import." );
         }
+
         event.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
+        event.resetNewResource();
+        event.setLocal( false );
+
         return event;
     }
 
@@ -239,6 +365,7 @@ public class EventServiceImpl implements EventService
     protected Event update( @Nonnull Event event )
     {
         final ResponseEntity<ImportSummaryWebMessage> response;
+
         try
         {
             response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
@@ -250,14 +377,18 @@ public class EventServiceImpl implements EventService
             {
                 throw new DhisConflictException( "Event could not be updated: " + e.getResponseBodyAsString(), e );
             }
+
             throw e;
         }
+
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+
         if ( result.getStatus() != Status.OK )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import: " +
                 result.getStatus() );
         }
+
         return event;
     }
 
@@ -310,6 +441,7 @@ public class EventServiceImpl implements EventService
             throw e;
         }
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+
         if ( result.getStatus() != Status.OK )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful event import: " +
@@ -324,8 +456,10 @@ public class EventServiceImpl implements EventService
         {
             return update( event );
         }
+
         event.getDataValues().stream().filter( DataValue::isModified ).forEach( dv ->
             update( new MinimalEvent( event, dv ) ) );
+
         return event;
     }
 }

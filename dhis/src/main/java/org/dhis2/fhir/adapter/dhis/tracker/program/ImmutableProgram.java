@@ -70,6 +70,12 @@ public class ImmutableProgram implements Program, ImmutableDhisObject, Serializa
         return delegate.getId();
     }
 
+    @Override
+    public void setId( String id )
+    {
+        throw new UnsupportedOperationException();
+    }
+
     @JsonIgnore
     @Override
     public String getName()

@@ -35,6 +35,13 @@ import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryContainer;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
+import org.dhis2.fhir.adapter.dhis.local.impl.LocalDhisResourceRepositoryContainerImpl;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
@@ -65,7 +72,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.dhis2.fhir.adapter.fhir.server.RepositoryExceptionInterceptor.UNPROCESSABLE_ENTITY_EXCEPTIONS;
 
@@ -80,6 +91,9 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     private final Logger log = LoggerFactory.getLogger( getClass() );
 
     private final RequestCacheService requestCacheService;
+
+    private static final Set<Class<? extends DhisResource>> SUPPORTED_REPOSITORY_CLASSES = Collections.unmodifiableSet(
+        new LinkedHashSet<>( Arrays.asList( TrackedEntityInstance.class, Enrollment.class, Event.class ) ) );
 
     public AbstractBundleResourceProvider(
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
@@ -121,17 +135,28 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         executeInSecurityContext( () -> {
             try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
             {
-                processDeletes( batchRequest );
-                processPuts( batchRequest, true );
-                processPosts( batchRequest );
-                processPuts( batchRequest, false );
+                // collects persistence operations in order to apply them at the end in an optimized way
+                final LocalDhisResourceRepositoryContainer repositoryContainer = new LocalDhisResourceRepositoryContainerImpl( SUPPORTED_REPOSITORY_CLASSES );
+                requestCacheContext.setAttribute( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME, repositoryContainer );
+
+                processDeletes( requestCacheContext, batchRequest );
+                processPuts( requestCacheContext, batchRequest, true );
+                processPosts( requestCacheContext, batchRequest );
+                processPuts( requestCacheContext, batchRequest, false );
+
+                repositoryContainer.apply( ( resource, resourceKey, result ) -> {
+                    if ( !result.isSuccess() && resourceKey instanceof FhirOperation )
+                    {
+                        ( (FhirOperation) resourceKey ).getResult().internalServerError( result.getMessage() );
+                    }
+                } );
             }
 
             return null;
         } );
     }
 
-    protected void processDeletes( @Nonnull FhirBatchRequest batchRequest )
+    protected void processDeletes( @Nonnull RequestCacheContext requestCacheContext, @Nonnull FhirBatchRequest batchRequest )
     {
         batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.DELETE && !o.isProcessed() ).forEach( o -> {
             try
@@ -142,6 +167,8 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 {
                     return;
                 }
+
+                requestCacheContext.setAttribute( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME, o );
 
                 if ( getFhirRepository().delete( o.getClientResource(), dhisFhirResourceId ) )
                 {
@@ -159,11 +186,13 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         } );
     }
 
-    protected void processPosts( @Nonnull FhirBatchRequest batchRequest )
+    protected void processPosts( @Nonnull RequestCacheContext requestCacheContext, @Nonnull FhirBatchRequest batchRequest )
     {
         batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.POST && !o.isProcessed() ).forEach( o -> {
             try
             {
+                requestCacheContext.setAttribute( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME, o );
+
                 final FhirRepositoryOperationOutcome outcome = getFhirRepository().save( o.getClientResource(), o.getResource(), new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE ) );
 
                 if ( outcome == null )
@@ -182,7 +211,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         } );
     }
 
-    protected void processPuts( @Nonnull FhirBatchRequest batchRequest, boolean createOnly )
+    protected void processPuts( @Nonnull RequestCacheContext requestCacheContext, @Nonnull FhirBatchRequest batchRequest, boolean createOnly )
     {
         batchRequest.getOperations().stream().filter( o -> o.getOperationType() == FhirOperationType.PUT &&
             !o.isProcessed() && ( !createOnly || hasConditionalReferenceUrl( o ) ) ).forEach( o -> {
@@ -219,6 +248,8 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                     o.getResource().setId( new IdDt( dhisFhirResourceId.toString() ) );
                     operationType = FhirRepositoryOperationType.UPDATE;
                 }
+
+                requestCacheContext.setAttribute( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME, o );
 
                 final FhirRepositoryOperationOutcome outcome = getFhirRepository().save( o.getClientResource(), o.getResource(),
                     new FhirRepositoryOperation( operationType ) );

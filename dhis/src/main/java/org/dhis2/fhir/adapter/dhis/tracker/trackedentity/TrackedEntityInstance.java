@@ -50,6 +50,9 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     @JsonIgnore
     private boolean newResource;
 
+    @JsonIgnore
+    private boolean local;
+
     @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
     private boolean deleted;
 
@@ -92,6 +95,7 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.typeId = type.getId();
         this.id = id;
         this.newResource = newResource;
+        this.local = newResource;
         this.modified = newResource;
 
         this.attributes = new ArrayList<>();
@@ -147,6 +151,22 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     {
         this.newResource = false;
         this.modified = false;
+
+        if ( lastUpdated == null )
+        {
+            lastUpdated = ZonedDateTime.now();
+        }
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return local;
+    }
+
+    public void setLocal( boolean local )
+    {
+        this.local = local;
     }
 
     public boolean isDeleted()
@@ -222,6 +242,11 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     public boolean containsAttribute( @Nonnull String attributeId )
     {
         return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) );
+    }
+
+    public boolean containsAttribute( @Nonnull String attributeId, @Nonnull String value )
+    {
+        return getAttributes().stream().anyMatch( a -> Objects.equals( attributeId, a.getAttributeId() ) && a.getValue() != null && Objects.equals( String.valueOf( a.getValue() ), value ) );
     }
 
     public boolean containsAttributeWithValue( @Nonnull String attributeId )

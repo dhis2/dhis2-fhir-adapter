@@ -1,0 +1,15 @@
+{
+  "status": "OK",
+  "response": {
+    "importSummaries": [
+      {
+        "status": "SUCCESS",
+        "reference": "ceR2Ul4mZfx"
+      },
+      {
+        "status": "SUCCESS",
+        "reference": "ceR2Ul4mZfy"
+      }
+    ]
+  }
+}

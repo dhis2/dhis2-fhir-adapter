@@ -188,7 +188,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
         {
             logger.info( "Creating new enrollment." );
             event.getEnrollment().setEvents( Collections.singletonList( event ) );
-            enrollmentService.create( event.getEnrollment() );
+            enrollmentService.createOrUpdate( event.getEnrollment() );
             logger.info( "Created new enrollment {} with new event {}.", event.getEnrollment().getId(), event.getId() );
             updated = true;
         }
@@ -198,7 +198,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             if ( event.getEnrollment().isModified() )
             {
                 logger.info( "Updating existing enrollment." );
-                event.setEnrollment( enrollmentService.update( event.getEnrollment() ) );
+                event.setEnrollment( enrollmentService.createOrUpdate( event.getEnrollment() ) );
                 logger.info( "Updated existing enrollment {}.", event.getEnrollment().getId() );
                 updated = true;
             }
@@ -233,14 +233,14 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
         if ( enrollment.isNewResource() )
         {
             logger.info( "Creating new enrollment." );
-            enrollmentService.create( enrollment );
+            enrollmentService.createOrUpdate( enrollment );
             logger.info( "Created new enrollment {}.", enrollment.getId() );
             updated = true;
         }
         else if ( enrollment.isModified() )
         {
             logger.info( "Updating existing enrollment." );
-            enrollmentService.update( enrollment );
+            enrollmentService.createOrUpdate( enrollment );
             logger.info( "Updated existing enrollment {}.", enrollment.getId() );
             updated = true;
         }

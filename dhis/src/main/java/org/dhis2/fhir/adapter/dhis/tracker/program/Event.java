@@ -56,6 +56,9 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
     @JsonIgnore
     private boolean newResource;
 
+    @JsonIgnore
+    private boolean local;
+
     @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
     private boolean deleted;
 
@@ -118,6 +121,7 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
     {
         this.newResource = newResource;
         this.modified = newResource;
+        this.local = newResource;
         this.dataValues = new ArrayList<>();
     }
 
@@ -147,6 +151,22 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
     {
         this.newResource = false;
         this.modified = false;
+
+        if ( lastUpdated == null )
+        {
+            lastUpdated = ZonedDateTime.now();
+        }
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return local;
+    }
+
+    public void setLocal( boolean local )
+    {
+        this.local = local;
     }
 
     public boolean isDeleted()

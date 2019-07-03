@@ -89,6 +89,12 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
     }
 
     @Override
+    public boolean isLocal()
+    {
+        return enrollment.isLocal();
+    }
+
+    @Override
     public boolean isDeleted()
     {
         return false;

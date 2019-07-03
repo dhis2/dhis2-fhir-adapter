@@ -56,6 +56,12 @@ public interface ScriptedDhisResource
 
     boolean isNewResource();
 
+    /**
+     * @return if the resource has not yet been persisted on DHIS2 and exists
+     * non-persisted on adapter side only.
+     */
+    boolean isLocal();
+
     boolean isDeleted();
 
     @Nullable

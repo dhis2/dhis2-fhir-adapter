@@ -30,15 +30,21 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
+import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.DhisResourceException;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
@@ -50,6 +56,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
+import org.dhis2.fhir.adapter.dhis.util.CodeGenerator;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
 import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
@@ -71,6 +78,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -90,7 +98,7 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Service
-public class TrackedEntityServiceImpl implements TrackedEntityService
+public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhisRepositoryPersistCallback<TrackedEntityInstance>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -100,7 +108,11 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
-    protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
+    protected static final String CREATE_URI = "/trackedEntityInstances/{id}.json?strategy=CREATE";
+
+    protected static final String CREATES_URI = "/trackedEntityInstances.json?strategy=CREATE";
+
+    protected static final String UPDATES_URI = "/trackedEntityInstances.json?strategy=UPDATE&mergeMode=MERGE";
 
     protected static final String ID_URI = "/trackedEntityInstances/{id}.json?fields=" + TEI_FIELDS;
 
@@ -124,12 +136,17 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
 
     private final ZoneId zoneId = ZoneId.systemDefault();
 
+    private final LocalDhisResourceRepositoryTemplate<TrackedEntityInstance> resourceRepositoryTemplate;
+
     @Autowired
-    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull StoredDhisResourceService storedItemService )
+    public TrackedEntityServiceImpl( @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate restTemplate, @Nonnull RequestCacheService requestCacheService,
+        @Nonnull TrackedEntityMetadataService metadataService, @Nonnull StoredDhisResourceService storedItemService )
     {
         this.restTemplate = restTemplate;
         this.metadataService = metadataService;
         this.storedItemService = storedItemService;
+
+        this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( TrackedEntityInstance.class, requestCacheService, this );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
@@ -169,7 +186,14 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @CachePut( key = "{'findOneById', #a0}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances" )
     public Optional<TrackedEntityInstance> findOneByIdRefreshed( @Nonnull String id )
     {
+        return resourceRepositoryTemplate.findOneById( id, this::_findOneByIdRefreshed );
+    }
+
+    @Nullable
+    protected TrackedEntityInstance _findOneByIdRefreshed( @Nonnull String id )
+    {
         TrackedEntityInstance instance;
+
         try
         {
             instance = Objects.requireNonNull( restTemplate.getForObject( ID_URI, TrackedEntityInstance.class, id ) );
@@ -178,11 +202,13 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
         {
             if ( RestTemplateUtils.isNotFound( e ) )
             {
-                return Optional.empty();
+                return null;
             }
+
             throw e;
         }
-        return Optional.of( instance );
+
+        return instance;
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -200,11 +226,20 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @CachePut( key = "{'findByAttrValue', #a0, #a1, #a2, #a3}", cacheManager = "dhisCacheManager", cacheNames = "trackedEntityInstances", unless = "#result.size() == 0" )
     public Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
     {
+        return resourceRepositoryTemplate.find( tei -> Objects.equals( tei.getTypeId(), typeId ) && tei.containsAttribute( attributeId, value ),
+            () -> _findByAttrValueRefreshed( typeId, attributeId, value, maxResult ),
+            false, "findByAttrValueRefreshed", typeId, attributeId, value, maxResult );
+    }
+
+    @Nonnull
+    protected Collection<TrackedEntityInstance> _findByAttrValueRefreshed( @Nonnull String typeId, @Nonnull String attributeId, @Nonnull String value, int maxResult )
+    {
         // filtering by values with a colon inside is not supported by DHIS2 Web API
         if ( value.contains( ":" ) )
         {
             return Collections.emptyList();
         }
+
         return Objects.requireNonNull( restTemplate.getForEntity( FIND_BY_ATTR_VALUE_URI, TrackedEntityInstances.class, typeId, attributeId, value, maxResult )
             .getBody() ).getTrackedEntityInstances();
     }
@@ -230,14 +265,85 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     @Override
     public TrackedEntityInstance createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
     {
+        return resourceRepositoryTemplate.save( trackedEntityInstance );
+    }
+
+    @Nonnull
+    protected TrackedEntityInstance _createOrUpdate( @Nonnull TrackedEntityInstance trackedEntityInstance )
+    {
         return trackedEntityInstance.isNewResource() ? create( trackedEntityInstance ) : update( trackedEntityInstance );
+    }
+
+    @Override
+    public void persistSave( @Nonnull Collection<TrackedEntityInstance> resources, boolean create, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
+    {
+        if ( resources.isEmpty() )
+        {
+            return;
+        }
+
+        final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
+            .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
+        final List<TrackedEntityInstance> trackedEntityInstances = new ArrayList<>( resources );
+
+        trackedEntityInstances.forEach( this::clear );
+
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummaryWebMessage.class );
+
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final int size = trackedEntityInstances.size();
+
+        if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instances." );
+        }
+
+        for ( int i = 0; i < size; i++ )
+        {
+            final ImportSummary importSummary = result.getResponse().getImportSummaries().get( i );
+            final TrackedEntityInstance trackedEntityInstance = trackedEntityInstances.get( i );
+            final LocalDhisRepositoryPersistResult persistResult;
+
+            if ( importSummary.getStatus() == ImportStatus.ERROR )
+            {
+                persistResult = new LocalDhisRepositoryPersistResult( false, trackedEntityInstance, "Failed to persist tracked entity instance." );
+            }
+            else
+            {
+                trackedEntityInstance.resetNewResource();
+                trackedEntityInstance.setLocal( false );
+
+                storeItem( syncGroup, trackedEntityInstance.getId(), response );
+
+                persistResult = new LocalDhisRepositoryPersistResult( true, trackedEntityInstance );
+            }
+
+            if ( resultConsumer != null )
+            {
+                resultConsumer.accept( persistResult );
+            }
+        }
+    }
+
+    @Override
+    @Nonnull
+    public TrackedEntityInstance persistSave( @Nonnull TrackedEntityInstance resource )
+    {
+        return _createOrUpdate( resource );
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Override
     public boolean delete( @Nonnull String trackedEntityInstanceId )
     {
+        return resourceRepositoryTemplate.deleteById( trackedEntityInstanceId );
+    }
+
+    protected boolean _delete( @Nonnull String trackedEntityInstanceId )
+    {
         Event instance;
+
         try
         {
             restTemplate.delete( "/trackedEntityInstances/{id}", trackedEntityInstanceId );
@@ -250,7 +356,20 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             }
             throw e;
         }
+
         return true;
+    }
+
+    @Override
+    public void persistDeleteById( @Nonnull Collection<String> ids, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
+    {
+
+    }
+
+    @Override
+    public boolean persistDeleteById( @Nonnull String id )
+    {
+        return _delete( id );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -290,13 +409,17 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
     {
         final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
-
         final ResponseEntity<ImportSummaryWebMessage> response;
+
+        if ( trackedEntityInstance.getId() == null )
+        {
+            trackedEntityInstance.setId( CodeGenerator.generateUid() );
+        }
+
         try
         {
             clear( trackedEntityInstance );
-            response = restTemplate.postForEntity( (trackedEntityInstance.getId() == null) ? CREATE_URI : ID_URI,
-                trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+            response = restTemplate.postForEntity( CREATE_URI, trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -304,15 +427,20 @@ public class TrackedEntityServiceImpl implements TrackedEntityService
             {
                 throw new DhisConflictException( "Tracked tracked entity instance could not be created: " + e.getResponseBodyAsString(), e );
             }
+
             throw e;
         }
+
         final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+
         if ( result.isNotSuccessful() )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance." );
         }
-        trackedEntityInstance.setNewResource( false );
+
         trackedEntityInstance.setId( result.getResponse().getImportSummaries().get( 0 ).getReference() );
+        trackedEntityInstance.resetNewResource();
+        trackedEntityInstance.setLocal( false );
 
         storeItem( syncGroup, trackedEntityInstance.getId(), response );
         return trackedEntityInstance;
