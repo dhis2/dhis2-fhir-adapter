@@ -6,4 +6,4 @@ List of significant contributions in the past:
 
 | Date | Author | Type |
 |------|--------|------|
-| 2019 June | ITINORDIG, Norwary | FHIR CarePlan and FHIR QuestionnaireResponse Resources for FHIR Subscription Import |
+| 2019 June | ITINORDIC, Norwary | FHIR CarePlan and FHIR QuestionnaireResponse Resources for FHIR Subscription Import |
