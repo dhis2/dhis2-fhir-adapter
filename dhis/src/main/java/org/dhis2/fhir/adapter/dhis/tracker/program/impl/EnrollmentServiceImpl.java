@@ -29,13 +29,16 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
@@ -63,7 +66,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,6 +73,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link EnrollmentService}.
@@ -87,11 +90,13 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
     protected static final String ENROLLMENT_CREATE_URI = "/enrollments/{id}.json?importStrategy=CREATE";
 
-    protected static final String ENROLLMENT_CREATES_URI = "/enrollments.json?importStrategy=CREATE";
+    protected static final String ENROLLMENT_CREATES_URI = "/enrollments.json?strategy=CREATE";
 
     protected static final String ENROLLMENT_UPDATE_URI = "/enrollments/{id}.json?mergeMode=MERGE";
 
-    protected static final String ENROLLMENT_UPDATES_URI = "/enrollments.json?importStrategy=CREATE&mergeMode=MERGE";
+    protected static final String ENROLLMENT_UPDATES_URI = "/enrollments.json?strategy=UPDATE&mergeMode=MERGE";
+
+    protected static final String ENROLLMENT_DELETES_URI = "/enrollments.json?strategy=DELETE";
 
     protected static final String LATEST_ACTIVE_URI = "/enrollments.json?" +
         "program={programId}&programStatus=ACTIVE&trackedEntityInstance={trackedEntityInstanceId}&" +
@@ -276,7 +281,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
     protected Enrollment _update( @Nonnull Enrollment enrollment )
     {
         // update of included events is not supported
-        enrollment.setEvents( new ArrayList<>() );
+        enrollment.setEvents( Collections.emptyList() );
 
         final ResponseEntity<ImportSummaryWebMessage> response;
         try
@@ -319,8 +324,8 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
             return;
         }
 
-        final List<Enrollment> enrollments = new ArrayList<>( resources );
-        enrollments.forEach( e -> e.setEvents( null ) );
+        final List<Enrollment> enrollments = resources.stream().sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
+        enrollments.forEach( e -> e.setEvents( Collections.emptyList() ) );
 
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.postForEntity( create ? ENROLLMENT_CREATES_URI : ENROLLMENT_UPDATES_URI, new DhisEnrollments( enrollments ), ImportSummaryWebMessage.class );
@@ -341,14 +346,15 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
             if ( importSummary.getStatus() == ImportStatus.ERROR )
             {
-                persistResult = new LocalDhisRepositoryPersistResult( false, enrollment, "Failed to persist tracked entity instance." );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, enrollment.getId(),
+                    StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to persist enrollment." ) );
             }
             else
             {
                 enrollment.resetNewResource();
                 enrollment.setLocal( false );
 
-                persistResult = new LocalDhisRepositoryPersistResult( true, enrollment );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, enrollment.getId() );
             }
 
             if ( resultConsumer != null )
@@ -369,7 +375,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
     @Override
     public boolean delete( @Nonnull String enrollmentId )
     {
-        return resourceRepositoryTemplate.deleteById( enrollmentId );
+        return resourceRepositoryTemplate.deleteById( enrollmentId, Enrollment::new );
     }
 
     protected boolean _delete( @Nonnull String enrollmentId )
@@ -394,7 +400,49 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
     @Override
     public void persistDeleteById( @Nonnull Collection<String> ids, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
     {
-        throw new UnsupportedOperationException();
+        if ( ids.isEmpty() )
+        {
+            return;
+        }
+
+        final List<Enrollment> Enrollments = ids.stream().map( Enrollment::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.postForEntity( ENROLLMENT_DELETES_URI, new DhisEnrollments( Enrollments ), ImportSummaryWebMessage.class );
+
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final int size = Enrollments.size();
+
+        if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful deletion of enrollment." );
+        }
+
+        if ( resultConsumer != null )
+        {
+            for ( int i = 0; i < size; i++ )
+            {
+                final ImportSummary importSummary = result.getResponse().getImportSummaries().get( i );
+                final Enrollment enrollment = Enrollments.get( i );
+                final LocalDhisRepositoryPersistResult persistResult;
+
+                if ( importSummary.getStatus() == ImportStatus.ERROR )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, enrollment.getId(),
+                        org.apache.commons.lang.StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to delete enrollment." ) );
+                }
+                else if ( importSummary.getImportCount().getDeleted() == 0 )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.NOT_FOUND, enrollment.getId(),
+                        org.apache.commons.lang.StringUtils.defaultIfBlank( importSummary.getDescription(), "Could not find enrollment." ) );
+                }
+                else
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, enrollment.getId() );
+                }
+
+                resultConsumer.accept( persistResult );
+            }
+        }
     }
 
     @Override

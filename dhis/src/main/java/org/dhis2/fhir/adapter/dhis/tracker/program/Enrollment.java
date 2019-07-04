@@ -90,11 +90,18 @@ public class Enrollment implements TrackedEntityDhisResource, Serializable
 
     private Location coordinate;
 
+    @JsonProperty
+    @JsonInclude( JsonInclude.Include.NON_NULL )
     private List<Event> events;
 
     public Enrollment()
     {
         super();
+    }
+
+    public Enrollment( @Nonnull String id )
+    {
+        this.id = id;
     }
 
     public Enrollment( boolean newResource )

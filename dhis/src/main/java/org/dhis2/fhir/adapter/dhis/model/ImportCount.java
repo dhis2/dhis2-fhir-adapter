@@ -31,77 +31,59 @@ package org.dhis2.fhir.adapter.dhis.model;
 import java.io.Serializable;
 
 /**
- * The import summary that are returned by DHIS2 resources when creating and
- * updating DHIS2 resources.
+ * The number of created, updated, deleted and ignored items.
  *
  * @author volsch
  */
-public class ImportSummary implements Serializable
+public class ImportCount implements Serializable
 {
-    private static final long serialVersionUID = 7288145633970043285L;
+    private static final long serialVersionUID = 8195944870718690061L;
 
-    private ImportStatus status;
+    private int created;
 
-    private String description;
+    private int updated;
 
-    private ImportCount importCount;
+    private int deleted;
 
-    private String reference;
+    private int ignored;
 
-    private ImportSummaries events;
-
-    public ImportStatus getStatus()
+    public int getCreated()
     {
-        return status;
+        return created;
     }
 
-    public void setStatus( ImportStatus status )
+    public void setCreated( int created )
     {
-        this.status = status;
+        this.created = created;
     }
 
-    public String getReference()
+    public int getUpdated()
     {
-        return reference;
+        return updated;
     }
 
-    public void setReference( String reference )
+    public void setUpdated( int updated )
     {
-        this.reference = reference;
+        this.updated = updated;
     }
 
-    public ImportSummaries getEvents()
+    public int getDeleted()
     {
-        return events;
+        return deleted;
     }
 
-    public void setEvents( ImportSummaries events )
+    public void setDeleted( int deleted )
     {
-        this.events = events;
+        this.deleted = deleted;
     }
 
-    public String getDescription()
+    public int getIgnored()
     {
-        return description;
+        return ignored;
     }
 
-    public void setDescription( String description )
+    public void setIgnored( int ignored )
     {
-        this.description = description;
-    }
-
-    public ImportCount getImportCount()
-    {
-        if ( importCount == null )
-        {
-            importCount = new ImportCount();
-        }
-
-        return importCount;
-    }
-
-    public void setImportCount( ImportCount importCount )
-    {
-        this.importCount = importCount;
+        this.ignored = ignored;
     }
 }

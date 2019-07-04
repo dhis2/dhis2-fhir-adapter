@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -50,7 +51,7 @@ public interface LocalDhisResourceRepository<T extends DhisResource>
     @Nonnull
     T save( @Nonnull T resource, @Nullable Object resourceKey );
 
-    boolean deleteById( @Nonnull String id, @Nullable Object resourceKey );
+    boolean deleteById( @Nonnull String id, @Nullable Object resourceKey, @Nonnull Function<String, T> prototypeFunction );
 
     boolean containsCollectionKey( @Nonnull String key );
 

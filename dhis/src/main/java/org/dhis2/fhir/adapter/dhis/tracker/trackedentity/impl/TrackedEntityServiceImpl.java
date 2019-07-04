@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.commons.lang.StringUtils;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
@@ -38,8 +39,10 @@ import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.DhisResourceException;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -113,6 +116,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
     protected static final String CREATES_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String UPDATES_URI = "/trackedEntityInstances.json?strategy=UPDATE&mergeMode=MERGE";
+
+    protected static final String DELETES_URI = "/trackedEntityInstances.json?strategy=DELETE";
 
     protected static final String ID_URI = "/trackedEntityInstances/{id}.json?fields=" + TEI_FIELDS;
 
@@ -284,7 +289,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
         final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
-        final List<TrackedEntityInstance> trackedEntityInstances = new ArrayList<>( resources );
+        final List<TrackedEntityInstance> trackedEntityInstances = resources.stream().sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
 
         trackedEntityInstances.forEach( this::clear );
 
@@ -307,7 +312,8 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
             if ( importSummary.getStatus() == ImportStatus.ERROR )
             {
-                persistResult = new LocalDhisRepositoryPersistResult( false, trackedEntityInstance, "Failed to persist tracked entity instance." );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, trackedEntityInstance.getId(),
+                    StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to persist enrollment." ) );
             }
             else
             {
@@ -316,7 +322,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
                 storeItem( syncGroup, trackedEntityInstance.getId(), response );
 
-                persistResult = new LocalDhisRepositoryPersistResult( true, trackedEntityInstance );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, trackedEntityInstance.getId() );
             }
 
             if ( resultConsumer != null )
@@ -337,7 +343,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
     @Override
     public boolean delete( @Nonnull String trackedEntityInstanceId )
     {
-        return resourceRepositoryTemplate.deleteById( trackedEntityInstanceId );
+        return resourceRepositoryTemplate.deleteById( trackedEntityInstanceId, TrackedEntityInstance::new );
     }
 
     protected boolean _delete( @Nonnull String trackedEntityInstanceId )
@@ -363,7 +369,49 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
     @Override
     public void persistDeleteById( @Nonnull Collection<String> ids, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
     {
+        if ( ids.isEmpty() )
+        {
+            return;
+        }
 
+        final List<TrackedEntityInstance> trackedEntityInstances = ids.stream().map( TrackedEntityInstance::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.postForEntity( DELETES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummaryWebMessage.class );
+
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final int size = trackedEntityInstances.size();
+
+        if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful deletion of tracked entity instances." );
+        }
+
+        if ( resultConsumer != null )
+        {
+            for ( int i = 0; i < size; i++ )
+            {
+                final ImportSummary importSummary = result.getResponse().getImportSummaries().get( i );
+                final TrackedEntityInstance trackedEntityInstance = trackedEntityInstances.get( i );
+                final LocalDhisRepositoryPersistResult persistResult;
+
+                if ( importSummary.getStatus() == ImportStatus.ERROR )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, trackedEntityInstance.getId(),
+                        StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to delete tracked entity instance." ) );
+                }
+                else if ( importSummary.getImportCount().getDeleted() == 0 )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.NOT_FOUND, trackedEntityInstance.getId(),
+                        StringUtils.defaultIfBlank( importSummary.getDescription(), "Could not find tracked entity instance." ) );
+                }
+                else
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, trackedEntityInstance.getId() );
+                }
+
+                resultConsumer.accept( persistResult );
+            }
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.dhis.local;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,80 +28,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
-
 /**
- * The import summary that are returned by DHIS2 resources when creating and
- * updating DHIS2 resources.
+ * The status of a persist.
  *
  * @author volsch
  */
-public class ImportSummary implements Serializable
+public enum LocalDhisRepositoryPersistStatus
 {
-    private static final long serialVersionUID = 7288145633970043285L;
-
-    private ImportStatus status;
-
-    private String description;
-
-    private ImportCount importCount;
-
-    private String reference;
-
-    private ImportSummaries events;
-
-    public ImportStatus getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus( ImportStatus status )
-    {
-        this.status = status;
-    }
-
-    public String getReference()
-    {
-        return reference;
-    }
-
-    public void setReference( String reference )
-    {
-        this.reference = reference;
-    }
-
-    public ImportSummaries getEvents()
-    {
-        return events;
-    }
-
-    public void setEvents( ImportSummaries events )
-    {
-        this.events = events;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription( String description )
-    {
-        this.description = description;
-    }
-
-    public ImportCount getImportCount()
-    {
-        if ( importCount == null )
-        {
-            importCount = new ImportCount();
-        }
-
-        return importCount;
-    }
-
-    public void setImportCount( ImportCount importCount )
-    {
-        this.importCount = importCount;
-    }
+    SUCCESS, ERROR, NOT_FOUND
 }

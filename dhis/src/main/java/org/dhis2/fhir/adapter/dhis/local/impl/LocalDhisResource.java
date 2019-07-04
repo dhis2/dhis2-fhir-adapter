@@ -47,6 +47,12 @@ public class LocalDhisResource<T extends DhisResource>
 
     private LocalDhisResourceState state;
 
+    public LocalDhisResource( @Nonnull T resource )
+    {
+        this.resource = resource;
+        this.state = LocalDhisResourceState.FOUND;
+    }
+
     public LocalDhisResource( @Nonnull T resource, @Nullable Object resourceKey, @Nonnull LocalDhisResourceState state )
     {
         this.resource = resource;

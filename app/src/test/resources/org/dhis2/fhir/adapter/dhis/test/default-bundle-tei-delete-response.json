@@ -1,0 +1,23 @@
+{
+  "status": "OK",
+  "response": {
+    "importSummaries": [
+      {
+        "status": "SUCCESS",
+        "importCount": {
+          "deleted": 1
+        }
+      },
+      {
+        "status": "ERROR",
+        "description": "TEI is still being referenced."
+      },
+      {
+        "status": "SUCCESS",
+        "importCount": {
+          "deleted": 0
+        }
+      }
+    ]
+  }
+}
