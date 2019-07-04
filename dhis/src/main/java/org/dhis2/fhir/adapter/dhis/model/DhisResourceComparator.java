@@ -28,80 +28,22 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.Serializable;
+import org.apache.commons.lang3.ObjectUtils;
+
+import java.util.Comparator;
 
 /**
- * The import summary that are returned by DHIS2 resources when creating and
- * updating DHIS2 resources.
+ * Sorts DHIS resources according to their ID alphabetically.
  *
  * @author volsch
  */
-public class ImportSummary implements Serializable
+public class DhisResourceComparator implements Comparator<DhisResource>
 {
-    private static final long serialVersionUID = 7288145633970043285L;
+    public static final DhisResourceComparator INSTANCE = new DhisResourceComparator();
 
-    private ImportStatus status;
-
-    private String description;
-
-    private ImportCount importCount;
-
-    private String reference;
-
-    private ImportSummaries events;
-
-    public ImportStatus getStatus()
+    @Override
+    public int compare( DhisResource o1, DhisResource o2 )
     {
-        return status;
-    }
-
-    public void setStatus( ImportStatus status )
-    {
-        this.status = status;
-    }
-
-    public String getReference()
-    {
-        return reference;
-    }
-
-    public void setReference( String reference )
-    {
-        this.reference = reference;
-    }
-
-    public ImportSummaries getEvents()
-    {
-        return events;
-    }
-
-    public void setEvents( ImportSummaries events )
-    {
-        this.events = events;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription( String description )
-    {
-        this.description = description;
-    }
-
-    public ImportCount getImportCount()
-    {
-        if ( importCount == null )
-        {
-            importCount = new ImportCount();
-        }
-
-        return importCount;
-    }
-
-    public void setImportCount( ImportCount importCount )
-    {
-        this.importCount = importCount;
+        return ObjectUtils.compare( o1 == null ? null : o1.getId(), o2 == null ? null : o2.getId() );
     }
 }

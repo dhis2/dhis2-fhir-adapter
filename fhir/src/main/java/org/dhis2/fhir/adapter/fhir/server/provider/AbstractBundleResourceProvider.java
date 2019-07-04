@@ -35,6 +35,7 @@ import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryContainer;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.local.impl.LocalDhisResourceRepositoryContainerImpl;
@@ -145,9 +146,18 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
                 processPuts( requestCacheContext, batchRequest, false );
 
                 repositoryContainer.apply( ( resource, resourceKey, result ) -> {
-                    if ( !result.isSuccess() && resourceKey instanceof FhirOperation )
+                    if ( result.getStatus() != LocalDhisRepositoryPersistStatus.SUCCESS && resourceKey instanceof FhirOperation )
                     {
-                        ( (FhirOperation) resourceKey ).getResult().internalServerError( result.getMessage() );
+                        final FhirOperation fhirOperation = (FhirOperation) resourceKey;
+
+                        if ( result.getStatus() == LocalDhisRepositoryPersistStatus.NOT_FOUND )
+                        {
+                            fhirOperation.getResult().notFound( result.getMessage() );
+                        }
+                        else
+                        {
+                            fhirOperation.getResult().internalServerError( result.getMessage() );
+                        }
                     }
                 } );
             }
@@ -558,6 +568,9 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
         {
             case FhirOperationResult.OK_STATUS_CODE:
                 statusMessage = "OK";
+                break;
+            case FhirOperationResult.NO_CONTENT_STATUS_CODE:
+                statusMessage = "No content";
                 break;
             case FhirOperationResult.CREATED_STATUS_CODE:
                 statusMessage = "Created";

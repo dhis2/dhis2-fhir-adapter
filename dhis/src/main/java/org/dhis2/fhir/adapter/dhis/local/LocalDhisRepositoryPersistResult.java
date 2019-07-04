@@ -28,8 +28,6 @@ package org.dhis2.fhir.adapter.dhis.local;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 
@@ -42,34 +40,35 @@ public class LocalDhisRepositoryPersistResult implements Serializable
 {
     private static final long serialVersionUID = 115959872385981258L;
 
-    private boolean success;
+    private LocalDhisRepositoryPersistStatus status;
 
-    private DhisResource resource;
+    private String resourceId;
 
     private String message;
 
-    public LocalDhisRepositoryPersistResult( boolean success, @Nonnull DhisResource resource )
+    public LocalDhisRepositoryPersistResult( @Nonnull LocalDhisRepositoryPersistStatus status, @Nonnull String resourceId )
     {
-        this.success = success;
-        this.resource = resource;
+        this.status = status;
+        this.resourceId = resourceId;
     }
 
-    public LocalDhisRepositoryPersistResult( boolean success, @Nonnull DhisResource resource, String message )
+    public LocalDhisRepositoryPersistResult( @Nonnull LocalDhisRepositoryPersistStatus status, @Nonnull String resourceId, String message )
     {
-        this.success = success;
-        this.resource = resource;
+        this.status = status;
+        this.resourceId = resourceId;
         this.message = message;
     }
 
-    public boolean isSuccess()
+    @Nonnull
+    public LocalDhisRepositoryPersistStatus getStatus()
     {
-        return success;
+        return status;
     }
 
     @Nonnull
-    public DhisResource getResource()
+    public String getResourceId()
     {
-        return resource;
+        return resourceId;
     }
 
     public String getMessage()

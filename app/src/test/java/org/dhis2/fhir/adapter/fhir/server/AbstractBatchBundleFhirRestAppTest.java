@@ -81,12 +81,12 @@ public abstract class AbstractBatchBundleFhirRestAppTest extends AbstractProgram
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-create.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?importStrategy=CREATE" ) ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?strategy=CREATE" ) ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-enrollment-create.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-enrollment-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?importStrategy=CREATE" ) ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?strategy=CREATE" ) ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-event-create.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-event-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
@@ -117,10 +117,21 @@ public abstract class AbstractBatchBundleFhirRestAppTest extends AbstractProgram
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-update.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?importStrategy=UPDATE&mergeMode=MERGE" ) ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?strategy=UPDATE&mergeMode=MERGE" ) ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-event-update.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-event-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+    }
+
+    protected void prepareDelete() throws Exception
+    {
+        expectProgramStageMetadataRequests();
+
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( matchesPattern( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?strategy=DELETE" ) ) ).andExpect( method( HttpMethod.POST ) )
+            .andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) ).andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
+            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-delete.json", StandardCharsets.UTF_8 ) ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-bundle-tei-delete-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
     }
 }

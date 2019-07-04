@@ -94,12 +94,13 @@ public class LocalDhisResourceRepositoryTemplate<T extends DhisResource>
         } ).orElseGet( () -> persistCallback.persistSave( resource ) );
     }
 
-    public boolean deleteById( @Nonnull String id )
+    public boolean deleteById( @Nonnull String id, @Nonnull Function<String, T> prototypeFunction )
     {
         final RequestCacheContext context = requestCacheService.getCurrentRequestCacheContext();
         final Optional<LocalDhisResourceRepository<T>> repository = getRepository( context );
 
-        return repository.map( tLocalDhisResourceRepository -> tLocalDhisResourceRepository.deleteById( id, getResourceKey( context ) ) ).orElseGet( () -> persistCallback.persistDeleteById( id ) );
+        return repository.map( tLocalDhisResourceRepository -> tLocalDhisResourceRepository.deleteById( id, getResourceKey( context ), prototypeFunction ) )
+            .orElseGet( () -> persistCallback.persistDeleteById( id ) );
     }
 
     @Nonnull

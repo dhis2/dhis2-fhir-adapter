@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -91,13 +92,14 @@ public class LocalDhisResourceRepositoryImpl<T extends DhisResource> implements 
     }
 
     @Override
-    public boolean deleteById( @Nonnull String id, @Nullable Object resourceKey )
+    public boolean deleteById( @Nonnull String id, @Nullable Object resourceKey, @Nonnull Function<String, T> prototypeFunction )
     {
-        final LocalDhisResource<T> local = resourcesById.remove( id );
+        LocalDhisResource<T> local = resourcesById.get( id );
 
         if ( local == null )
         {
-            return false;
+            local = new LocalDhisResource<>( prototypeFunction.apply( id ) );
+            resourcesById.put( id, local );
         }
 
         if ( resourceKey != null )
@@ -185,8 +187,8 @@ public class LocalDhisResourceRepositoryImpl<T extends DhisResource> implements 
         if ( !localResources.isEmpty() )
         {
             persistCallback.persistSave( localResources.values().stream().map( LocalDhisResource::getResource ).collect( Collectors.toList() ), create, result -> {
-                final LocalDhisResource<T> localDhisResource = Objects.requireNonNull( localResources.get( result.getResource().getId() ),
-                    () -> "No request for resource with ID " + result.getResource().getId() );
+                final LocalDhisResource<T> localDhisResource = Objects.requireNonNull( localResources.get( result.getResourceId() ),
+                    () -> "No request for resource with ID " + result.getResourceId() );
 
                 resultCallback.persisted( localDhisResource.getResource(), localDhisResource.getResourceKey(), result );
             } );
@@ -202,8 +204,8 @@ public class LocalDhisResourceRepositoryImpl<T extends DhisResource> implements 
         if ( !localResources.isEmpty() )
         {
             persistCallback.persistDeleteById( localResources.values().stream().map( lr -> lr.getResource().getId() ).collect( Collectors.toList() ), result -> {
-                final LocalDhisResource<T> localDhisResource = Objects.requireNonNull( localResources.get( result.getResource().getId() ),
-                    () -> "No request for resource with ID " + result.getResource().getId() );
+                final LocalDhisResource<T> localDhisResource = Objects.requireNonNull( localResources.get( result.getResourceId() ),
+                    () -> "No request for resource with ID " + result.getResourceId() );
 
                 resultCallback.persisted( localDhisResource.getResource(), localDhisResource.getResourceKey(), result );
             } );

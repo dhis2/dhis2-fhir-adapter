@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  */
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
@@ -38,9 +39,11 @@ import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
@@ -99,13 +102,15 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
     protected static final String CREATE_URI = ID_URI + "?importStrategy=CREATE";
 
-    protected static final String CREATES_URI = "/events.json?importStrategy=CREATE";
+    protected static final String CREATES_URI = "/events.json?strategy=CREATE";
 
     protected static final String UPDATE_URI = ID_URI + "?mergeMode=MERGE";
 
-    protected static final String UPDATES_URI = "/events.json?importStrategy=UPDATE&mergeMode=MERGE";
+    protected static final String UPDATES_URI = "/events.json?strategy=UPDATE&mergeMode=MERGE";
 
     protected static final String UPDATE_DATA_VALUE_URI = "/events/{id}/{dataElementId}.json?mergeMode=MERGE";
+
+    protected static final String DELETES_URI = "/events.json?strategy=DELETE";
 
     protected static final String FIND_URI = "/events.json?" +
         "program={programId}&trackedEntityInstance={trackedEntityInstanceId}&ouMode=ACCESSIBLE&" +
@@ -135,7 +140,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
     @Override
     public boolean delete( @Nonnull String eventId )
     {
-        return resourceRepositoryTemplate.deleteById( eventId );
+        return resourceRepositoryTemplate.deleteById( eventId, Event::new );
     }
 
     protected boolean _delete( @Nonnull String eventId )
@@ -162,7 +167,49 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
     @Override
     public void persistDeleteById( @Nonnull Collection<String> ids, @Nullable Consumer<LocalDhisRepositoryPersistResult> resultConsumer )
     {
-        throw new UnsupportedOperationException();
+        if ( ids.isEmpty() )
+        {
+            return;
+        }
+
+        final List<Event> Events = ids.stream().map( Event::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
+        final ResponseEntity<ImportSummaryWebMessage> response =
+            restTemplate.postForEntity( DELETES_URI, new DhisEvents( Events ), ImportSummaryWebMessage.class );
+
+        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final int size = Events.size();
+
+        if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
+        {
+            throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful deletion of event." );
+        }
+
+        if ( resultConsumer != null )
+        {
+            for ( int i = 0; i < size; i++ )
+            {
+                final ImportSummary importSummary = result.getResponse().getImportSummaries().get( i );
+                final Event event = Events.get( i );
+                final LocalDhisRepositoryPersistResult persistResult;
+
+                if ( importSummary.getStatus() == ImportStatus.ERROR )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, event.getId(),
+                        StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to delete event." ) );
+                }
+                else if ( importSummary.getImportCount().getDeleted() == 0 )
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.NOT_FOUND, event.getId(),
+                        StringUtils.defaultIfBlank( importSummary.getDescription(), "Could not find event." ) );
+                }
+                else
+                {
+                    persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, event.getId() );
+                }
+
+                resultConsumer.accept( persistResult );
+            }
+        }
     }
 
     @Override
@@ -193,7 +240,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
             return;
         }
 
-        final List<Event> events = new ArrayList<>( resources );
+        final List<Event> events = resources.stream().sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
         final ResponseEntity<ImportSummaryWebMessage> response =
             restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new DhisEvents( events ), ImportSummaryWebMessage.class );
 
@@ -213,14 +260,15 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
             if ( importSummary.getStatus() == ImportStatus.ERROR )
             {
-                persistResult = new LocalDhisRepositoryPersistResult( false, event, "Failed to persist tracked entity instance." );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.ERROR, event.getId(),
+                    StringUtils.defaultIfBlank( importSummary.getDescription(), "Failed to persist event." ) );
             }
             else
             {
                 event.resetNewResource();
                 event.setLocal( false );
 
-                persistResult = new LocalDhisRepositoryPersistResult( true, event );
+                persistResult = new LocalDhisRepositoryPersistResult( LocalDhisRepositoryPersistStatus.SUCCESS, event.getId() );
             }
 
             if ( resultConsumer != null )
