@@ -46,9 +46,6 @@ import java.util.function.Predicate;
 public interface LocalDhisResourceRepository<T extends DhisResource>
 {
     @Nonnull
-    Class<T> getResourceClass();
-
-    @Nonnull
     T save( @Nonnull T resource, @Nullable Object resourceKey );
 
     boolean deleteById( @Nonnull String id, @Nullable Object resourceKey, @Nonnull Function<String, T> prototypeFunction );
