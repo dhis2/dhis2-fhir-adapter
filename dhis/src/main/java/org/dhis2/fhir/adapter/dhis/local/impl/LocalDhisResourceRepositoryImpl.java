@@ -74,13 +74,6 @@ public class LocalDhisResourceRepositoryImpl<T extends DhisResource> implements 
 
     @Override
     @Nonnull
-    public Class<T> getResourceClass()
-    {
-        return resourceClass;
-    }
-
-    @Override
-    @Nonnull
     public T save( @Nonnull T resource, @Nullable Object resourceKey )
     {
         if ( resource.getId() == null )
@@ -254,7 +247,11 @@ public class LocalDhisResourceRepositoryImpl<T extends DhisResource> implements 
 
             local.setResource( resource );
 
-            if ( local.getState() == LocalDhisResourceState.FOUND )
+            if ( local.getState() == LocalDhisResourceState.DELETED_NEW )
+            {
+                local.setState( LocalDhisResourceState.SAVED_NEW );
+            }
+            else if ( local.getState() != LocalDhisResourceState.SAVED_NEW )
             {
                 local.setState( LocalDhisResourceState.SAVED_EXISTING );
             }
