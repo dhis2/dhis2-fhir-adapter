@@ -48,6 +48,8 @@ import java.util.Objects;
 
 /**
  * Contains a DHIS2 Program Stage Instance (aka event).
+ *
+ * @author volsch
  */
 public class Event implements TrackedEntityDhisResource, Serializable, Comparable<Event>
 {
@@ -66,7 +68,7 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
-    @JsonProperty
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 

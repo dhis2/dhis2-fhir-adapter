@@ -28,61 +28,35 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Base interface of DHIS2 Resources.
+ * Unit tests for {@link DhisResourceComparator}.
  *
  * @author volsch
  */
-public interface DhisResource extends Identifiable<String>, Serializable
+public class DhisResourceComparatorTest
 {
-    /**
-     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
-     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
-     */
-    String getOrgUnitId();
+    @Test
+    public void compare()
+    {
+        final TrackedEntityInstance tei1 = new TrackedEntityInstance( "efg" );
+        final TrackedEntityInstance tei2 = new TrackedEntityInstance();
+        final TrackedEntityInstance tei3 = new TrackedEntityInstance( "abc" );
+        final TrackedEntityInstance tei4 = new TrackedEntityInstance( "hij" );
 
-    /**
-     * @return the unique ID of the resource (including the type of the resource).
-     */
-    DhisResourceId getResourceId();
+        final List<TrackedEntityInstance> list = new ArrayList<>( Arrays.asList( tei1, tei2, tei3, tei4 ) );
+        list.sort( DhisResourceComparator.INSTANCE );
 
-    /**
-     * @return if the resource has been marked as deleted.
-     */
-    boolean isDeleted();
-
-    /**
-     * @return the timestamp when the resource has been updated the last time.
-     */
-    ZonedDateTime getLastUpdated();
-
-    /**
-     * @return the concrete resource type of the resource.
-     */
-    @Nonnull
-    DhisResourceType getResourceType();
-
-    /**
-     * @return if the resource has not yet been persisted on DHIS2 and exists
-     * non-persisted on adapter side only.
-     */
-    boolean isLocal();
-
-    /**
-     * @return <code>true</code> if the resource is new and must be created,
-     * <code>false</code> if this resource is an existing resource that already
-     * contains a unique ID.
-     */
-    boolean isNewResource();
-
-    /**
-     * Resets that the resource is a new resource (after persisting the resource).
-     */
-    void resetNewResource();
+        Assert.assertNull( list.get( 0 ).getId() );
+        Assert.assertEquals( "abc", list.get( 1 ).getId() );
+        Assert.assertEquals( "efg", list.get( 2 ).getId() );
+        Assert.assertEquals( "hij", list.get( 3 ).getId() );
+    }
 }

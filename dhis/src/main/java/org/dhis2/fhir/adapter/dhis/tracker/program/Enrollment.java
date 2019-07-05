@@ -65,7 +65,7 @@ public class Enrollment implements TrackedEntityDhisResource, Serializable
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
-    @JsonProperty
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 

@@ -1,0 +1,21 @@
+{
+  "status": "OK",
+  "response": {
+    "importSummaries": [
+      {
+        "status": "SUCCESS",
+        "reference": "Jskdsjeua1s",
+        "importCount": {
+          "deleted": 1
+        }
+      },
+      {
+        "status": "SUCCESS",
+        "reference": "Jskdsjeua2s",
+        "importCount": {
+          "deleted": 1
+        }
+      }
+    ]
+  }
+}

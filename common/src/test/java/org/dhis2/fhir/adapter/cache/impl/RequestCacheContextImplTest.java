@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.cache.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,61 +28,42 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
-
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Base interface of DHIS2 Resources.
+ * Unit tests for {@link RequestCacheContextImpl}.
  *
  * @author volsch
  */
-public interface DhisResource extends Identifiable<String>, Serializable
+public class RequestCacheContextImplTest
 {
-    /**
-     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
-     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
-     */
-    String getOrgUnitId();
+    private final RequestCacheContextImpl context = new RequestCacheContextImpl( new RequestCacheServiceImpl() );
 
-    /**
-     * @return the unique ID of the resource (including the type of the resource).
-     */
-    DhisResourceId getResourceId();
+    @Test
+    public void setAttribute()
+    {
+        context.setAttribute( "test1", "Value1" );
+        Assert.assertEquals( "Value1", context.getAttribute( "test1", String.class ) );
+    }
 
-    /**
-     * @return if the resource has been marked as deleted.
-     */
-    boolean isDeleted();
+    @Test
+    public void getAttributeNotExist()
+    {
+        Assert.assertNull( context.getAttribute( "test1", String.class ) );
+    }
 
-    /**
-     * @return the timestamp when the resource has been updated the last time.
-     */
-    ZonedDateTime getLastUpdated();
+    @Test
+    public void removeAttribute()
+    {
+        context.setAttribute( "test1", "Value1" );
+        context.removeAttribute( "test1" );
+        Assert.assertNull( context.getAttribute( "test1", String.class ) );
+    }
 
-    /**
-     * @return the concrete resource type of the resource.
-     */
-    @Nonnull
-    DhisResourceType getResourceType();
-
-    /**
-     * @return if the resource has not yet been persisted on DHIS2 and exists
-     * non-persisted on adapter side only.
-     */
-    boolean isLocal();
-
-    /**
-     * @return <code>true</code> if the resource is new and must be created,
-     * <code>false</code> if this resource is an existing resource that already
-     * contains a unique ID.
-     */
-    boolean isNewResource();
-
-    /**
-     * Resets that the resource is a new resource (after persisting the resource).
-     */
-    void resetNewResource();
+    @Test
+    public void removeAttributeNotExist()
+    {
+        context.removeAttribute( "test1" );
+    }
 }

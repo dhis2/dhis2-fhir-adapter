@@ -43,6 +43,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
+/**
+ * Representation of a DHIS2 tracked entity instance resource.
+ *
+ * @author volsch
+ */
 public class TrackedEntityInstance implements DhisResource, Serializable
 {
     private static final long serialVersionUID = -1707916238115298513L;
@@ -60,7 +65,7 @@ public class TrackedEntityInstance implements DhisResource, Serializable
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
-    @JsonProperty
+    @JsonProperty( access = JsonProperty.Access.WRITE_ONLY )
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private ZonedDateTime lastUpdated;
 
@@ -99,6 +104,7 @@ public class TrackedEntityInstance implements DhisResource, Serializable
         this.modified = newResource;
 
         this.attributes = new ArrayList<>();
+
         if ( newResource )
         {
             for ( final TrackedEntityTypeAttribute typeAttribute : type.getAttributes() )

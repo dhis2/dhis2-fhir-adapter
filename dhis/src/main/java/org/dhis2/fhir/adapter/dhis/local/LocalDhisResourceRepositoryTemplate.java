@@ -82,8 +82,8 @@ public class LocalDhisResourceRepositoryTemplate<T extends DhisResource>
         final RequestCacheContext context = requestCacheService.getCurrentRequestCacheContext();
         final Optional<LocalDhisResourceRepository<T>> repository = getRepository( context );
 
-        return repository.map( tLocalDhisResourceRepository -> {
-            final T savedResource = tLocalDhisResourceRepository.save( resource, getResourceKey( context ) );
+        return repository.map( localDhisResourceRepository -> {
+            final T savedResource = localDhisResourceRepository.save( resource, getResourceKey( context ) );
 
             if ( localResourceConsumer != null )
             {
