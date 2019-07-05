@@ -133,6 +133,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
     {
         // according to FHIR specification the operations must be processed in order: DELETE, POST, PUT
 
+        log.info( "Processing batch bundle with {} items.", batchRequest.getOperations().size() );
         executeInSecurityContext( () -> {
             try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext() )
             {
@@ -164,6 +165,7 @@ public abstract class AbstractBundleResourceProvider<T extends IBaseBundle> exte
 
             return null;
         } );
+        log.info( "Processed batch bundle with {} items.", batchRequest.getOperations().size() );
     }
 
     protected void processDeletes( @Nonnull RequestCacheContext requestCacheContext, @Nonnull FhirBatchRequest batchRequest )

@@ -34,6 +34,8 @@ import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryContainer;
+import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientSystem;
@@ -71,6 +73,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient.FHIR_REST_INTERFACE_DSTU3_ID;
 
@@ -167,8 +170,15 @@ public class AbstractBundleResourceProviderTest
     @Test
     public void processInternal() throws Exception
     {
+        final AtomicReference<LocalDhisResourceRepositoryContainer> repositoryContainerReference = new AtomicReference<>();
+
         Mockito.when( bundleResourceProvider.getFhirVersion() ).thenReturn( FhirVersion.DSTU3 );
         Mockito.when( requestCacheService.createRequestCacheContext() ).thenReturn( requestCacheContext );
+        Mockito.doAnswer( invocation -> {
+            repositoryContainerReference.set( invocation.getArgument( 1 ) );
+
+            return null;
+        } ).when( requestCacheContext ).setAttribute( Mockito.eq( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME ), Mockito.any() );
 
         final FhirOperation invalidDeleteOperation = new FhirOperation( FhirOperationType.DELETE, FhirResourceType.PATIENT, null, null, null, null );
         invalidDeleteOperation.getResult().badRequest( "Invalid data included" );
@@ -269,6 +279,10 @@ public class AbstractBundleResourceProviderTest
         Assert.assertNull( operations.get( 11 ).getResult().getIssue() );
         Assert.assertEquals( FhirOperationResult.OK_STATUS_CODE, operations.get( 11 ).getResult().getStatusCode() );
         Assert.assertEquals( new IdDt( "te-lxXIdLNUNE4-d0e1472a05e647c9b36bff1f06fec354" ), operations.get( 11 ).getResult().getId() );
+
+        Assert.assertNotNull( repositoryContainerReference.get() );
+        Mockito.verify( requestCacheContext, Mockito.times( 9 ) ).setAttribute( Mockito.eq( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME ),
+            Mockito.any( FhirOperation.class ) );
     }
 
     @Test

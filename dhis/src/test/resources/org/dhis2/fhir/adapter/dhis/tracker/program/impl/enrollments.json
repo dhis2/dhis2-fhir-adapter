@@ -3,7 +3,7 @@
   {
     "created": "2017-03-28T12:43:46.682", "orgUnit": "pMEnu7BjqMz", "createdAtClient": "2016-03-28T12:43:46.682", "program": "ur1Edk5Oe2n", "trackedEntityInstance": "tPeQKGUIowE", "enrollment": "N4cVHaUjfJO", "lastUpdated": "2017-03-28T12:43:46.684",
     "coordinate": { "longitude": -70.2433, "latitude": 30.34323 },
-    "trackedEntityType": "nEenWmSyUEp", "orgUnitName": "Kpumbu MCHP", "enrollmentDate": "2016-10-30T12:42:46.663", "followup": false, "deleted": false, "incidentDate": "2016-10-27T12:43:46.663", "status": "COMPLETED", "notes": [ ], "attributes": [ ],
+    "trackedEntityType": "nEenWmSyUEp", "orgUnitName": "Kpumbu MCHP", "enrollmentDate": "2016-10-30T12:42:46.663", "followup": false, "deleted": false, "incidentDate": "2016-10-27T12:43:46.663", "status": "ACTIVE", "notes": [ ], "attributes": [ ],
     "events": [ ]
   }
 ]
