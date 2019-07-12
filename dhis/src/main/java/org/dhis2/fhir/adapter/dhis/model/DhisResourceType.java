@@ -74,7 +74,12 @@ public enum DhisResourceType
     /**
      * Resource is a organisation unit.
      */
-    ORGANIZATION_UNIT( "organisationUnits", "ou" );
+    ORGANIZATION_UNIT( "organisationUnits", "ou" ),
+
+    /**
+     * Resource is a Data Value Set.
+     */
+    DATA_VALUE_SET( "dataValueSets", "dvs" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
 

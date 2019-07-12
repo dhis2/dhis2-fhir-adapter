@@ -108,7 +108,8 @@ import java.util.List;
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" ),
     @JsonSubTypes.Type( value = EnrollmentRule.class, name = "ENROLLMENT" ),
     @JsonSubTypes.Type( value = ProgramMetadataRule.class, name = "PROGRAM_METADATA" ),
-    @JsonSubTypes.Type( value = ProgramStageMetadataRule.class, name = "PROGRAM_STAGE_METADATA" )
+    @JsonSubTypes.Type( value = ProgramStageMetadataRule.class, name = "PROGRAM_STAGE_METADATA" ),
+    @JsonSubTypes.Type( value = DataValueSetRule.class, name = "DATA_VALUE_SET" )
 } )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>, NamedMetadata
