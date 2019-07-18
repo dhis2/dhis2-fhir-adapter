@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.trackedentity.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,10 +74,9 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
     }
 
     @HystrixCommand
-    @Cacheable( value = "trackedEntityTypes", cacheManager = "dhisCacheManager" )
     @Nonnull
     @Override
-    public Optional<? extends TrackedEntityType> findTypeByReference( @Nonnull Reference reference )
+    public Optional<? extends TrackedEntityType> findTypeByReferenceRefreshed( @Nonnull Reference reference )
     {
         switch ( reference.getType() )
         {
@@ -105,6 +104,15 @@ public class TrackedEntityMetadataServiceImpl implements TrackedEntityMetadataSe
             default:
                 throw new AssertionError( "Unhandled reference type: " + reference.getType() );
         }
+    }
+
+    @HystrixCommand
+    @Cacheable( value = "trackedEntityTypes", cacheManager = "dhisCacheManager" )
+    @Nonnull
+    @Override
+    public Optional<? extends TrackedEntityType> findTypeByReference( @Nonnull Reference reference )
+    {
+        return findTypeByReferenceRefreshed( reference );
     }
 
     @HystrixCommand

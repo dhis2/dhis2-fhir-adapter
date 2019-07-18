@@ -322,7 +322,7 @@ public class SetupService
     {
         if ( verifyDhis )
         {
-            final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( trackedEntitySetup.getType().getReference() )
+            final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReferenceRefreshed( trackedEntitySetup.getType().getReference() )
                 .orElseThrow( () -> new SetupException( "Tracked entity type '" + trackedEntitySetup.getType().getReference() + "' does not exist." ) );
             trackedEntitySetup.getEnabledReferenceSetups().forEach( r -> trackedEntityType.getOptionalTypeAttribute( r )
                 .orElseThrow( () -> new SetupException( "Tracked entity attribute '" + r + "' has not been assigned to tracked entity type '" +
