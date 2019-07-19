@@ -95,6 +95,8 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
                 fields.withPath( "containedAllowed" ).description( "Specified if this rule can process contained resources." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "stop" ).description( "Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "grouping" ).description( "Specifies if the FHIR resources groups references of other FHIR resources (e.g. FHIR Encounter)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                fields.withPath( "simpleFhirId" ).description( "Specifies if the FHIR ID is just the DHIS2 ID without the rule ID. This feature must only be enabled if there is a distinct rule for the combination of FHIR and DHIS2 resource type." )
+                    .type( JsonFieldType.BOOLEAN ).optional(),
                 fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                 fields.withPath( "applicableCodeSet" ).description( "Link to the code set reference that is used to check if the incoming request is applicable for this rule." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "applicableImpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming from a FHIR to a DHIS2 resource. " +
@@ -167,6 +169,8 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
                     fields.withPath( "fhirDeleteEnabled" ).description( "Specifies if the deletion of a FHIR resource is enabled for output transformations from DHIS to FHIR for this rule (by default false)." ).type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "stop" ).description( "Specifies if this rule is the last applied rule. When the transformation should not stop further rules are applied as well." ).type( JsonFieldType.BOOLEAN ),
                     fields.withPath( "grouping" ).description( "Specifies if the FHIR resources groups references of other FHIR resources (e.g. FHIR Encounter)." ).type( JsonFieldType.BOOLEAN ).optional(),
+                    fields.withPath( "simpleFhirId" ).description( "Specifies if the FHIR ID is just the DHIS2 ID without the rule ID. This feature must only be enabled if there is a distinct rule for the combination of FHIR and DHIS2 resource type." )
+                        .type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "evaluationOrder" ).description( "Specifies the precedence of this rule when several rules match. Higher values define a higher precedence." ).type( JsonFieldType.NUMBER ),
                     fields.withPath( "containedAllowed" ).description( "Specified if this rule can process contained resources." ).type( JsonFieldType.BOOLEAN ).optional(),
                     fields.withPath( "dhisDataReferences" ).description( "Contains the references to DHIS2 data elements in which the data that is processed by the assigned rule is stored." ).type( JsonFieldType.ARRAY ).optional(),
