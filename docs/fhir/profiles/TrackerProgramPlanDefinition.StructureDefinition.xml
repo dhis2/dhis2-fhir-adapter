@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2004-2019, University of Oslo
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the HISP project nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/StructureDefinition/TrackerProgramPlanDefinition" />
+  <name value="TrackerProgramPlanDefinition" />
+  <status value="active" />
+  <fhirVersion value="4.0.0" />
+  <kind value="resource" />
+  <abstract value="false" />
+  <type value="PlanDefinition" />
+  <baseDefinition value="http://hl7.org/fhir/StructureDefinition/PlanDefinition" />
+  <derivation value="constraint" />
+  <differential>
+    <element id="PlanDefinition.implicitRules">
+      <path value="PlanDefinition.implicitRules" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.language">
+      <path value="PlanDefinition.language" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.contained">
+      <path value="PlanDefinition.contained" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.url">
+      <path value="PlanDefinition.url" />
+      <min value="1" />
+    </element>
+    <element id="PlanDefinition.identifier">
+      <path value="PlanDefinition.identifier" />
+      <slicing>
+        <description value="Only DHIS2 identifier is supported." />
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="PlanDefinition.identifier:dhis2">
+      <path value="PlanDefinition.identifier" />
+      <sliceName value="dhis2" />
+      <min value="1" />
+      <max value="1" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.use">
+      <path value="PlanDefinition.identifier.use" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.type">
+      <path value="PlanDefinition.identifier.type" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.system">
+      <path value="PlanDefinition.identifier.system" />
+      <min value="1" />
+      <fixedUri value="http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.value">
+      <path value="PlanDefinition.identifier.value" />
+      <min value="1" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.period">
+      <path value="PlanDefinition.identifier.period" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.identifier:dhis2.assigner">
+      <path value="PlanDefinition.identifier.assigner" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.version">
+      <path value="PlanDefinition.version" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.name">
+      <path value="PlanDefinition.name" />
+      <min value="1" />
+    </element>
+    <element id="PlanDefinition.title">
+      <path value="PlanDefinition.title" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.subtitle">
+      <path value="PlanDefinition.subtitle" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.type">
+      <path value="PlanDefinition.type" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.status">
+      <path value="PlanDefinition.status" />
+      <fixedCode value="active" />
+    </element>
+    <element id="PlanDefinition.experimental">
+      <path value="PlanDefinition.experimental" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.subject[x]">
+      <path value="PlanDefinition.subject[x]" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.date">
+      <path value="PlanDefinition.date" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.publisher">
+      <path value="PlanDefinition.publisher" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.contact">
+      <path value="PlanDefinition.contact" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.useContext">
+      <path value="PlanDefinition.useContext" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.jurisdiction">
+      <path value="PlanDefinition.jurisdiction" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.purpose">
+      <path value="PlanDefinition.purpose" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.usage">
+      <path value="PlanDefinition.usage" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.copyright">
+      <path value="PlanDefinition.copyright" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.approvalDate">
+      <path value="PlanDefinition.approvalDate" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.lastReviewDate">
+      <path value="PlanDefinition.lastReviewDate" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.effectivePeriod">
+      <path value="PlanDefinition.effectivePeriod" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.topic">
+      <path value="PlanDefinition.topic" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.author">
+      <path value="PlanDefinition.author" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.editor">
+      <path value="PlanDefinition.editor" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.reviewer">
+      <path value="PlanDefinition.reviewer" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.endorser">
+      <path value="PlanDefinition.endorser" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.relatedArtifact">
+      <path value="PlanDefinition.relatedArtifact" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.library">
+      <path value="PlanDefinition.library" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.goal">
+      <path value="PlanDefinition.goal" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.prefix">
+      <path value="PlanDefinition.action.prefix" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.textEquivalent">
+      <path value="PlanDefinition.action.textEquivalent" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.priority">
+      <path value="PlanDefinition.action.priority" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.code">
+      <path value="PlanDefinition.action.code" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.reason">
+      <path value="PlanDefinition.action.reason" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.documentation">
+      <path value="PlanDefinition.action.documentation" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.goalId">
+      <path value="PlanDefinition.action.goalId" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.subject[x]">
+      <path value="PlanDefinition.action.subject[x]" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.trigger">
+      <path value="PlanDefinition.action.trigger" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.condition">
+      <path value="PlanDefinition.action.condition" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.input">
+      <path value="PlanDefinition.action.input" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.output">
+      <path value="PlanDefinition.action.output" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.relatedAction">
+      <path value="PlanDefinition.action.relatedAction" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.timing[x]">
+      <path value="PlanDefinition.action.timing[x]" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.participant">
+      <path value="PlanDefinition.action.participant" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.type">
+      <path value="PlanDefinition.action.type" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.groupingBehavior">
+      <path value="PlanDefinition.action.groupingBehavior" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.selectionBehavior">
+      <path value="PlanDefinition.action.selectionBehavior" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.requiredBehavior">
+      <path value="PlanDefinition.action.requiredBehavior" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.precheckBehavior">
+      <path value="PlanDefinition.action.precheckBehavior" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.cardinalityBehavior">
+      <path value="PlanDefinition.action.cardinalityBehavior" />
+      <min value="1" />
+    </element>
+    <element id="PlanDefinition.action.definition[x]">
+      <path value="PlanDefinition.action.definition[x]" />
+      <min value="1" />
+      <type>
+        <code value="canonical" />
+      </type>
+    </element>
+    <element id="PlanDefinition.action.transform">
+      <path value="PlanDefinition.action.transform" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.dynamicValue">
+      <path value="PlanDefinition.action.dynamicValue" />
+      <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.action">
+      <path value="PlanDefinition.action.action" />
+      <max value="0" />
+    </element>
+  </differential>
+</StructureDefinition>

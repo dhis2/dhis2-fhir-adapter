@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2004-2019, University of Oslo
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the HISP project nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/StructureDefinition/TrackerProgramQuestionnaire" />
+  <name value="TrackerProgramQuestionnaire" />
+  <status value="active" />
+  <fhirVersion value="4.0.0" />
+  <kind value="resource" />
+  <abstract value="false" />
+  <type value="Questionnaire" />
+  <baseDefinition value="http://hl7.org/fhir/StructureDefinition/Questionnaire" />
+  <derivation value="constraint" />
+  <differential>
+    <element id="Questionnaire.implicitRules">
+      <path value="Questionnaire.implicitRules" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.language">
+      <path value="Questionnaire.language" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.contained">
+      <path value="Questionnaire.contained" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.url">
+      <path value="Questionnaire.url" />
+      <min value="1" />
+    </element>
+    <element id="Questionnaire.identifier">
+      <path value="Questionnaire.identifier" />
+      <slicing>
+        <description value="Only DHIS2 identifier is supported." />
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="Questionnaire.identifier:dhis2">
+      <path value="Questionnaire.identifier" />
+      <sliceName value="dhis2" />
+      <min value="1" />
+      <max value="1" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.use">
+      <path value="Questionnaire.identifier.use" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.type">
+      <path value="Questionnaire.identifier.type" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.system">
+      <path value="Questionnaire.identifier.system" />
+      <min value="1" />
+      <fixedUri value="http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.value">
+      <path value="Questionnaire.identifier.value" />
+      <min value="1" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.period">
+      <path value="Questionnaire.identifier.period" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.identifier:dhis2.assigner">
+      <path value="Questionnaire.identifier.assigner" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.version">
+      <path value="Questionnaire.version" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.title">
+      <path value="Questionnaire.title" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.derivedFrom">
+      <path value="Questionnaire.derivedFrom" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.status">
+      <path value="Questionnaire.status" />
+      <fixedCode value="active" />
+    </element>
+    <element id="Questionnaire.experimental">
+      <path value="Questionnaire.experimental" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.subjectType">
+      <path value="Questionnaire.subjectType" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.date">
+      <path value="Questionnaire.date" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.publisher">
+      <path value="Questionnaire.publisher" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.contact">
+      <path value="Questionnaire.contact" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.useContext">
+      <path value="Questionnaire.useContext" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.jurisdiction">
+      <path value="Questionnaire.jurisdiction" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.purpose">
+      <path value="Questionnaire.purpose" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.copyright">
+      <path value="Questionnaire.copyright" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.approvalDate">
+      <path value="Questionnaire.approvalDate" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.lastReviewDate">
+      <path value="Questionnaire.lastReviewDate" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.effectivePeriod">
+      <path value="Questionnaire.effectivePeriod" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.code">
+      <path value="Questionnaire.code" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.definition">
+      <path value="Questionnaire.item.definition" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.code">
+      <path value="Questionnaire.item.code" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.prefix">
+      <path value="Questionnaire.item.prefix" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.text">
+      <path value="Questionnaire.item.text" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.enableWhen">
+      <path value="Questionnaire.item.enableWhen" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.enableBehavior">
+      <path value="Questionnaire.item.enableBehavior" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.required">
+      <path value="Questionnaire.item.required" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.readOnly">
+      <path value="Questionnaire.item.readOnly" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.maxLength">
+      <path value="Questionnaire.item.maxLength" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.answerValueSet">
+      <path value="Questionnaire.item.answerValueSet" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.answerOption.initialSelected">
+      <path value="Questionnaire.item.answerOption.initialSelected" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.initial">
+      <path value="Questionnaire.item.initial" />
+      <max value="0" />
+    </element>
+    <element id="Questionnaire.item.item">
+      <path value="Questionnaire.item.item" />
+      <max value="0" />
+    </element>
+  </differential>
+</StructureDefinition>

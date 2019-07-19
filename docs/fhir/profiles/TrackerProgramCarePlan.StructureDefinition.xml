@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2004-2019, University of Oslo
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the HISP project nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/StructureDefinition/TrackerProgramCarePlan" />
+  <name value="TrackerProgramCarePlan" />
+  <status value="active />
+  <fhirVersion value="4.0.0" />
+  <kind value="resource" />
+  <abstract value="false" />
+  <type value="CarePlan" />
+  <baseDefinition value="http://hl7.org/fhir/StructureDefinition/CarePlan" />
+  <derivation value="constraint" />
+  <differential>
+    <element id="CarePlan.implicitRules">
+      <path value="CarePlan.implicitRules" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.language">
+      <path value="CarePlan.language" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.contained">
+      <path value="CarePlan.contained" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.extension">
+      <path value="CarePlan.extension" />
+      <slicing>
+        <discriminator>
+          <type value="value" />
+          <path value="url" />
+        </discriminator>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="CarePlan.extension:incidentDate">
+      <path value="CarePlan.extension" />
+      <sliceName value="incidentDate" />
+      <label value="Incident date" />
+      <short value="Incident date of enrollment" />
+      <definition value="The incident date of the enrollment." />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/incident-date" />
+      </type>
+    </element>
+    <element id="CarePlan.extension:location">
+      <path value="CarePlan.extension" />
+      <sliceName value="location" />
+      <min value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/location" />
+      </type>
+    </element>
+    <element id="CarePlan.identifier">
+      <path value="CarePlan.identifier" />
+      <slicing>
+        <rules value="open" />
+      </slicing>
+      <max value="1" />
+    </element>
+    <element id="CarePlan.identifier:dhis2">
+      <path value="CarePlan.identifier" />
+      <sliceName value="dhis2" />
+      <min value="1" />
+      <max value="1" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.use">
+      <path value="CarePlan.identifier.use" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.type">
+      <path value="CarePlan.identifier.type" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.system">
+      <path value="CarePlan.identifier.system" />
+      <min value="1" />
+      <fixedUri value="http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.value">
+      <path value="CarePlan.identifier.value" />
+      <min value="1" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.period">
+      <path value="CarePlan.identifier.period" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.identifier:dhis2.assigner">
+      <path value="CarePlan.identifier.assigner" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.instantiatesCanonical">
+      <path value="CarePlan.instantiatesCanonical" />
+      <short value="FHIR PlanDefinition of a DHIS2 Tracker Program" />
+      <definition value="The URL pointing to a FHIR PlanDefinition that represents a DHIS2 Tracker Program." />
+      <max value="1" />
+    </element>
+    <element id="CarePlan.instantiatesUri">
+      <path value="CarePlan.instantiatesUri" />
+      <label value="DHIS2 Tracker Program ID" />
+      <short value="DHIS2 Tracker Program ID" />
+      <definition value="The ID of the DHIS2 Tracker Program that represents the care plan." />
+      <max value="1" />
+    </element>
+    <element id="CarePlan.basedOn">
+      <path value="CarePlan.basedOn" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.replaces">
+      <path value="CarePlan.replaces" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.partOf">
+      <path value="CarePlan.partOf" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.status">
+      <path value="CarePlan.status" />
+      <short value="active | completed | cancelled" />
+      <definition value="active | completed | cancelled" />
+    </element>
+    <element id="CarePlan.intent">
+      <path value="CarePlan.intent" />
+      <fixedCode value="plan" />
+    </element>
+    <element id="CarePlan.category">
+      <path value="CarePlan.category" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.title">
+      <path value="CarePlan.title" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.description">
+      <path value="CarePlan.description" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.subject">
+      <path value="CarePlan.subject" />
+      <label value="Reference to the Patient" />
+      <short value="Reference to the Patient" />
+      <definition value="Identifies the patient whose intended care is described by the plan." />
+    </element>
+    <element id="CarePlan.encounter">
+      <path value="CarePlan.encounter" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.period">
+      <path value="CarePlan.period" />
+      <slicing>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="CarePlan.period:enrollment">
+      <path value="CarePlan.period" />
+      <sliceName value="enrollment" />
+      <min value="1" />
+    </element>
+    <element id="CarePlan.period:enrollment.start">
+      <path value="CarePlan.period.start" />
+      <min value="1" />
+    </element>
+    <element id="CarePlan.period:enrollment.end">
+      <path value="CarePlan.period.end" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.created">
+      <path value="CarePlan.created" />
+      <label value="Incident date" />
+      <short value="Creation date of record" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.author">
+      <path value="CarePlan.author" />
+      <max value="0" />
+      <type>
+        <code value="Reference" />
+        <targetProfile value="http://hl7.org/fhir/StructureDefinition/Organization" />
+      </type>
+    </element>
+    <element id="CarePlan.contributor">
+      <path value="CarePlan.contributor" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.careTeam">
+      <path value="CarePlan.careTeam" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.addresses">
+      <path value="CarePlan.addresses" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.supportingInfo">
+      <path value="CarePlan.supportingInfo" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.goal">
+      <path value="CarePlan.goal" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.outcomeCodeableConcept">
+      <path value="CarePlan.activity.outcomeCodeableConcept" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.outcomeReference">
+      <path value="CarePlan.activity.outcomeReference" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.progress">
+      <path value="CarePlan.activity.progress" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.reference">
+      <path value="CarePlan.activity.reference" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.kind">
+      <path value="CarePlan.activity.detail.kind" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.instantiatesCanonical">
+      <path value="CarePlan.activity.detail.instantiatesCanonical" />
+      <short value="Instantiates FHIR PlanDefinition" />
+      <definition value="The URL pointing to a FHIR PlanDefinition that references the DHIS2 Tracker Program." />
+      <max value="1" />
+    </element>
+    <element id="CarePlan.activity.detail.instantiatesUri">
+      <path value="CarePlan.activity.detail.instantiatesUri" />
+      <label value="DHIS2 Tracker Program Stage ID" />
+      <short value="DHIS2 Tracker Program Stage ID" />
+      <definition value="The ID of the DHIS2 Tracker Program Stage that represents the care plan." />
+      <max value="1" />
+    </element>
+    <element id="CarePlan.activity.detail.code">
+      <path value="CarePlan.activity.detail.code" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.reasonCode">
+      <path value="CarePlan.activity.detail.reasonCode" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.reasonReference">
+      <path value="CarePlan.activity.detail.reasonReference" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.goal">
+      <path value="CarePlan.activity.detail.goal" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.status">
+      <path value="CarePlan.activity.detail.status" />
+      <short value="in-progress | completed | cancelled" />
+      <definition value="in-progress | completed | cancelled" />
+    </element>
+    <element id="CarePlan.activity.detail.statusReason">
+      <path value="CarePlan.activity.detail.statusReason" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.doNotPerform">
+      <path value="CarePlan.activity.detail.doNotPerform" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.scheduled[x]">
+      <path value="CarePlan.activity.detail.scheduled[x]" />
+      <min value="1" />
+      <type>
+        <code value="Period" />
+      </type>
+    </element>
+    <element id="CarePlan.activity.detail.scheduled[x].end">
+      <path value="CarePlan.activity.detail.scheduled[x].end" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.location">
+      <path value="CarePlan.activity.detail.location" />
+      <min value="1" />
+    </element>
+    <element id="CarePlan.activity.detail.performer">
+      <path value="CarePlan.activity.detail.performer" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.product[x]">
+      <path value="CarePlan.activity.detail.product[x]" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.dailyAmount">
+      <path value="CarePlan.activity.detail.dailyAmount" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.quantity">
+      <path value="CarePlan.activity.detail.quantity" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity.detail.description">
+      <path value="CarePlan.activity.detail.description" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.note">
+      <path value="CarePlan.note" />
+      <max value="0" />
+    </element>
+  </differential>
+</StructureDefinition>

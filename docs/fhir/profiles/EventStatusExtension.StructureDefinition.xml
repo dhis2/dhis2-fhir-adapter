@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2004-2019, University of Oslo
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the HISP project nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/event-status" />
+  <name value="EventStatusExtension" />
+  <status value="active" />
+  <fhirVersion value="4.0.0" />
+  <kind value="primitive-type" />
+  <abstract value="false" />
+  <context>
+    <type value="element" />
+    <expression value="QuestionnaireResponse" />
+  </context>
+  <type value="Extension" />
+  <baseDefinition value="http://hl7.org/fhir/StructureDefinition/Extension" />
+  <derivation value="constraint" />
+  <differential>
+    <element id="Extension">
+      <path value="Extension" />
+      <short value="Location reference" />
+      <definition value="Location reference." />
+      <max value="1" />
+      <base>
+        <path value="Extension" />
+        <max value="1" />
+      </base>
+      <constraint>
+        <key value="ext-1" />
+        <severity value="error" />
+        <human value="Must have either extensions or value[x], not both" />
+        <expression value="extension.exists() != value.exists()" />
+        <xpath value="exists(f:extension)!=exists(f:*[starts-with(local-name(.), 'value')])" />
+      </constraint>
+      <mapping>
+        <identity value="rim" />
+        <map value="N/A" />
+      </mapping>
+    </element>
+    <element id="Extension.value[x]">
+      <path value="Extension.value[x]" />
+      <label value="Event status" />
+      <short value="skipped | visited | completed | schedule | overdue | active" />
+      <definition value="skipped | visited | completed | schedule | overdue | active" />
+      <min value="1" />
+      <type>
+        <code value="string" />
+      </type>
+      <patternString value="skipped|visited|completed|schedule|overdue|active" />
+    </element>
+  </differential>
+</StructureDefinition>

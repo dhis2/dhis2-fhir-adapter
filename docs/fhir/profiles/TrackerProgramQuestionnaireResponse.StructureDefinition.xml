@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2004-2019, University of Oslo
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~ Redistributions of source code must retain the above copyright notice, this
+  ~ list of conditions and the following disclaimer.
+  ~
+  ~ Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~ Neither the name of the HISP project nor the names of its contributors may
+  ~ be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/StructureDefinition/TrackerProgramQuestionnaireResponse" />
+  <name value="TrackerProgramQuestionnaireResponse" />
+  <status value="active" />
+  <fhirVersion value="4.0.0" />
+  <kind value="resource" />
+  <abstract value="false" />
+  <type value="QuestionnaireResponse" />
+  <baseDefinition value="http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" />
+  <derivation value="constraint" />
+  <differential>
+    <element id="QuestionnaireResponse.implicitRules">
+      <path value="QuestionnaireResponse.implicitRules" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.language">
+      <path value="QuestionnaireResponse.language" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.contained">
+      <path value="QuestionnaireResponse.contained" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.extension">
+      <path value="QuestionnaireResponse.extension" />
+      <slicing>
+        <discriminator>
+          <type value="value" />
+          <path value="url" />
+        </discriminator>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="QuestionnaireResponse.extension:eventStatus">
+      <path value="QuestionnaireResponse.extension" />
+      <sliceName value="eventStatus" />
+      <min value="1" />
+      <max value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/event-status" />
+      </type>
+    </element>
+    <element id="QuestionnaireResponse.extension:dueDate">
+      <path value="QuestionnaireResponse.extension" />
+      <sliceName value="dueDate" />
+      <min value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/incident-date-copy" />
+      </type>
+    </element>
+    <element id="QuestionnaireResponse.extension:location">
+      <path value="QuestionnaireResponse.extension" />
+      <sliceName value="location" />
+      <min value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/location" />
+      </type>
+    </element>
+    <element id="QuestionnaireResponse.identifier">
+      <path value="QuestionnaireResponse.identifier" />
+      <slicing>
+        <description value="Only DHIS2 identifier is supported." />
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2">
+      <path value="QuestionnaireResponse.identifier" />
+      <sliceName value="dhis2" />
+      <min value="1" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.use">
+      <path value="QuestionnaireResponse.identifier.use" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.type">
+      <path value="QuestionnaireResponse.identifier.type" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.system">
+      <path value="QuestionnaireResponse.identifier.system" />
+      <min value="1" />
+      <fixedUri value="http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.value">
+      <path value="QuestionnaireResponse.identifier.value" />
+      <min value="1" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.period">
+      <path value="QuestionnaireResponse.identifier.period" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.identifier:dhis2.assigner">
+      <path value="QuestionnaireResponse.identifier.assigner" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.basedOn">
+      <path value="QuestionnaireResponse.basedOn" />
+      <min value="1" />
+      <max value="1" />
+      <type>
+        <code value="Reference" />
+        <targetProfile value="http://hl7.org/fhir/StructureDefinition/CarePlan" />
+      </type>
+      <patternReference>
+        <type value="CarePlan" />
+      </patternReference>
+    </element>
+    <element id="QuestionnaireResponse.basedOn.reference">
+      <path value="QuestionnaireResponse.basedOn.reference" />
+      <min value="1" />
+    </element>
+    <element id="QuestionnaireResponse.partOf">
+      <path value="QuestionnaireResponse.partOf" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.questionnaire">
+      <path value="QuestionnaireResponse.questionnaire" />
+      <min value="1" />
+    </element>
+    <element id="QuestionnaireResponse.status">
+      <path value="QuestionnaireResponse.status" />
+      <short value="in-progress | completed" />
+      <definition value="The position of the questionnaire response within its overall lifecycle. More detailed information is included in the event status of the questionnaire response." />
+    </element>
+    <element id="QuestionnaireResponse.encounter">
+      <path value="QuestionnaireResponse.encounter" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.authored">
+      <path value="QuestionnaireResponse.authored" />
+      <short value="Event date" />
+      <definition value="The event date." />
+    </element>
+    <element id="QuestionnaireResponse.author">
+      <path value="QuestionnaireResponse.author" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.source">
+      <path value="QuestionnaireResponse.source" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.item.definition">
+      <path value="QuestionnaireResponse.item.definition" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.item.answer.item">
+      <path value="QuestionnaireResponse.item.answer.item" />
+      <max value="0" />
+    </element>
+    <element id="QuestionnaireResponse.item.item">
+      <path value="QuestionnaireResponse.item.item" />
+      <max value="0" />
+    </element>
+  </differential>
+</StructureDefinition>
