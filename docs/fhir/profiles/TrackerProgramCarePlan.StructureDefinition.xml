@@ -30,7 +30,7 @@
 <StructureDefinition xmlns="http://hl7.org/fhir">
   <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/StructureDefinition/TrackerProgramCarePlan" />
   <name value="TrackerProgramCarePlan" />
-  <status value="active />
+  <status value="active" />
   <fhirVersion value="4.0.0" />
   <kind value="resource" />
   <abstract value="false" />

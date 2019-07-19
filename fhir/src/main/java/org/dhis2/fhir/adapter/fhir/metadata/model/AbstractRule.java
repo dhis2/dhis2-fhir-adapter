@@ -174,6 +174,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
 
     private boolean grouping;
 
+    private boolean simpleFhirId;
+
     private List<RuleDhisDataReference> dhisDataReferences;
 
     protected AbstractRule()
@@ -424,6 +426,17 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public void setGrouping( boolean grouping )
     {
         this.grouping = grouping;
+    }
+
+    @Column( name = "simpleFhirId", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isSimpleFhirId()
+    {
+        return simpleFhirId;
+    }
+
+    public void setSimpleFhirId( boolean simpleFhirId )
+    {
+        this.simpleFhirId = simpleFhirId;
     }
 
     @JsonCacheIgnore

@@ -475,14 +475,14 @@ INSERT INTO fhir_tracked_entity(id, version, name, description, tracked_entity_r
 VALUES ('4203754d21774a4486aa2de31ee4c8ee', 0, 'Person', 'Tracked entity for a patient.', 'NAME:Person', 'ID:Ewi7FUfcHAD');
 
 -- Rule FHIR Patient to tracked entity type Person
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id)
-VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '72451c8f7492470790b8a3e0796de19e');
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, simple_fhir_id)
+VALUES ('5f9ebdc9852e4c8387ca795946aabc35', 0, 'FHIR Patient to Person', NULL, TRUE, 0, 'PATIENT', 'TRACKED_ENTITY', '72451c8f7492470790b8a3e0796de19e', TRUE);
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, org_lookup_script_id, loc_lookup_script_id)
 VALUES ('5f9ebdc9852e4c8387ca795946aabc35', '4203754d21774a4486aa2de31ee4c8ee', '25a97bb47b394ed48677db4bcaa28ccf', 'ef90531f443848bd83b36370dd65875a');
 
 -- Rule FHIR Related Person to tracked entity type Person
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, contained_allowed)
-VALUES ('52227dd9c79c478b92af9aa1f33c76fd', 0, 'FHIR Related Person to Person', NULL, TRUE, 0, 'RELATED_PERSON', 'TRACKED_ENTITY', 'c6b2d08d3a73434ea5afee0ff13549a1', TRUE);
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, contained_allowed, simple_fhir_id)
+VALUES ('52227dd9c79c478b92af9aa1f33c76fd', 0, 'FHIR Related Person to Person', NULL, TRUE, 0, 'RELATED_PERSON', 'TRACKED_ENTITY', 'c6b2d08d3a73434ea5afee0ff13549a1', TRUE, TRUE);
 INSERT INTO fhir_tracked_entity_rule (id, tracked_entity_id, tei_lookup_script_id)
 VALUES ('52227dd9c79c478b92af9aa1f33c76fd', '4203754d21774a4486aa2de31ee4c8ee', '26e8880864ee446980837962b74ac48a');
 
@@ -780,8 +780,8 @@ VALUES ('5090c485a2254c2ea8f695fa74ce1618', 0, '655f55b538264fe7b38e1e29bcad09ec
 UPDATE fhir_executable_script SET base_executable_script_id = (SELECT id FROM fhir_executable_script WHERE id = '25a97bb47b394ed48677db4bcaa28ccf')
 WHERE id='5090c485a2254c2ea8f695fa74ce1618';
 
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
-VALUES ('b9546b024adc4868a4cdd5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd67fc4d4d9b7491f98730acd7', true, true, true, true);
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, simple_fhir_id)
+VALUES ('b9546b024adc4868a4cdd5d7789f0df0', 0, 'DHIS Organization Unit to FHIR Location', NULL, TRUE, 1, 'LOCATION', 'ORGANIZATION_UNIT', FALSE, NULL, 'b918b4cd67fc4d4d9b7491f98730acd7', true, true, true, true, true);
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id, mo_identifier_lookup_script_id) VALUES ('b9546b024adc4868a4cdd5d7789f0df0', '5090c485a2254c2ea8f695fa74ce1618', '66d12e44471c4318827a0b397f694b6a');
 
 
@@ -833,8 +833,9 @@ VALUES ('50544af8cf524e1e9a5dd44c736bc8d8', 0, '53fdf1da61454e259d25fc41b9baf09f
         'Transforms DHIS Org Unit to FHIR Organization', 'TRANSFORM_DHIS_ORG_UNIT_FHIR_ORG',
         'Transforms DHIS Organization Unit to FHIR Organization.');
 
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
-VALUES ('d0e1472a05e647c9b36bff1f06fec352', 0, 'DHIS Organization Unit to FHIR Organization', NULL, TRUE, 0, 'ORGANIZATION', 'ORGANIZATION_UNIT', FALSE, 'a84850454d624b3a9cfd5c36760b8d45', '50544af8cf524e1e9a5dd44c736bc8d8', TRUE, TRUE, TRUE, TRUE);
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, applicable_exp_script_id, transform_exp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled,
+fhir_delete_enabled, simple_fhir_id)
+VALUES ('d0e1472a05e647c9b36bff1f06fec352', 0, 'DHIS Organization Unit to FHIR Organization', NULL, TRUE, 0, 'ORGANIZATION', 'ORGANIZATION_UNIT', FALSE, 'a84850454d624b3a9cfd5c36760b8d45', '50544af8cf524e1e9a5dd44c736bc8d8', TRUE, TRUE, TRUE, TRUE, TRUE);
 INSERT INTO fhir_organization_unit_rule(id, identifier_lookup_script_id) VALUES ('d0e1472a05e647c9b36bff1f06fec352', '66d12e44471c4318827a0b397f694b6a');
 
 INSERT INTO fhir_script (id, version, code, name, description, script_type, return_type)
@@ -2886,9 +2887,9 @@ VALUES ('aa956fdb01074cb7b5c1ab6567162d9d', 0, 'e885f646626940c5a8126c2aa081e239
 INSERT INTO fhir_resource_mapping(id, version, fhir_resource_type, tracked_entity_fhir_resource_type, imp_tei_lookup_script_id, imp_enrollment_org_lookup_script_id, imp_enrollment_date_lookup_script_id)
 VALUES('b6650f008462419bb9926775ca0a26cb', 0, 'CARE_PLAN', 'PATIENT', '762b4137a98b4b10a0f5629d93e23461', '25a97bb47b394ed48677db4bcaa28ccf', '0f79f2c88b5411e981f7ebd621029975');
 
-INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id, simple_fhir_id)
 VALUES('c4e17e7d880e45b59bc5568da8c79742', 0, 'CARE_PLAN', 'ENROLLMENT', 'Default FHIR Care Plan to DHIS2 Enrollment', 'Default rule that transforms a FHIR Care Plan to a DHIS2 Enrollment.',
-true, true, false, false, true, true, true, false, -2147483648, 'aa956fdb01074cb7b5c1ab6567162d9d');
+true, true, false, false, true, true, true, false, -2147483648, 'aa956fdb01074cb7b5c1ab6567162d9d', TRUE);
 INSERT INTO fhir_enrollment_rule(id, program_ref_lookup_script_id) VALUES ('c4e17e7d880e45b59bc5568da8c79742', '79d297065c1c47c582456069036072f8');
 
 UPDATE fhir_rule SET evaluation_order = 100 WHERE fhir_resource_type = 'PATIENT' AND evaluation_order = 0;
