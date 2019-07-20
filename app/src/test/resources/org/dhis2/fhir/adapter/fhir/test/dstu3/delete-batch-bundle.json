@@ -5,19 +5,19 @@
     {
       "request": {
         "method": "DELETE",
-        "url": "Patient/te-MyJuP2H588d-5f9ebdc9852e4c8387ca795946aabc35"
+        "url": "Patient/MyJuP2H588d"
       }
     },
     {
       "request": {
         "method": "DELETE",
-        "url": "Patient/te-MyJuP2H588e-5f9ebdc9852e4c8387ca795946aabc35"
+        "url": "Patient/MyJuP2H588e"
       }
     },
     {
       "request": {
         "method": "DELETE",
-        "url": "Patient/te-MyJuP2H588f-5f9ebdc9852e4c8387ca795946aabc35"
+        "url": "Patient/MyJuP2H588f"
       }
     }
   ]

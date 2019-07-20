@@ -333,10 +333,10 @@ public class R4FhirResourceFhirToDhisTransformerUtilsTest
         Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID" ) ).when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
-        Mockito.doReturn( "abcdef123456" ).when( context ).extractDhisId( "te-l2C0N9u2e5q-5f9ebdc9852e4c8387ca795946aabc35" );
+        Mockito.doReturn( "abcdef123456" ).when( context ).extractDhisId( "l2C0N9u2e5q" );
 
         final org.dhis2.fhir.adapter.dhis.model.Reference adapterReference = utils.getAdapterReference( new Reference()
-            .setIdentifier( new Identifier().setSystem( System.DHIS2_FHIR_IDENTIFIER_URI ).setValue( "te-l2C0N9u2e5q-5f9ebdc9852e4c8387ca795946aabc35" ) ), "Patient" );
+            .setIdentifier( new Identifier().setSystem( System.DHIS2_FHIR_IDENTIFIER_URI ).setValue( "l2C0N9u2e5q" ) ), "Patient" );
 
         Assert.assertNotNull( adapterReference );
         Assert.assertEquals( new org.dhis2.fhir.adapter.dhis.model.Reference( "abcdef123456", ReferenceType.ID ), adapterReference );
@@ -419,10 +419,10 @@ public class R4FhirResourceFhirToDhisTransformerUtilsTest
         Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID" ) ).when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
-        Mockito.doReturn( "abcdef123456" ).when( context ).extractDhisId( "te-l2C0N9u2e5q-5f9ebdc9852e4c8387ca795946aabc35" );
+        Mockito.doReturn( "abcdef123456" ).when( context ).extractDhisId( "l2C0N9u2e5q" );
 
         final Patient patient = new Patient();
-        patient.addIdentifier( new Identifier().setSystem( System.DHIS2_FHIR_IDENTIFIER_URI ).setValue( "te-l2C0N9u2e5q-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        patient.addIdentifier( new Identifier().setSystem( System.DHIS2_FHIR_IDENTIFIER_URI ).setValue( "l2C0N9u2e5q" ) );
 
         final org.dhis2.fhir.adapter.dhis.model.Reference adapterReference = utils.getResourceAdapterReference( patient, "Patient" );
 

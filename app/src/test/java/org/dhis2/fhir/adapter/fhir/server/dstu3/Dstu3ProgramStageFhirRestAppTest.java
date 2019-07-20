@@ -127,8 +127,8 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         Observation observation = client.read().resource( Observation.class ).withId( "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" ).execute();
         Assert.assertEquals( 0, observation.getIdentifier().size() );
-        Assert.assertEquals( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", observation.getSubject().getReference() );
-        Assert.assertEquals( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352", observation.getPerformerFirstRep().getReference() );
+        Assert.assertEquals( "Patient/JeR2Ul4mZfx", observation.getSubject().getReference() );
+        Assert.assertEquals( "Organization/ldXIdLNUNEp", observation.getPerformerFirstRep().getReference() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();
@@ -196,8 +196,8 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Assert.assertEquals( 2, bundle.getEntry().size() );
         Observation observation = (Observation) bundle.getEntry().get( 0 ).getResource();
         Assert.assertEquals( 0, observation.getIdentifier().size() );
-        Assert.assertEquals( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", observation.getSubject().getReference() );
-        Assert.assertEquals( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352", observation.getPerformerFirstRep().getReference() );
+        Assert.assertEquals( "Patient/JeR2Ul4mZfx", observation.getSubject().getReference() );
+        Assert.assertEquals( "Organization/ldXIdLNUNEp", observation.getPerformerFirstRep().getReference() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();
@@ -226,12 +226,12 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-        Bundle bundle = client.search().forResource( Observation.class ).where( Observation.PATIENT.hasId( new IdType( "Patient", "te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) ) ).returnBundle( Bundle.class ).execute();
+        Bundle bundle = client.search().forResource( Observation.class ).where( Observation.PATIENT.hasId( new IdType( "Patient", "JeR2Ul4mZfx" ) ) ).returnBundle( Bundle.class ).execute();
         Assert.assertEquals( 2, bundle.getEntry().size() );
         Observation observation = (Observation) bundle.getEntry().get( 0 ).getResource();
         Assert.assertEquals( 0, observation.getIdentifier().size() );
-        Assert.assertEquals( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35", observation.getSubject().getReference() );
-        Assert.assertEquals( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352", observation.getPerformerFirstRep().getReference() );
+        Assert.assertEquals( "Patient/JeR2Ul4mZfx", observation.getSubject().getReference() );
+        Assert.assertEquals( "Organization/ldXIdLNUNEp", observation.getPerformerFirstRep().getReference() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();
@@ -245,7 +245,7 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( (IdType) null );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
 
         final IGenericClient client = createGenericClient();
         client.create().resource( observation ).execute();
@@ -263,7 +263,7 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( (IdType) null );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
@@ -294,8 +294,8 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( (IdType) null );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
-        observation.getPerformerFirstRep().setReference( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352" );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
+        observation.getPerformerFirstRep().setReference( "Organization/ldXIdLNUNEp" );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
@@ -328,8 +328,8 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70-codeset.json", StandardCharsets.UTF_8 ) );
         observation.setId( (IdType) null );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
-        observation.getPerformerFirstRep().setReference( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352" );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
+        observation.getPerformerFirstRep().setReference( "Organization/ldXIdLNUNEp" );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
@@ -384,7 +384,7 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
 
         final IGenericClient client = createGenericClient();
         client.update().resource( observation ).execute();
@@ -402,7 +402,7 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
@@ -442,8 +442,8 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
         Observation observation = (Observation) getFhirContext().newJsonParser().parseResource(
             IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-observation-70.json", StandardCharsets.UTF_8 ) );
         observation.setId( "ps-deR4kl4mnf7-097d9ee0bdb344aeb9613b4584bad1db" );
-        observation.setSubject( new Reference( "Patient/te-JeR2Ul4mZfx-5f9ebdc9852e4c8387ca795946aabc35" ) );
-        observation.getPerformerFirstRep().setReference( "Organization/ou-ldXIdLNUNEp-d0e1472a05e647c9b36bff1f06fec352" );
+        observation.setSubject( new Reference( "Patient/JeR2Ul4mZfx" ) );
+        observation.getPerformerFirstRep().setReference( "Organization/ldXIdLNUNEp" );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
