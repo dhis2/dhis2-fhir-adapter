@@ -53,6 +53,6 @@ public class DhisFhirResourceIdTest
     @Test
     public void isValid()
     {
-        Assert.assertTrue( DhisFhirResourceId.isValid( "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) );
+        Assert.assertTrue( DhisFhirResourceId.isValid( "ldXIdLNUNEn" ) );
     }
 }

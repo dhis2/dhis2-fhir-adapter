@@ -71,7 +71,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
     public void getLocationWithoutAuthorization()
     {
         final IGenericClient client = createGenericClient();
-        client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        client.read().resource( Location.class ).withId( "ldXIdLNUNEn" ).execute();
     }
 
     @Test( expected = AuthenticationException.class )
@@ -83,7 +83,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
-        client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        client.read().resource( Location.class ).withId( "ldXIdLNUNEn" ).execute();
     }
 
     @Test
@@ -107,7 +107,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-        Location location = client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+        Location location = client.read().resource( Location.class ).withId( "ldXIdLNUNEn" ).execute();
         Assert.assertEquals( "Test Hospital", location.getName() );
         Assert.assertEquals( 1, location.getIdentifier().size() );
         Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/location-identifier", location.getIdentifier().get( 0 ).getSystem() );
@@ -144,7 +144,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
         {
             final IGenericClient client = createGenericClient();
             client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-            client.read().resource( Location.class ).withId( "ou-0dXIdLNUNEn-b9546b024adc4868a4cdd5d7789f0df0" ).execute();
+            client.read().resource( Location.class ).withId( "0dXIdLNUNEn" ).execute();
         }
         catch ( ResourceNotFoundException e )
         {
@@ -177,7 +177,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
         {
             final IGenericClient client = createGenericClient();
             client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-            client.read().resource( Location.class ).withId( "ou-ldXIdLNUNEn-a9546b024adc4868a4cdd5d7789f0df0" ).execute();
+            client.read().resource( Location.class ).withId( "ldXIdLNUNEn" ).execute();
         }
         catch ( ResourceNotFoundException e )
         {
@@ -302,7 +302,7 @@ public class R4OrgUnitFhirRestAppTest extends AbstractAppTest
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-        Bundle bundle = client.search().forResource( Location.class ).where( Location.PARTOF.hasId( new IdType( "Location", "ou-bdXIaLNUNEp-b9546b024adc4868a4cdd5d7789f0df0" ) ) ).returnBundle( Bundle.class ).execute();
+        Bundle bundle = client.search().forResource( Location.class ).where( Location.PARTOF.hasId( new IdType( "Location", "bdXIaLNUNEp" ) ) ).returnBundle( Bundle.class ).execute();
         Assert.assertEquals( 2, bundle.getEntry().size() );
         Location location = (Location) bundle.getEntry().get( 0 ).getResource();
         Assert.assertEquals( "Test Hospital", location.getName() );

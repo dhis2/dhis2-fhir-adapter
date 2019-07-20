@@ -132,7 +132,7 @@ public class R4BatchDemoClient
         imm1.addProtocolApplied().setDoseNumber( new PositiveIntType( 1 ) )
             .setSeries( "2" );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
-        imm1.setLocation( new Reference( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
+        imm1.setLocation( new Reference( new IdType( "Organization", "ldXIdLNUNEn" ) ) );
 
         Observation bw1 = new Observation();
         bw1.addCategory( new CodeableConcept().addCoding(

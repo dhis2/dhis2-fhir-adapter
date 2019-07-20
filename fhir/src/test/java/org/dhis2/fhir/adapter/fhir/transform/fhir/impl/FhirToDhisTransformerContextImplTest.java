@@ -109,7 +109,7 @@ public class FhirToDhisTransformerContextImplTest
     @Test
     public void extractDhisIdComplex()
     {
-        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( "te-LMYkcW3hE5b-5f9ebdc9852e4c8387ca795946aabc35" ) );
+        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( "LMYkcW3hE5b" ) );
     }
 
     @Test
@@ -121,7 +121,7 @@ public class FhirToDhisTransformerContextImplTest
     @Test
     public void extractDhisIdType()
     {
-        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( new IdDt( "Patient/te-LMYkcW3hE5b-5f9ebdc9852e4c8387ca795946aabc35" ) ) );
+        Assert.assertEquals( "LMYkcW3hE5b", context.extractDhisId( new IdDt( "Patient/LMYkcW3hE5b" ) ) );
     }
 
     @Test( expected = TransformerDataException.class )

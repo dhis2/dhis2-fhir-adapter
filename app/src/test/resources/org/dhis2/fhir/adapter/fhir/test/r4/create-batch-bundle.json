@@ -50,7 +50,7 @@
           }
         ],
         "managingOrganization": {
-          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+          "reference": "Organization/ldXIdLNUNEn"
         }
       },
       "request": {
@@ -100,7 +100,7 @@
           }
         ],
         "managingOrganization": {
-          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+          "reference": "Organization/ldXIdLNUNEn"
         }
       },
       "request": {
@@ -144,7 +144,7 @@
         "effectiveDateTime": "2018-11-11",
         "performer": [
           {
-            "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+            "reference": "Organization/ldXIdLNUNEn"
           }
         ],
         "valueQuantity": {
@@ -205,7 +205,7 @@
         "effectiveDateTime": "2018-11-12",
         "performer": [
           {
-            "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+            "reference": "Organization/ldXIdLNUNEn"
           }
         ],
         "valueQuantity": {
@@ -239,7 +239,7 @@
         "occurrenceDateTime": "2018-11-11T21:34:05+02:00",
         "primarySource": true,
         "location": {
-          "reference": "Organization/ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352"
+          "reference": "Organization/ldXIdLNUNEn"
         },
         "protocolApplied": [
           {

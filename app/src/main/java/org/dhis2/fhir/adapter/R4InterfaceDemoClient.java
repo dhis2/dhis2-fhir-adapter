@@ -116,7 +116,7 @@ public class R4InterfaceDemoClient
                 .setValue( new DecimalType( -13.262743 ) ) );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
         child.setManagingOrganization( new org.hl7.fhir.r4.model.Reference(
-            new org.hl7.fhir.r4.model.IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
+            new org.hl7.fhir.r4.model.IdType( "Organization", "ldXIdLNUNEn" ) ) );
 
         MethodOutcome methodOutcome = client.create().resource( child ).execute();
         System.out.println( "Child " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
@@ -140,7 +140,7 @@ public class R4InterfaceDemoClient
         imm1.addProtocolApplied().setDoseNumber( new PositiveIntType( 1 ) )
             .setSeries( "2" );
         // FHIR reference to DHIS2 Organisation Unit with ID ldXIdLNUNEn
-        imm1.setLocation( new Reference( new IdType( "Organization", "ou-ldXIdLNUNEn-d0e1472a05e647c9b36bff1f06fec352" ) ) );
+        imm1.setLocation( new Reference( new IdType( "Organization", "ldXIdLNUNEn" ) ) );
 
         methodOutcome = client.create().resource( imm1 ).execute();
         System.out.println( "Immunization 1 " + methodOutcome.getId() + " (created=" + methodOutcome.getCreated() + ")" );
