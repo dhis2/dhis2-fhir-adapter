@@ -57,14 +57,18 @@ public class DhisFhirResourceId implements Serializable
 
     private final UUID ruleId;
 
-    public DhisFhirResourceId( @Nonnull DhisResourceType type, @Nonnull String id, @Nonnull UUID ruleId )
+    public DhisFhirResourceId( @Nullable DhisResourceType type, @Nonnull String id, @Nullable UUID ruleId )
     {
         this.type = type;
         this.id = id;
         this.ruleId = ruleId;
     }
 
-    @Nonnull
+    public DhisFhirResourceId( @Nonnull String id )
+    {
+        this( null, id, null );
+    }
+
     public DhisResourceType getType()
     {
         return type;
@@ -76,16 +80,34 @@ public class DhisFhirResourceId implements Serializable
         return id;
     }
 
-    @Nonnull
     public UUID getRuleId()
     {
         return ruleId;
     }
 
     @Nonnull
-    public DhisResourceId getDhisResourceId()
+    public DhisResourceId getDhisResourceId() throws FhirRepositoryException
     {
-        return new DhisResourceId( getType(), getId() );
+        final DhisResourceType type = getType();
+
+        if ( type == null )
+        {
+            throw new FhirRepositoryException(
+                "Type of DHIS2 FHIR Resource ID has not been specified." );
+        }
+
+        return new DhisResourceId( type, getId() );
+    }
+
+    public boolean isQualified()
+    {
+        return type != null && ruleId != null;
+    }
+
+    @Nonnull
+    public DhisFhirResourceId toQualified( @Nonnull DhisResourceType type, @Nonnull UUID ruleId )
+    {
+        return new DhisFhirResourceId( type, getId(), ruleId );
     }
 
     @Override
@@ -103,7 +125,7 @@ public class DhisFhirResourceId implements Serializable
 
         DhisFhirResourceId that = (DhisFhirResourceId) o;
 
-        return getType() == that.getType() && getId().equals( that.getId() ) && getRuleId().equals( that.getRuleId() );
+        return getType() == that.getType() && getId().equals( that.getId() ) && Objects.equals( getRuleId(), that.getRuleId() );
     }
 
     @Override
@@ -120,9 +142,23 @@ public class DhisFhirResourceId implements Serializable
     }
 
     @Nonnull
-    public static String toString( @Nonnull DhisResourceType type, @Nonnull String id, @Nonnull UUID ruleId )
+    public static String toString( @Nullable DhisResourceType type, @Nonnull String id, @Nullable UUID ruleId )
     {
-        return type.getAbbreviation() + "-" + id + "-" + StringUtils.remove( ruleId.toString(), '-' );
+        final StringBuilder sb = new StringBuilder();
+
+        if ( type != null )
+        {
+            sb.append( type.getAbbreviation() ).append( '-' );
+        }
+
+        sb.append( id );
+
+        if ( ruleId != null )
+        {
+            sb.append( '-' ).append( StringUtils.remove( ruleId.toString(), '-' ) );
+        }
+
+        return sb.toString();
     }
 
     public static boolean isValid( @Nullable String value )
@@ -148,40 +184,55 @@ public class DhisFhirResourceId implements Serializable
     public static DhisFhirResourceId parse( @Nonnull String value ) throws IllegalArgumentException
     {
         final int firstIndex = value.indexOf( '-' );
-        if ( firstIndex <= 0 )
+
+        if ( firstIndex < 0 )
+        {
+            return new DhisFhirResourceId( value );
+        }
+
+        if ( firstIndex == 0 )
         {
             throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
         }
+
         final int secondIndex = value.indexOf( '-', firstIndex + 1 );
+
         if ( secondIndex < 0 )
         {
             throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
         }
 
         final DhisResourceType type = DhisResourceType.getByAbbreviation( value.substring( 0, firstIndex ) );
+
         if ( type == null )
         {
             throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
         }
+
         final String id = value.substring( firstIndex + 1, secondIndex );
+
         if ( StringUtils.isBlank( id ) || !StringUtils.isAlphanumeric( id ) )
         {
             throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
         }
+
         final UUID ruleId;
         try
         {
             final Matcher matcher = UUID_PATTERN.matcher( value.substring( secondIndex + 1 ) );
+
             if ( !matcher.matches() )
             {
                 throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
             }
+
             ruleId = UUID.fromString( matcher.replaceAll( "$1-$2-$3-$4-$5" ) );
         }
         catch ( IllegalArgumentException e )
         {
             throw new IllegalArgumentException( "Invalid DHIS FHIR ID: " + value );
         }
+
         return new DhisFhirResourceId( type, id, ruleId );
     }
 }

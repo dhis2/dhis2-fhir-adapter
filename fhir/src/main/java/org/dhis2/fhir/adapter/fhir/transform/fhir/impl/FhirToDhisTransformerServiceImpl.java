@@ -167,8 +167,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
     @Override
     public FhirToDhisDeleteTransformOutcome<? extends DhisResource> delete( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
-        final RuleInfo<? extends AbstractRule> ruleInfo = ruleRepository.findOneImpByDhisFhirInputData(
-            Objects.requireNonNull( fhirClientResource.getFhirResourceType() ), Objects.requireNonNull( dhisFhirResourceId.getType() ), dhisFhirResourceId.getRuleId() ).orElse( null );
+        final RuleInfo<? extends AbstractRule> ruleInfo = getDeleteRuleInfo( fhirClientResource, dhisFhirResourceId );
 
         if ( ruleInfo == null )
         {
@@ -186,6 +185,25 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         }
 
         return transformer.transformDeletionCasted( fhirClientResource, ruleInfo, dhisFhirResourceId );
+    }
+
+    @Nullable
+    protected RuleInfo<? extends AbstractRule> getDeleteRuleInfo( @Nonnull FhirClientResource fhirClientResource, @Nonnull DhisFhirResourceId dhisFhirResourceId )
+    {
+        final RuleInfo<? extends AbstractRule> ruleInfo;
+
+        if ( dhisFhirResourceId.isQualified() )
+        {
+            ruleInfo = ruleRepository.findOneImpByDhisFhirInputData( Objects.requireNonNull( fhirClientResource.getFhirResourceType() ),
+                dhisFhirResourceId.getType(), dhisFhirResourceId.getRuleId() ).orElse( null );
+        }
+        else
+        {
+            ruleInfo = ruleRepository.findOneExpByDhisFhirInputData( fhirClientResource.getFhirResourceType() )
+                .filter( ri -> ri.getRule().isSimpleFhirId() ).orElse( null );
+        }
+
+        return ruleInfo;
     }
 
     @Nullable

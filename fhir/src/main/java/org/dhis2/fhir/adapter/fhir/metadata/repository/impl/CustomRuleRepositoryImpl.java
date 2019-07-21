@@ -181,6 +181,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
     {
         final List<AbstractRule> rules = new ArrayList<>( entityManager.createNamedQuery( AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_NAMED_QUERY, AbstractRule.class )
             .setParameter( "fhirResourceType", fhirResourceType ).setMaxResults( 2 ).getResultList() );
+
         if ( rules.size() != 1 )
         {
             return Optional.empty();
@@ -188,6 +189,7 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
 
         final AbstractRule rule = rules.get( 0 );
         Hibernate.initialize( rule.getDhisDataReferences() );
+
         return Optional.of( new RuleInfo<>( rule, rule.getDhisDataReferences() ) );
     }
 

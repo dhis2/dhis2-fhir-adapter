@@ -28,8 +28,12 @@ package org.dhis2.fhir.adapter.fhir.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.UUID;
 
 /**
  * Unit tests for {@link DhisFhirResourceId}.
@@ -54,5 +58,60 @@ public class DhisFhirResourceIdTest
     public void isValid()
     {
         Assert.assertTrue( DhisFhirResourceId.isValid( "ldXIdLNUNEn" ) );
+    }
+
+    @Test
+    public void getDhisResourceId()
+    {
+        Assert.assertEquals( new DhisResourceId( DhisResourceType.TRACKED_ENTITY, "a1234567890" ),
+            new DhisFhirResourceId( DhisResourceType.TRACKED_ENTITY, "a1234567890", UUID.randomUUID() ).getDhisResourceId() );
+    }
+
+    @Test( expected = FhirRepositoryException.class )
+    public void getDhisResourceIdUnqualified()
+    {
+        new DhisFhirResourceId( "a1234567890" ).getDhisResourceId();
+    }
+
+    @Test
+    public void isQualified()
+    {
+        Assert.assertTrue( new DhisFhirResourceId( DhisResourceType.TRACKED_ENTITY, "a1234567890", UUID.randomUUID() ).isQualified() );
+    }
+
+    @Test
+    public void isUnqualified()
+    {
+        Assert.assertFalse( new DhisFhirResourceId( "a1234567890" ).isQualified() );
+    }
+
+    @Test
+    public void toQualified()
+    {
+        final UUID ruleId = UUID.randomUUID();
+
+        Assert.assertEquals( new DhisFhirResourceId( DhisResourceType.TRACKED_ENTITY, "a1234567890", ruleId ),
+            new DhisFhirResourceId( "a1234567890" ).toQualified( DhisResourceType.TRACKED_ENTITY, ruleId ) );
+    }
+
+    @Test
+    public void parseUnqualified()
+    {
+        Assert.assertEquals( new DhisFhirResourceId( "a1234567890" ), DhisFhirResourceId.parse( "a1234567890" ) );
+    }
+
+    @Test
+    public void toUnqualifiedString()
+    {
+        Assert.assertEquals( "a1234567890", new DhisFhirResourceId( "a1234567890" ).toString() );
+    }
+
+    @Test
+    public void toQualifiedString()
+    {
+        final UUID ruleId = UUID.fromString( "7a6ceb64-3ab0-4a3d-acc1-65d9d562d589" );
+
+        Assert.assertEquals( "te-a1234567890-7a6ceb643ab04a3dacc165d9d562d589",
+            new DhisFhirResourceId( DhisResourceType.TRACKED_ENTITY, "a1234567890", ruleId ).toString() );
     }
 }

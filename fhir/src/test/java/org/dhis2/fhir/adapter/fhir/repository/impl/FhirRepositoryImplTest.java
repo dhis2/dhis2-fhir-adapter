@@ -31,14 +31,17 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
 import org.dhis2.fhir.adapter.auth.AuthorizationContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.sync.DhisResourceRepository;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.client.StoredFhirResourceService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.data.repository.SubscriptionFhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperation;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepositoryOperationType;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerService;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.FhirRequestMethod;
 import org.dhis2.fhir.adapter.lock.LockManager;
@@ -49,6 +52,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.util.UUID;
 
 /**
  * Unit tests for {@link FhirResourceRepositoryImpl}.
@@ -115,5 +120,34 @@ public class FhirRepositoryImplTest
     {
         final FhirRepositoryOperation operation = new FhirRepositoryOperation( FhirRepositoryOperationType.CREATE_OR_UPDATE );
         Assert.assertEquals( FhirRequestMethod.CREATE_OR_UPDATE, repository.getRequestMethod( operation ) );
+    }
+
+    @Test
+    public void createDhisFhirResourceIdNonSimple()
+    {
+        final TrackedEntityRule rule = new TrackedEntityRule();
+        rule.setId( UUID.fromString( "1f989050-500c-4eaa-b6dd-0bef9fef7023" ) );
+
+        final TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance();
+        trackedEntityInstance.setId( "b1234567890" );
+
+        final FhirToDhisTransformOutcome<TrackedEntityInstance> outcome = new FhirToDhisTransformOutcome<>( rule, trackedEntityInstance, true );
+
+        Assert.assertEquals( "te-b1234567890-1f989050500c4eaab6dd0bef9fef7023", repository.createDhisFhirResourceId( outcome, trackedEntityInstance ) );
+    }
+
+    @Test
+    public void createDhisFhirResourceIdSimple()
+    {
+        final TrackedEntityRule rule = new TrackedEntityRule();
+        rule.setId( UUID.fromString( "1f989050-500c-4eaa-b6dd-0bef9fef7023" ) );
+        rule.setSimpleFhirId( true );
+
+        final TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance();
+        trackedEntityInstance.setId( "b1234567890" );
+
+        final FhirToDhisTransformOutcome<TrackedEntityInstance> outcome = new FhirToDhisTransformOutcome<>( rule, trackedEntityInstance, true );
+
+        Assert.assertEquals( "b1234567890", repository.createDhisFhirResourceId( outcome, trackedEntityInstance ) );
     }
 }
