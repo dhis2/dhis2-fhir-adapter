@@ -168,27 +168,48 @@ public class DhisRepositoryImpl implements DhisRepository
     @Nonnull
     public Optional<IBaseResource> read( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisFhirResourceId dhisFhirResourceId )
     {
+        final DhisResourceType dhisResourceType;
+        final UUID ruleId;
+
+        if ( dhisFhirResourceId.isQualified() )
+        {
+            dhisResourceType = dhisFhirResourceId.getType();
+            ruleId = dhisFhirResourceId.getRuleId();
+        }
+        else
+        {
+            final RuleInfo<? extends AbstractRule> ruleInfo = dhisToFhirTransformerService.findSingleRule( fhirClient, fhirResourceType );
+
+            if ( ruleInfo == null || !ruleInfo.getRule().isSimpleFhirId() )
+            {
+                return Optional.empty();
+            }
+
+            dhisResourceType = ruleInfo.getRule().getDhisResourceType();
+            ruleId = ruleInfo.getRule().getId();
+        }
+
         return new OneDhisResourceReader()
         {
             @Nonnull
             @Override
             protected UUID getRuleId()
             {
-                return dhisFhirResourceId.getRuleId();
+                return ruleId;
             }
 
             @Nullable
             @Override
             protected DhisToFhirTransformerRequest createTransformerRequest( @Nonnull FhirResourceType fhirResourceType, @Nonnull DhisRequest dhisRequest, @Nonnull DhisResource dhisResource )
             {
-                return dhisToFhirTransformerService.createTransformerRequest( fhirClient, dhisRequest, dhisResource, fhirResourceType, dhisFhirResourceId.getRuleId() );
+                return dhisToFhirTransformerService.createTransformerRequest( fhirClient, dhisRequest, dhisResource, fhirResourceType, ruleId );
             }
 
             @Nullable
             @Override
             protected DhisResource getDhisResource()
             {
-                return dhisResourceRepository.findRefreshed( dhisFhirResourceId.getDhisResourceId() ).orElse( null );
+                return dhisResourceRepository.findRefreshed( dhisFhirResourceId.toQualified( dhisResourceType, ruleId ).getDhisResourceId() ).orElse( null );
             }
         }.read( fhirClient, fhirResourceType );
     }
@@ -199,10 +220,12 @@ public class DhisRepositoryImpl implements DhisRepository
     public Optional<IBaseResource> readByIdentifier( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nonnull String identifier )
     {
         final RuleInfo<? extends AbstractRule> ruleInfo = dhisToFhirTransformerService.findSingleRule( fhirClient, fhirResourceType );
+
         if ( ruleInfo == null )
         {
             return Optional.empty();
         }
+
         return new OneDhisResourceReader()
         {
             @Nonnull
@@ -455,6 +478,7 @@ public class DhisRepositoryImpl implements DhisRepository
             try ( final RequestCacheContext requestCacheContext = requestCacheService.createRequestCacheContext( true ) )
             {
                 final DhisResource dhisResource = getDhisResource();
+
                 if ( dhisResource == null )
                 {
                     logger.debug( "DHIS resource could not be found." );

@@ -405,7 +405,7 @@ public class FhirRepositoryImpl implements FhirRepository
 
                     if ( operationOutcome == null )
                     {
-                        final String dhisFhirResourceId = DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() );
+                        final String dhisFhirResourceId = createDhisFhirResourceId( outcome, persistedDhisResource );
 
                         if ( fhirRequest.isDhisFhirId() && ( resource.getIdElement().isEmpty() || resource.getIdElement().isLocal() || !DhisFhirResourceId.isValid( resource.getIdElement().getIdPart() ) ) )
                         {
@@ -422,6 +422,19 @@ public class FhirRepositoryImpl implements FhirRepository
         while ( (transformerRequest != null) && !fhirRequest.isFirstRuleOnly() );
 
         return operationOutcome;
+    }
+
+    @Nonnull
+    protected String createDhisFhirResourceId( @Nonnull FhirToDhisTransformOutcome<? extends DhisResource> outcome, @Nonnull DhisResource persistedDhisResource )
+    {
+        if ( outcome.getRule().isSimpleFhirId() )
+        {
+            return DhisFhirResourceId.toString( null, persistedDhisResource.getId(), null );
+        }
+        else
+        {
+            return DhisFhirResourceId.toString( persistedDhisResource.getResourceType(), persistedDhisResource.getId(), outcome.getRule().getId() );
+        }
     }
 
     @Nonnull

@@ -55,7 +55,8 @@ public class FhirToDhisTransformerContextImplTest
 
     private FhirToDhisTransformerContextImpl context;
 
-    @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Before
     public void before()

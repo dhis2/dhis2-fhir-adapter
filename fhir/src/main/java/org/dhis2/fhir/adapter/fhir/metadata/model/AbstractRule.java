@@ -428,7 +428,7 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
         this.grouping = grouping;
     }
 
-    @Column( name = "simpleFhirId", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    @Column( name = "simple_fhir_id", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
     public boolean isSimpleFhirId()
     {
         return simpleFhirId;

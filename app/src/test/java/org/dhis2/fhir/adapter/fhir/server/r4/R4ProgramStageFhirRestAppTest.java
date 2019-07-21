@@ -129,7 +129,7 @@ public class R4ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRestA
         Assert.assertEquals( 0, observation.getIdentifier().size() );
         Assert.assertEquals( "Patient/JeR2Ul4mZfx", observation.getSubject().getReference() );
         Assert.assertEquals( "Organization/ldXIdLNUNEp", observation.getPerformerFirstRep().getReference() );
-        Assert.assertEquals( "Encounter/deR4kl4mnf7", observation.getEncounter().getReference() );
+        Assert.assertEquals( "Encounter/ps-deR4kl4mnf7-9d342f13aec146299d654f03fd0e848c", observation.getEncounter().getReference() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();

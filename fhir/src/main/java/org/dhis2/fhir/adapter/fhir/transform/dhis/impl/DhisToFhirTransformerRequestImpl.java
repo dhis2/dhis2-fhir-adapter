@@ -64,6 +64,8 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
 
     private int ruleIndex;
 
+    private final boolean simpleFhirIdRule;
+
     public DhisToFhirTransformerRequestImpl( @Nonnull DhisToFhirTransformerContext context, @Nullable ScriptedDhisResource input, @Nonnull FhirClient fhirClient, @Nonnull List<RuleInfo<? extends AbstractRule>> rules,
         @Nonnull Map<String, DhisToFhirTransformerUtils> transformerUtils )
     {
@@ -72,6 +74,8 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         this.fhirClient = fhirClient;
         this.rules = rules;
         this.transformerUtils = transformerUtils;
+
+        this.simpleFhirIdRule = rules.size() == 1 && rules.get( 0 ).getRule().isSimpleFhirId();
     }
 
     @Nonnull
@@ -125,6 +129,12 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
             throw new FatalTransformerException( "Rule ID is not available." );
         }
         return rules.get( ruleIndex ).getRule().getId();
+    }
+
+    @Override
+    public boolean isSimpleFhirIdRule()
+    {
+        return simpleFhirIdRule;
     }
 
     public final boolean isFirstRule()

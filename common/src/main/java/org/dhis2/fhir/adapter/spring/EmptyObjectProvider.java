@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis;
+package org.dhis2.fhir.adapter.spring;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,35 +28,42 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.ObjectProvider;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.UUID;
 
 /**
- * Contains the next request to the transformer, that may deliver further transformer
- * outcomes. This is required when several rules can be applied to transform a resource.
- * Also outcomes may depend on each other. If the second outcome of a transformation
- * depends on the first outcome, then the first outcome must be stored before the
- * second outcome.
+ * Object provider that contains no object.
  *
- * @author volsch
+ * @param <T> the concrete type of the object.
  */
-public interface DhisToFhirTransformerRequest extends Serializable
+public class EmptyObjectProvider<T> implements ObjectProvider<T>
 {
+    @Override
     @Nonnull
-    DhisToFhirTransformerContext getContext();
+    public T getObject( @Nonnull Object... args ) throws BeansException
+    {
+        throw new BeanCreationException( "No object available." );
+    }
 
+    @Override
+    public T getIfAvailable() throws BeansException
+    {
+        return null;
+    }
+
+    @Override
+    public T getIfUnique() throws BeansException
+    {
+        return null;
+    }
+
+    @Override
     @Nonnull
-    ScriptedDhisResource getInput();
-
-    @Nonnull
-    UUID getRuleId();
-
-    @Nonnull
-    FhirClient getFhirClient();
-
-    boolean isSimpleFhirIdRule();
+    public T getObject() throws BeansException
+    {
+        throw new BeanCreationException( "No object available." );
+    }
 }

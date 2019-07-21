@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.IdDt;
 import org.dhis2.fhir.adapter.cache.RequestCacheContext;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
@@ -209,32 +210,58 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
         DhisToFhirTransformerRequest transformerRequest = createTransformerRequest(
             fhirClient, new ImmutableDhisRequest( dhisRequest ), dhisResource, fhirResourceTypes );
+
         if ( transformerRequest == null )
         {
             logger.debug( "No matching rule has been found for FHIR references." );
             return Collections.emptyList();
         }
 
-        final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceTransformerUtils = getFhirResourceTransformerUtils( fhirClient.getFhirVersion() );
         final List<IBaseReference> references = new ArrayList<>();
-        do
+
+        if ( transformerRequest.isSimpleFhirIdRule() )
         {
-            final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transform( transformerRequest );
-            if ( outcome == null )
-            {
-                transformerRequest = null;
-            }
-            else
-            {
-                if ( outcome.getResource() != null )
-                {
-                    references.add( fhirResourceTransformerUtils.createReference( outcome.getResource() ) );
-                }
-                transformerRequest = outcome.getNextTransformerRequest();
-            }
+            references.add( resolveSimpleFhirIdReference( transformerRequest ) );
         }
-        while ( (transformerRequest != null) && (references.size() < max) );
+        else
+        {
+            final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceTransformerUtils = getFhirResourceTransformerUtils( fhirClient.getFhirVersion() );
+
+            do
+            {
+                final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = transform( transformerRequest );
+                if ( outcome == null )
+                {
+                    transformerRequest = null;
+                }
+                else
+                {
+                    if ( outcome.getResource() != null )
+                    {
+                        references.add( fhirResourceTransformerUtils.createReference( outcome.getResource() ) );
+                    }
+
+                    transformerRequest = outcome.getNextTransformerRequest();
+                }
+            }
+            while ( transformerRequest != null && references.size() < max );
+        }
+
         return references;
+    }
+
+    @Nonnull
+    protected IBaseReference resolveSimpleFhirIdReference( @Nonnull DhisToFhirTransformerRequest transformerRequest )
+    {
+        final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceTransformerUtils = getFhirResourceTransformerUtils( transformerRequest.getContext().getFhirVersion() );
+        final DhisToFhirTransformerRequestImpl transformerRequestImpl = (DhisToFhirTransformerRequestImpl) transformerRequest;
+        final RuleInfo<? extends AbstractRule> ruleInfo = Objects.requireNonNull( transformerRequestImpl.nextRule() );
+
+        final FhirResourceType fhirResourceType = ruleInfo.getRule().getFhirResourceType();
+        final IBaseResource resource = fhirResourceTransformerUtils.createResource( fhirResourceType );
+        resource.setId( new IdDt( fhirResourceType.getResourceTypeName(), transformerRequestImpl.getInput().getId() ) );
+
+        return fhirResourceTransformerUtils.createReference( resource );
     }
 
     @Nullable

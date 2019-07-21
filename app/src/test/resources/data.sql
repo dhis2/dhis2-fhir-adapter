@@ -1948,14 +1948,14 @@ INSERT INTO fhir_code_set_value(code_set_id, code_id)
 UPDATE fhir_code_set_value SET preferred_export=true WHERE code_id='d308a6acad84453d9fb6e04f6a468469';
 
 -- Encounter Child Programme, Birth
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled, grouping)
-VALUES ('9d342f13aec146299d654f03fd0e848c', 0, 'Child Programme Birth Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', TRUE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE, TRUE);
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled, grouping, simple_fhir_id)
+VALUES ('9d342f13aec146299d654f03fd0e848c', 0, 'Child Programme Birth Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', TRUE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE, TRUE, TRUE);
 INSERT INTO fhir_program_stage_rule (id, program_stage_id)
 VALUES ('9d342f13aec146299d654f03fd0e848c', '4c074c85be494b9d89739e16b9615dad');
 
 -- Encounter Child Programme, Baby Postnatal
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled, grouping)
-VALUES ('1f2da6ec41b04b6499d9e98fca864b0f', 0, 'Child Programme Baby Postnatal Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE, TRUE);
+INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, imp_enabled, transform_exp_script_id, fhir_create_enabled, fhir_update_enabled, exp_enabled, grouping, simple_fhir_id)
+VALUES ('1f2da6ec41b04b6499d9e98fca864b0f', 0, 'Child Programme Baby Postnatal Encounter', NULL, TRUE, 1000, 'ENCOUNTER', 'PROGRAM_STAGE_EVENT', FALSE, '5eab76a90ff443b0a7d05a6e726ca80e', TRUE, TRUE, TRUE, TRUE, TRUE);
 INSERT INTO fhir_program_stage_rule (id, program_stage_id)
 VALUES ('1f2da6ec41b04b6499d9e98fca864b0f', '526b4e01774747efa25df32ccd739e87');
 

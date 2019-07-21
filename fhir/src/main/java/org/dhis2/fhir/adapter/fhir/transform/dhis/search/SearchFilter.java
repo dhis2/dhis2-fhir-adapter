@@ -123,10 +123,12 @@ public class SearchFilter
         }
 
         final DhisFhirResourceId dhisFhirResourceId = extractDhisFhirResourceId( spv.getValues().get( 0 ) );
-        if ( !dhisFhirResourceId.getType().equals( dhisType ) )
+
+        if ( dhisFhirResourceId.isQualified() && !dhisFhirResourceId.getType().equals( dhisType ) )
         {
             throw new DhisToFhirDataProviderException( "Search filter contains unexpected FHIR resource reference: " + dhisFhirResourceId );
         }
+
         return dhisFhirResourceId;
     }
 
