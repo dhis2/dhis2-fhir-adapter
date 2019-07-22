@@ -29,18 +29,15 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 
-import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * @author Charles Chigoriwa (ITINORDIC)
@@ -49,11 +46,9 @@ import javax.persistence.Transient;
 @Table( name = "fhir_enrollment_rule" )
 @DiscriminatorValue( "ENROLLMENT" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractRule
+public class EnrollmentRule extends AbstractSimpleRule
 {
     private static final long serialVersionUID = 3878610804052444321L;
-
-    public static final String FIND_ALL_EXP_NAMED_QUERY = "EnrollmentRule.findAllExportedWithoutDataRef";
 
     private ExecutableScript programRefLookupScript;
 
@@ -73,35 +68,5 @@ public class EnrollmentRule extends AbstractRule
     public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
     {
         this.programRefLookupScript = programRefLookupScript;
-    }
-
-    @Override
-    @Transient
-    @JsonIgnore
-    public boolean isEffectiveFhirCreateEnable()
-    {
-        return isExpEnabled() && isFhirCreateEnabled();
-    }
-
-    @Override
-    @Transient
-    @JsonIgnore
-    public boolean isEffectiveFhirUpdateEnable()
-    {
-        return isExpEnabled() && isFhirUpdateEnabled();
-    }
-
-    @Override
-    @Transient
-    @JsonIgnore
-    public boolean isEffectiveFhirDeleteEnable()
-    {
-        return isExpEnabled() && isFhirDeleteEnabled();
-    }
-
-    @Override
-    public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
-    {
-        return false;
     }
 }

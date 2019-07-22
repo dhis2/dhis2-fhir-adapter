@@ -851,3 +851,44 @@ VALUES ('eb2ef8ad93a042d5b8da2d2b0d3c6115', 'R4');
 INSERT INTO fhir_executable_script (id, version, script_id, name, code, description)
 VALUES ('385e52d28674403db42586b5d4e9faf0', 0, '152434b081db49bba3c53c09caf29208', 'Questionnaire Response Tracker Program Stage Lookup',
         'QR_PROGRAM_STAGE_REF_LOOKUP', 'Lookup of the Tracker Program Stage of the FHIR QuestionnaireResponse.');
+
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('a55e8da7d71948ddaf74d5f6919ce479', 0, '46f0af46365440b38d4c7a633332c3b3', 'PLAN_DEFINITION', NULL, 'FHIR Plan Definition Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('70a57cdf00af4428b7b3114b408a736b', 0, '46f0af46365440b38d4c7a633332c3b3', 'QUESTIONNAIRE', NULL, 'FHIR Questionnaire Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('edea9a1e83c04ffe801ded5da74d50de', 0, '46f0af46365440b38d4c7a633332c3b3', 'CARE_PLAN', NULL, 'FHIR Care Plan Resource.', TRUE);
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, fhir_criteria_parameters, description, preferred)
+VALUES ('fdc10514ab75468a88136ea41b7c671d', 0, '46f0af46365440b38d4c7a633332c3b3', 'QUESTIONNAIRE_RESPONSE', NULL, 'FHIR Questionnaire Response Resource.', TRUE);
+
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('f79b98922b4348af9a823ba03642bac4', 0, 'DHIS2 FHIR Adapter Plan Definition Identifier', 'SYSTEM_DHIS2_FHIR_PLAN_DEFINITION_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/plan-definition-identifier',
+        'DHIS2 FHIR Adapter Plan Definition Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('296576d031b544278bf07cc168fb3a82', 0, 'DHIS2 FHIR Adapter Questionnaire Identifier', 'SYSTEM_DHIS2_FHIR_QUESTIONNAIRE_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/questionnaire-identifier',
+        'DHIS2 FHIR Adapter Questionnaire Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('9c5584f08b0644eea18f6addf938969f', 0, 'DHIS2 FHIR Adapter Care Plan Identifier', 'SYSTEM_DHIS2_FHIR_CARE_PLAN_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/care-plan-identifier',
+        'DHIS2 FHIR Adapter Care Plan Identifier.');
+INSERT INTO fhir_system (id, version, name, code, system_uri, description)
+VALUES ('5bdff628d94f43dc83678c84fe48bdd9', 0, 'DHIS2 FHIR Adapter Questionnaire Response Identifier', 'SYSTEM_DHIS2_FHIR_QUESTIONNAIRE_R_IDENTIFIER', 'http://www.dhis2.org/dhis2-fhir-adapter/systems/questionnaire-response-identifier',
+        'DHIS2 FHIR Adapter Questionnaire Response Identifier.');
+
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('69dfbae158734a94862aba7344c383d7', 0, '46f0af46365440b38d4c7a633332c3b3', 'PLAN_DEFINITION', 'f79b98922b4348af9a823ba03642bac4');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('7af9d58d0393411eaa7fe5891418f9f2', 0, '46f0af46365440b38d4c7a633332c3b3', 'QUESTIONNAIRE', '296576d031b544278bf07cc168fb3a82');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('0340bf441eab4c2a98a2aaf7ba35855c', 0, '46f0af46365440b38d4c7a633332c3b3', 'CARE_PLAN', '9c5584f08b0644eea18f6addf938969f');
+INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
+VALUES('789a91bd6bcb4f8496d0c6829b5fdeaa', 0, '46f0af46365440b38d4c7a633332c3b3', 'QUESTIONNAIRE_RESPONSE', '5bdff628d94f43dc83678c84fe48bdd9');
+
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+VALUES('4a9ac195858b455eb34dc560e1855787', 0, 'PLAN_DEFINITION', 'PROGRAM_METADATA', 'Default DHIS2 Program Metadata to FHIR Plan Definition', 'Default rule that transforms a DHIS2 Program Metadata to a FHIR Care Plan.',
+true, false, true, false, true, true, true, false, -2147483648, NULL);
+INSERT INTO fhir_program_metadata_rule(id) VALUES ('4a9ac195858b455eb34dc560e1855787');
+
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+VALUES('1f97f85ae4ea46f1bcde77ea178226f4', 0, 'QUESTIONNAIRE', 'PROGRAM_STAGE_METADATA', 'Default DHIS2 Program Stage Metadata to FHIR Questionnaire', 'Default rule that transforms a DHIS2 Program Stage Metadata to a FHIR Questionnaire.',
+true, false, true, false, true, true, true, false, -2147483648, NULL);
+INSERT INTO fhir_program_stage_metadata_rule(id) VALUES ('1f97f85ae4ea46f1bcde77ea178226f4');

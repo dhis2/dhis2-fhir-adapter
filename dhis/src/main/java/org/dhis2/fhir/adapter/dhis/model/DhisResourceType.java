@@ -47,6 +47,16 @@ public enum DhisResourceType
     TRACKED_ENTITY( "trackedEntityInstances", "te" ),
 
     /**
+     * The program metadata.
+     */
+    PROGRAM_METADATA( "programs", "pm" ),
+
+    /**
+     * The program stage metadata.
+     */
+    PROGRAM_STAGE_METADATA( "programStages", "sm" ),
+
+    /**
      * Resource is a program instance (aka enrollment).
      */
     ENROLLMENT( "enrollments", "en" ),

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,43 +28,50 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.DataType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
-import reactor.util.annotation.NonNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 
 /**
- * Spring Data REST validator for {@link EnrollmentRule}.
+ * Unsupported rule for transformations of DHIS2 resource program stage metadata.
  *
- * @author Charles Chigoriwa (ITINORDIC)
+ * @author volsch
  */
 @Component
-public class BeforeCreateSaveEnrollmentRuleValidator extends AbstractBeforeCreateSaveRuleValidator<EnrollmentRule> implements MetadataValidator<EnrollmentRule>
+public class ProgramStageMetadataFhirToDhisTransformer extends AbstractUnsupportedFhirToDhisTransformer<ProgramStage, ProgramStageMetadataRule>
 {
-    public BeforeCreateSaveEnrollmentRuleValidator( @Nonnull EntityManager entityManager )
+    public ProgramStageMetadataFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
-        super( EnrollmentRule.class, entityManager );
+        super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
     }
 
+    @Nonnull
     @Override
-    public void doValidate( @Nonnull EnrollmentRule rule, @Nonnull Errors errors )
+    public DhisResourceType getDhisResourceType()
     {
-        validate( rule, TransformDataType.DHIS_ENROLLMENT, errors );
-
-        checkValidProgramRefLookupScript( errors, "programRefLookupScript", rule.getFhirResourceType(), rule.getProgramRefLookupScript() );
+        return DhisResourceType.PROGRAM_STAGE_METADATA;
     }
 
-    protected static void checkValidProgramRefLookupScript( @NonNull Errors errors, @Nonnull String field, @Nonnull FhirResourceType fhirResourceType, @Nullable ExecutableScript executableScript )
+    @Nonnull
+    @Override
+    public Class<ProgramStage> getDhisResourceClass()
     {
-        checkValidScript( errors, "EnrollmentRule", field, fhirResourceType, executableScript, ScriptType.EVALUATE, DataType.PROGRAM_REF );
+        return ProgramStage.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<ProgramStageMetadataRule> getRuleClass()
+    {
+        return ProgramStageMetadataRule.class;
     }
 }

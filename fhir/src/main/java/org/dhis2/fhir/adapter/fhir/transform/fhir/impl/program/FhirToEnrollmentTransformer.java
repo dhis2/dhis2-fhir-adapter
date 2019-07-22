@@ -53,6 +53,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
@@ -83,6 +84,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Charles Chigoriwa (ITINORDIC)
@@ -116,6 +118,13 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         this.trackedEntityRuleRepository = trackedEntityRuleRepository;
         this.valueConverter = valueConverter;
         this.resourceMappingRepository = resourceMappingRepository;
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Override

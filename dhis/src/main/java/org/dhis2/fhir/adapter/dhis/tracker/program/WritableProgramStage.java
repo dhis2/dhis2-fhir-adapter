@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,14 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dhis2.fhir.adapter.dhis.model.AbstractDhisType;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -222,5 +225,54 @@ public class WritableProgramStage extends AbstractDhisType implements ProgramSta
             this.dataElementsByCode = dataElementsByCode = dataElements.stream().collect( Collectors.toMap( de -> de.getElement().getCode(), de -> de ) );
         }
         return Optional.ofNullable( dataElementsByCode.get( code ) );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return DhisResourceType.PROGRAM_STAGE_METADATA;
+    }
+
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return new DhisResourceId( DhisResourceType.PROGRAM_STAGE_METADATA, getId() );
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return false;
+    }
+
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isNewResource()
+    {
+        return false;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done, read-only
+    }
+
+    @Override
+    public String getOrgUnitId()
+    {
+        return null;
     }
 }

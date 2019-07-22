@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
@@ -74,11 +73,5 @@ public class OrganizationUnitFhirToDhisTransformer extends AbstractUnsupportedFh
     public Class<OrganizationUnitRule> getRuleClass()
     {
         return OrganizationUnitRule.class;
-    }
-
-    @Override
-    protected boolean isAlwaysActiveResource( @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo )
-    {
-        return false;
     }
 }

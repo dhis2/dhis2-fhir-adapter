@@ -41,7 +41,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
@@ -72,7 +71,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Transforms a DHIS 2 resource to a FHIR resource.
@@ -116,13 +114,6 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     protected FhirResourceRepository getFhirResourceRepository()
     {
         return fhirResourceRepository;
-    }
-
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.ALL;
     }
 
     @Nullable

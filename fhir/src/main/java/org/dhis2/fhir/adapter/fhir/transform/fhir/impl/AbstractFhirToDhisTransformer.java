@@ -47,7 +47,6 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -76,7 +75,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Abstract base class for all transformers from FHIR to DHIS 2 resources.
@@ -129,13 +127,6 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             throw new FatalTransformerException( "Tracked entity service has not been provided." );
         }
         return trackedEntityService;
-    }
-
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.ALL;
     }
 
     protected abstract boolean isAlwaysActiveResource( @Nonnull RuleInfo<U> ruleInfo );

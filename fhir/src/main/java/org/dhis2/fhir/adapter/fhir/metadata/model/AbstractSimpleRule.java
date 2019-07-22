@@ -28,46 +28,54 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+
+import javax.annotation.Nonnull;
+import javax.persistence.Transient;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Abstract implementation of a rule that has some default implementations for
+ * special cases.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public enum TransformDataType
+public abstract class AbstractSimpleRule extends AbstractRule
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON ),
-    FHIR_CONDITION( FhirResourceType.CONDITION ),
-    FHIR_MEDICATION_REQUEST( FhirResourceType.MEDICATION_REQUEST ),
-    FHIR_PRACTITIONER( FhirResourceType.PRACTITIONER ),
-    FHIR_PLAN_DEFINITION( FhirResourceType.PLAN_DEFINITION ),
-    FHIR_QUESTIONNAIRE( FhirResourceType.QUESTIONNAIRE ),
-    FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
+    private static final long serialVersionUID = 1545627424069944659L;
 
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    public AbstractSimpleRule( @Nonnull DhisResourceType dhisResourceType )
     {
-        this.fhirResourceType = fhirResourceType;
+        super( dhisResourceType );
     }
 
-    @Nullable
-    public FhirResourceType getFhirResourceType()
+    @Override
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirCreateEnable()
     {
-        return fhirResourceType;
+        return isExpEnabled() && isFhirCreateEnabled();
+    }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirUpdateEnable()
+    {
+        return isExpEnabled() && isFhirUpdateEnabled();
+    }
+
+    @Override
+    @Transient
+    @JsonIgnore
+    public boolean isEffectiveFhirDeleteEnable()
+    {
+        return isExpEnabled() && isFhirDeleteEnabled();
+    }
+
+    @Override
+    public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
+    {
+        return false;
     }
 }

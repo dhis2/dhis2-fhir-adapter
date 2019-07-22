@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -45,7 +46,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Scriptable
-public interface ProgramStage extends DhisType
+public interface ProgramStage extends DhisResource, DhisType
 {
     boolean isRepeatable();
 

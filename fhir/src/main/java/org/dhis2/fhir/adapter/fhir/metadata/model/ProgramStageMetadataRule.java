@@ -28,46 +28,29 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
- * The data type of the input or output variable of a transformation.
+ * Rule for program stage metadata.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public enum TransformDataType
+@Entity
+@Table( name = "fhir_program_stage_metadata_rule" )
+@DiscriminatorValue( "PROGRAM_STAGE_METADATA" )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
+public class ProgramStageMetadataRule extends AbstractSimpleRule
 {
-    DHIS_ORGANIZATION_UNIT( null ),
-    DHIS_TRACKED_ENTITY_INSTANCE( null ),
-    DHIS_ENROLLMENT( null ),
-    DHIS_EVENT( null ),
-    FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
-    FHIR_LOCATION( FhirResourceType.LOCATION ),
-    FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
-    FHIR_PATIENT( FhirResourceType.PATIENT ),
-    FHIR_IMMUNIZATION( FhirResourceType.IMMUNIZATION ),
-    FHIR_OBSERVATION( FhirResourceType.OBSERVATION ),
-    FHIR_DIAGNOSTIC_REPORT( FhirResourceType.DIAGNOSTIC_REPORT ),
-    FHIR_RELATED_PERSON( FhirResourceType.RELATED_PERSON ),
-    FHIR_CONDITION( FhirResourceType.CONDITION ),
-    FHIR_MEDICATION_REQUEST( FhirResourceType.MEDICATION_REQUEST ),
-    FHIR_PRACTITIONER( FhirResourceType.PRACTITIONER ),
-    FHIR_PLAN_DEFINITION( FhirResourceType.PLAN_DEFINITION ),
-    FHIR_QUESTIONNAIRE( FhirResourceType.QUESTIONNAIRE ),
-    FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
+    private static final long serialVersionUID = 3878610804052444321L;
 
-    private final FhirResourceType fhirResourceType;
-
-    TransformDataType( @Nullable FhirResourceType fhirResourceType )
+    public ProgramStageMetadataRule()
     {
-        this.fhirResourceType = fhirResourceType;
-    }
-
-    @Nullable
-    public FhirResourceType getFhirResourceType()
-    {
-        return fhirResourceType;
+        super( DhisResourceType.PROGRAM_STAGE_METADATA );
     }
 }
