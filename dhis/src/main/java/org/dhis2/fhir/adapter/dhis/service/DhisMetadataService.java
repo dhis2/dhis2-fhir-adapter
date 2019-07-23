@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.dhis.service;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,47 +28,42 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
- * Contains read-only access to a DHIS2 Program. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object
- * instances are returned.
+ * Service that provides access to DHIS2 metadata.
  *
+ * @param <T> the concrete type of the metadata.
  * @author volsch
  */
-@Scriptable
-public interface Program extends DhisResource, DhisMetadata
+public interface DhisMetadataService<T extends DhisResource & DhisMetadata>
 {
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
-
-    List<? extends ProgramStage> getStages();
+    @Nonnull
+    Optional<T> findMetadataByReference( @Nonnull Reference reference );
 
     @Nonnull
-    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    Optional<T> findMetadataRefreshedByReference( @Nonnull Reference reference );
 
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Nonnull
+    Optional<T> findOneByReference( @Nonnull Reference reference );
+
+    @Nonnull
+    DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+
+    @Nonnull
+    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
+        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

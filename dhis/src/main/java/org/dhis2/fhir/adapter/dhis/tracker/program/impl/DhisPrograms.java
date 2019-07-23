@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.service.impl.DhisMetadataItems;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
 
 import java.io.Serializable;
@@ -38,24 +40,23 @@ import java.util.List;
  *
  * @author volsch
  */
-public class DhisPrograms implements Serializable
+public class DhisPrograms extends DhisMetadataItems<WritableProgram> implements Serializable
 {
     private static final long serialVersionUID = 1084527285362478422L;
 
-    private List<WritableProgram> programs;
-
+    @JsonProperty( "programs" )
     public List<WritableProgram> getPrograms()
     {
-        return programs;
+        return getItems();
     }
 
     public void setPrograms( List<WritableProgram> programs )
     {
-        this.programs = programs;
+        setItems( programs );
     }
 
     public List<WritableProgram> toModel()
     {
-        return programs;
+        return getItems();
     }
 }

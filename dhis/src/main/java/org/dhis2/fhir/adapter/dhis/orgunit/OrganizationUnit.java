@@ -29,6 +29,8 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.AbstractDhisMetadata;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -43,7 +45,7 @@ import java.time.ZonedDateTime;
  *
  * @author volsch
  */
-public class OrganizationUnit implements DhisResource, Serializable
+public class OrganizationUnit extends AbstractDhisMetadata implements DhisResource, DhisMetadata, Serializable
 {
     private static final long serialVersionUID = 3976508569865955265L;
 

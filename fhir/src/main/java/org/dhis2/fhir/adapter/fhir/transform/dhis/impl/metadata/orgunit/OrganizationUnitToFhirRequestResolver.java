@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.orgunit;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -31,12 +31,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
@@ -44,8 +42,6 @@ import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizati
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link DhisToFhirRequestResolver} for organization units.
@@ -53,14 +49,11 @@ import java.util.stream.Collectors;
  * @author volsch
  */
 @Component
-public class OrganizationUnitToFhirRequestResolver extends AbstractDhisToFhirRequestResolver
+public class OrganizationUnitToFhirRequestResolver extends AbstractDhisMetadataToFhirRequestResolver
 {
-    private final OrganizationUnitRuleRepository ruleRepository;
-
-    public OrganizationUnitToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, OrganizationUnitRuleRepository ruleRepository )
+    public OrganizationUnitToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository )
     {
-        super( fhirClientRepository );
-        this.ruleRepository = ruleRepository;
+        super( fhirClientRepository, ruleRepository );
     }
 
     @Nonnull
@@ -68,20 +61,6 @@ public class OrganizationUnitToFhirRequestResolver extends AbstractDhisToFhirReq
     public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.ORGANIZATION_UNIT;
-    }
-
-    @Nonnull
-    @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
-    {
-        return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
-    }
-
-    @Nonnull
-    @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
-    {
-        return rules.stream().sorted().collect( Collectors.toList() );
     }
 
     @Nonnull

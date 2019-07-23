@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.repository.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,48 +28,45 @@ package org.dhis2.fhir.adapter.fhir.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.impl.PolledProgramRetriever;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.MappedTrackerProgramRepository;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractProgramMetadataToFhirCarePlanTransformer;
+import org.dhis2.fhir.adapter.lock.LockManager;
+import org.hl7.fhir.r4.model.PlanDefinition;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Retrieves the IDs of all programs that should be polled.
+ * R4 specific version of DHIS 2 Program Metadata to FHIR Plan Definition transformer.
  *
  * @author volsch
  */
-@Component
-@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "polledProgram" )
-public class PolledProgramRetrieverImpl implements PolledProgramRetriever
+public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramMetadataToFhirCarePlanTransformer<PlanDefinition>
 {
-    private final ProgramMetadataService programMetadataService;
-
-    private final MappedTrackerProgramRepository mappedTrackerProgramRepository;
-
-    public PolledProgramRetrieverImpl( @Nonnull ProgramMetadataService programMetadataService, @Nonnull MappedTrackerProgramRepository mappedTrackerProgramRepository )
+    public R4ProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService )
     {
-        this.programMetadataService = programMetadataService;
-        this.mappedTrackerProgramRepository = mappedTrackerProgramRepository;
+        super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository, organizationUnitService, programMetadataService );
     }
 
-    @Cacheable( key = "{#root.methodName}" )
     @Nonnull
     @Override
-    public Collection<String> findAllPolledProgramIds()
+    public Set<FhirVersion> getFhirVersions()
     {
-        final Set<String> ids = new HashSet<>();
-        for ( final Reference ref : mappedTrackerProgramRepository.findAllPolledProgramReferences() )
-        {
-            programMetadataService.findMetadataByReference( ref ).ifPresent( p -> ids.add( p.getId() ) );
-        }
-        return ids;
+        return FhirVersion.R4_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    protected FhirResourceType getFhirResourceType()
+    {
+        return FhirResourceType.PLAN_DEFINITION;
     }
 }

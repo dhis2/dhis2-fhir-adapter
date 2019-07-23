@@ -127,7 +127,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
-    private final Map<DhisResourceType, DhisToFhirDataProvider<? extends AbstractRule>> dataProviders = new HashMap<>();
+    private final Map<FhirVersion, Map<DhisResourceType, DhisToFhirDataProvider<? extends AbstractRule>>> dataProviders = new HashMap<>();
 
     private final Map<FhirVersionedValue<DhisResourceType>, DhisToFhirTransformer<?, ?>> transformers = new HashMap<>();
 
@@ -158,7 +158,15 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         requestResolvers.ifAvailable( resolvers ->
             resolvers.forEach( r -> this.requestResolvers.put( r.getDhisResourceType(), r ) ) );
         dataProviders.ifAvailable( providers ->
-            providers.forEach( dp -> this.dataProviders.put( dp.getDhisResourceType(), dp ) ) );
+        {
+            for ( final DhisToFhirDataProvider<?> dataProvider : providers )
+            {
+                for ( final FhirVersion fhirVersion : dataProvider.getFhirVersions() )
+                {
+                    this.dataProviders.computeIfAbsent( fhirVersion, key -> new HashMap<>() ).put( dataProvider.getDhisResourceType(), dataProvider );
+                }
+            }
+        } );
         transformersProvider.ifAvailable( transformers ->
         {
             for ( final DhisToFhirTransformer<?, ?> transformer : transformers )
@@ -183,13 +191,16 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     @Nonnull
     @Override
-    public DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull DhisResourceType dhisResourceType )
+    public DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull FhirVersion fhirVersion, @Nonnull DhisResourceType dhisResourceType )
     {
-        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dataProviders.get( dhisResourceType );
+        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider =
+            dataProviders.computeIfAbsent( fhirVersion, version -> new HashMap<>() ).get( dhisResourceType );
+
         if ( dataProvider == null )
         {
-            throw new TransformerMappingException( "No data provider can be found for DHIS resource type " + dhisResourceType );
+            throw new TransformerMappingException( "No data provider can be found for FHIR version " + fhirVersion + " and DHIS resource type " + dhisResourceType );
         }
+
         return dataProvider;
     }
 

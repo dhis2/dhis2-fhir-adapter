@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.poll;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@ public class PolledItems<I extends PolledItem> implements Serializable
 
     private List<I> items;
 
+    @JsonProperty
     public Pager getPager()
     {
         return pager;

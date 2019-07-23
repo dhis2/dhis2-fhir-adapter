@@ -162,7 +162,7 @@ public class FhirToProgramStageTransformerTest
         trackedEntityType = new WritableTrackedEntityType();
         trackedEntityType.setId( "jdsuewyui1oi" );
 
-        Mockito.doReturn( Optional.of( program ) ).when( programMetadataService ).findProgramByReference( Mockito.eq( Reference.createIdReference( "jsheyu37anc" ) ) );
+        Mockito.doReturn( Optional.of( program ) ).when( programMetadataService ).findMetadataByReference( Mockito.eq( Reference.createIdReference( "jsheyu37anc" ) ) );
         Mockito.doReturn( Optional.of( trackedEntityType ) ).when( trackedEntityMetadataService ).findTypeByReference( Mockito.eq( Reference.createIdReference( "jdsuewyui1oi" ) ) );
 
         fhirResourceMapping = new FhirResourceMapping();

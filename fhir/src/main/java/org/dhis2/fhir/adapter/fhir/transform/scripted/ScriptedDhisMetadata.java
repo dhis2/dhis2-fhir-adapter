@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,47 +28,21 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 /**
- * Contains read-only access to a DHIS2 Program. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object
- * instances are returned.
+ * Mutable or immutable metadata resource that can be used by scripts safely.
  *
  * @author volsch
  */
 @Scriptable
-public interface Program extends DhisResource, DhisMetadata
+public interface ScriptedDhisMetadata extends ScriptedDhisResource
 {
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
-
-    List<? extends ProgramStage> getStages();
-
-    @Nonnull
-    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    @Nullable
+    String getCode();
 
     @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    String getName();
 }

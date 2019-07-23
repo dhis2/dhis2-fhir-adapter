@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.dhis.service.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,55 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.dhis.model.Pager;
 
 import javax.annotation.Nonnull;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Implemented by DHIS 2 types.
+ * Container object used for DHIS2 metadata items.
  *
+ * @param <T> the concrete type of the metadata.
  * @author volsch
  */
-public interface DhisType extends Identifiable<String>
+public class DhisMetadataItems<T extends DhisMetadata> implements Serializable
 {
-    /**
-     * @return the unique code of the type or <code>null</code> if the type has no code.
-     */
-    String getCode();
+    private static final long serialVersionUID = -671810199580040339L;
 
-    /**
-     * @return the unique name of the type.
-     */
-    String getName();
+    private Pager pager;
 
-    /**
-     * @return all references that can be used to reference this type.
-     */
+    private List<T> items;
+
+    @JsonProperty
+    public Pager getPager()
+    {
+        return pager;
+    }
+
+    public void setPager( Pager pager )
+    {
+        this.pager = pager;
+    }
+
+    @JsonIgnore
     @Nonnull
-    Set<Reference> getAllReferences();
+    public List<T> getItems()
+    {
+        if ( items == null )
+        {
+            items = new ArrayList<>();
+        }
 
-    /**
-     * Returns if the data matches the specified reference.
-     *
-     * @param reference the reference that should be checked.
-     * @return <code>true</code> if data matches the specified reference,
-     * <code>false</code> otherwise.
-     */
-    boolean isReference( @Nonnull Reference reference );
+        return items;
+    }
+
+    public void setItems( List<T> items )
+    {
+        this.items = items;
+    }
 }

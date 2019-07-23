@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -30,45 +30,43 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedDhisMetadata;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedDhisMetadata;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 /**
- * Contains read-only access to a DHIS2 Program. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object
- * instances are returned.
+ * Implementation of {@link DhisToFhirRequestResolver} for DHIS2 program metadata.
  *
  * @author volsch
  */
-@Scriptable
-public interface Program extends DhisResource, DhisMetadata
+@Component
+public class ProgramMetadataToFhirRequestResolver extends AbstractDhisMetadataToFhirRequestResolver
 {
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
-
-    List<? extends ProgramStage> getStages();
+    public ProgramMetadataToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository )
+    {
+        super( fhirClientRepository, ruleRepository );
+    }
 
     @Nonnull
-    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.PROGRAM_METADATA;
+    }
 
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Nonnull
+    @Override
+    public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
+    {
+        return new ImmutableScriptedDhisMetadata( new WritableScriptedDhisMetadata<>( (DhisResource & DhisMetadata) dhisResource ) );
+    }
 }

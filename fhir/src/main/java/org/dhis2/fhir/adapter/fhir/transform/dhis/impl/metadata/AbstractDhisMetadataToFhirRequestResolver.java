@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +28,46 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.CustomOrganizationUnitRuleRepository;
-import org.hibernate.Hibernate;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.rest.core.annotation.RestResource;
-import org.springframework.transaction.annotation.Transactional;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link CustomOrganizationUnitRuleRepository}.
+ * Implementation of {@link DhisToFhirRequestResolver} for organization units.
+ *
+ * @author volsch
  */
-@CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
-public class CustomOrganizationUnitRuleRepositoryImpl implements CustomOrganizationUnitRuleRepository
+@Component
+public abstract class AbstractDhisMetadataToFhirRequestResolver extends AbstractDhisToFhirRequestResolver
 {
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final RuleRepository ruleRepository;
 
-    public CustomOrganizationUnitRuleRepositoryImpl( @Nonnull EntityManager entityManager )
+    protected AbstractDhisMetadataToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository )
     {
-        this.entityManager = entityManager;
+        super( fhirClientRepository );
+        this.ruleRepository = ruleRepository;
     }
 
-    @RestResource( exported = false )
     @Nonnull
-    @Cacheable( key = "{#root.methodName}" )
-    @Transactional( readOnly = true )
-    public Collection<RuleInfo<OrganizationUnitRule>> findAllExp()
+    @Override
+    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
-        final List<OrganizationUnitRule> rules = entityManager.createNamedQuery(
-            OrganizationUnitRule.FIND_ALL_EXP_NAMED_QUERY, OrganizationUnitRule.class ).getResultList();
-        return rules.stream().map( r -> {
-            Hibernate.initialize( r.getDhisDataReferences() );
-            return new RuleInfo<>( r, r.getDhisDataReferences() );
-        } ).collect( Collectors.toList() );
+        return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
+    }
+
+    @Nonnull
+    @Override
+    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    {
+        return rules.stream().sorted().collect( Collectors.toList() );
     }
 }

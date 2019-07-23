@@ -28,82 +28,113 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * Writable scripted tracked entity instance that is used in evaluation and transformation
- * scripts and prevents accesses to the tracked entity instance domain object.
+ * Implementation of writable scripted metadata.
  *
+ * @param <M> concrete metadata class.
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "OrganizationUnit", transformDataType = "DHIS_ORGANIZATION_UNIT", description = "Organization unit." )
-public class WritableScriptedOrganizationUnit extends WritableScriptedDhisMetadata<OrganizationUnit> implements ScriptedOrganizationUnit, Serializable
+public class WritableScriptedDhisMetadata<M extends DhisResource & DhisMetadata> implements ScriptedDhisMetadata, Serializable
 {
-    private static final long serialVersionUID = -9043373621936561310L;
+    private static final long serialVersionUID = 8245822986881397171L;
 
-    public WritableScriptedOrganizationUnit( OrganizationUnit organizationUnit )
+    protected final M metadata;
+
+    public WritableScriptedDhisMetadata( @Nonnull M metadata )
     {
-        super( organizationUnit );
+        this.metadata = metadata;
     }
 
     @Nullable
     @Override
-    public String getShortName()
+    public String getCode()
     {
-        return metadata.getShortName();
+        return metadata.getCode();
     }
 
     @Nullable
     @Override
-    public String getDisplayName()
+    public String getName()
     {
-        return metadata.getDisplayName();
-    }
-
-    @Override
-    public boolean isLeaf()
-    {
-        return metadata.isLeaf();
-    }
-
-    @Override
-    public int getLevel()
-    {
-        return metadata.getLevel();
+        return metadata.getName();
     }
 
     @Nullable
     @Override
-    public ZonedDateTime getOpeningDate()
+    public String getId()
     {
-        return metadata.getOpeningDate();
+        return metadata.getId();
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return metadata.getResourceType();
     }
 
     @Nullable
     @Override
-    public ZonedDateTime getClosedDate()
+    public DhisResourceId getResourceId()
     {
-        return metadata.getClosedDate();
+        return metadata.getResourceId();
+    }
+
+    @Override
+    public boolean isNewResource()
+    {
+        return metadata.isNewResource();
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return metadata.isLocal();
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return metadata.isDeleted();
     }
 
     @Nullable
     @Override
-    public String getParentId()
+    public ZonedDateTime getLastUpdated()
     {
-        return metadata.getParentId();
+        return metadata.getLastUpdated();
     }
 
     @Nullable
     @Override
-    public String getCoordinates()
+    public String getOrganizationUnitId()
     {
-        return metadata.getCoordinates();
+        return metadata.getOrgUnitId();
+    }
+
+    @Nullable
+    @Override
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return null;
+    }
+
+    @Override
+    public void validate() throws TransformerException
+    {
+        // nothing to be done
     }
 }

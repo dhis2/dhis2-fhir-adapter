@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,108 +28,108 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
- * Writable implementation of {@link DataElement} that can also be used for
- * JSON serialization and deserialization.
+ * Base implementation of scripted metadata.
  *
  * @author volsch
  */
-public class WritableDataElement extends AbstractDhisMetadata implements DataElement, Serializable
+public class ImmutableScriptedDhisMetadata implements ScriptedDhisMetadata, Serializable
 {
-    private static final long serialVersionUID = -3933887626350878763L;
+    private static final long serialVersionUID = -3081103677950925231L;
 
-    private String id;
+    private final ScriptedDhisMetadata metadata;
 
-    private String name;
-
-    private String code;
-
-    private String formName;
-
-    private ValueType valueType;
-
-    private boolean optionSetValue;
-
-    private WritableOptionSet optionSet;
-
-    @Override
-    public String getId()
+    public ImmutableScriptedDhisMetadata( @Nonnull ScriptedDhisMetadata metadata )
     {
-        return id;
-    }
-
-    public void setId( String id )
-    {
-        this.id = id;
+        this.metadata = metadata;
     }
 
     @Override
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName( String name )
-    {
-        this.name = name;
-    }
-
-    @Override
+    @Nullable
     public String getCode()
     {
-        return code;
-    }
-
-    public void setCode( String code )
-    {
-        this.code = code;
+        return metadata.getCode();
     }
 
     @Override
-    public String getFormName()
+    @Nullable
+    public String getName()
     {
-        return formName;
-    }
-
-    public void setFormName( String formName )
-    {
-        this.formName = formName;
+        return metadata.getName();
     }
 
     @Override
-    public ValueType getValueType()
+    @Nullable
+    public String getId()
     {
-        return valueType;
-    }
-
-    public void setValueType( ValueType valueType )
-    {
-        this.valueType = valueType;
+        return metadata.getId();
     }
 
     @Override
-    public boolean isOptionSetValue()
+    @Nonnull
+    public DhisResourceType getResourceType()
     {
-        return optionSetValue;
-    }
-
-    public void setOptionSetValue( boolean optionSetValue )
-    {
-        this.optionSetValue = optionSetValue;
+        return metadata.getResourceType();
     }
 
     @Override
-    public WritableOptionSet getOptionSet()
+    @Nullable
+    public DhisResourceId getResourceId()
     {
-        return optionSet;
+        return metadata.getResourceId();
     }
 
-    public void setOptionSet( WritableOptionSet optionSet )
+    @Override
+    public boolean isNewResource()
     {
-        this.optionSet = optionSet;
+        return metadata.isNewResource();
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return metadata.isLocal();
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return metadata.isDeleted();
+    }
+
+    @Override
+    @Nullable
+    public ZonedDateTime getLastUpdated()
+    {
+        return metadata.getLastUpdated();
+    }
+
+    @Override
+    @Nullable
+    public String getOrganizationUnitId()
+    {
+        return metadata.getOrganizationUnitId();
+    }
+
+    @Override
+    @Nullable
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return metadata.getTrackedEntityInstance();
+    }
+
+    @Override
+    public void validate() throws TransformerException
+    {
+        metadata.validate();
     }
 }

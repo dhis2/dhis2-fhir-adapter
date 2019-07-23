@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,32 +28,50 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirDataProvider;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirSearchState} for organization units.
+ * Implementation of {@link DhisToFhirDataProvider} for DHIS2 Program Metadata.
  *
  * @author volsch
  */
-public class OrganizationUnitToFhirSearchState implements DhisToFhirSearchState
+@Component
+public class ProgramMetadataToFhirDataProvider extends AbstractDhisMetadataToFhirDataProvider<Program, ProgramMetadataRule>
 {
-    private final int from;
-
-    private final boolean more;
-
-    public OrganizationUnitToFhirSearchState( int from, boolean more )
+    public ProgramMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService programMetadataService )
     {
-        this.from = from;
-        this.more = more;
+        super( scriptExecutor, programMetadataService );
     }
 
-    public int getFrom()
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return from;
+        return FhirVersion.ALL;
     }
 
-    public boolean isMore()
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
     {
-        return more;
+        return DhisResourceType.PROGRAM_METADATA;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<ProgramMetadataRule> getRuleClass()
+    {
+        return ProgramMetadataRule.class;
     }
 }

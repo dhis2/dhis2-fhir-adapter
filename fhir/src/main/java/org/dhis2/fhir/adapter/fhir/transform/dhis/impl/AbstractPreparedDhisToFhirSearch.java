@@ -116,10 +116,12 @@ public abstract class AbstractPreparedDhisToFhirSearch<T extends AbstractRule> i
         {
             throw new IllegalStateException( "URI filter applier has not been set" );
         }
-        if ( ( lastUpdatedDateRange != null ) && !lastUpdatedDateRange.isEmpty() )
+
+        if ( lastUpdatedDateRange != null && !lastUpdatedDateRange.isEmpty() )
         {
             throw new DhisToFhirDataProviderException( "Search parameter to filter last updated date range is not yet supported." );
         }
+
         return uriFilterApplier.add( uriBuilder, variables );
     }
 

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.orgunit;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -40,25 +40,18 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractReadOnlyDhisMetadataToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
-import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
-import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -68,7 +61,7 @@ import java.util.Set;
  * @author volsch
  */
 @Component
-public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedOrganizationUnit, OrganizationUnitRule>
+public class OrganizationUnitToFhirTransformer extends AbstractReadOnlyDhisMetadataToFhirTransformer<ScriptedOrganizationUnit, OrganizationUnitRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -109,60 +102,12 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
         return OrganizationUnitRule.class;
     }
 
-    @Nullable
     @Override
-    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void addAdditionalVariables( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> variables )
     {
-        final Map<String, Object> variables = new HashMap<>( scriptVariables );
         variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
             organizationUnitService, getFhirResourceRepository(), fhirClient, context, ruleInfo, variables,
             new DefaultIdentifierValueProvider() ) );
-
-        final IBaseResource resource = getResource( fhirClient, context, ruleInfo, variables ).orElse( null );
-        if ( resource == null )
-        {
-            return null;
-        }
-        final IBaseResource modifiedResource = cloneToModified( context, ruleInfo, resource, variables );
-        if ( modifiedResource == null )
-        {
-            return null;
-        }
-        variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
-        if ( !transform( context, ruleInfo, variables ) )
-        {
-            return null;
-        }
-
-        if ( evaluateNotModified( context, variables, resource, modifiedResource ) )
-        {
-            // resource has not been changed and do not need to be updated
-            return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
-        }
-        return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
-    }
-
-    @Nonnull
-    @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
-    {
-        // not supported
-        return Optional.empty();
-    }
-
-    @Override
-    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
-    {
-        if ( !context.getDhisRequest().isDhisFhirId() )
-        {
-            final ScriptedOrganizationUnit scriptedOrganizationUnit =
-                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedOrganizationUnit.class );
-            getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
-                .lock( "out-ou:" + scriptedOrganizationUnit.getId() );
-        }
     }
 
     @Override
@@ -170,10 +115,18 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
     protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
         @Nonnull Map<String, Object> scriptVariables )
     {
-        if ( context.getDhisRequest().isDhisFhirId() )
+        String identifier = super.getIdentifierValue( context, ruleInfo, identifierLookupScript, scriptedOrganizationUnit, scriptVariables );
+
+        if ( identifier != null )
         {
-            return scriptedOrganizationUnit.getCode();
+            return identifier;
         }
-        return executeScript( context, ruleInfo, (identifierLookupScript == null) ? ruleInfo.getRule().getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
+
+        if ( identifierLookupScript == null )
+        {
+            identifier = executeScript( context, ruleInfo, ruleInfo.getRule().getIdentifierLookupScript(), scriptVariables, String.class );
+        }
+
+        return identifier;
     }
 }

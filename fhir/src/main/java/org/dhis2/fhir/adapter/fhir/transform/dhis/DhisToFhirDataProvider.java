@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersionRestricted;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +48,7 @@ import java.util.Map;
  * @param <R> the concrete type of the rule.
  * @author volsch
  */
-public interface DhisToFhirDataProvider<R extends AbstractRule>
+public interface DhisToFhirDataProvider<R extends AbstractRule> extends FhirVersionRestricted
 {
     @Nonnull
     DhisResourceType getDhisResourceType();

@@ -76,8 +76,11 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
         ruleInfos.forEach( ruleInfo -> {
             if ( ruleInfo.getRule().getFilterScript() != null )
             {
+                final SearchFilter searchFilter = new SearchFilter( searchFilterCollector, onlyStringContains );
+                initSearchFilter( fhirVersion, ruleInfo, searchFilter );
+
                 final Boolean result = scriptExecutor.execute( ruleInfo.getRule().getFilterScript(), fhirVersion,
-                    Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), new SearchFilter( searchFilterCollector, onlyStringContains ) ),
+                    Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), searchFilter ),
                     Collections.emptyMap(), Boolean.class );
 
                 if ( !Boolean.TRUE.equals( result ) )
@@ -86,7 +89,13 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
                 }
             }
         } );
+
         return searchFilterCollector;
+    }
+
+    protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<R> ruleInfo, @Nonnull SearchFilter searchFilter )
+    {
+        // method may be overridden
     }
 
     @Nullable

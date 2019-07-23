@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.dhis.service.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,56 +28,29 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
 
 import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
- * Abstract implementation of {@link DhisType}.
+ * Polled items for DHIS 2 metadata.
  *
  * @author volsch
  */
-public abstract class AbstractDhisType implements DhisType, Serializable
+@JsonDeserialize( using = DhisMetadataPolledItemDeserializer.class )
+public class DhisMetadataPolledItems extends PolledItems<DhisMetadataPolledItem>
 {
-    private static final long serialVersionUID = 7960220674294587120L;
+    private static final long serialVersionUID = -3139366174834526658L;
 
-    @JsonIgnore
-    @Nonnull
-    @Override
-    public Set<Reference> getAllReferences()
+    public DhisMetadataPolledItems()
     {
-        final Set<Reference> references = new HashSet<>();
-        if ( getId() != null )
-        {
-            references.add( new Reference( getId(), ReferenceType.ID ) );
-        }
-        if ( getCode() != null )
-        {
-            references.add( new Reference( getCode(), ReferenceType.CODE ) );
-        }
-        if ( getName() != null )
-        {
-            references.add( new Reference( getName(), ReferenceType.NAME ) );
-        }
-        return references;
+        super();
     }
 
-    @Override
-    public boolean isReference( @Nonnull Reference reference )
+    public DhisMetadataPolledItems( @Nonnull List<DhisMetadataPolledItem> items )
     {
-        switch ( reference.getType() )
-        {
-            case ID:
-                return reference.getValue().equals( getId() );
-            case CODE:
-                return reference.getValue().equals( getCode() );
-            case NAME:
-                return reference.getValue().equals( getName() );
-            default:
-                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
-        }
+        setItems( items );
     }
 }

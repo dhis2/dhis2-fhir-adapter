@@ -50,7 +50,7 @@ import java.util.UUID;
 @CacheConfig( cacheManager = "metadataCacheManager", cacheNames = "rule" )
 @RepositoryRestResource
 @PreAuthorize( "hasRole('DATA_MAPPING')" )
-public interface OrganizationUnitRuleRepository extends JpaRepository<OrganizationUnitRule, UUID>, QuerydslPredicateExecutor<OrganizationUnitRule>, CustomOrganizationUnitRuleRepository, MetadataRepository<OrganizationUnitRule>
+public interface OrganizationUnitRuleRepository extends JpaRepository<OrganizationUnitRule, UUID>, QuerydslPredicateExecutor<OrganizationUnitRule>, MetadataRepository<OrganizationUnitRule>
 {
     @Nonnull
     @Override

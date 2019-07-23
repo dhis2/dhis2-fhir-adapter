@@ -37,7 +37,6 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -48,13 +47,10 @@ import javax.persistence.Table;
 @Entity
 @Table( name = "fhir_organization_unit_rule" )
 @DiscriminatorValue( "ORGANIZATION_UNIT" )
-@NamedQuery( name = OrganizationUnitRule.FIND_ALL_EXP_NAMED_QUERY, query = "SELECT our FROM OrganizationUnitRule our WHERE our.enabled=true AND our.expEnabled=true AND (our.fhirCreateEnabled=true OR our.fhirUpdateEnabled=true)" )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public class OrganizationUnitRule extends AbstractSimpleRule
 {
     private static final long serialVersionUID = -3997570895838354307L;
-
-    public static final String FIND_ALL_EXP_NAMED_QUERY = "OrganizationUnitRule.findAllExp";
 
     private ExecutableScript identifierLookupScript;
 

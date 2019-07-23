@@ -91,6 +91,13 @@ public class TrackedEntityToFhirDataProvider extends AbstractDhisToFhirDataProvi
 
     @Nonnull
     @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
+    }
+
+    @Nonnull
+    @Override
     protected Class<TrackedEntityRule> getRuleClass()
     {
         return TrackedEntityRule.class;

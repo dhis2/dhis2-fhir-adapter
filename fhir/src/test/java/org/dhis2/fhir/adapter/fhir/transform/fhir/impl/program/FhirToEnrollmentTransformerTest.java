@@ -242,7 +242,7 @@ public class FhirToEnrollmentTransformerTest
 
         Mockito.doReturn( Reference.createIdReference( "hsu82us82ia" ) ).when( scriptExecutor )
             .execute( Mockito.same( programRefLookupScript ), Mockito.eq( FhirVersion.R4 ), Mockito.anyMap(), Mockito.anyMap(), Mockito.anyMap(), Mockito.eq( Reference.class ) );
-        Mockito.doReturn( Optional.of( program ) ).when( programMetadataService ).findProgramByReference( Mockito.eq( Reference.createIdReference( "hsu82us82ia" ) ) );
+        Mockito.doReturn( Optional.of( program ) ).when( programMetadataService ).findMetadataByReference( Mockito.eq( Reference.createIdReference( "hsu82us82ia" ) ) );
         Mockito.doReturn( Optional.of( trackedEntityType ) ).when( trackedEntityMetadataService ).findTypeByReference( Mockito.eq( Reference.createIdReference( "js73jhsyus91" ) ) );
         Mockito.doReturn( Collections.singletonList( trackedEntityRule ) ).when( trackedEntityRuleRepository )
             .findByTypeRefs( (Collection<Reference>) MockitoHamcrest.argThat( Matchers.containsInAnyOrder( Reference.createIdReference( "js73jhsyus91" ) ) ) );

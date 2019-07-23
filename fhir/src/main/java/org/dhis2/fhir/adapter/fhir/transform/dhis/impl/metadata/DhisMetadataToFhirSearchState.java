@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,19 +28,32 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import javax.annotation.Nonnull;
-import java.util.Collection;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
 /**
- * Custom rule repository for organization unit rules.
+ * Implementation of {@link DhisToFhirSearchState} for DHIS2 metadata.
+ *
+ * @author volsch
  */
-public interface CustomOrganizationUnitRuleRepository
+public class DhisMetadataToFhirSearchState implements DhisToFhirSearchState
 {
-    @RestResource( exported = false )
-    @Nonnull
-    Collection<RuleInfo<OrganizationUnitRule>> findAllExp();
+    private final int from;
+
+    private final boolean more;
+
+    public DhisMetadataToFhirSearchState( int from, boolean more )
+    {
+        this.from = from;
+        this.more = more;
+    }
+
+    public int getFrom()
+    {
+        return from;
+    }
+
+    public boolean isMore()
+    {
+        return more;
+    }
 }

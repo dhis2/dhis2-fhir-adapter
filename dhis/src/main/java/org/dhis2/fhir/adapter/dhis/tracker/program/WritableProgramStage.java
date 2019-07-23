@@ -30,7 +30,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.dhis.model.AbstractDhisType;
+import org.dhis2.fhir.adapter.dhis.model.AbstractDhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class WritableProgramStage extends AbstractDhisType implements ProgramStage, Serializable
+public class WritableProgramStage extends AbstractDhisMetadata implements ProgramStage, Serializable
 {
     private static final long serialVersionUID = -7544648580734783374L;
 

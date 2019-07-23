@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.dhis.orgunit.impl;
+package org.dhis2.fhir.adapter.dhis.service.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,41 +28,50 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import javax.annotation.Nonnull;
-import java.util.List;
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
- * Polled items for organization units.
+ * Deserializer for polled items. The first returned array field will be taken
+ * as list of polled items.
  *
  * @author volsch
  */
-public class OrganizationUnitPolledItems extends PolledItems<OrganizationUnitPolledItem>
+public class DhisMetadataPolledItemDeserializer extends StdDeserializer<DhisMetadataPolledItems>
 {
-    private static final long serialVersionUID = -3139366174834526658L;
+    private static final long serialVersionUID = -7632523079641260663L;
 
-    public OrganizationUnitPolledItems()
+    public DhisMetadataPolledItemDeserializer()
     {
-        super();
-    }
-
-    public OrganizationUnitPolledItems( @Nonnull List<OrganizationUnitPolledItem> items )
-    {
-        setItems( items );
-    }
-
-    @JsonProperty( "organisationUnits" )
-    @Override
-    public List<OrganizationUnitPolledItem> getItems()
-    {
-        return super.getItems();
+        super( DhisMetadataPolledItems.class );
     }
 
     @Override
-    public void setItems( List<OrganizationUnitPolledItem> items )
+    public DhisMetadataPolledItems deserialize( JsonParser p, DeserializationContext ctxt ) throws IOException
     {
-        super.setItems( items );
+        final ObjectNode rootNode = p.getCodec().readTree( p );
+
+        for ( final Iterator<String> iterator = rootNode.fieldNames(); iterator.hasNext(); )
+        {
+            final String fieldName = iterator.next();
+            final JsonNode fieldNode = rootNode.get( fieldName );
+
+            if ( fieldNode.isArray() )
+            {
+                // rename field to items
+                rootNode.remove( fieldName );
+                rootNode.set( "items", fieldNode );
+
+                break;
+            }
+        }
+
+        return p.getCodec().treeToValue( rootNode, DhisMetadataPolledItems.class );
     }
 }

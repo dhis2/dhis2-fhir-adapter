@@ -28,7 +28,7 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisType;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.ItemContainerType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Scriptable
-public interface TrackedEntityType extends DhisType, ItemContainerType
+public interface TrackedEntityType extends DhisMetadata, ItemContainerType
 {
     List<? extends TrackedEntityTypeAttribute> getAttributes();
 

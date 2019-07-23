@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,47 +28,56 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Contains read-only access to a DHIS2 Program. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object
- * instances are returned.
+ * Abstract implementation of {@link DhisMetadata}.
  *
  * @author volsch
  */
-@Scriptable
-public interface Program extends DhisResource, DhisMetadata
+public abstract class AbstractDhisMetadata implements DhisMetadata, Serializable
 {
-    String getTrackedEntityTypeId();
+    private static final long serialVersionUID = 7960220674294587120L;
 
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
-
-    List<? extends ProgramStage> getStages();
-
+    @JsonIgnore
     @Nonnull
-    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    @Override
+    public Set<Reference> getAllReferences()
+    {
+        final Set<Reference> references = new HashSet<>();
+        if ( getId() != null )
+        {
+            references.add( new Reference( getId(), ReferenceType.ID ) );
+        }
+        if ( getCode() != null )
+        {
+            references.add( new Reference( getCode(), ReferenceType.CODE ) );
+        }
+        if ( getName() != null )
+        {
+            references.add( new Reference( getName(), ReferenceType.NAME ) );
+        }
+        return references;
+    }
 
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Override
+    public boolean isReference( @Nonnull Reference reference )
+    {
+        switch ( reference.getType() )
+        {
+            case ID:
+                return reference.getValue().equals( getId() );
+            case CODE:
+                return reference.getValue().equals( getCode() );
+            case NAME:
+                return reference.getValue().equals( getName() );
+            default:
+                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
+        }
+    }
 }

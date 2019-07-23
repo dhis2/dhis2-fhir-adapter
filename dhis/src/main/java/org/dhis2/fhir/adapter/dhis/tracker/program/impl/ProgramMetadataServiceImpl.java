@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,25 +28,17 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ImmutableProgram;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.service.impl.AbstractDhisMetadataServiceImpl;
+import org.dhis2.fhir.adapter.dhis.service.impl.DhisMetadataItems;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
-import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Implementation of a {@link ProgramMetadataService}.
@@ -54,8 +46,7 @@ import java.util.Optional;
  * @author volsch
  */
 @Service
-@CacheConfig( cacheNames = "programMetadata", cacheManager = "dhisCacheManager" )
-public class ProgramMetadataServiceImpl implements ProgramMetadataService
+public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<Program> implements ProgramMetadataService
 {
     protected static final String FIELDS =
         "id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
@@ -66,53 +57,36 @@ public class ProgramMetadataServiceImpl implements ProgramMetadataService
             "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
             "dataElement[id,name,code,formName,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
 
-    protected static final String PROGRAM_BY_CODE_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=code:eq:{code}";
-
-    protected static final String PROGRAM_BY_NAME_URI = "/programs.json?paging=false&fields=" + FIELDS + "&filter=name:eq:{name}";
-
-    protected static final String PROGRAM_BY_ID_URI = "/programs/{id}.json?fields=" + FIELDS;
-
-    private final RestTemplate restTemplate;
-
-    @Autowired
-    public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate restTemplate )
+    public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate systemRestTemplate, @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate userRestTemplate )
     {
-        this.restTemplate = restTemplate;
+        super( systemRestTemplate, userRestTemplate );
     }
 
-    @HystrixCommand
-    @Cacheable
     @Nonnull
     @Override
-    public Optional<? extends Program> findProgramByReference( @Nonnull Reference reference )
+    protected DhisResourceType getDhisResourceType()
     {
-        final ResponseEntity<DhisPrograms> result;
-        switch ( reference.getType() )
-        {
-            case CODE:
-                result = restTemplate.getForEntity( PROGRAM_BY_CODE_URI, DhisPrograms.class, reference.getValue() );
-                break;
-            case NAME:
-                result = restTemplate.getForEntity( PROGRAM_BY_NAME_URI, DhisPrograms.class, reference.getValue() );
-                break;
-            case ID:
-                try
-                {
-                    return Optional.of( Objects.requireNonNull( restTemplate.getForEntity(
-                        PROGRAM_BY_ID_URI, WritableProgram.class, reference.getValue() ).getBody() ) )
-                        .map( ImmutableProgram::new );
-                }
-                catch ( HttpClientErrorException e )
-                {
-                    if ( RestTemplateUtils.isNotFound( e ) )
-                    {
-                        return Optional.empty();
-                    }
-                    throw e;
-                }
-            default:
-                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
-        }
-        return Objects.requireNonNull( result.getBody() ).getPrograms().stream().map( ImmutableProgram::new ).findFirst();
+        return DhisResourceType.PROGRAM_METADATA;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<? extends Program> getItemClass()
+    {
+        return WritableProgram.class;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<? extends DhisMetadataItems<? extends Program>> getItemsClass()
+    {
+        return DhisPrograms.class;
+    }
+
+    @Nonnull
+    @Override
+    protected String getFieldNames()
+    {
+        return FIELDS;
     }
 }

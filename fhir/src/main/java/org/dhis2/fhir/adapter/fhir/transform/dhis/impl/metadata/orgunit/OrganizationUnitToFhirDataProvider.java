@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.orgunit;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,47 +28,50 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirDataProvider;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 /**
- * Contains read-only access to a DHIS2 Program. Implementations must guarantee
- * that in read-only implementations only read-only dependent/includes object
- * instances are returned.
+ * Implementation of {@link DhisToFhirDataProvider} for DHIS2 Organisation Units.
  *
  * @author volsch
  */
-@Scriptable
-public interface Program extends DhisResource, DhisMetadata
+@Component
+public class OrganizationUnitToFhirDataProvider extends AbstractDhisMetadataToFhirDataProvider<OrganizationUnit, OrganizationUnitRule>
 {
-    String getTrackedEntityTypeId();
-
-    boolean isSelectIncidentDatesInFuture();
-
-    boolean isSelectEnrollmentDatesInFuture();
-
-    boolean isDisplayIncidentDate();
-
-    boolean isRegistration();
-
-    boolean isWithoutRegistration();
-
-    boolean isCaptureCoordinates();
-
-    List<? extends ProgramTrackedEntityAttribute> getTrackedEntityAttributes();
-
-    List<? extends ProgramStage> getStages();
+    public OrganizationUnitToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService )
+    {
+        super( scriptExecutor, organizationUnitService );
+    }
 
     @Nonnull
-    Optional<? extends ProgramStage> getOptionalStage( @Nonnull Reference reference );
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
+    }
 
-    @Nullable
-    ProgramStage getStageByName( @Nonnull String name );
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.ORGANIZATION_UNIT;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<OrganizationUnitRule> getRuleClass()
+    {
+        return OrganizationUnitRule.class;
+    }
 }

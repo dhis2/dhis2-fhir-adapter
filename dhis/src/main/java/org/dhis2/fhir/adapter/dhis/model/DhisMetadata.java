@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.dhis.orgunit.impl;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,40 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.poll.PolledItem;
+import org.dhis2.fhir.adapter.model.Identifiable;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
- * The polled items of an organization units.
+ * Implemented by DHIS 2 metadata.
  *
  * @author volsch
  */
-public class OrganizationUnitPolledItem extends PolledItem
+public interface DhisMetadata extends Identifiable<String>
 {
-    private static final long serialVersionUID = 1293380714892822351L;
+    /**
+     * @return the unique code of the metadata or <code>null</code> if the type has no code.
+     */
+    String getCode();
+
+    /**
+     * @return the unique name of the metadata.
+     */
+    String getName();
+
+    /**
+     * @return all references that can be used to reference this type.
+     */
+    @Nonnull
+    Set<Reference> getAllReferences();
+
+    /**
+     * Returns if the data matches the specified reference.
+     *
+     * @param reference the reference that should be checked.
+     * @return <code>true</code> if data matches the specified reference,
+     * <code>false</code> otherwise.
+     */
+    boolean isReference( @Nonnull Reference reference );
 }

@@ -366,7 +366,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
             throw new TransformerDataException( "FHIR resource does not contain a a reference to a tracker program." );
         }
 
-        final Program program = programMetadataService.findProgramByReference( programRef ).orElse( null );
+        final Program program = programMetadataService.findMetadataByReference( programRef ).orElse( null );
 
         if ( program == null )
         {

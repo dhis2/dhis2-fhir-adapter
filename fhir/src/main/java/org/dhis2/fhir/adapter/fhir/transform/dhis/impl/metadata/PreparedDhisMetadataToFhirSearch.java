@@ -29,7 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  */
 
 import ca.uhn.fhir.rest.param.DateRangeParam;
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
@@ -41,13 +41,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link PreparedDhisToFhirSearch} for organization units.
+ * Implementation of {@link PreparedDhisToFhirSearch} for DHIS 2 metadata.
  *
+ * @param <U> the concrete type of the rule that processes the metadata.
  * @author volsch
  */
-public class PreparedOrganizationUnitDhisToFhirSearch extends AbstractPreparedDhisToFhirSearch<OrganizationUnitRule>
+public class PreparedDhisMetadataToFhirSearch<U extends AbstractRule> extends AbstractPreparedDhisToFhirSearch<U>
 {
-    public PreparedOrganizationUnitDhisToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
+    public PreparedDhisMetadataToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<U>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
     {
         super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
     }

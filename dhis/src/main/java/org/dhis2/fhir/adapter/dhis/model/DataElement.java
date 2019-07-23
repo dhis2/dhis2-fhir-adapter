@@ -39,7 +39,7 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
  * @author volsch
  */
 @Scriptable
-public interface DataElement extends DhisType
+public interface DataElement extends DhisMetadata
 {
     String getId();
 
