@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.aggregate;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,13 +28,15 @@ package org.dhis2.fhir.adapter.dhis.aggregate;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import javax.annotation.Nonnull;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
+import org.springframework.stereotype.Component;
 
 /**
+ * Event listener that prepares {@link DataValueSetRule} class before saving.
+ *
  * @author David Katuscak
  */
-public interface DataValueSetService
+@Component
+public class DataValueSetRuleEventListener extends AbstractRuleEventListener<DataValueSetRule>
 {
-    @Nonnull
-    DataValueSet createOrUpdate( @Nonnull DataValueSet enrollment );
 }

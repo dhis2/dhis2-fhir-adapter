@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.aggregate;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,13 +28,34 @@ package org.dhis2.fhir.adapter.dhis.aggregate;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+
 import javax.annotation.Nonnull;
+import javax.persistence.EntityManager;
 
 /**
+ * Spring Data REST validator for {@link DataValueSetRule}.
+ *
  * @author David Katuscak
  */
-public interface DataValueSetService
+@Component
+public class BeforeCreateSaveDataValueSetRuleValidator extends AbstractBeforeCreateSaveRuleValidator<DataValueSetRule>
+    implements MetadataValidator<DataValueSetRule>
 {
-    @Nonnull
-    DataValueSet createOrUpdate( @Nonnull DataValueSet enrollment );
+    public BeforeCreateSaveDataValueSetRuleValidator( @Nonnull EntityManager entityManager )
+    {
+        super( DataValueSetRule.class, entityManager );
+    }
+
+    @Override protected void doValidate( @Nonnull DataValueSetRule rule, @Nonnull Errors errors )
+    {
+        validate( rule, TransformDataType.DHIS_DATA_VALUE_SET, errors );
+
+        //TODO: Do I need to validate some script? E.g. as in Enrollment validator?
+        BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript( errors, "DataValueSetRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript() );
+        BeforeCreateSaveFhirResourceMappingValidator.checkValidLocationLookupScript( errors, "DataValueSetRule.", "locationLookupScript", rule.getFhirResourceType(), rule.getLocationLookupScript() );
+    }
 }

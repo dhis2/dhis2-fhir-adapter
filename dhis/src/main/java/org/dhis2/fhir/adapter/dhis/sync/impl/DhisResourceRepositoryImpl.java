@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.sync.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSet;
+import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSetService;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -54,6 +56,7 @@ import java.util.Optional;
  *
  * @author volsch
  * @author Charles Chigoriwa (ITINORDIC)
+ * @author David Katuscak
  */
 @Component
 public class DhisResourceRepositoryImpl implements DhisResourceRepository
@@ -68,13 +71,17 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private final EventService eventService;
 
+    private final DataValueSetService dataValueSetService;
+
     public DhisResourceRepositoryImpl( @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
+        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService,
+        @Nonnull EventService eventService, @Nonnull DataValueSetService dataValueSetService )
     {
         this.organizationUnitService = organizationUnitService;
         this.trackedEntityService = trackedEntityService;
         this.enrollmentService = enrollmentService;
         this.eventService = eventService;
+        this.dataValueSetService = dataValueSetService;
     }
 
     @Nonnull
@@ -91,8 +98,10 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 return eventService.findOneById( dhisResourceId.getId() );
             case ENROLLMENT:
                 return enrollmentService.findOneById( dhisResourceId.getId() );
+            case DATA_VALUE_SET:
+                throw new UnsupportedOperationException( "Finding DHIS2 DataValueSet resources is not supported." );
             default:
-                throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
+                throw new AssertionError( "Unhandled DHIS2 resource type: " + dhisResourceId.getType() );
         }
     }
 
@@ -107,9 +116,10 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case ORGANIZATION_UNIT:
             case TRACKED_ENTITY:
             case ENROLLMENT:
-                throw new UnsupportedOperationException( "Retrieving deleted " + dhisResourceId.getType() + " DHIS resource items is not supported." );
+            case DATA_VALUE_SET:
+                throw new UnsupportedOperationException( "Retrieving deleted " + dhisResourceId.getType() + " DHIS2 resource items is not supported." );
             default:
-                throw new AssertionError( "Unhandled DHIS resource type: " + dhisResourceId.getType() );
+                throw new AssertionError( "Unhandled DHIS2 resource type: " + dhisResourceId.getType() );
         }
     }
 
@@ -136,8 +146,11 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             case PROGRAM_STAGE_EVENT:
                 saveEvent( (Event) resource );
                 break;
+            case DATA_VALUE_SET:
+                saveDataValueSet( (DataValueSet) resource );
+                break;
             default:
-                throw new AssertionError( "Unhandled DHIS resource type: " + resource.getResourceType() );
+                throw new AssertionError( "Unhandled DHIS2 resource type: " + resource.getResourceType() );
         }
         return resource;
     }
@@ -153,8 +166,10 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 return enrollmentService.delete( resource.getId() );
             case PROGRAM_STAGE_EVENT:
                 return eventService.delete( resource.getId() );
+            case DATA_VALUE_SET:
+                throw new UnsupportedOperationException( "Deleting DHIS2 DataValueSet resources is nut supported." );
             default:
-                throw new AssertionError( "Unhandled DHIS resource type: " + resource.getResourceType() );
+                throw new AssertionError( "Unhandled DHIS2 resource type: " + resource.getResourceType() );
         }
     }
 
@@ -247,5 +262,43 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
 
         return updated;
+    }
+
+    private boolean saveDataValueSet( @Nonnull DataValueSet dataValueSet )
+    {
+        if ( validateDataValueSet( dataValueSet ) )
+        {
+            if ( dataValueSet.isNewResource() )
+            {
+                logger.info( "Creating new DataValueSet." );
+                dataValueSetService.createOrUpdate( dataValueSet );
+                logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
+                    dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
+                return true;
+            }
+            else if ( dataValueSet.isModified() )
+            {
+                logger.info( "Updating existing DataValueSet." );
+                dataValueSetService.createOrUpdate( dataValueSet );
+                logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
+                    dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean validateDataValueSet( @Nonnull DataValueSet dataValueSet )
+    {
+        if ( dataValueSet.getDataSetId() != null && !dataValueSet.getDataSetId().isEmpty() &&
+            dataValueSet.getOrgUnitId() != null && !dataValueSet.getOrgUnitId().isEmpty() &&
+            dataValueSet.getPeriod() != null && !dataValueSet.getPeriod().isEmpty() &&
+            dataValueSet.getDataValues() != null && !dataValueSet.getDataValues().isEmpty() )
+        {
+            return true;
+        }
+
+        return false;
     }
 }

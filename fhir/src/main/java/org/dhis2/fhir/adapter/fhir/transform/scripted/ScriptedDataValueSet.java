@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.aggregate;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,13 +28,26 @@ package org.dhis2.fhir.adapter.dhis.aggregate;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
+
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
+ * Mutable or immutable data value set resource that can be used by scripts safely.
+ *
  * @author David Katuscak
  */
-public interface DataValueSetService
+@Scriptable
+public interface ScriptedDataValueSet extends ScriptedDhisResource
 {
     @Nonnull
-    DataValueSet createOrUpdate( @Nonnull DataValueSet enrollment );
+    String getDataSetId();
+
+    @Nonnull
+    String getPeriod();
+
+    @Nonnull
+    List<WritableDataValue> getDataValues();
 }

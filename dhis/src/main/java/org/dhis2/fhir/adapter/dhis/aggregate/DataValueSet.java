@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.dhis.aggregate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
@@ -39,7 +40,9 @@ import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author David Katuscak
@@ -104,6 +107,7 @@ public class DataValueSet implements DhisResource, Serializable
         this.newResource = newResource;
         this.modified = newResource;
         this.local = newResource;
+        this.dataValues = new ArrayList<>();
     }
 
     @Override
@@ -164,16 +168,6 @@ public class DataValueSet implements DhisResource, Serializable
         return DhisResourceType.DATA_VALUE_SET;
     }
 
-    public List<WritableDataValue> getDataValues()
-    {
-        return dataValues;
-    }
-
-    public void setDataValues( List<WritableDataValue> dataValues )
-    {
-        this.dataValues = dataValues;
-    }
-
     @Override
     public boolean isNewResource()
     {
@@ -228,5 +222,62 @@ public class DataValueSet implements DhisResource, Serializable
     public void setLastUpdated( ZonedDateTime lastUpdated )
     {
         this.lastUpdated = lastUpdated;
+    }
+
+    public List<WritableDataValue> getDataValues()
+    {
+        return dataValues;
+    }
+
+    public void setDataValues( List<WritableDataValue> dataValues )
+    {
+        this.dataValues = dataValues;
+    }
+
+    public boolean containsDataValue( @Nonnull String dataElementId )
+    {
+        return getDataValues().stream().anyMatch( dv -> Objects.equals( dataElementId, dv.getDataElementId() ) );
+    }
+
+    public boolean containsDataValue( @Nonnull String dataElementId, @Nonnull String value )
+    {
+        return getDataValues().stream()
+            .anyMatch( dv -> Objects.equals( dataElementId, dv.getDataElementId() )
+                && dv.getValue() != null
+                && Objects.equals( value, String.valueOf( dv.getValue() ) ) );
+    }
+
+    public boolean containsDataValueWithValue( @Nonnull String dataElementId )
+    {
+        return getDataValues().stream()
+            .filter( dv -> ( dv.getValue() != null ) )
+            .anyMatch( dv -> Objects.equals( dataElementId, dv.getDataElementId() ) );
+    }
+
+    @Nonnull
+    public WritableDataValue getDataValue( @Nonnull String dataElementId )
+    {
+        if ( getDataValues() == null )
+        {
+            setDataValues( new ArrayList<>() );
+        }
+
+        WritableDataValue dataValue = getDataValues().stream()
+            .filter( dv -> Objects.equals( dataElementId, dv.getDataElementId() ) )
+            .findFirst()
+            .orElse( null );
+
+        if ( dataValue == null )
+        {
+            dataValue = new WritableDataValue( dataElementId, true );
+            getDataValues().add( dataValue );
+        }
+        return dataValue;
+    }
+
+    @JsonIgnore
+    public boolean isAnyDataValueModified()
+    {
+        return (getDataValues() != null) && getDataValues().stream().anyMatch( DataValue::isModified );
     }
 }
