@@ -29,12 +29,10 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dhis2.fhir.adapter.dhis.model.Pager;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.service.impl.DhisMetadataItems;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,37 +40,18 @@ import java.util.List;
  *
  * @author volsch
  */
-public class DhisOrganizationUnits implements Serializable
+public class DhisOrganizationUnits extends DhisMetadataItems<OrganizationUnit> implements Serializable
 {
     private static final long serialVersionUID = -671810199580040339L;
 
-    private Pager pager;
-
     @JsonProperty( "organisationUnits" )
-    private List<OrganizationUnit> organizationUnits;
-
-    public Pager getPager()
-    {
-        return pager;
-    }
-
-    public void setPager( Pager pager )
-    {
-        this.pager = pager;
-    }
-
-    @Nonnull
     public List<OrganizationUnit> getOrganizationUnits()
     {
-        if ( organizationUnits == null )
-        {
-            organizationUnits = new ArrayList<>();
-        }
-        return organizationUnits;
+        return getItems();
     }
 
     public void setOrganizationUnits( List<OrganizationUnit> organizationUnits )
     {
-        this.organizationUnits = organizationUnits;
+        setItems( organizationUnits );
     }
 }

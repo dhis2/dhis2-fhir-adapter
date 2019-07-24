@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.dhis.orgunit.impl;
+package org.dhis2.fhir.adapter.dhis.service.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,26 +45,27 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-public class OrganizationUnitPolledItemRetriever extends AbstractPolledItemRetriever<OrganizationUnitPolledItems, OrganizationUnitPolledItem>
+public class DhisMetadataPolledItemRetriever extends AbstractPolledItemRetriever<DhisMetadataPolledItems, DhisMetadataPolledItem>
 {
-    protected static final String POLL_URI = "/organisationUnits.json?fields=id,lastUpdated";
-
-    public OrganizationUnitPolledItemRetriever( @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount, @Nonnull ZoneId zoneId )
+    public DhisMetadataPolledItemRetriever( @Nonnull DhisResourceType dhisResourceType, @Nonnull RestTemplate restTemplate, int toleranceMillis, int maxSearchCount, @Nonnull ZoneId zoneId )
     {
-        super( DhisResourceType.ORGANIZATION_UNIT, restTemplate, POLL_URI, toleranceMillis, maxSearchCount, OrganizationUnitPolledItems.class, zoneId );
+        super( dhisResourceType, restTemplate, "/" + dhisResourceType.getTypeName() + ".json?fields=id,lastUpdated", toleranceMillis,
+            maxSearchCount, DhisMetadataPolledItems.class, zoneId );
     }
 
     @Nonnull
     @Override
-    protected OrganizationUnitPolledItems getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page, @Nullable List<Object> variables )
+    protected DhisMetadataPolledItems getPolledItems( @Nonnull Instant fromLastUpdated, @Nullable Instant currentToLastUpdated, int page, @Nullable List<Object> variables )
     {
-        final OrganizationUnitPolledItems polledItems = super.getPolledItems( fromLastUpdated, currentToLastUpdated, page, variables );
+        final DhisMetadataPolledItems polledItems = super.getPolledItems( fromLastUpdated, currentToLastUpdated, page, variables );
+
         if ( polledItems.getItems().isEmpty() )
         {
             return polledItems;
         }
+
         final LocalDateTime localFromLastUpdated = fromLastUpdated.atZone( getZoneId() ).toLocalDateTime();
-        return new OrganizationUnitPolledItems( polledItems.getItems().stream()
+        return new DhisMetadataPolledItems( polledItems.getItems().stream()
             .filter( i -> !localFromLastUpdated.isAfter( i.getLastUpdated() ) ).collect( Collectors.toList() ) );
     }
 

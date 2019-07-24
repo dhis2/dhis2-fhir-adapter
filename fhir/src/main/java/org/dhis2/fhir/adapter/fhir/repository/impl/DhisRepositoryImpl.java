@@ -246,7 +246,7 @@ public class DhisRepositoryImpl implements DhisRepository
             @Override
             protected DhisResource getDhisResource()
             {
-                return dhisToFhirTransformerService.getDataProvider( ruleInfo.getRule().getDhisResourceType() )
+                return dhisToFhirTransformerService.getDataProvider( fhirClient.getFhirVersion(), ruleInfo.getRule().getDhisResourceType() )
                     .findByDhisFhirIdentifierCasted( fhirClient, ruleInfo, identifier );
             }
         }.read( fhirClient, fhirResourceType );
@@ -304,7 +304,7 @@ public class DhisRepositoryImpl implements DhisRepository
             return Collections.emptyList();
         }
 
-        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dhisToFhirTransformerService.getDataProvider( dhisResourceType );
+        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dhisToFhirTransformerService.getDataProvider( fhirClient.getFhirVersion(), dhisResourceType );
         final PreparedDhisToFhirSearch preparedSearch = dataProvider.prepareSearchCasted( fhirClient.getFhirVersion(), rules, filter, lastUpdatedDateRange, count );
 
         final LinkedList<DhisResource> dhisResources = new LinkedList<>();
@@ -503,8 +503,7 @@ public class DhisRepositoryImpl implements DhisRepository
                     dhisRequest.setCompleteTransformation( matchingRule );
                     dhisRequest.setIncludeReferences( matchingRule );
 
-                    final DhisToFhirTransformOutcome<? extends IBaseResource> outcome =
-                        dhisToFhirTransformerService.transform( transformerRequest );
+                    final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = dhisToFhirTransformerService.transform( transformerRequest );
                     if ( outcome == null )
                     {
                         transformerRequest = null;

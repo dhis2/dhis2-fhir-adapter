@@ -35,7 +35,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * The mutable DHIS request that caused the transformation from DHIS 2 to FHIR resource.
+ * The mutable DHIS request that caused the transformation from DHIS2 to FHIR resource.
  *
  * @author volsch
  */

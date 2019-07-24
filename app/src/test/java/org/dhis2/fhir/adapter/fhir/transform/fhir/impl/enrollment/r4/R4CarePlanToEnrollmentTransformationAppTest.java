@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment.AbstractCarePl
 import javax.annotation.Nonnull;
 
 /**
- * Tests the transformation of a FHIR Care Plan to a DHIS 2 Program Instance.
+ * Tests the transformation of a FHIR Care Plan to a DHIS2 Program Instance.
  *
  * @author volsch
  */

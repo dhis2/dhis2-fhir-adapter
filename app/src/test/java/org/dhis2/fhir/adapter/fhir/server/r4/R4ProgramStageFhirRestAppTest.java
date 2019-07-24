@@ -58,7 +58,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * R4 tests for rest interfaces that access
- * DHIS 2 program stages. <b>Some methods are executed twice in order to
+ * DHIS2 program stages. <b>Some methods are executed twice in order to
  * verify that no cached data is used without authentication.</b>
  *
  * @author volsch
@@ -129,7 +129,7 @@ public class R4ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRestA
         Assert.assertEquals( 0, observation.getIdentifier().size() );
         Assert.assertEquals( "Patient/JeR2Ul4mZfx", observation.getSubject().getReference() );
         Assert.assertEquals( "Organization/ldXIdLNUNEp", observation.getPerformerFirstRep().getReference() );
-        Assert.assertEquals( "Encounter/ps-deR4kl4mnf7-9d342f13aec146299d654f03fd0e848c", observation.getEncounter().getReference() );
+        Assert.assertEquals( "Encounter/deR4kl4mnf7", observation.getEncounter().getReference() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();

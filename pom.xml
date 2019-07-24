@@ -210,7 +210,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <!-- since DHIS 2 has no time zone support but FHIR has, tests must be executed with a specific time zone -->
+            <!-- since DHIS2 has no time zone support but FHIR has, tests must be executed with a specific time zone -->
             <argLine>-Duser.timezone=CET ${surefireArgLine}</argLine>
             <!-- due to asynchronous jobs stack traces must not be trimmed in non test source -->
             <trimStackTrace>false</trimStackTrace>

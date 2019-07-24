@@ -33,7 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import javax.annotation.Nonnull;
 
 /**
- * Thrown if the included DHIS 2 resource is missing on FHIR client and it should
+ * Thrown if the included DHIS2 resource is missing on FHIR client and it should
  * be tried to create the missing FHIR resource before retrying to process the
  * current resource again.
  *

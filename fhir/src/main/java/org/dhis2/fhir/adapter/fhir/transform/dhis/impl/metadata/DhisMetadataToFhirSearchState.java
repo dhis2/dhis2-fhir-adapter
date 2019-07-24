@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.dhis.orgunit.impl;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,32 @@ package org.dhis2.fhir.adapter.dhis.orgunit.impl;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.poll.PolledItem;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
 /**
- * The polled items of an organization units.
+ * Implementation of {@link DhisToFhirSearchState} for DHIS2 metadata.
  *
  * @author volsch
  */
-public class OrganizationUnitPolledItem extends PolledItem
+public class DhisMetadataToFhirSearchState implements DhisToFhirSearchState
 {
-    private static final long serialVersionUID = 1293380714892822351L;
+    private final int from;
+
+    private final boolean more;
+
+    public DhisMetadataToFhirSearchState( int from, boolean more )
+    {
+        this.from = from;
+        this.more = more;
+    }
+
+    public int getFrom()
+    {
+        return from;
+    }
+
+    public boolean isMore()
+    {
+        return more;
+    }
 }

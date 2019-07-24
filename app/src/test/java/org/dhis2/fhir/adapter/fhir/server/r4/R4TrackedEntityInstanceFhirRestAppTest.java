@@ -57,7 +57,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * R4 tests for rest interfaces that access
- * DHIS 2 tracked entity instances. <b>Some methods are executed twice in order to
+ * DHIS2 tracked entity instances. <b>Some methods are executed twice in order to
  * verify that no cached data is used without authentication.</b>
  *
  * @author volsch

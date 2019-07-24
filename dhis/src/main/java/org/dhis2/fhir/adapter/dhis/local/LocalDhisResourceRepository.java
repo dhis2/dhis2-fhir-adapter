@@ -38,7 +38,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Repository that stores DHIS 2 resources locally.
+ * Repository that stores DHIS2 resources locally.
  *
  * @param <T> the concrete type of the resource.
  * @author volsch

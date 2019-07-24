@@ -109,6 +109,20 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
             AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODES_NAMED_QUERY, AbstractRule.FIND_EXP_RULES_BY_FHIR_TYPE_CODE_SETS_NAMED_QUERY );
     }
 
+    @RestResource( exported = false )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
+    public Collection<RuleInfo<? extends AbstractRule>> findAllExp()
+    {
+        final List<AbstractRule> rules = entityManager.createNamedQuery( AbstractRule.FIND_ALL_EXP_NAMED_QUERY, AbstractRule.class ).getResultList();
+
+        return rules.stream().map( r -> {
+            Hibernate.initialize( r.getDhisDataReferences() );
+            return new RuleInfo<>( r, r.getDhisDataReferences() );
+        } ).collect( Collectors.toList() );
+    }
+
     @Nonnull
     protected List<RuleInfo<? extends AbstractRule>> findAllByInputData( @Nonnull FhirResourceType fhirResourceType, @Nullable Collection<SystemCodeValue> systemCodeValues,
         @Nonnull String findByFhirTypeQueryName, @Nonnull String findBySystemCodeQueryName, @Nonnull String findByCodeSetCodeQueryName )

@@ -28,11 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
-import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
@@ -49,149 +46,73 @@ import java.time.ZonedDateTime;
  */
 @Scriptable
 @ScriptType( value = "OrganizationUnit", transformDataType = "DHIS_ORGANIZATION_UNIT", description = "Organization unit." )
-public class WritableScriptedOrganizationUnit implements ScriptedOrganizationUnit, Serializable
+public class WritableScriptedOrganizationUnit extends WritableScriptedDhisMetadata implements ScriptedOrganizationUnit, Serializable
 {
     private static final long serialVersionUID = -9043373621936561310L;
 
-    private final OrganizationUnit organizationUnit;
-
-    public WritableScriptedOrganizationUnit( OrganizationUnit organizationUnit )
+    public WritableScriptedOrganizationUnit( @Nonnull OrganizationUnit organizationUnit, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        this.organizationUnit = organizationUnit;
-    }
-
-    @Override
-    public boolean isNewResource()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isLocal()
-    {
-        return organizationUnit.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public String getId()
-    {
-        return organizationUnit.getId();
+        super( organizationUnit, scriptExecutionContext );
     }
 
     @Nonnull
     @Override
-    public DhisResourceType getResourceType()
+    protected OrganizationUnit getManagedResource()
     {
-        return organizationUnit.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return organizationUnit.getResourceId();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the date and time when the resource has been updated the last time or null if this is a new resource." )
-    public ZonedDateTime getLastUpdated()
-    {
-        return organizationUnit.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return organizationUnit.getId();
-    }
-
-    @Nullable
-    @Override
-    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
-    {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public String getCode()
-    {
-        return organizationUnit.getCode();
-    }
-
-    @Nullable
-    @Override
-    public String getName()
-    {
-        return organizationUnit.getName();
+        return (OrganizationUnit) resource;
     }
 
     @Nullable
     @Override
     public String getShortName()
     {
-        return organizationUnit.getShortName();
+        return getManagedResource().getShortName();
     }
 
     @Nullable
     @Override
     public String getDisplayName()
     {
-        return organizationUnit.getDisplayName();
+        return getManagedResource().getDisplayName();
     }
 
     @Override
     public boolean isLeaf()
     {
-        return organizationUnit.isLeaf();
+        return getManagedResource().isLeaf();
     }
 
     @Override
     public int getLevel()
     {
-        return organizationUnit.getLevel();
+        return getManagedResource().getLevel();
     }
 
     @Nullable
     @Override
     public ZonedDateTime getOpeningDate()
     {
-        return organizationUnit.getOpeningDate();
+        return getManagedResource().getOpeningDate();
     }
 
     @Nullable
     @Override
     public ZonedDateTime getClosedDate()
     {
-        return organizationUnit.getClosedDate();
+        return getManagedResource().getClosedDate();
     }
 
     @Nullable
     @Override
     public String getParentId()
     {
-        return organizationUnit.getParentId();
+        return getManagedResource().getParentId();
     }
 
     @Nullable
     @Override
     public String getCoordinates()
     {
-        return organizationUnit.getCoordinates();
-    }
-
-    @Override
-    public void validate() throws TransformerException
-    {
-        // nothing to be done since instance will not be modified currently
+        return getManagedResource().getCoordinates();
     }
 }

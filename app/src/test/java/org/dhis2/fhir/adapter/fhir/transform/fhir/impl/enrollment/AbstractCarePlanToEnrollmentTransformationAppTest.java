@@ -45,7 +45,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
- * Tests the transformation of a FHIR CarePlan to a DHIS 2 Program Instance.
+ * Tests the transformation of a FHIR CarePlan to a DHIS2 Program Instance.
  *
  * @author volsch
  */

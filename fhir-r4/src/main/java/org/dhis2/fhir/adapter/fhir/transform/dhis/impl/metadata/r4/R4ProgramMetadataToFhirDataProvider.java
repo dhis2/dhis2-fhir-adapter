@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,32 +28,43 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilter;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchParamType;
+import org.hl7.fhir.r4.model.PlanDefinition;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirSearchState} for organization units.
+ * R4 specific version of DHIS2 Program Metadata data provider.
  *
  * @author volsch
  */
-public class OrganizationUnitToFhirSearchState implements DhisToFhirSearchState
+@Component
+public class R4ProgramMetadataToFhirDataProvider extends AbstractProgramMetadataToFhirDataProvider
 {
-    private final int from;
-
-    private final boolean more;
-
-    public OrganizationUnitToFhirSearchState( int from, boolean more )
+    public R4ProgramMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService programMetadataService )
     {
-        this.from = from;
-        this.more = more;
+        super( scriptExecutor, programMetadataService );
     }
 
-    public int getFrom()
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return from;
+        return FhirVersion.R4_ONLY;
     }
 
-    public boolean isMore()
+    @Override
+    protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<ProgramMetadataRule> ruleInfo, @Nonnull SearchFilter searchFilter )
     {
-        return more;
+        searchFilter.add( PlanDefinition.SP_NAME, SearchParamType.STRING, "name" );
     }
 }

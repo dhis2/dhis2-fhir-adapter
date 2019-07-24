@@ -28,12 +28,10 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -45,13 +43,12 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedOrganizationUnit;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,67 +57,51 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
- * organization unit to FHIR resources.
+ * Abstract Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
+ * read-only metadata to FHIR resource.
  *
+ * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
+ * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
-@Component
-public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedOrganizationUnit, OrganizationUnitRule>
+public abstract class AbstractReadOnlyDhisMetadataToFhirTransformer<R extends ScriptedDhisMetadata, U extends AbstractRule> extends AbstractDhisToFhirTransformer<R, U>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final OrganizationUnitService organizationUnitService;
-
-    public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService )
+    protected AbstractReadOnlyDhisMetadataToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
-        this.organizationUnitService = organizationUnitService;
-    }
-
-    @Nonnull
-    @Override
-    public DhisResourceType getDhisResourceType()
-    {
-        return DhisResourceType.ORGANIZATION_UNIT;
-    }
-
-    @Nonnull
-    @Override
-    public Class<ScriptedOrganizationUnit> getDhisResourceClass()
-    {
-        return ScriptedOrganizationUnit.class;
-    }
-
-    @Nonnull
-    @Override
-    public Class<OrganizationUnitRule> getRuleClass()
-    {
-        return OrganizationUnitRule.class;
     }
 
     @Nullable
     @Override
-    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedOrganizationUnit input,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    public DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
-            organizationUnitService, getFhirResourceRepository(), fhirClient, context, ruleInfo, variables,
-            new DefaultIdentifierValueProvider() ) );
+        addAdditionalVariables( fhirClient, context, ruleInfo, variables );
 
         final IBaseResource resource = getResource( fhirClient, context, ruleInfo, variables ).orElse( null );
+
         if ( resource == null )
         {
             return null;
         }
+
         final IBaseResource modifiedResource = cloneToModified( context, ruleInfo, resource, variables );
+
         if ( modifiedResource == null )
         {
             return null;
         }
+
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
+
+        if ( !transformInternal( fhirClient, context, ruleInfo, scriptVariables, input, modifiedResource ) )
+        {
+            return null;
+        }
+
         if ( !transform( context, ruleInfo, variables ) )
         {
             return null;
@@ -131,40 +112,49 @@ public class OrganizationUnitToFhirTransformer extends AbstractDhisToFhirTransfo
             // resource has not been changed and do not need to be updated
             return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), null );
         }
+
         return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
+    }
+
+    protected void addAdditionalVariables( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> variables )
+    {
+        // method can be overridden
+    }
+
+    protected boolean transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull R input, @Nonnull IBaseResource output )
+    {
+        // method can be overridden
+        return true;
     }
 
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        // not supported
         return Optional.empty();
     }
 
     @Override
-    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
-        @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> rule, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( !context.getDhisRequest().isDhisFhirId() )
         {
-            final ScriptedOrganizationUnit scriptedOrganizationUnit =
-                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedOrganizationUnit.class );
+            final ScriptedDhisMetadata scriptedMetadata =
+                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisMetadata.class );
             getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
-                .lock( "out-ou:" + scriptedOrganizationUnit.getId() );
+                .lock( "out-" + scriptedMetadata.getResourceType() + ":" + scriptedMetadata.getId() );
         }
     }
 
-    @Override
     @Nullable
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull ScriptedOrganizationUnit scriptedOrganizationUnit,
-        @Nonnull Map<String, Object> scriptVariables )
+    @Override
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nullable ExecutableScript identifierLookupScript, @Nonnull R scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
     {
         if ( context.getDhisRequest().isDhisFhirId() )
         {
-            return scriptedOrganizationUnit.getCode();
+            return scriptedDhisResource.getCode();
         }
-        return executeScript( context, ruleInfo, (identifierLookupScript == null) ? ruleInfo.getRule().getIdentifierLookupScript() : identifierLookupScript, scriptVariables, String.class );
+
+        return executeScript( context, ruleInfo, identifierLookupScript, scriptVariables, String.class );
     }
 }

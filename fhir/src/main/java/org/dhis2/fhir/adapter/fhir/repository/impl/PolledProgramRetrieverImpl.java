@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.repository.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,7 @@ public class PolledProgramRetrieverImpl implements PolledProgramRetriever
         final Set<String> ids = new HashSet<>();
         for ( final Reference ref : mappedTrackerProgramRepository.findAllPolledProgramReferences() )
         {
-            programMetadataService.findProgramByReference( ref ).ifPresent( p -> ids.add( p.getId() ) );
+            programMetadataService.findMetadataByReference( ref ).ifPresent( p -> ids.add( p.getId() ) );
         }
         return ids;
     }

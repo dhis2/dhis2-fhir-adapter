@@ -65,4 +65,8 @@ public interface CustomRuleRepository
     @Nonnull
     Optional<RuleInfo<? extends AbstractRule>> findOneExpByDhisFhirInputData( @Nonnull FhirResourceType fhirResourceType );
 
+    @RestResource( exported = false )
+    @Nonnull
+    Collection<RuleInfo<? extends AbstractRule>> findAllExp();
+
 }

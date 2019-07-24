@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.converter;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import static org.dhis2.fhir.adapter.fhir.converter.AbstractAdministrativeGender
 import static org.dhis2.fhir.adapter.fhir.converter.AbstractAdministrativeGenderToStringConverter.GENDER_MALE_CONSTANT_CODE;
 
 /**
- * Abstract implementation of the converter that converts the DHIS 2 option value
+ * Abstract implementation of the converter that converts the DHIS2 option value
  * for the gender to the FHIR administrative gender.
  *
  * @param <A> the concrete FHIR version specific type of the administrative gender.

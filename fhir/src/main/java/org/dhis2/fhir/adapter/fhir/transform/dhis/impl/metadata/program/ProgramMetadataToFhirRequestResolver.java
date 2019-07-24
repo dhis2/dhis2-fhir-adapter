@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,66 +28,49 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.OrganizationUnitRuleRepository;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedOrganizationUnit;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedOrganizationUnit;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedDhisMetadata;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link DhisToFhirRequestResolver} for organization units.
+ * Implementation of {@link DhisToFhirRequestResolver} for DHIS2 program metadata.
  *
  * @author volsch
  */
 @Component
-public class OrganizationUnitToFhirRequestResolver extends AbstractDhisToFhirRequestResolver
+public class ProgramMetadataToFhirRequestResolver extends AbstractDhisMetadataToFhirRequestResolver
 {
-    private final OrganizationUnitRuleRepository ruleRepository;
+    private final ScriptExecutionContext scriptExecutionContext;
 
-    public OrganizationUnitToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, OrganizationUnitRuleRepository ruleRepository )
+    public ProgramMetadataToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        super( fhirClientRepository );
-        this.ruleRepository = ruleRepository;
+        super( fhirClientRepository, ruleRepository );
+        this.scriptExecutionContext = scriptExecutionContext;
     }
 
     @Nonnull
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.ORGANIZATION_UNIT;
-    }
-
-    @Nonnull
-    @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
-    {
-        return ruleRepository.findAllExp().stream().sorted().collect( Collectors.toList() );
-    }
-
-    @Nonnull
-    @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
-    {
-        return rules.stream().sorted().collect( Collectors.toList() );
+        return DhisResourceType.PROGRAM_METADATA;
     }
 
     @Nonnull
     @Override
     public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
     {
-        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( (OrganizationUnit) dhisResource ) );
+        return new ImmutableScriptedDhisMetadata( new WritableScriptedDhisMetadata( (DhisMetadata) dhisResource, scriptExecutionContext ) );
     }
 }

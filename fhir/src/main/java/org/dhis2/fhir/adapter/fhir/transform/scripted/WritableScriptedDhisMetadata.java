@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.fhir.metadata.repository;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,19 +28,53 @@ package org.dhis2.fhir.adapter.fhir.metadata.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+import java.io.Serializable;
 
 /**
- * Custom rule repository for organization unit rules.
+ * Implementation of writable scripted metadata. The included metadata object can be accessed
+ * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ *
+ * @author volsch
  */
-public interface CustomOrganizationUnitRuleRepository
+@Scriptable
+public class WritableScriptedDhisMetadata extends WritableScriptedDhisResource implements AccessibleScriptedDhisMetadata, Serializable
 {
-    @RestResource( exported = false )
+    private static final long serialVersionUID = 8245822986881397171L;
+
+    public WritableScriptedDhisMetadata( @Nonnull DhisMetadata resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( resource, scriptExecutionContext );
+    }
+
     @Nonnull
-    Collection<RuleInfo<OrganizationUnitRule>> findAllExp();
+    protected DhisMetadata getManagedResource()
+    {
+        return (DhisMetadata) resource;
+    }
+
+    @Nonnull
+    @Override
+    @ScriptExecutionForbidden
+    public DhisMetadata getDhisResource()
+    {
+        return (DhisMetadata) super.getDhisResource();
+    }
+
+    @Override
+    public String getCode()
+    {
+        return getManagedResource().getCode();
+    }
+
+    @Override
+    public String getName()
+    {
+        return getManagedResource().getName();
+    }
 }

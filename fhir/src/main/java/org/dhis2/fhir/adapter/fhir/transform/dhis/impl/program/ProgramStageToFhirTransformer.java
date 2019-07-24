@@ -41,6 +41,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.repository.MissingDhisResourceException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -67,9 +68,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
  * program stage based events.
  *
  * @author volsch
@@ -86,6 +88,13 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
         this.resourceMappingRepository = resourceMappingRepository;
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nonnull

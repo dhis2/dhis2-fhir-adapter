@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,9 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  */
 public class ProgramMetadataServiceImplTest
 {
-    private RestTemplate restTemplate;
+    private RestTemplate systemRestTemplate;
+
+    private RestTemplate userRestTemplate;
 
     private MockRestServiceServer mockServer;
 
@@ -70,97 +72,98 @@ public class ProgramMetadataServiceImplTest
     @Before
     public void setUp()
     {
-        restTemplate = new RestTemplateBuilder().rootUri( "http://localhost:8080/api" ).build();
-        mockServer = MockRestServiceServer.createServer( restTemplate );
-        service = new ProgramMetadataServiceImpl( restTemplate );
+        systemRestTemplate = new RestTemplateBuilder().rootUri( "http://localhost:8080/api" ).build();
+        userRestTemplate = new RestTemplateBuilder().rootUri( "http://localhost:8080/api" ).build();
+        mockServer = MockRestServiceServer.createServer( systemRestTemplate );
+        service = new ProgramMetadataServiceImpl( systemRestTemplate, userRestTemplate );
     }
 
     @Test
-    public void findOneByReferenceId() throws IOException
+    public void findMetadataByReferenceId() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
             .andExpect( method( HttpMethod.GET ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/program.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
 
     @Test
-    public void findOneByReferenceIdNotFound()
+    public void findMetadataByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "93783", ReferenceType.ID ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
     @Test( expected = HttpServerErrorException.class )
-    public void findOneByReferenceIdServerError()
+    public void findMetadataByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
-        service.findProgramByReference( new Reference( "93783", ReferenceType.ID ) );
+        service.findMetadataByReference( new Reference( "93783", ReferenceType.ID ) );
     }
 
     @Test
-    public void findOneByReferenceCode() throws IOException
+    public void findMetadataByReferenceCode() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/programs.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
 
     @Test
-    public void findOneByReferenceCodeNotFound() throws IOException
+    public void findMetadataByReferenceCodeNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/emptyPrograms.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "OU_3783", ReferenceType.CODE ) );
         Assert.assertFalse( ou.isPresent() );
     }
 
     @Test
-    public void findOneByReferenceName() throws IOException
+    public void findMetadataByReferenceName() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/programs.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertTrue( ou.isPresent() );
         assertProgram( ou.get() );
     }
 
     @Test
-    public void findOneByReferenceNameNotFound() throws IOException
+    public void findMetadataByReferenceNameNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
-            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,repeatable,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+            "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/emptyPrograms.json" ), MediaType.APPLICATION_JSON ) );
 
-        Optional<? extends Program> ou = service.findProgramByReference( new Reference( "Freetown", ReferenceType.NAME ) );
+        Optional<? extends Program> ou = service.findMetadataByReference( new Reference( "Freetown", ReferenceType.NAME ) );
         Assert.assertFalse( ou.isPresent() );
     }
 

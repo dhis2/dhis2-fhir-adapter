@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.programstage.AbstractObse
 import javax.annotation.Nonnull;
 
 /**
- * Tests the transformation of a FHIR Observation to a DHIS 2 Program Stage Instance.
+ * Tests the transformation of a FHIR Observation to a DHIS2 Program Stage Instance.
  *
  * @author volsch
  */

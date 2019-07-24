@@ -86,6 +86,13 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
 
     @Nonnull
     @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
+    }
+
+    @Nonnull
+    @Override
     public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.PROGRAM_STAGE_EVENT;
@@ -115,7 +122,7 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
             .map( ri -> new ReferenceTuple( ri.getRule().getProgramStage().getProgram().getProgramReference(), ri.getRule().getProgramStage().getProgramStageReference() ) )
             .collect( Collectors.toCollection( TreeSet::new ) );
         final Set<ProgramStageId> programStageIds = refs.stream().map( ref -> {
-            final Program program = metadataService.findProgramByReference( ref.getProgramReference() )
+            final Program program = metadataService.findMetadataByReference( ref.getProgramReference() )
                 .orElseThrow( () -> new TransformerMappingException( "Program does not exist: " + ref.getProgramReference() ) );
             final ProgramStage programStage = program.getOptionalStage( ref.getProgramStageReference() )
                 .orElseThrow( () -> new TransformerMappingException( "Program stage does not exist: " + ref.getProgramStageReference() ) );

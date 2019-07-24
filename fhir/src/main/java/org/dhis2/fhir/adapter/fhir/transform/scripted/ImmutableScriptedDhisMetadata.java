@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,56 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.model.Identifiable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 
 import javax.annotation.Nonnull;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * Implemented by DHIS 2 types.
+ * Base implementation of scripted metadata.
  *
  * @author volsch
  */
-public interface DhisType extends Identifiable<String>
+public class ImmutableScriptedDhisMetadata extends ImmutableScriptedDhisResource implements AccessibleScriptedDhisMetadata, ScriptedDhisMetadata, Serializable
 {
-    /**
-     * @return the unique code of the type or <code>null</code> if the type has no code.
-     */
-    String getCode();
+    private static final long serialVersionUID = -3081103677950925231L;
 
-    /**
-     * @return the unique name of the type.
-     */
-    String getName();
+    public ImmutableScriptedDhisMetadata( @Nonnull AccessibleScriptedDhisMetadata delegate )
+    {
+        super( delegate );
+    }
 
-    /**
-     * @return all references that can be used to reference this type.
-     */
+    @JsonIgnore
     @Nonnull
-    Set<Reference> getAllReferences();
+    protected AccessibleScriptedDhisMetadata getDelegate()
+    {
+        return (AccessibleScriptedDhisMetadata) super.getDelegate();
+    }
 
-    /**
-     * Returns if the data matches the specified reference.
-     *
-     * @param reference the reference that should be checked.
-     * @return <code>true</code> if data matches the specified reference,
-     * <code>false</code> otherwise.
-     */
-    boolean isReference( @Nonnull Reference reference );
+    @Nonnull
+    @Override
+    @ScriptExecutionForbidden
+    public DhisMetadata getDhisResource()
+    {
+        return (DhisMetadata) super.getDhisResource();
+    }
+
+    @JsonIgnore
+    @Nullable
+    @Override
+    public String getCode()
+    {
+        return getDelegate().getCode();
+    }
+
+    @JsonIgnore
+    @Nullable
+    @Override
+    public String getName()
+    {
+        return getDelegate().getName();
+    }
 }

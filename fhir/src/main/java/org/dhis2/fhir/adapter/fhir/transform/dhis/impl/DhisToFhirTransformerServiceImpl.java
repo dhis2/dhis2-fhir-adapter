@@ -50,6 +50,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersionedValue;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -127,13 +128,15 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     private final Map<DhisResourceType, DhisToFhirRequestResolver> requestResolvers = new HashMap<>();
 
-    private final Map<DhisResourceType, DhisToFhirDataProvider<? extends AbstractRule>> dataProviders = new HashMap<>();
+    private final Map<FhirVersion, Map<DhisResourceType, DhisToFhirDataProvider<? extends AbstractRule>>> dataProviders = new HashMap<>();
 
     private final Map<FhirVersionedValue<DhisResourceType>, DhisToFhirTransformer<?, ?>> transformers = new HashMap<>();
 
     private final Map<FhirVersion, Map<String, DhisToFhirTransformerUtils>> transformerUtils = new HashMap<>();
 
     private final ScriptExecutor scriptExecutor;
+
+    private final ScriptExecutionContext scriptExecutionContext;
 
     public DhisToFhirTransformerServiceImpl( @Nonnull LockManager lockManager,
         @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
@@ -145,7 +148,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         @Nonnull ObjectProvider<List<DhisToFhirDataProvider<? extends AbstractRule>>> dataProviders,
         @Nonnull ObjectProvider<List<DhisToFhirTransformer<?, ?>>> transformersProvider,
         @Nonnull ObjectProvider<List<DhisToFhirTransformerUtils>> transformUtilsProvider,
-        @Nonnull ScriptExecutor scriptExecutor )
+        @Nonnull ScriptExecutor scriptExecutor, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         this.lockManager = lockManager;
         this.fhirClientResourceRepository = fhirClientResourceRepository;
@@ -154,11 +157,20 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         this.ruleRepository = ruleRepository;
         this.requestCacheService = requestCacheService;
         this.scriptExecutor = scriptExecutor;
+        this.scriptExecutionContext = scriptExecutionContext;
 
         requestResolvers.ifAvailable( resolvers ->
             resolvers.forEach( r -> this.requestResolvers.put( r.getDhisResourceType(), r ) ) );
         dataProviders.ifAvailable( providers ->
-            providers.forEach( dp -> this.dataProviders.put( dp.getDhisResourceType(), dp ) ) );
+        {
+            for ( final DhisToFhirDataProvider<?> dataProvider : providers )
+            {
+                for ( final FhirVersion fhirVersion : dataProvider.getFhirVersions() )
+                {
+                    this.dataProviders.computeIfAbsent( fhirVersion, key -> new HashMap<>() ).put( dataProvider.getDhisResourceType(), dataProvider );
+                }
+            }
+        } );
         transformersProvider.ifAvailable( transformers ->
         {
             for ( final DhisToFhirTransformer<?, ?> transformer : transformers )
@@ -183,13 +195,16 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
     @Nonnull
     @Override
-    public DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull DhisResourceType dhisResourceType )
+    public DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull FhirVersion fhirVersion, @Nonnull DhisResourceType dhisResourceType )
     {
-        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider = dataProviders.get( dhisResourceType );
+        final DhisToFhirDataProvider<? extends AbstractRule> dataProvider =
+            dataProviders.computeIfAbsent( fhirVersion, version -> new HashMap<>() ).get( dhisResourceType );
+
         if ( dataProvider == null )
         {
-            throw new TransformerMappingException( "No data provider can be found for DHIS resource type " + dhisResourceType );
+            throw new TransformerMappingException( "No data provider can be found for FHIR version " + fhirVersion + " and DHIS resource type " + dhisResourceType );
         }
+
         return dataProvider;
     }
 
@@ -488,6 +503,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
                     {
                         transformerRequestCache.put( transformerRequestKey, outcome.getResource() );
                     }
+
                     return new DhisToFhirTransformOutcome<>( outcome, transformerRequestImpl.isLastRule() ? null : transformerRequestImpl );
                 }
                 // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
@@ -510,7 +526,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         }
         final OrganizationUnit organizationUnit = organizationUnitService.findMetadataByReference( new Reference( dhisResource.getOrganizationUnitId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "DHIS resource " + dhisResource.getResourceId() + " reference organization unit " + dhisResource.getOrganizationUnitId() + " that cannot be found." ) );
-        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
+        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit, scriptExecutionContext ) );
     }
 
     private boolean isApplicable( @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedDhisResource input,

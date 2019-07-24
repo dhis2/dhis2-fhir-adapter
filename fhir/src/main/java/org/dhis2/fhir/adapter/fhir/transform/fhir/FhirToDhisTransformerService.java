@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Transforms a FHIR resource to a DHIS 2 resource by applying defines rules.
+ * Transforms a FHIR resource to a DHIS2 resource by applying defines rules.
  *
  * @author volsch
  */

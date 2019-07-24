@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.metadata.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,56 +28,29 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
- * Abstract implementation of {@link DhisType}.
+ * Rule for program stage metadata.
  *
  * @author volsch
  */
-public abstract class AbstractDhisType implements DhisType, Serializable
+@Entity
+@Table( name = "fhir_program_stage_metadata_rule" )
+@DiscriminatorValue( "PROGRAM_STAGE_METADATA" )
+@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
+public class ProgramStageMetadataRule extends AbstractSimpleRule
 {
-    private static final long serialVersionUID = 7960220674294587120L;
+    private static final long serialVersionUID = 3878610804052444321L;
 
-    @JsonIgnore
-    @Nonnull
-    @Override
-    public Set<Reference> getAllReferences()
+    public ProgramStageMetadataRule()
     {
-        final Set<Reference> references = new HashSet<>();
-        if ( getId() != null )
-        {
-            references.add( new Reference( getId(), ReferenceType.ID ) );
-        }
-        if ( getCode() != null )
-        {
-            references.add( new Reference( getCode(), ReferenceType.CODE ) );
-        }
-        if ( getName() != null )
-        {
-            references.add( new Reference( getName(), ReferenceType.NAME ) );
-        }
-        return references;
-    }
-
-    @Override
-    public boolean isReference( @Nonnull Reference reference )
-    {
-        switch ( reference.getType() )
-        {
-            case ID:
-                return reference.getValue().equals( getId() );
-            case CODE:
-                return reference.getValue().equals( getCode() );
-            case NAME:
-                return reference.getValue().equals( getName() );
-            default:
-                throw new AssertionError( "Unhandled reference type: " + reference.getType() );
-        }
+        super( DhisResourceType.PROGRAM_STAGE_METADATA );
     }
 }

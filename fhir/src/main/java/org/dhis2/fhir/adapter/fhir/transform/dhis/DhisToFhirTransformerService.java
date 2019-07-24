@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
@@ -46,14 +47,14 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Transforms a DHIS2 resource to a FHIR resource by applying defines rules.
  *
  * @author volsch
  */
 public interface DhisToFhirTransformerService
 {
     @Nonnull
-    DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull DhisResourceType dhisResourceType );
+    DhisToFhirDataProvider<? extends AbstractRule> getDataProvider( @Nonnull FhirVersion fhirVersion, @Nonnull DhisResourceType dhisResourceType );
 
     @Nullable
     RuleInfo<? extends AbstractRule> findSingleRule( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType );

@@ -38,6 +38,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
@@ -59,9 +60,10 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2 tracked
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2 tracked
  * entity instances to FHIR resources.
  *
  * @author volsch
@@ -75,6 +77,13 @@ public class TrackedEntityToFhirTransformer extends AbstractDhisToFhirTransforme
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull TrackedEntityMetadataService metadataService, @Nonnull TrackedEntityService service )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nonnull

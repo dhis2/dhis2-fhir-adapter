@@ -41,8 +41,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Resolves the rules for transformations from DHIS 2 resources to FHIR resources
- * depending on the DHIS 2 resource type.
+ * Resolves the rules for transformations from DHIS2 resources to FHIR resources
+ * depending on the DHIS2 resource type.
  *
  * @author volsch
  */

@@ -30,15 +30,15 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata;
 
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import org.dhis2.fhir.adapter.dhis.DhisFindException;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
+import org.dhis2.fhir.adapter.dhis.service.DhisMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -48,7 +48,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchResult;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirDataProvider;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,78 +55,75 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link DhisToFhirDataProvider} for DHIS2 Organisation Units.
+ * Implementation of {@link DhisToFhirDataProvider} for DHIS2 metadata resources.
  *
+ * @param <T> the concrete type of the DHIS2 resource.
+ * @param <U> the concrete type of the rule that performs the transformation.
  * @author volsch
  */
-@Component
-public class OrganizationUnitToFhirDataProvider extends AbstractDhisToFhirDataProvider<OrganizationUnitRule>
+public abstract class AbstractDhisMetadataToFhirDataProvider<T extends DhisResource & DhisMetadata, U extends AbstractRule> extends AbstractDhisToFhirDataProvider<U>
 {
-    private final OrganizationUnitService organizationUnitService;
+    private final DhisMetadataService<T> metadataService;
 
-    public OrganizationUnitToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService )
+    public AbstractDhisMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull DhisMetadataService<T> metadataService )
     {
         super( scriptExecutor, false );
-        this.organizationUnitService = organizationUnitService;
+        this.metadataService = metadataService;
     }
 
     @Nonnull
     @Override
-    public DhisResourceType getDhisResourceType()
+    public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<U>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
-        return DhisResourceType.ORGANIZATION_UNIT;
-    }
-
-    @Nonnull
-    @Override
-    protected Class<OrganizationUnitRule> getRuleClass()
-    {
-        return OrganizationUnitRule.class;
-    }
-
-    @Nullable
-    @Override
-    public DhisResource findByDhisFhirIdentifier( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull String identifier )
-    {
-        return organizationUnitService.findOneByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
-    }
-
-    @Nonnull
-    @Override
-    public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<OrganizationUnitRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
-    {
-        final PreparedOrganizationUnitDhisToFhirSearch ps = new PreparedOrganizationUnitDhisToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
+        final PreparedDhisMetadataToFhirSearch<U> ps = new PreparedDhisMetadataToFhirSearch<>( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
         ps.setUriFilterApplier( apply( fhirVersion, ruleInfos, ps.createSearchFilterCollector( null ) ) );
+
         return ps;
     }
 
     @Nullable
     @Override
-    public DhisToFhirSearchResult<OrganizationUnit> search( @Nonnull PreparedDhisToFhirSearch preparedSearch, @Nullable DhisToFhirSearchState state, int max )
+    public DhisToFhirSearchResult<T> search( @Nonnull PreparedDhisToFhirSearch preparedSearch, @Nullable DhisToFhirSearchState state, int max )
     {
-        final PreparedOrganizationUnitDhisToFhirSearch ps = (PreparedOrganizationUnitDhisToFhirSearch) preparedSearch;
-        final OrganizationUnitToFhirSearchState ss = (OrganizationUnitToFhirSearchState) state;
+        final PreparedDhisMetadataToFhirSearch ps = (PreparedDhisMetadataToFhirSearch) preparedSearch;
+        final DhisMetadataToFhirSearchState ss = (DhisMetadataToFhirSearchState) state;
+
         if ( (ss != null) && !ss.isMore() )
         {
             return null;
         }
 
         final int from = (ss == null) ? 0 : ss.getFrom();
-        final DhisResourceResult<OrganizationUnit> result;
+        final DhisResourceResult<T> result;
+
         try
         {
-            result = organizationUnitService.find( ps, from, max );
+            result = find( ps, from, max );
         }
         catch ( DhisFindException e )
         {
             throw new DhisToFhirDataProviderException( e.getMessage(), e );
         }
+
         if ( result.getResources().isEmpty() )
         {
             return null;
         }
-        return new DhisToFhirSearchResult<>( result.getResources(),
-            new OrganizationUnitToFhirSearchState( from + result.getResources().size(),
+
+        return new DhisToFhirSearchResult<>( result.getResources(), new DhisMetadataToFhirSearchState( from + result.getResources().size(),
                 !result.getResources().isEmpty() && result.isMore() ) );
+    }
+
+    @Nullable
+    @Override
+    public DhisResource findByDhisFhirIdentifier( @Nonnull FhirClient fhirClient, @Nonnull RuleInfo<U> ruleInfo, @Nonnull String identifier )
+    {
+        return metadataService.findOneByReference( new Reference( identifier, ReferenceType.CODE ) ).orElse( null );
+    }
+
+    @Nonnull
+    protected DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
+    {
+        return metadataService.find( uriFilterApplier, from, max );
     }
 }

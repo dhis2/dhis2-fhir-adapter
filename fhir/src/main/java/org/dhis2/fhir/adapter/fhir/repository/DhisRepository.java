@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The repository that is used to store DHIS 2 Resources.
+ * The repository that is used to store DHIS2 Resources.
  *
  * @author volsch
  */

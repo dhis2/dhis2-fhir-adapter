@@ -64,11 +64,14 @@ public class PreparedProgramStageToFhirSearch extends AbstractPreparedDhisToFhir
         {
             return programStageIds.get( 0 );
         }
+
         final int index = programStageIds.indexOf( previousProgramStageId );
-        if ( (index + 1) >= programStageIds.size() )
+
+        if ( index + 1 >= programStageIds.size() )
         {
             return null;
         }
+
         return programStageIds.get( index + 1 );
     }
 }

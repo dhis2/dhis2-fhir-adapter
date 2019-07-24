@@ -166,7 +166,7 @@ public class MetadataSheetProgramImportProcessor extends AbstractMetadataSheetIm
             return messageCollector;
         }
 
-        final Program program = programMetadataService.findProgramByReference( programRef ).orElse( null );
+        final Program program = programMetadataService.findMetadataRefreshedByReference( programRef ).orElse( null );
         TrackedEntityRule trackedEntityRule = null;
 
         if ( program == null )

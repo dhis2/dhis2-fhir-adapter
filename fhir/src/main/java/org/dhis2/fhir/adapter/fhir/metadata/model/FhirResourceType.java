@@ -70,8 +70,10 @@ public enum FhirResourceType
     RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
     PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
     MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) ),
-    CARE_PLAN( FhirVersion.ALL, "CarePlan", 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) ),
-    QUESTIONNAIRE_RESPONSE( FhirVersion.ALL, "QuestionnaireResponse", 40, Collections.emptySet(), Collections.singleton( "QuestionnaireResponse" ) );
+    PLAN_DEFINITION( FhirVersion.R4_ONLY, "PlanDefinition", 30, Collections.emptySet(), Collections.singleton( "PlanDefinition" ) ),
+    QUESTIONNAIRE( FhirVersion.R4_ONLY, "Questionnaire", 31, Collections.emptySet(), Collections.singleton( "Questionnaire" ) ),
+    CARE_PLAN( FhirVersion.R4_ONLY, "CarePlan", 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) ),
+    QUESTIONNAIRE_RESPONSE( FhirVersion.R4_ONLY, "QuestionnaireResponse", 40, Collections.emptySet(), Collections.singleton( "QuestionnaireResponse" ) );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );

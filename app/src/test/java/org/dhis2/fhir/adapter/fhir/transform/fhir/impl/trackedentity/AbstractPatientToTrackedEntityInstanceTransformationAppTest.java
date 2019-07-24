@@ -45,7 +45,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 /**
- * Tests the transformation of a FHIR patient to a DHIS 2 Tracked Entity.
+ * Tests the transformation of a FHIR patient to a DHIS2 Tracked Entity.
  *
  * @author volsch
  */

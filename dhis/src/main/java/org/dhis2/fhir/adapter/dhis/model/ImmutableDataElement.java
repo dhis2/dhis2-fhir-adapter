@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 /**
@@ -70,6 +71,62 @@ public class ImmutableDataElement implements DataElement, ImmutableDhisObject, S
     public void setId( String id )
     {
         throw new UnsupportedOperationException();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getOrgUnitId()
+    {
+        return delegate.getOrgUnitId();
+    }
+
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return delegate.isDeleted();
+    }
+
+    @JsonIgnore
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nonnull
+    public DhisResourceType getResourceType()
+    {
+        return delegate.getResourceType();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isNewResource()
+    {
+        return delegate.isNewResource();
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done, read only
     }
 
     @JsonIgnore

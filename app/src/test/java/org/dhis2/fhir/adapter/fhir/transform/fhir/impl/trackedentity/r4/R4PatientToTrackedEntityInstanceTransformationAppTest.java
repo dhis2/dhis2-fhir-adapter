@@ -34,7 +34,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.trackedentity.AbstractPat
 import javax.annotation.Nonnull;
 
 /**
- * Tests the transformation of a FHIR patient to a DHIS 2 Tracked Entity.
+ * Tests the transformation of a FHIR patient to a DHIS2 Tracked Entity.
  *
  * @author volsch
  */

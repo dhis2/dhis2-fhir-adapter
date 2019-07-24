@@ -63,6 +63,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.model.EventDecisionType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.DhisDataExistsException;
@@ -107,6 +108,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -144,6 +146,13 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         this.eventService = eventService;
         this.resourceMappingRepository = resourceMappingRepository;
         this.valueConverter = valueConverter;
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nonnull
@@ -280,7 +289,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             final Event event = getResourceById( dhisFhirResourceId.getId() ).orElse( null );
             if ( event != null )
             {
-                final Program program = programMetadataService.findProgramByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
+                final Program program = programMetadataService.findMetadataByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
                     .orElseThrow( () -> new TransformerDataException( "Program " + event.getProgramId() + " of event " + event.getId() + " could not be found." ) );
                 final ProgramStage programStage = program.getOptionalStage( ruleInfo.getRule().getProgramStage().getProgramStageReference() ).orElseThrow( () -> new TransformerMappingException( "Rule " + ruleInfo + " requires program stage \"" +
                     ruleInfo.getRule().getProgramStage().getProgramStageReference() + "\" that is not included in program \"" + ruleInfo.getRule().getProgramStage().getProgram().getName() + "\"." ) );
@@ -313,7 +322,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
     protected boolean addBasicScriptVariables( @Nonnull Map<String, Object> variables, @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping ) throws TransformerException
     {
-        final Program program = programMetadataService.findProgramByReference( ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() )
+        final Program program = programMetadataService.findMetadataByReference( ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() )
             .orElseThrow( () -> new TransformerMappingException( "Mapping " + ruleInfo + " requires program \"" +
                 ruleInfo.getRule().getProgramStage().getProgram().getProgramReference() + "\" that does not exist." ) );
         variables.put( ScriptVariable.PROGRAM.getVariableName(), program );

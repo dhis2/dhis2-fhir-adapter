@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.config;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,16 @@ package org.dhis2.fhir.adapter.dhis.config;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.cache.AbstractSimpleCacheConfig;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.interceptor.AbstractCacheResolver;
+import org.springframework.cache.interceptor.CacheOperationInvocationContext;
+import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -42,6 +47,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Cache configuration for FHIR Resources.
@@ -69,5 +76,28 @@ public class DhisMetadataCacheConfig extends AbstractSimpleCacheConfig
     protected CacheManager dhisCacheManager( @Nonnull RequestCacheService requestCacheService, @Nonnull ObjectProvider<RedisConnectionFactory> redisConnectionFactoryProvider, @Nonnull GenericJackson2JsonRedisSerializer redisSerializer )
     {
         return createCacheManager( requestCacheService, redisConnectionFactoryProvider, redisSerializer );
+    }
+
+    @Nonnull
+    @Bean
+    protected CacheResolver dhisMetadataCacheResolver( @Nonnull @Qualifier( "dhisCacheManager" ) CacheManager cacheManager )
+    {
+        return new AbstractCacheResolver( cacheManager )
+        {
+            @Override
+            protected Collection<String> getCacheNames( @Nonnull CacheOperationInvocationContext<?> context )
+            {
+                String name = context.getTarget().getClass().getSimpleName();
+
+                final int index = name.indexOf( "Service" );
+
+                if ( index > 0 )
+                {
+                    name = name.substring( 0, index );
+                }
+
+                return Collections.singletonList( StringUtils.uncapitalize( name ) );
+            }
+        };
     }
 }

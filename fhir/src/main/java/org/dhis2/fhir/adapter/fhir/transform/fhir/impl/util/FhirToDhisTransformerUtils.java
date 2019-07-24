@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * Base interface for FHIR version restricted domain specific transformations
- * utilities methods for FHIR resource to DHIS 2 resource transformations.
+ * utilities methods for FHIR resource to DHIS2 resource transformations.
  *
  * @author volsch
  */

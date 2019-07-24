@@ -42,7 +42,7 @@ import java.util.UUID;
 
 /**
  * The immutable request that has caused the transformation between the FHIR resource
- * and the DHIS 2 resource. This can be used by scripts safely.
+ * and the DHIS2 resource. This can be used by scripts safely.
  *
  * @author volsch
  */

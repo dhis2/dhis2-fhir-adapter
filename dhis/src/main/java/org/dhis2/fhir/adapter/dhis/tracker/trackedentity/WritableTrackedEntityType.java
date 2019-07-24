@@ -31,18 +31,21 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.dhis2.fhir.adapter.dhis.model.AbstractDhisType;
+import org.dhis2.fhir.adapter.dhis.model.AbstractDhisMetadata;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class WritableTrackedEntityType extends AbstractDhisType implements TrackedEntityType, Serializable
+public class WritableTrackedEntityType extends AbstractDhisMetadata implements TrackedEntityType, Serializable
 {
     private static final long serialVersionUID = 797154293863611491L;
 
@@ -102,6 +105,62 @@ public class WritableTrackedEntityType extends AbstractDhisType implements Track
     {
         // tracked entity types do no have a code
         return null;
+    }
+
+    @JsonIgnore
+    @Override
+    public String getOrgUnitId()
+    {
+        return null;
+    }
+
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return getId() == null ? null : new DhisResourceId( getResourceType(), getId() );
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return false;
+    }
+
+    @JsonIgnore
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return null;
+    }
+
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return DhisResourceType.TRACKED_ENTITY_TYPE;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isLocal()
+    {
+        return false;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isNewResource()
+    {
+        return false;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done
     }
 
     @Override

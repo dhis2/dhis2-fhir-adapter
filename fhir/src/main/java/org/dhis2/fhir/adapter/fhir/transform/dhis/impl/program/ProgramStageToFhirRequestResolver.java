@@ -145,7 +145,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new ImmutableScriptedTrackedEntityInstance(
             new WritableScriptedTrackedEntityInstance( trackedEntityAttributes, trackedEntityType, tei, valueConverter ) );
 
-        final Program program = programMetadataService.findProgramByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
+        final Program program = programMetadataService.findMetadataByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Program " + event.getProgramId() + " of event " + event.getId() + " could not be found." ) );
         final ProgramStage programStage = program.getOptionalStage( new Reference( event.getProgramStageId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Program stage " + event.getProgramStageId() + " of event " + event.getId() +

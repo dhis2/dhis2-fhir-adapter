@@ -54,7 +54,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * DSTU3 tests for rest interfaces that access
- * DHIS 2 organization units.
+ * DHIS2 organization units.
  *
  * @author volsch
  */
@@ -87,7 +87,7 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
     }
 
     @Test( expected = ResourceNotFoundException.class )
-    public void getLocationNotExistsRepeated() throws Exception
+    public void getLocationNotExistsRepeated()
     {
         try
         {
@@ -100,7 +100,7 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
         }
     }
 
-    private void getLocationNotExists() throws Exception
+    private void getLocationNotExists()
     {
         systemDhis2Server.reset();
         userDhis2Server.reset();
@@ -124,7 +124,7 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
     }
 
     @Test( expected = ResourceNotFoundException.class )
-    public void getLocationRuleNotFoundRepeated() throws Exception
+    public void getLocationRuleNotFoundRepeated()
     {
         try
         {
@@ -137,7 +137,7 @@ public class Dstu3OrgUnitFhirRestAppTest extends AbstractAppTest
         }
     }
 
-    private void getLocationRuleNotFound() throws Exception
+    private void getLocationRuleNotFound()
     {
         systemDhis2Server.reset();
         userDhis2Server.reset();

@@ -50,7 +50,6 @@ import javax.persistence.EntityManager;
 @Component
 public class BeforeCreateSaveEnrollmentRuleValidator extends AbstractBeforeCreateSaveRuleValidator<EnrollmentRule> implements MetadataValidator<EnrollmentRule>
 {
-
     public BeforeCreateSaveEnrollmentRuleValidator( @Nonnull EntityManager entityManager )
     {
         super( EnrollmentRule.class, entityManager );

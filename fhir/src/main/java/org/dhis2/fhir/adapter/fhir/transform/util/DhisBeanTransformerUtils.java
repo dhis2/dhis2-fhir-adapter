@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 
 /**
  * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. DHIS 2 objects).
+ * by several thread, e.g. DHIS2 objects).
  *
  * @author volsch
  */

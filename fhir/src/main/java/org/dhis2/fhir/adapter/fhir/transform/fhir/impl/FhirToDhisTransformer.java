@@ -46,9 +46,9 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Transforms a FHIR resource to a DHIS 2 resource.
+ * Transforms a FHIR resource to a DHIS2 resource.
  *
- * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
+ * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */

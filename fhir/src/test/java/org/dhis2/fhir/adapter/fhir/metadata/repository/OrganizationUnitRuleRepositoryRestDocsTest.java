@@ -106,10 +106,10 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
                     "The script must be an evaluation script that returns a boolean value." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "transformExpScript" ).description( "Link to the executable script reference that is used to transform the DHIS2 resource input to the FHIR resource." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "identifierLookupScript" ).description(
-                    "Link to the executable script reference that is used to extract the location identifier from the DHIS 2 organization unit. The script must be an evaluation script that returns a STRING." )
+                    "Link to the executable script reference that is used to extract the location identifier from the DHIS2 organization unit. The script must be an evaluation script that returns a STRING." )
                     .type( JsonFieldType.STRING ),
                 fields.withPath( "managingOrgIdentifierLookupScript" ).description(
-                    "Link to the executable script reference that is used to extract the managing organization unit identifier from the DHIS 2 organization unit. The script must be an evaluation script that returns a STRING." )
+                    "Link to the executable script reference that is used to extract the managing organization unit identifier from the DHIS2 organization unit. The script must be an evaluation script that returns a STRING." )
                     .type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "filterScript" ).description( "Link to the executable script that prepares the search filter." ).type( JsonFieldType.STRING ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
@@ -149,8 +149,8 @@ public class OrganizationUnitRuleRepositoryRestDocsTest extends AbstractJpaRepos
                 linkWithRel( "applicableExpScript" ).description( "Link to the executable script reference that is used to check if the incoming request is applicable for this rule when transforming a DHIS2 to FHIR resource. " +
                     "The script must be an evaluation script that returns a boolean value." ).optional(),
                 linkWithRel( "transformExpScript" ).description( "Link to the executable script reference that is used to transform the DHIS2 resource input to the FHIR resource." ).optional(),
-                linkWithRel( "identifierLookupScript" ).description( "Link to the executable script reference that is used to extract the location identifier from the DHIS 2 organization unit. The script must be an evaluation script that returns a STRING." ),
-                linkWithRel( "managingOrgIdentifierLookupScript" ).description( "Link to the executable script reference that is used to extract the managing organization unit identifier from the DHIS 2 organization unit. " +
+                linkWithRel( "identifierLookupScript" ).description( "Link to the executable script reference that is used to extract the location identifier from the DHIS2 organization unit. The script must be an evaluation script that returns a STRING." ),
+                linkWithRel( "managingOrgIdentifierLookupScript" ).description( "Link to the executable script reference that is used to extract the managing organization unit identifier from the DHIS2 organization unit. " +
                     "The script must be an evaluation script that returns a STRING." ).optional() ),
                 responseFields(
                     attributes( key( "title" ).value( "Fields for rule reading" ) ),

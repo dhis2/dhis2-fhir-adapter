@@ -98,14 +98,17 @@ import java.util.List;
         "SELECT r FROM AbstractRule r JOIN r.applicableCodeSet acs WHERE r.fhirResourceType=:fhirResourceType AND r.enabled=true " +
             "AND r.expEnabled=true AND acs.code IN (:codeSetCodes)" ),
     @NamedQuery( name = AbstractRule.FIND_IMP_RULE_BY_ID_NAMED_QUERY, query =
-        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.impEnabled=true" )
+        "SELECT r FROM AbstractRule r WHERE r.fhirResourceType=:fhirResourceType AND TYPE(r)=:dhisResourceType AND r.id=:ruleId AND r.enabled=true AND r.impEnabled=true" ),
+    @NamedQuery( name = AbstractRule.FIND_ALL_EXP_NAMED_QUERY, query = "SELECT our FROM OrganizationUnitRule our WHERE our.enabled=true AND our.expEnabled=true AND (our.fhirCreateEnabled=true OR our.fhirUpdateEnabled=true)" )
 } )
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, property = "dhisResourceType", include = JsonTypeInfo.As.EXISTING_PROPERTY )
 @JsonSubTypes( {
     @JsonSubTypes.Type( value = TrackedEntityRule.class, name = "TRACKED_ENTITY" ),
     @JsonSubTypes.Type( value = ProgramStageRule.class, name = "PROGRAM_STAGE_EVENT" ),
     @JsonSubTypes.Type( value = OrganizationUnitRule.class, name = "ORGANIZATION_UNIT" ),
-    @JsonSubTypes.Type( value = EnrollmentRule.class, name = "ENROLLMENT" )
+    @JsonSubTypes.Type( value = EnrollmentRule.class, name = "ENROLLMENT" ),
+    @JsonSubTypes.Type( value = ProgramMetadataRule.class, name = "PROGRAM_METADATA" ),
+    @JsonSubTypes.Type( value = ProgramStageMetadataRule.class, name = "PROGRAM_STAGE_METADATA" )
 } )
 @JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
 public abstract class AbstractRule extends VersionedBaseMetadata implements Serializable, Comparable<AbstractRule>, NamedMetadata
@@ -125,6 +128,8 @@ public abstract class AbstractRule extends VersionedBaseMetadata implements Seri
     public static final String FIND_EXP_RULES_BY_FHIR_TYPE_CODE_SETS_NAMED_QUERY = "AbstractRule.findExpByFhirTypeAndCodeSets";
 
     public static final String FIND_IMP_RULE_BY_ID_NAMED_QUERY = "AbstractRule.findImpById";
+
+    public static final String FIND_ALL_EXP_NAMED_QUERY = "AbstractRule.findAllExp";
 
     public static final int MAX_NAME_LENGTH = 230;
 

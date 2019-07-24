@@ -28,39 +28,13 @@ package org.dhis2.fhir.adapter.dhis.orgunit;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
+import org.dhis2.fhir.adapter.dhis.service.DhisMetadataService;
 
 /**
  * Service that provides access to DHIS2 organization unit metadata.
  *
  * @author volsch
  */
-public interface OrganizationUnitService
+public interface OrganizationUnitService extends DhisMetadataService<OrganizationUnit>
 {
-    @Nonnull
-    Optional<OrganizationUnit> findMetadataByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<OrganizationUnit> findMetadataRefreshedByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<OrganizationUnit> findOneByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    DhisResourceResult<OrganizationUnit> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

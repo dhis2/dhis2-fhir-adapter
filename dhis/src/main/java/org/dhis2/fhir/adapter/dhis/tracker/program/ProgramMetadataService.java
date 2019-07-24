@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.tracker.program;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,13 +28,13 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.service.DhisMetadataService;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
-
-public interface ProgramMetadataService
+/**
+ * Metadata service for DHIS2 programs.
+ *
+ * @author volsch
+ */
+public interface ProgramMetadataService extends DhisMetadataService<Program>
 {
-    @Nonnull
-    Optional<? extends Program> findProgramByReference( @Nonnull Reference reference );
 }

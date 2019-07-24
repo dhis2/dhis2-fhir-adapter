@@ -28,9 +28,12 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.model.ValueType;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
  * Writable implementation of {@link DataElement} that can also be used for
@@ -38,7 +41,7 @@ import java.io.Serializable;
  *
  * @author volsch
  */
-public class WritableDataElement extends AbstractDhisType implements DataElement, Serializable
+public class WritableDataElement extends AbstractDhisMetadata implements DataElement, Serializable
 {
     private static final long serialVersionUID = -3933887626350878763L;
 
@@ -65,6 +68,62 @@ public class WritableDataElement extends AbstractDhisType implements DataElement
     public void setId( String id )
     {
         this.id = id;
+    }
+
+    @JsonIgnore
+    @Override
+    public String getOrgUnitId()
+    {
+        return null;
+    }
+
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return getId() == null ? null : new DhisResourceId( getResourceType(), getId() );
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return false;
+    }
+
+    @JsonIgnore
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return null;
+    }
+
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public DhisResourceType getResourceType()
+    {
+        return DhisResourceType.TRACKED_ENTITY_TYPE;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isLocal()
+    {
+        return false;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isNewResource()
+    {
+        return false;
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done
     }
 
     @Override

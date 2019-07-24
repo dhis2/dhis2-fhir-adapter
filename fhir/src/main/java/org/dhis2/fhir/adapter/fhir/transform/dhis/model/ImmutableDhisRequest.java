@@ -37,7 +37,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * The immutable DHIS request that caused the transformation from DHIS 2 to FHIR resource.
+ * The immutable DHIS request that caused the transformation from DHIS2 to FHIR resource.
  * This can be used in scripts safely.
  *
  * @author volsch

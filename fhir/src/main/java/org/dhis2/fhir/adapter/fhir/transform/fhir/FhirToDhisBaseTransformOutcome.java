@@ -35,9 +35,9 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
- * The base outcome of the transformation between a FHIR resource and a DHIS 2 resource.
+ * The base outcome of the transformation between a FHIR resource and a DHIS2 resource.
  *
- * @param <R> the concrete type of the returned DHIS 2 resource.
+ * @param <R> the concrete type of the returned DHIS2 resource.
  * @author volsch
  */
 public class FhirToDhisBaseTransformOutcome<R extends DhisResource> implements Serializable

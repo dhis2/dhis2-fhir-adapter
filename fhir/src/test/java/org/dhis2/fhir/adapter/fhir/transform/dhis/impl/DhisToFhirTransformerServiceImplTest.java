@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientResourceReposit
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -103,6 +104,9 @@ public class DhisToFhirTransformerServiceImplTest
     private ScriptedDhisResource scriptedDhisResource;
 
     @Mock
+    private ScriptExecutionContext scriptExecutionContext;
+
+    @Mock
     private DhisToFhirTransformerRequestImpl transformerRequest;
 
     private AbstractFhirResourceDhisToFhirTransformerUtils resourceTransformerUtils;
@@ -126,7 +130,7 @@ public class DhisToFhirTransformerServiceImplTest
             new StaticObjectProvider<>( new ArrayList<>() ),
             new StaticObjectProvider<>( new ArrayList<>() ),
             new StaticObjectProvider<>( Collections.singletonList( resourceTransformerUtils ) ),
-            scriptExecutor );
+            scriptExecutor, scriptExecutionContext );
         service = Mockito.spy( service );
     }
 

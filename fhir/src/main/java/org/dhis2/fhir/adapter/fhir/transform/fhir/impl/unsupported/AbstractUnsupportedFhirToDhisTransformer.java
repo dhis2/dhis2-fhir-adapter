@@ -36,6 +36,7 @@ import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
@@ -50,9 +51,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Abstract base class for all unsupported transformers from FHIR to DHIS 2 resources.
+ * Abstract base class for all unsupported transformers from FHIR to DHIS2 resources.
  *
  * @param <R> the concrete type of the FHIR resource.
  * @param <U> the concrete type of transformation rule that this transformer processes.
@@ -64,6 +66,13 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
     {
         super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nullable
@@ -142,5 +151,11 @@ public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisRes
     protected R createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nullable String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
         return null;
+    }
+
+    @Override
+    protected boolean isAlwaysActiveResource( @Nonnull RuleInfo<U> ruleInfo )
+    {
+        return false;
     }
 }

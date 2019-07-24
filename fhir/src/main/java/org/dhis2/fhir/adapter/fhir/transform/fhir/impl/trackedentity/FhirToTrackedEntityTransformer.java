@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
@@ -68,6 +69,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransformer<TrackedEntityInstance, TrackedEntityRule>
@@ -86,6 +88,13 @@ public class FhirToTrackedEntityTransformer extends AbstractFhirToDhisTransforme
         this.lockManager = lockManager;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.valueConverter = valueConverter;
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nonnull
