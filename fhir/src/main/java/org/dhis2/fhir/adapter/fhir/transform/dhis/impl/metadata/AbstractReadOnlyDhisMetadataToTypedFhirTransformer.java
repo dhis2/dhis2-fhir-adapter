@@ -50,11 +50,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Abstract Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
+ * Abstract Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
  * read-only metadata to a specific FHIR resource.
  *
- * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
- * @param <F> the concrete type of the FHIR resource to which the DHIS 2 resource should be transformed.
+ * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
+ * @param <F> the concrete type of the FHIR resource to which the DHIS2 resource should be transformed.
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
@@ -73,12 +73,12 @@ public abstract class AbstractReadOnlyDhisMetadataToTypedFhirTransformer<R exten
     @Override
     public final DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( getFhirResourceType().equals( ruleInfo.getRule().getFhirResourceType() ) )
+        if ( !getFhirResourceType().equals( ruleInfo.getRule().getFhirResourceType() ) )
         {
             return null;
         }
 
-        return transformInternal( fhirClient, context, input, ruleInfo, scriptVariables );
+        return super.transform( fhirClient, context, input, ruleInfo, scriptVariables );
     }
 
     @Nonnull
@@ -86,13 +86,5 @@ public abstract class AbstractReadOnlyDhisMetadataToTypedFhirTransformer<R exten
     protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return Optional.empty();
-    }
-
-    @Nullable
-    protected DhisToFhirTransformOutcome<? extends IBaseResource> transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input,
-        @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
-    {
-        // method can be overridden
-        return null;
     }
 }

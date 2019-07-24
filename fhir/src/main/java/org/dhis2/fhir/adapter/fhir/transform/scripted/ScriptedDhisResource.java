@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 /**
- * Mutable or immutable DHIS 2 resource that can be used by scripts safely.
+ * Mutable or immutable DHIS2 resource that can be used by scripts safely.
  *
  * @author volsch
  */

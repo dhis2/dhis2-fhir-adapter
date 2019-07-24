@@ -95,6 +95,13 @@ public class ImmutableProgramStage implements ProgramStage, ImmutableDhisObject,
 
     @JsonIgnore
     @Override
+    public String getDescription()
+    {
+        return delegate.getDescription();
+    }
+
+    @JsonIgnore
+    @Override
     public boolean isRepeatable()
     {
         return delegate.isRepeatable();

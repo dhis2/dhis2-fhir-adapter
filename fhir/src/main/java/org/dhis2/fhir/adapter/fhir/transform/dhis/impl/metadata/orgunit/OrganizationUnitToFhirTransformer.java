@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
@@ -55,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
  * organization unit to FHIR resources.
  *
  * @author volsch
@@ -67,11 +68,14 @@ public class OrganizationUnitToFhirTransformer extends AbstractReadOnlyDhisMetad
 
     private final OrganizationUnitService organizationUnitService;
 
+    private final ScriptExecutionContext scriptExecutionContext;
+
     public OrganizationUnitToFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService )
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
         this.organizationUnitService = organizationUnitService;
+        this.scriptExecutionContext = scriptExecutionContext;
     }
 
     @Nonnull
@@ -107,7 +111,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractReadOnlyDhisMetad
     {
         variables.put( ScriptVariable.ORGANIZATION_UNIT_RESOLVER.getVariableName(), new OrganizationUnitResolver(
             organizationUnitService, getFhirResourceRepository(), fhirClient, context, ruleInfo, variables,
-            new DefaultIdentifierValueProvider() ) );
+            new DefaultIdentifierValueProvider(), scriptExecutionContext ) );
     }
 
     @Override

@@ -73,9 +73,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource.
+ * Transforms a DHIS2 resource to a FHIR resource.
  *
- * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
+ * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
@@ -198,19 +198,20 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         if ( context.getDhisRequest().isDhisFhirId() )
         {
             final IBaseResource baseResource = createResource( fhirClient, context, ruleInfo, scriptVariables, false );
+
             if ( baseResource == null )
             {
                 return Optional.empty();
             }
 
-            final ScriptedDhisResource scriptedDhisResource =
-                TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class );
-            baseResource.setId( new IdDt( ruleInfo.getRule().getFhirResourceType().getResourceTypeName(),
-                DhisFhirResourceId.toString( scriptedDhisResource.getResourceType(), Objects.requireNonNull( scriptedDhisResource.getId() ), ruleInfo.getRule().getId() ) ) );
+            final ScriptedDhisResource scriptedDhisResource = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class );
+            baseResource.setId( new IdDt( ruleInfo.getRule().getFhirResourceType().getResourceTypeName(), createDhisFhirResourceId( ruleInfo, scriptedDhisResource ) ) );
+
             if ( context.getDhisRequest().getLastUpdated() != null )
             {
                 baseResource.getMeta().setLastUpdated( Date.from( context.getDhisRequest().getLastUpdated().toInstant() ) );
             }
+
             // FHIR resource will be filled with read data
             return Optional.of( baseResource );
         }
@@ -232,6 +233,19 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         }
 
         return Optional.ofNullable( resource );
+    }
+
+    @Nonnull
+    protected String createDhisFhirResourceId( @Nonnull RuleInfo<U> ruleInfo, @Nonnull ScriptedDhisResource dhisResource )
+    {
+        if ( ruleInfo.getRule().isSimpleFhirId() )
+        {
+            return DhisFhirResourceId.toString( null, Objects.requireNonNull( dhisResource.getId() ), null );
+        }
+        else
+        {
+            return DhisFhirResourceId.toString( dhisResource.getResourceType(), Objects.requireNonNull( dhisResource.getId() ), ruleInfo.getRule().getId() );
+        }
     }
 
     @Nonnull
@@ -330,6 +344,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         {
             return null;
         }
+
         return resource;
     }
 
@@ -339,8 +354,8 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             getDhisResourceClass().cast( TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, ScriptedDhisResource.class ) );
         final AbstractIdentifierDhisToFhirTransformerUtils identifierUtils =
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.IDENTIFIER_UTILS, AbstractIdentifierDhisToFhirTransformerUtils.class );
-
         final ResourceSystem resourceSystem = context.getResourceSystem( ruleInfo.getRule().getFhirResourceType() );
+
         if ( resourceSystem != null )
         {
             final String identifierValue = getIdentifierValue( context, ruleInfo, null, scriptedDhisResource, scriptVariables );
@@ -356,11 +371,14 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
                         identifierValue, resourceSystem.getCodePrefix(), ruleInfo.getRule().getFhirResourceType() );
                     return false;
                 }
+
                 final SystemCodeValue identifier = new SystemCodeValue( resourceSystem.getSystem(), identifierValue.substring( StringUtils.length( resourceSystem.getCodePrefix() ) ) );
+
                 if ( sync )
                 {
                     lockFhirIdentifier( context, identifier );
                 }
+
                 identifierUtils.addOrUpdateIdentifier( resource, identifier, resourceSystem.getFhirDisplayName() );
             }
         }
@@ -369,12 +387,15 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         {
             final System adapterIdentifierSystem = getAdapterIdentifierSystem();
             final SystemCodeValue identifier = new SystemCodeValue( adapterIdentifierSystem.getSystemUri(), createAdapterIdentifierValue( ruleInfo, scriptedDhisResource ) );
+
             if ( sync )
             {
                 lockFhirIdentifier( context, identifier );
             }
+
             identifierUtils.addOrUpdateIdentifier( resource, identifier, adapterIdentifierSystem.getFhirDisplayName(), true );
         }
+
         return true;
     }
 

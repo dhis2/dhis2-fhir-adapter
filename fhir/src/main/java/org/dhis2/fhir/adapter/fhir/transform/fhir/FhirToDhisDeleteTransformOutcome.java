@@ -34,10 +34,10 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import javax.annotation.Nonnull;
 
 /**
- * The outcome of the transformation between a FHIR resource and a DHIS 2 resource
+ * The outcome of the transformation between a FHIR resource and a DHIS2 resource
  * when a deletion has been requested.
  *
- * @param <R> the concrete type of the returned DHIS 2 resource.
+ * @param <R> the concrete type of the returned DHIS2 resource.
  * @author volsch
  */
 public class FhirToDhisDeleteTransformOutcome<R extends DhisResource> extends FhirToDhisBaseTransformOutcome<R>

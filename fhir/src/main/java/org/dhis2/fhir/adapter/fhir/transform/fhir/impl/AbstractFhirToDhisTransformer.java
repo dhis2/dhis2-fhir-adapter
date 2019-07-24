@@ -77,7 +77,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Abstract base class for all transformers from FHIR to DHIS 2 resources.
+ * Abstract base class for all transformers from FHIR to DHIS2 resources.
  *
  * @param <R> the concrete type of the FHIR resource.
  * @param <U> the concrete type of transformation rule that this transformer processes.

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,28 +28,29 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilter;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchParamType;
+import org.hl7.fhir.r4.model.PlanDefinition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirDataProvider} for DHIS2 Program Metadata.
+ * R4 specific version of DHIS2 Program Metadata data provider.
  *
  * @author volsch
  */
 @Component
-public class ProgramMetadataToFhirDataProvider extends AbstractDhisMetadataToFhirDataProvider<Program, ProgramMetadataRule>
+public class R4ProgramMetadataToFhirDataProvider extends AbstractProgramMetadataToFhirDataProvider
 {
-    public ProgramMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService programMetadataService )
+    public R4ProgramMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService programMetadataService )
     {
         super( scriptExecutor, programMetadataService );
     }
@@ -58,20 +59,12 @@ public class ProgramMetadataToFhirDataProvider extends AbstractDhisMetadataToFhi
     @Override
     public Set<FhirVersion> getFhirVersions()
     {
-        return FhirVersion.ALL;
+        return FhirVersion.R4_ONLY;
     }
 
-    @Nonnull
     @Override
-    public DhisResourceType getDhisResourceType()
+    protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<ProgramMetadataRule> ruleInfo, @Nonnull SearchFilter searchFilter )
     {
-        return DhisResourceType.PROGRAM_METADATA;
-    }
-
-    @Nonnull
-    @Override
-    protected Class<ProgramMetadataRule> getRuleClass()
-    {
-        return ProgramMetadataRule.class;
+        searchFilter.add( PlanDefinition.SP_NAME, SearchParamType.STRING, "name" );
     }
 }

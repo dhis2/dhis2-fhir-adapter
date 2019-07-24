@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * The context of the current transformation between a DHIS 2 resource to a FHIR resource.
+ * The context of the current transformation between a DHIS2 resource to a FHIR resource.
  *
  * @author volsch
  */

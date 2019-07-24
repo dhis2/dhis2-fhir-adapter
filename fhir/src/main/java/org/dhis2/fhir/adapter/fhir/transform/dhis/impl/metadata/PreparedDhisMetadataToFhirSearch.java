@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link PreparedDhisToFhirSearch} for DHIS 2 metadata.
+ * Implementation of {@link PreparedDhisToFhirSearch} for DHIS2 metadata.
  *
  * @param <U> the concrete type of the rule that processes the metadata.
  * @author volsch

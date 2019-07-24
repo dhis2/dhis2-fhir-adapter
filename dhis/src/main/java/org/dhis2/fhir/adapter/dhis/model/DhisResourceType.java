@@ -47,6 +47,11 @@ public enum DhisResourceType
     TRACKED_ENTITY( "trackedEntityInstances", "te" ),
 
     /**
+     * Resource is a tracked entity type.
+     */
+    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt" ),
+
+    /**
      * The program metadata.
      */
     PROGRAM_METADATA( "programs", "pm" ),

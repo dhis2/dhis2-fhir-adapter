@@ -34,11 +34,11 @@ import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
- * Implemented by DHIS 2 metadata.
+ * Implemented by DHIS2 metadata.
  *
  * @author volsch
  */
-public interface DhisMetadata extends Identifiable<String>
+public interface DhisMetadata extends DhisResource, Identifiable<String>
 {
     /**
      * @return the unique code of the metadata or <code>null</code> if the type has no code.

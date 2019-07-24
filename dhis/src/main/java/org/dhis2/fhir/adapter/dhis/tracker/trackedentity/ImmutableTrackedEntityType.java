@@ -31,6 +31,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -38,6 +40,7 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -76,6 +79,62 @@ public class ImmutableTrackedEntityType implements TrackedEntityType, ImmutableD
     public void setId( String id )
     {
         throw new UnsupportedOperationException();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getOrgUnitId()
+    {
+        return delegate.getOrgUnitId();
+    }
+
+    @JsonIgnore
+    @Override
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return delegate.isDeleted();
+    }
+
+    @JsonIgnore
+    @Override
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nonnull
+    public DhisResourceType getResourceType()
+    {
+        return delegate.getResourceType();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isNewResource()
+    {
+        return delegate.isNewResource();
+    }
+
+    @Override
+    public void resetNewResource()
+    {
+        // nothing to be done, read only
     }
 
     @JsonIgnore

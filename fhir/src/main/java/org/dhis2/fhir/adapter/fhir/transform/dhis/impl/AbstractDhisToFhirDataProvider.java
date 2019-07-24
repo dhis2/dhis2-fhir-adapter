@@ -74,11 +74,11 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
     protected SearchFilterCollector apply( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<R>> ruleInfos, @Nonnull SearchFilterCollector searchFilterCollector )
     {
         ruleInfos.forEach( ruleInfo -> {
+            final SearchFilter searchFilter = new SearchFilter( searchFilterCollector, onlyStringContains );
+            initSearchFilter( fhirVersion, ruleInfo, searchFilter );
+
             if ( ruleInfo.getRule().getFilterScript() != null )
             {
-                final SearchFilter searchFilter = new SearchFilter( searchFilterCollector, onlyStringContains );
-                initSearchFilter( fhirVersion, ruleInfo, searchFilter );
-
                 final Boolean result = scriptExecutor.execute( ruleInfo.getRule().getFilterScript(), fhirVersion,
                     Collections.singletonMap( ScriptVariable.SEARCH_FILTER.getVariableName(), searchFilter ),
                     Collections.emptyMap(), Boolean.class );

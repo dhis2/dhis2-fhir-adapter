@@ -29,31 +29,47 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
  */
 
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractProgramMetadataToFhirCarePlanTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirCarePlanTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.AccessibleScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.lock.LockManager;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.r4.model.CanonicalType;
+import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.PlanDefinition;
+import org.hl7.fhir.r4.model.PlanDefinition.PlanDefinitionActionComponent;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * R4 specific version of DHIS 2 Program Metadata to FHIR Plan Definition transformer.
+ * R4 specific version of DHIS2 Program Metadata to FHIR Plan Definition transformer.
  *
  * @author volsch
  */
+@Component
 public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramMetadataToFhirCarePlanTransformer<PlanDefinition>
 {
     public R4ProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService )
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository )
     {
-        super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository, organizationUnitService, programMetadataService );
+        super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository, organizationUnitService,
+            trackedEntityMetadataService, trackedEntityRuleRepository );
     }
 
     @Nonnull
@@ -63,10 +79,35 @@ public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramM
         return FhirVersion.R4_ONLY;
     }
 
-    @Nonnull
     @Override
-    protected FhirResourceType getFhirResourceType()
+    protected boolean transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramMetadataRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull AccessibleScriptedDhisMetadata input, @Nonnull IBaseResource output )
     {
-        return FhirResourceType.PLAN_DEFINITION;
+        final Program dhisProgram = (Program) input.getDhisResource();
+        final PlanDefinition fhirPlanDefinition = (PlanDefinition) output;
+
+        if ( !isApplicableProgram( dhisProgram ) )
+        {
+            return false;
+        }
+
+        fhirPlanDefinition.setUrl( dhisProgram.getId() );
+        fhirPlanDefinition.setName( dhisProgram.getName() );
+        fhirPlanDefinition.setStatus( Enumerations.PublicationStatus.ACTIVE );
+        fhirPlanDefinition.setDescription( dhisProgram.getDescription() );
+        fhirPlanDefinition.setAction( null );
+
+        dhisProgram.getStages().forEach( dhisProgramStage -> {
+            final PlanDefinitionActionComponent action = fhirPlanDefinition.addAction();
+
+            action.setId( dhisProgramStage.getId() );
+            action.setTitle( dhisProgramStage.getName() );
+            action.setDescription( dhisProgramStage.getDescription() );
+            action.setCardinalityBehavior( dhisProgramStage.isRepeatable() ?
+                PlanDefinition.ActionCardinalityBehavior.MULTIPLE : PlanDefinition.ActionCardinalityBehavior.SINGLE );
+            action.setDefinition( new CanonicalType( FhirResourceType.QUESTIONNAIRE.getResourceTypeName() + "/" + dhisProgramStage.getId() ) );
+        } );
+
+        return true;
     }
 }

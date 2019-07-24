@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.security;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
 public interface AdapterUserDetails extends UserDetails
 {
     /**
-     * @return the ID of the DHIS 2 user.
+     * @return the ID of the DHIS2 user.
      */
     @Nonnull
     String getId();

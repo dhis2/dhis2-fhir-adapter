@@ -29,112 +29,52 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.time.ZonedDateTime;
 
 /**
- * Implementation of writable scripted metadata.
+ * Implementation of writable scripted metadata. The included metadata object can be accessed
+ * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
  *
- * @param <M> concrete metadata class.
  * @author volsch
  */
 @Scriptable
-public class WritableScriptedDhisMetadata<M extends DhisResource & DhisMetadata> implements ScriptedDhisMetadata, Serializable
+public class WritableScriptedDhisMetadata extends WritableScriptedDhisResource implements AccessibleScriptedDhisMetadata, Serializable
 {
     private static final long serialVersionUID = 8245822986881397171L;
 
-    protected final M metadata;
-
-    public WritableScriptedDhisMetadata( @Nonnull M metadata )
+    public WritableScriptedDhisMetadata( @Nonnull DhisMetadata resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        this.metadata = metadata;
+        super( resource, scriptExecutionContext );
     }
 
-    @Nullable
-    @Override
-    public String getCode()
+    @Nonnull
+    protected DhisMetadata getManagedResource()
     {
-        return metadata.getCode();
-    }
-
-    @Nullable
-    @Override
-    public String getName()
-    {
-        return metadata.getName();
-    }
-
-    @Nullable
-    @Override
-    public String getId()
-    {
-        return metadata.getId();
+        return (DhisMetadata) resource;
     }
 
     @Nonnull
     @Override
-    public DhisResourceType getResourceType()
+    @ScriptExecutionForbidden
+    public DhisMetadata getDhisResource()
     {
-        return metadata.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return metadata.getResourceId();
+        return (DhisMetadata) super.getDhisResource();
     }
 
     @Override
-    public boolean isNewResource()
+    public String getCode()
     {
-        return metadata.isNewResource();
+        return getManagedResource().getCode();
     }
 
     @Override
-    public boolean isLocal()
+    public String getName()
     {
-        return metadata.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return metadata.isDeleted();
-    }
-
-    @Nullable
-    @Override
-    public ZonedDateTime getLastUpdated()
-    {
-        return metadata.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return metadata.getOrgUnitId();
-    }
-
-    @Nullable
-    @Override
-    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
-    {
-        return null;
-    }
-
-    @Override
-    public void validate() throws TransformerException
-    {
-        // nothing to be done
+        return getManagedResource().getName();
     }
 }

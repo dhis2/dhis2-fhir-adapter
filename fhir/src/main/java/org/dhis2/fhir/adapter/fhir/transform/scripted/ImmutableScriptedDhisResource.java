@@ -29,55 +29,122 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
- * Base implementation of scripted metadata.
+ * Base implementation of scripted resource.
  *
  * @author volsch
  */
-public class ImmutableScriptedDhisMetadata extends ImmutableScriptedDhisResource implements AccessibleScriptedDhisMetadata, ScriptedDhisMetadata, Serializable
+public class ImmutableScriptedDhisResource implements AccessibleScriptedDhisResource, Serializable
 {
     private static final long serialVersionUID = -3081103677950925231L;
 
-    public ImmutableScriptedDhisMetadata( @Nonnull AccessibleScriptedDhisMetadata delegate )
+    protected final AccessibleScriptedDhisResource delegate;
+
+    public ImmutableScriptedDhisResource( @Nonnull AccessibleScriptedDhisResource delegate )
     {
-        super( delegate );
+        this.delegate = delegate;
     }
 
     @JsonIgnore
     @Nonnull
-    protected AccessibleScriptedDhisMetadata getDelegate()
+    protected AccessibleScriptedDhisResource getDelegate()
     {
-        return (AccessibleScriptedDhisMetadata) super.getDelegate();
+        return delegate;
     }
 
+    @JsonIgnore
     @Nonnull
     @Override
     @ScriptExecutionForbidden
-    public DhisMetadata getDhisResource()
+    public DhisResource getDhisResource()
     {
-        return (DhisMetadata) super.getDhisResource();
+        return delegate.getDhisResource();
     }
 
     @JsonIgnore
-    @Nullable
     @Override
-    public String getCode()
+    @Nullable
+    public String getId()
     {
-        return getDelegate().getCode();
+        return delegate.getId();
     }
 
     @JsonIgnore
-    @Nullable
     @Override
-    public String getName()
+    @Nonnull
+    public DhisResourceType getResourceType()
     {
-        return getDelegate().getName();
+        return delegate.getResourceType();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nullable
+    public DhisResourceId getResourceId()
+    {
+        return delegate.getResourceId();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isNewResource()
+    {
+        return delegate.isNewResource();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isLocal()
+    {
+        return delegate.isLocal();
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDeleted()
+    {
+        return delegate.isDeleted();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nullable
+    public ZonedDateTime getLastUpdated()
+    {
+        return delegate.getLastUpdated();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nullable
+    public String getOrganizationUnitId()
+    {
+        return delegate.getOrganizationUnitId();
+    }
+
+    @JsonIgnore
+    @Override
+    @Nullable
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
+    {
+        return delegate.getTrackedEntityInstance();
+    }
+
+    @JsonIgnore
+    @Override
+    public void validate() throws TransformerException
+    {
+        delegate.validate();
     }
 }

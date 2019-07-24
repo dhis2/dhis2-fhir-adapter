@@ -49,11 +49,11 @@ import javax.annotation.Nonnull;
 public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<Program> implements ProgramMetadataService
 {
     protected static final String FIELDS =
-        "id,name,code,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
+        "id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
             "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
             "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate," +
             "trackedEntityAttribute[id,name,code,valueType,generated]]," +
-            "programStages[id,name,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
+            "programStages[id,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
             "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
             "dataElement[id,name,code,formName,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
 

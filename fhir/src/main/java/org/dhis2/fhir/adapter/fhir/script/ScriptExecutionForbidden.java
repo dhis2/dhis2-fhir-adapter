@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.util;
+package org.dhis2.fhir.adapter.fhir.script;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,23 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.SerializationException;
-import org.apache.commons.lang3.SerializationUtils;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-
-import javax.annotation.Nullable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. DHIS2 objects).
+ * Methods may be marked with this annotation to identify that execution of
+ * these methods forbid an available {@link ScriptExecutionContext}. Methods
+ * marked with this annotation must not be invoked by scripts.
  *
  * @author volsch
  */
-public abstract class DhisBeanTransformerUtils
+@Target( { ElementType.METHOD } )
+@Retention( RetentionPolicy.CLASS )
+@Documented
+public @interface ScriptExecutionForbidden
 {
-    @Nullable
-    public static <T extends DhisResource> T clone( @Nullable T object )
-    {
-        if ( object == null )
-        {
-            return null;
-        }
-        try
-        {
-            return SerializationUtils.clone( object );
-        }
-        catch ( SerializationException e )
-        {
-            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
-        }
-    }
-
-    private DhisBeanTransformerUtils()
-    {
-        super();
-    }
+    // nothing to declare
 }

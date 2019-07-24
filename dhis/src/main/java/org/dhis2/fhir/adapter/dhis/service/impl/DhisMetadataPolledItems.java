@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Polled items for DHIS 2 metadata.
+ * Polled items for DHIS2 metadata.
  *
  * @author volsch
  */

@@ -503,8 +503,7 @@ public class DhisRepositoryImpl implements DhisRepository
                     dhisRequest.setCompleteTransformation( matchingRule );
                     dhisRequest.setIncludeReferences( matchingRule );
 
-                    final DhisToFhirTransformOutcome<? extends IBaseResource> outcome =
-                        dhisToFhirTransformerService.transform( transformerRequest );
+                    final DhisToFhirTransformOutcome<? extends IBaseResource> outcome = dhisToFhirTransformerService.transform( transformerRequest );
                     if ( outcome == null )
                     {
                         transformerRequest = null;

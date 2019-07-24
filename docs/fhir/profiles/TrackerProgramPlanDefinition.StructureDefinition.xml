@@ -200,9 +200,17 @@
       <path value="PlanDefinition.goal" />
       <max value="0" />
     </element>
+    <element id="PlanDefinition.action.id">
+      <path value="PlanDefinition.action.id" />
+      <min value="1" />
+    </element>
     <element id="PlanDefinition.action.prefix">
       <path value="PlanDefinition.action.prefix" />
       <max value="0" />
+    </element>
+    <element id="PlanDefinition.action.title">
+      <path value="PlanDefinition.action.title" />
+      <min value="1" />
     </element>
     <element id="PlanDefinition.action.textEquivalent">
       <path value="PlanDefinition.action.textEquivalent" />
@@ -286,6 +294,7 @@
     </element>
     <element id="PlanDefinition.action.definition[x]">
       <path value="PlanDefinition.action.definition[x]" />
+      <definition value="A reference to a Questionnaire." />
       <min value="1" />
       <type>
         <code value="canonical" />

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.script.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,16 +44,23 @@ public class ThreadLocalScriptExecutionContext implements ScriptExecutionContext
 {
     private static final ThreadLocal<ScriptExecution> THREAD_LOCAL = new ThreadLocal<>();
 
+    public boolean hasScriptExecution()
+    {
+        return THREAD_LOCAL.get() != null;
+    }
+
     @Nonnull
     @Override
     public ScriptExecution getScriptExecution()
     {
         ScriptExecution scriptExecution = THREAD_LOCAL.get();
+
         if ( scriptExecution == null )
         {
             scriptExecution = new ScriptExecutionImpl();
             THREAD_LOCAL.set( scriptExecution );
         }
+
         return scriptExecution;
     }
 
@@ -63,6 +70,7 @@ public class ThreadLocalScriptExecutionContext implements ScriptExecutionContext
     {
         final ScriptExecution currentScriptExecution = THREAD_LOCAL.get();
         THREAD_LOCAL.set( scriptExecution );
+
         return currentScriptExecution;
     }
 

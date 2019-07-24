@@ -28,9 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.scriptable.ScriptType;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
@@ -39,80 +43,101 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
- * Writable scripted tracked entity instance that is used in evaluation and transformation
- * scripts and prevents accesses to the tracked entity instance domain object.
+ * Implementation of writable scripted resource. The included metadata object can be accessed
+ * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
  *
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "OrganizationUnit", transformDataType = "DHIS_ORGANIZATION_UNIT", description = "Organization unit." )
-public class WritableScriptedOrganizationUnit extends WritableScriptedDhisMetadata implements ScriptedOrganizationUnit, Serializable
+public class WritableScriptedDhisResource implements AccessibleScriptedDhisResource, Serializable
 {
-    private static final long serialVersionUID = -9043373621936561310L;
+    private static final long serialVersionUID = 8245822986881397171L;
 
-    public WritableScriptedOrganizationUnit( @Nonnull OrganizationUnit organizationUnit, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    protected final DhisResource resource;
+
+    protected final ScriptExecutionContext scriptExecutionContext;
+
+    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        super( organizationUnit, scriptExecutionContext );
+        this.resource = resource;
+        this.scriptExecutionContext = scriptExecutionContext;
+    }
+
+    @ScriptExecutionForbidden
+    @Nonnull
+    public DhisResource getDhisResource()
+    {
+        if ( scriptExecutionContext.hasScriptExecution() )
+        {
+            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
+        }
+
+        return resource;
+    }
+
+    @Nullable
+    @Override
+    public String getId()
+    {
+        return resource.getId();
     }
 
     @Nonnull
     @Override
-    protected OrganizationUnit getManagedResource()
+    public DhisResourceType getResourceType()
     {
-        return (OrganizationUnit) resource;
+        return resource.getResourceType();
     }
 
     @Nullable
     @Override
-    public String getShortName()
+    public DhisResourceId getResourceId()
     {
-        return getManagedResource().getShortName();
+        return resource.getResourceId();
+    }
+
+    @Override
+    public boolean isNewResource()
+    {
+        return resource.isNewResource();
+    }
+
+    @Override
+    public boolean isLocal()
+    {
+        return resource.isLocal();
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return resource.isDeleted();
     }
 
     @Nullable
     @Override
-    public String getDisplayName()
+    public ZonedDateTime getLastUpdated()
     {
-        return getManagedResource().getDisplayName();
-    }
-
-    @Override
-    public boolean isLeaf()
-    {
-        return getManagedResource().isLeaf();
-    }
-
-    @Override
-    public int getLevel()
-    {
-        return getManagedResource().getLevel();
+        return resource.getLastUpdated();
     }
 
     @Nullable
     @Override
-    public ZonedDateTime getOpeningDate()
+    public String getOrganizationUnitId()
     {
-        return getManagedResource().getOpeningDate();
+        return resource.getOrgUnitId();
     }
 
     @Nullable
     @Override
-    public ZonedDateTime getClosedDate()
+    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
-        return getManagedResource().getClosedDate();
+        return null;
     }
 
-    @Nullable
     @Override
-    public String getParentId()
+    public void validate() throws TransformerException
     {
-        return getManagedResource().getParentId();
-    }
-
-    @Nullable
-    @Override
-    public String getCoordinates()
-    {
-        return getManagedResource().getCoordinates();
+        // nothing to be done
     }
 }

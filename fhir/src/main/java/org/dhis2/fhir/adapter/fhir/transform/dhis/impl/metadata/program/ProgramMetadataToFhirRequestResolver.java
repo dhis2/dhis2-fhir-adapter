@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
@@ -51,9 +52,12 @@ import javax.annotation.Nonnull;
 @Component
 public class ProgramMetadataToFhirRequestResolver extends AbstractDhisMetadataToFhirRequestResolver
 {
-    public ProgramMetadataToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository )
+    private final ScriptExecutionContext scriptExecutionContext;
+
+    public ProgramMetadataToFhirRequestResolver( @Nonnull FhirClientRepository fhirClientRepository, @Nonnull RuleRepository ruleRepository, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( fhirClientRepository, ruleRepository );
+        this.scriptExecutionContext = scriptExecutionContext;
     }
 
     @Nonnull
@@ -67,6 +71,6 @@ public class ProgramMetadataToFhirRequestResolver extends AbstractDhisMetadataTo
     @Override
     public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
     {
-        return new ImmutableScriptedDhisMetadata( new WritableScriptedDhisMetadata<>( (DhisResource & DhisMetadata) dhisResource ) );
+        return new ImmutableScriptedDhisMetadata( new WritableScriptedDhisMetadata( (DhisMetadata) dhisResource, scriptExecutionContext ) );
     }
 }

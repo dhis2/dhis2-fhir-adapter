@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 /**
- * The context of the current transformation between a FHIR resource to a DHIS 2 resource.
+ * The context of the current transformation between a FHIR resource to a DHIS2 resource.
  *
  * @author volsch
  */

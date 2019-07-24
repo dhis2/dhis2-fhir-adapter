@@ -48,6 +48,8 @@ import java.util.Optional;
 @Scriptable
 public interface Program extends DhisResource, DhisMetadata
 {
+    String getDescription();
+
     String getTrackedEntityTypeId();
 
     boolean isSelectIncidentDatesInFuture();

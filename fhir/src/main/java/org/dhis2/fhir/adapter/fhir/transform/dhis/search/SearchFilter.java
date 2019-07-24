@@ -45,7 +45,7 @@ import java.util.List;
 
 /**
  * A generic search filter that prepares the URL filter values
- * of requests to DHIS 2.
+ * of requests to DHIS2.
  *
  * @author volsch
  */

@@ -52,7 +52,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Repository that stores DHIS 2 resources locally.
+ * Repository that stores DHIS2 resources locally.
  *
  * @param <T> the concrete type of the resource.
  * @author volsch

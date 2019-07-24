@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Transforms a DHIS 2 resource to a FHIR resource by applying defines rules.
+ * Transforms a DHIS2 resource to a FHIR resource by applying defines rules.
  *
  * @author volsch
  */

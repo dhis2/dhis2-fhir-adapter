@@ -57,10 +57,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Abstract Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
+ * Abstract Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
  * read-only metadata to FHIR resource.
  *
- * @param <R> the concrete type of the DHIS 2 resource that is processed by this transformer.
+ * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
@@ -96,7 +96,11 @@ public abstract class AbstractReadOnlyDhisMetadataToFhirTransformer<R extends Sc
         }
 
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
-        transform( fhirClient, context, ruleInfo, scriptVariables, input, modifiedResource );
+
+        if ( !transformInternal( fhirClient, context, ruleInfo, scriptVariables, input, modifiedResource ) )
+        {
+            return null;
+        }
 
         if ( !transform( context, ruleInfo, variables ) )
         {
@@ -117,9 +121,10 @@ public abstract class AbstractReadOnlyDhisMetadataToFhirTransformer<R extends Sc
         // method can be overridden
     }
 
-    protected void transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull R input, @Nonnull IBaseResource output )
+    protected boolean transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull R input, @Nonnull IBaseResource output )
     {
         // method can be overridden
+        return true;
     }
 
     @Nonnull

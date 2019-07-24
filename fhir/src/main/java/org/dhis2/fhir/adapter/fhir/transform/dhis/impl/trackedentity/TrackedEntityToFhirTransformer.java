@@ -63,7 +63,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2 tracked
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2 tracked
  * entity instances to FHIR resources.
  *
  * @author volsch

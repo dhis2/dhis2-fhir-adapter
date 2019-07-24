@@ -57,7 +57,7 @@ import java.util.Map;
 /**
  * Implementation of {@link DhisToFhirDataProvider} for DHIS2 metadata resources.
  *
- * @param <T> the concrete type of the DHIS 2 resource.
+ * @param <T> the concrete type of the DHIS2 resource.
  * @param <U> the concrete type of the rule that performs the transformation.
  * @author volsch
  */

@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
- * The outcome of the transformation between a DHIS 2 resource and a FHIR resource.
+ * The outcome of the transformation between a DHIS2 resource and a FHIR resource.
  *
  * @param <R> the concrete type of the returned FHIR resource.
  * @author volsch

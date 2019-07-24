@@ -515,7 +515,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     {
                         messageCollector.addMessage( new MetadataSheetMessage(
                             MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, F2D_APPLICABLE_SCRIPT_CODE_COL ),
-                            "FHIR to DHIS 2 transform script does not exist: " + f2dApplicableScriptCode ) );
+                            "FHIR to DHIS2 transform script does not exist: " + f2dApplicableScriptCode ) );
                     }
                 }
 
@@ -539,7 +539,7 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                     {
                         messageCollector.addMessage( new MetadataSheetMessage(
                             MetadataSheetMessageSeverity.ERROR, new MetadataSheetLocation( RULES_SHEET_NAME, rowNum, D2F_APPLICABLE_SCRIPT_CODE_COL ),
-                            "FHIR to DHIS 2 transform script does not exist: " + d2fApplicableScriptCode ) );
+                            "FHIR to DHIS2 transform script does not exist: " + d2fApplicableScriptCode ) );
                     }
                 }
 
@@ -565,8 +565,8 @@ public class MetadataSheetRuleImportProcessor extends AbstractMetadataSheetImpor
                 {
                     if ( newCodeSetCode )
                     {
-                        codeSet = createCodeSet( messageCollector, rowNum,
-                            codeSetCode, Objects.requireNonNull( codeSetDisplayName ), codeSetPreferred, Objects.requireNonNull( codeSetCodes ) );
+                        codeSet = createCodeSet( messageCollector, rowNum, codeSetCode, Objects.requireNonNull( codeSetDisplayName ),
+                            Objects.requireNonNull( codeSetPreferred ), Objects.requireNonNull( codeSetCodes ) );
 
                         if ( codeSet != null )
                         {

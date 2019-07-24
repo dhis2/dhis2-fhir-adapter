@@ -57,6 +57,8 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
 
     private String code;
 
+    private String description;
+
     private boolean selectIncidentDatesInFuture;
 
     private boolean selectEnrollmentDatesInFuture;
@@ -118,6 +120,17 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
     public void setCode( String code )
     {
         this.code = code;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription( String description )
+    {
+        this.description = description;
     }
 
     @JsonIgnore

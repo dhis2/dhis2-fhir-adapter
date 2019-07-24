@@ -60,6 +60,8 @@ public class WritableProgramStage extends AbstractDhisMetadata implements Progra
 
     private int minDaysFromStart;
 
+    private String description;
+
     @JsonProperty( "programStageDataElements" )
     private List<WritableProgramStageDataElement> dataElements;
 
@@ -92,6 +94,17 @@ public class WritableProgramStage extends AbstractDhisMetadata implements Progra
     public void setName( String name )
     {
         this.name = name;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription( String description )
+    {
+        this.description = description;
     }
 
     @JsonIgnore

@@ -54,7 +54,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Abstract base class for all unsupported transformers from FHIR to DHIS 2 resources.
+ * Abstract base class for all unsupported transformers from FHIR to DHIS2 resources.
  *
  * @param <R> the concrete type of the FHIR resource.
  * @param <U> the concrete type of transformation rule that this transformer processes.

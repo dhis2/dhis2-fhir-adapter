@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.util;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,39 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.SerializationException;
-import org.apache.commons.lang3.SerializationUtils;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirDataProvider;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. DHIS2 objects).
+ * Abstract implementation of {@link DhisToFhirDataProvider} for DHIS2 Program Metadata.
  *
  * @author volsch
  */
-public abstract class DhisBeanTransformerUtils
+public abstract class AbstractProgramMetadataToFhirDataProvider extends AbstractDhisMetadataToFhirDataProvider<Program, ProgramMetadataRule>
 {
-    @Nullable
-    public static <T extends DhisResource> T clone( @Nullable T object )
+    public AbstractProgramMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService programMetadataService )
     {
-        if ( object == null )
-        {
-            return null;
-        }
-        try
-        {
-            return SerializationUtils.clone( object );
-        }
-        catch ( SerializationException e )
-        {
-            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
-        }
+        super( scriptExecutor, programMetadataService );
     }
 
-    private DhisBeanTransformerUtils()
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
     {
-        super();
+        return DhisResourceType.PROGRAM_METADATA;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<ProgramMetadataRule> getRuleClass()
+    {
+        return ProgramMetadataRule.class;
     }
 }

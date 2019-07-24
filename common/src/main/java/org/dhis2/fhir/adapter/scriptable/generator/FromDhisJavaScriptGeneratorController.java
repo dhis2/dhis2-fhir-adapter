@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.scriptable.generator;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Creates and provides the JavaScript for transformations from DHIS 2.
+ * Creates and provides the JavaScript for transformations from DHIS2.
  *
  * @author volsch
  */

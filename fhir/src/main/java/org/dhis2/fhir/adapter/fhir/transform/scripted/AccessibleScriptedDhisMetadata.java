@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.util;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,40 +28,22 @@ package org.dhis2.fhir.adapter.fhir.transform.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.commons.lang3.SerializationException;
-import org.apache.commons.lang3.SerializationUtils;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
+import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
- * Transformer utilities that clone a bean (cached instances must not be modified
- * by several thread, e.g. DHIS2 objects).
+ * Scripted DHIS2 metadata that allows access to the included metadata instance.
+ * The access is only granted outside script execution. Within a script an exception
+ * will be thrown.
  *
  * @author volsch
  */
-public abstract class DhisBeanTransformerUtils
+public interface AccessibleScriptedDhisMetadata extends AccessibleScriptedDhisResource, ScriptedDhisMetadata
 {
-    @Nullable
-    public static <T extends DhisResource> T clone( @Nullable T object )
-    {
-        if ( object == null )
-        {
-            return null;
-        }
-        try
-        {
-            return SerializationUtils.clone( object );
-        }
-        catch ( SerializationException e )
-        {
-            throw new FatalTransformerException( "Could not clone DHIS resource.", e );
-        }
-    }
-
-    private DhisBeanTransformerUtils()
-    {
-        super();
-    }
+    @Override
+    @Nonnull
+    @ScriptExecutionForbidden
+    DhisMetadata getDhisResource();
 }

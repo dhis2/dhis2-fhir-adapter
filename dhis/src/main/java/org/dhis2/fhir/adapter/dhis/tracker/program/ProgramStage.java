@@ -56,6 +56,8 @@ public interface ProgramStage extends DhisResource, DhisMetadata
 
     int getMinDaysFromStart();
 
+    String getDescription();
+
     List<? extends ProgramStageDataElement> getDataElements();
 
     @Nullable

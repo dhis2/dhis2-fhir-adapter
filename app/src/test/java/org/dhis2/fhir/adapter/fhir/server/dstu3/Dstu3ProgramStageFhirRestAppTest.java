@@ -58,7 +58,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 /**
  * DSTU3 tests for rest interfaces that access
- * DHIS 2 program stages. <b>Some methods are executed twice in order to
+ * DHIS2 program stages. <b>Some methods are executed twice in order to
  * verify that no cached data is used without authentication.</b>
  *
  * @author volsch

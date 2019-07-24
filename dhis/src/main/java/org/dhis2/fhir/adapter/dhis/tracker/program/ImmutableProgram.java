@@ -95,6 +95,13 @@ public class ImmutableProgram implements Program, ImmutableDhisObject, Serializa
 
     @JsonIgnore
     @Override
+    public String getDescription()
+    {
+        return delegate.getDescription();
+    }
+
+    @JsonIgnore
+    @Override
     public String getTrackedEntityTypeId()
     {
         return delegate.getTrackedEntityTypeId();

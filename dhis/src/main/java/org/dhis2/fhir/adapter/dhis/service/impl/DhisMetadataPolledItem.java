@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.dhis.service.impl;
 import org.dhis2.fhir.adapter.dhis.poll.PolledItem;
 
 /**
- * The polled items of a DHIS 2 metadata.
+ * The polled items of a DHIS2 metadata.
  *
  * @author volsch
  */

@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
@@ -80,10 +81,12 @@ public class OrganizationUnitResolver
 
     private final Map<String, Object> scriptVariables;
 
+    private final ScriptExecutionContext scriptExecutionContext;
+
     public OrganizationUnitResolver(
         @Nonnull OrganizationUnitService organizationUnitService, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<OrganizationUnitRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
-        @Nonnull IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider )
+        @Nonnull IdentifierValueProvider<OrganizationUnitRule, ScriptedOrganizationUnit> identifierValueProvider, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         this.organizationUnitService = organizationUnitService;
         this.fhirResourceRepository = fhirResourceRepository;
@@ -92,6 +95,7 @@ public class OrganizationUnitResolver
         this.ruleInfo = ruleInfo;
         this.scriptVariables = scriptVariables;
         this.identifierValueProvider = identifierValueProvider;
+        this.scriptExecutionContext = scriptExecutionContext;
     }
 
     @Nonnull
@@ -99,7 +103,7 @@ public class OrganizationUnitResolver
     {
         final OrganizationUnit organizationUnit = organizationUnitService.findMetadataByReference( new Reference( id, ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Could not find mandatory DHIS organization unit " + id + "." ) );
-        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit ) );
+        return new ImmutableScriptedOrganizationUnit( new WritableScriptedOrganizationUnit( organizationUnit, scriptExecutionContext ) );
     }
 
     @Nullable

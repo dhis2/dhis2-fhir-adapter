@@ -3072,12 +3072,12 @@ VALUES('0340bf441eab4c2a98a2aaf7ba35855c', 0, '46f0af46365440b38d4c7a633332c3b3'
 INSERT INTO fhir_client_system(id, version, fhir_client_id, fhir_resource_type, system_id)
 VALUES('789a91bd6bcb4f8496d0c6829b5fdeaa', 0, '46f0af46365440b38d4c7a633332c3b3', 'QUESTIONNAIRE_RESPONSE', '5bdff628d94f43dc83678c84fe48bdd9');
 
-INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, simple_fhir_id)
 VALUES('4a9ac195858b455eb34dc560e1855787', 0, 'PLAN_DEFINITION', 'PROGRAM_METADATA', 'Default DHIS2 Program Metadata to FHIR Plan Definition', 'Default rule that transforms a DHIS2 Program Metadata to a FHIR Care Plan.',
-true, false, true, false, true, true, true, false, -2147483648, NULL);
+true, false, true, false, true, true, true, false, -2147483648, TRUE);
 INSERT INTO fhir_program_metadata_rule(id) VALUES ('4a9ac195858b455eb34dc560e1855787');
 
-INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, transform_imp_script_id)
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, simple_fhir_id)
 VALUES('1f97f85ae4ea46f1bcde77ea178226f4', 0, 'QUESTIONNAIRE', 'PROGRAM_STAGE_METADATA', 'Default DHIS2 Program Stage Metadata to FHIR Questionnaire', 'Default rule that transforms a DHIS2 Program Stage Metadata to a FHIR Questionnaire.',
-true, false, true, false, true, true, true, false, -2147483648, NULL);
+true, false, true, false, true, true, true, false, -2147483648, TRUE);
 INSERT INTO fhir_program_stage_metadata_rule(id) VALUES ('1f97f85ae4ea46f1bcde77ea178226f4');

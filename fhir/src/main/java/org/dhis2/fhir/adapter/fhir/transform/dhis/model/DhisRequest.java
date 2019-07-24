@@ -38,22 +38,22 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 /**
- * The DHIS request that caused the transformation from DHIS 2 to FHIR resource.
+ * The DHIS request that caused the transformation from DHIS2 to FHIR resource.
  *
  * @author volsch
  */
 @Scriptable
-@ScriptType( value = "DhisRequest", transformType = ScriptTransformType.EXP, description = "The current DHIS 2 request (created or updated resource) that caused the execution of the transformation." )
+@ScriptType( value = "DhisRequest", transformType = ScriptTransformType.EXP, description = "The current DHIS2 request (created or updated resource) that caused the execution of the transformation." )
 public interface DhisRequest
 {
     @ScriptMethod( description = "Returns if the request uses DHIS FHIR IDs instead of FHIR IDs of a remote FHIR system." )
     boolean isDhisFhirId();
 
-    @ScriptMethod( description = "Returns the processed DHIS 2 resource type as Java enumeration (e.g. TRACKED_ENTITY as enum constant)." )
+    @ScriptMethod( description = "Returns the processed DHIS2 resource type as Java enumeration (e.g. TRACKED_ENTITY as enum constant)." )
     DhisResourceType getResourceType();
 
     @Nullable
-    @ScriptMethod( description = "Returns the timestamp when the processed DHIS 2 resource has been updated the last time." )
+    @ScriptMethod( description = "Returns the timestamp when the processed DHIS2 resource has been updated the last time." )
     ZonedDateTime getLastUpdated();
 
     /**

@@ -42,8 +42,8 @@ import java.time.ZonedDateTime;
 public interface DhisResource extends Identifiable<String>, Serializable
 {
     /**
-     * @return the unique ID of the DHIS 2 organization unit to which this resource belongs,
-     * or <code>null</code> if this resource does not belong to any DHIS 2 organization unit.
+     * @return the unique ID of the DHIS2 organization unit to which this resource belongs,
+     * or <code>null</code> if this resource does not belong to any DHIS2 organization unit.
      */
     String getOrgUnitId();
 

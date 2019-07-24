@@ -263,7 +263,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
     }
 
     @Override
-    public FhirToDhisDeleteTransformOutcome<Enrollment> transformDeletion( @Nonnull FhirClientResource fhirClientResource, RuleInfo<EnrollmentRule> ruleInfo, DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
+    public FhirToDhisDeleteTransformOutcome<Enrollment> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
         final Enrollment enrollment = new Enrollment();
         enrollment.setId( dhisFhirResourceId.getId() );

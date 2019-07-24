@@ -39,6 +39,12 @@ import javax.annotation.Nullable;
  */
 public interface ScriptExecutionContext
 {
+    /**
+     * @return <code>true</code> if there is an active script execution,
+     * <code>false</code> otherwise.
+     */
+    boolean hasScriptExecution();
+
     /***
      * Gets or creates a script execution that is bound to the current scope.
      *

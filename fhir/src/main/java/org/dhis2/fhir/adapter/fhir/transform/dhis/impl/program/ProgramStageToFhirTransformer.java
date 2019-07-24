@@ -71,7 +71,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Implementation of {@link DhisToFhirTransformer} for transforming DHIS 2
+ * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
  * program stage based events.
  *
  * @author volsch
