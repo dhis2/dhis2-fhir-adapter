@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2019, University of Oslo
+ * Copyright (c) 2004-2018, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,29 +29,32 @@ package org.dhis2.fhir.adapter.dhis.model;
  */
 
 /**
- * The web message that contains (1) import summary for creating and updating
+ * The web message that contains (1 to many) import summaries for creating and updating
  * DHIS2 resources.
  *
- * @author volsch
+ * @author David Katuscak
  */
-public class ImportSummaryWebMessage  extends WebMessage
+public class ImportSummariesWebMessage extends WebMessage
 {
     private static final long serialVersionUID = -7713823944527785249L;
 
-    private ImportSummary response;
+    private ImportSummaries response;
 
-    public ImportSummary getResponse()
+    public ImportSummaries getResponse()
     {
         return response;
     }
 
-    public void setResponse( ImportSummary response )
+    public void setResponse( ImportSummaries response )
     {
         this.response = response;
     }
 
     public boolean isNotSuccessful()
     {
-        return getStatus() != Status.OK;
+        return (getStatus() != Status.OK) ||
+            (getResponse().getImportSummaries().size() != 1) ||
+            (getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
+            (getResponse().getImportSummaries().get( 0 ).getReference() == null);
     }
 }

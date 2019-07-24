@@ -46,8 +46,8 @@ import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
-import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -173,10 +173,10 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         }
 
         final List<Event> Events = ids.stream().map( Event::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( DELETES_URI, new DhisEvents( Events ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( DELETES_URI, new DhisEvents( Events ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = Events.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
@@ -241,10 +241,10 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         }
 
         final List<Event> events = resources.stream().sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new DhisEvents( events ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new DhisEvents( events ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = events.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
@@ -373,7 +373,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
     @Nonnull
     protected Event create( @Nonnull Event event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
 
         if ( event.getId() == null )
         {
@@ -383,7 +383,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         try
         {
             response = restTemplate.exchange( CREATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
-                ImportSummaryWebMessage.class, event.getId() );
+                ImportSummariesWebMessage.class, event.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -395,7 +395,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
             throw e;
         }
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.isNotSuccessful() )
         {
@@ -412,12 +412,12 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
     @Nonnull
     protected Event update( @Nonnull Event event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
 
         try
         {
             response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
-                ImportSummaryWebMessage.class, event.getId() );
+                ImportSummariesWebMessage.class, event.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -429,7 +429,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
             throw e;
         }
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.getStatus() != Status.OK )
         {
@@ -474,11 +474,11 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
     protected void update( @Nonnull MinimalEvent event )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
         try
         {
             response = restTemplate.exchange( UPDATE_DATA_VALUE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
-                ImportSummaryWebMessage.class, event.getId(), event.getDataElementId() );
+                ImportSummariesWebMessage.class, event.getId(), event.getDataElementId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -488,7 +488,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
             }
             throw e;
         }
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.getStatus() != Status.OK )
         {
