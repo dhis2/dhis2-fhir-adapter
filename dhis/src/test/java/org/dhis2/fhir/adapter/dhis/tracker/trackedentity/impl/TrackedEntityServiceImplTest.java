@@ -180,7 +180,7 @@ public class TrackedEntityServiceImplTest
     @Test
     public void create() throws IOException
     {
-        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/trackedEntityInstances/Jskdsjeua1s.json?strategy=CREATE" ) )
+        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/trackedEntityInstances.json?strategy=CREATE" ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance.json", StandardCharsets.UTF_8 ) ) )
             .andExpect( method( HttpMethod.POST ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance-response.json" ), MediaType.APPLICATION_JSON ) );

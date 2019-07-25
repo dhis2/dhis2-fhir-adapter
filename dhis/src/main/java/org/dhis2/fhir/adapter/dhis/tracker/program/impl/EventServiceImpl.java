@@ -100,7 +100,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
     protected static final String FIND_ID_URI = "/events/{id}.json?fields=" + FIELDS;
 
-    protected static final String CREATE_URI = ID_URI + "?importStrategy=CREATE";
+    protected static final String CREATE_URI = "/events.json?strategy=CREATE";
 
     protected static final String CREATES_URI = "/events.json?strategy=CREATE";
 
@@ -382,8 +382,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
         try
         {
-            response = restTemplate.exchange( CREATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
-                ImportSummaryWebMessage.class, event.getId() );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( event ), ImportSummaryWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {

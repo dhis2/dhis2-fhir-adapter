@@ -111,7 +111,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
-    protected static final String CREATE_URI = "/trackedEntityInstances/{id}.json?strategy=CREATE";
+    protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String CREATES_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
@@ -467,7 +467,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         try
         {
             clear( trackedEntityInstance );
-            response = restTemplate.postForEntity( CREATE_URI, trackedEntityInstance, ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( trackedEntityInstance ), ImportSummaryWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {

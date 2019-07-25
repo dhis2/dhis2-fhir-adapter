@@ -88,7 +88,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
     protected static final String ENROLLMENT_ID_URI = "/enrollments/{id}.json";
 
-    protected static final String ENROLLMENT_CREATE_URI = "/enrollments/{id}.json?importStrategy=CREATE";
+    protected static final String ENROLLMENT_CREATE_URI = "/enrollments.json?strategy=CREATE";
 
     protected static final String ENROLLMENT_CREATES_URI = "/enrollments.json?strategy=CREATE";
 
@@ -229,8 +229,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
         try
         {
-            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.PUT, new HttpEntity<>( enrollment ),
-                ImportSummaryWebMessage.class, enrollment.getId() );
+            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.POST, new HttpEntity<>( enrollment ), ImportSummaryWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {
