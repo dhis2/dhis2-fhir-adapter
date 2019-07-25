@@ -40,7 +40,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientSystemRepositor
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
-import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadOnlyResourceProvider;
+import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadWriteResourceProvider;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +55,7 @@ import java.util.Map;
  * @author David Katuscak
  */
 @Component
-public class R4MeasureReportResourceProvider extends AbstractReadOnlyResourceProvider<MeasureReport>
+public class R4MeasureReportResourceProvider extends AbstractReadWriteResourceProvider<MeasureReport>
 {
     public R4MeasureReportResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
