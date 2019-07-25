@@ -111,11 +111,12 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
 
     @RestResource( exported = false )
     @Nonnull
-    @Cacheable( key = "{#root.methodName}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Cacheable( key = "{#root.methodName, #a0}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
     @Transactional( readOnly = true )
-    public Collection<RuleInfo<? extends AbstractRule>> findAllExp()
+    public Collection<RuleInfo<? extends AbstractRule>> findAllExp( @Nonnull DhisResourceType dhisResourceType )
     {
-        final List<AbstractRule> rules = entityManager.createNamedQuery( AbstractRule.FIND_ALL_EXP_NAMED_QUERY, AbstractRule.class ).getResultList();
+        final List<AbstractRule> rules = entityManager.createQuery( "SELECT r FROM " + dhisResourceType.getRuleType() +
+            " r WHERE r.enabled=true AND r.expEnabled=true AND (r.fhirCreateEnabled=true OR r.fhirUpdateEnabled=true)", AbstractRule.class ).getResultList();
 
         return rules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );

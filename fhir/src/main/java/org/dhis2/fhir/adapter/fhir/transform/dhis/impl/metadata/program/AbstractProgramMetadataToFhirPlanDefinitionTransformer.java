@@ -59,7 +59,7 @@ import javax.annotation.Nonnull;
  * @param <F> the concrete type of the FHIR resource into which the DHIS2 resource should be transformed.
  * @author volsch
  */
-public abstract class AbstractProgramMetadataToFhirCarePlanTransformer<F extends IBaseResource> extends AbstractReadOnlyDhisMetadataToTypedFhirTransformer<AccessibleScriptedDhisMetadata, F, ProgramMetadataRule>
+public abstract class AbstractProgramMetadataToFhirPlanDefinitionTransformer<F extends IBaseResource> extends AbstractReadOnlyDhisMetadataToTypedFhirTransformer<AccessibleScriptedDhisMetadata, F, ProgramMetadataRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -67,7 +67,7 @@ public abstract class AbstractProgramMetadataToFhirCarePlanTransformer<F extends
 
     private final TrackedEntityRuleRepository trackedEntityRuleRepository;
 
-    public AbstractProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+    public AbstractProgramMetadataToFhirPlanDefinitionTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository )
     {

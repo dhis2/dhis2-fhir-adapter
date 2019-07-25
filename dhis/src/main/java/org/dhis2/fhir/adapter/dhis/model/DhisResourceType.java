@@ -44,37 +44,37 @@ public enum DhisResourceType
     /**
      * Resource is a tracked entity instance.
      */
-    TRACKED_ENTITY( "trackedEntityInstances", "te" ),
+    TRACKED_ENTITY( "trackedEntityInstances", "te", "TrackedEntityRule" ),
 
     /**
      * Resource is a tracked entity type.
      */
-    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt" ),
+    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt", "TrackedEntityTypeRule" ),
 
     /**
      * The program metadata.
      */
-    PROGRAM_METADATA( "programs", "pm" ),
+    PROGRAM_METADATA( "programs", "pm", "ProgramMetadataRule" ),
 
     /**
      * The program stage metadata.
      */
-    PROGRAM_STAGE_METADATA( "programStages", "sm" ),
+    PROGRAM_STAGE_METADATA( "programStages", "sm", "ProgramStageMetadataRule" ),
 
     /**
      * Resource is a program instance (aka enrollment).
      */
-    ENROLLMENT( "enrollments", "en" ),
+    ENROLLMENT( "enrollments", "en", "EnrollmentRule" ),
 
     /**
      * Resource is a program stage instance (aka event of a program instance).
      */
-    PROGRAM_STAGE_EVENT( "events", "ps" ),
+    PROGRAM_STAGE_EVENT( "events", "ps", "ProgramStageRule" ),
 
     /**
      * Resource is a organisation unit.
      */
-    ORGANIZATION_UNIT( "organisationUnits", "ou" );
+    ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
 
@@ -96,10 +96,13 @@ public enum DhisResourceType
 
     private final String abbreviation;
 
-    DhisResourceType( @Nonnull String typeName, @Nonnull String abbreviation )
+    private final String ruleType;
+
+    DhisResourceType( @Nonnull String typeName, @Nonnull String abbreviation, @Nonnull String ruleType )
     {
         this.typeName = typeName;
         this.abbreviation = abbreviation;
+        this.ruleType = ruleType;
     }
 
     @Nonnull
@@ -112,5 +115,11 @@ public enum DhisResourceType
     public String getAbbreviation()
     {
         return abbreviation;
+    }
+
+    @Nonnull
+    public String getRuleType()
+    {
+        return ruleType;
     }
 }

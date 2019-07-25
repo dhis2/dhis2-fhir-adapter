@@ -42,7 +42,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirCarePlanTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirPlanDefinitionTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.AccessibleScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -62,9 +62,9 @@ import java.util.Set;
  * @author volsch
  */
 @Component
-public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramMetadataToFhirCarePlanTransformer<PlanDefinition>
+public class R4ProgramMetadataToFhirPlanDefinitionTransformer extends AbstractProgramMetadataToFhirPlanDefinitionTransformer<PlanDefinition>
 {
-    public R4ProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+    public R4ProgramMetadataToFhirPlanDefinitionTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository )
     {
