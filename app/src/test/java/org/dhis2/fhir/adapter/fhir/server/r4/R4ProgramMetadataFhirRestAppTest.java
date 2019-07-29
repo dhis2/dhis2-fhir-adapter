@@ -38,7 +38,6 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.PlanDefinition;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -58,7 +57,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
  *
  * @author volsch
  */
-@Ignore
 public class R4ProgramMetadataFhirRestAppTest extends AbstractAppTest
 {
     @Nonnull
@@ -205,19 +203,22 @@ public class R4ProgramMetadataFhirRestAppTest extends AbstractAppTest
     public void getPlanDefinitionByIdentifierWithoutAuthorization()
     {
         final IGenericClient client = createGenericClient();
-        client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/plan-definition-identifier", "XX_1234" ) ).returnBundle( Bundle.class ).execute();
+        client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2-fhir-adapter/systems/plan-definition-identifier", "XX_1234" ) ).returnBundle( Bundle.class ).execute();
     }
 
     @Test( expected = AuthenticationException.class )
     public void getPlanDefinitionByIdentifierInvalidAuthorization()
     {
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration," +
+                "captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable," +
+                "captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
+                "name%5D%5D%5D%5D%5D&filter=code:eq:OU_1234" ) )
             .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "invalid_1" ) );
-        client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
+        client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2-fhir-adapter/systems/plan-definition-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
     }
 
     @Test
@@ -232,20 +233,24 @@ public class R4ProgramMetadataFhirRestAppTest extends AbstractAppTest
         systemDhis2Server.reset();
         userDhis2Server.reset();
 
+        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityTypes/MCPQUTHX1Ze.json?" +
+                "fields=id,name,trackedEntityTypeAttributes%5Bid,name,valueType,mandatory,trackedEntityAttribute%5Bid,name,code,valueType,generated,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-tracked-entity-type.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.between( 1, 2 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration," +
+                "captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable," +
+                "captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
+                "name%5D%5D%5D%5D%5D&filter=code:eq:PD_1234" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         Bundle bundle =
-            client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", "OU_1234" ) ).returnBundle( Bundle.class ).execute();
+            client.search().forResource( PlanDefinition.class ).where( PlanDefinition.IDENTIFIER.exactly().systemAndIdentifier( "http://www.dhis2.org/dhis2-fhir-adapter/systems/plan-definition-identifier", "PD_1234" ) ).returnBundle( Bundle.class ).execute();
         Assert.assertEquals( 1, bundle.getEntry().size() );
         PlanDefinition planDefinition = (PlanDefinition) bundle.getEntry().get( 0 ).getResource();
-        Assert.assertEquals( "Test Hospital", planDefinition.getName() );
-        Assert.assertEquals( 1, planDefinition.getIdentifier().size() );
-        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", planDefinition.getIdentifier().get( 0 ).getSystem() );
-        Assert.assertEquals( "OU_1234", planDefinition.getIdentifier().get( 0 ).getValue() );
+        Assert.assertEquals( "Child Programme", planDefinition.getName() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();
@@ -276,60 +281,22 @@ public class R4ProgramMetadataFhirRestAppTest extends AbstractAppTest
     @Test
     public void searchPlanDefinition() throws Exception
     {
+        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityTypes/MCPQUTHX1Ze.json?" +
+                "fields=id,name,trackedEntityTypeAttributes%5Bid,name,valueType,mandatory,trackedEntityAttribute%5Bid,name,code,valueType,generated,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-tracked-entity-type.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?filter=name:$ilike:Test&paging=true&page=1&pageSize=10&order=id" +
-                "&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-org-unit.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_4567" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_4567.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs.json?filter=name:$ilike:Child%20Programme&paging=true&page=1&pageSize=10&order=id&fields=id,name,code,description,selectIncidentDatesInFuture," +
+                "selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name," +
+                "code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName," +
+                "valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         final IGenericClient client = createGenericClient();
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-        Bundle bundle = client.search().forResource( PlanDefinition.class ).where( PlanDefinition.NAME.matches().value( "Test" ) ).returnBundle( Bundle.class ).execute();
-        Assert.assertEquals( 2, bundle.getEntry().size() );
+        Bundle bundle = client.search().forResource( PlanDefinition.class ).where( PlanDefinition.NAME.matches().value( "Child Programme" ) ).returnBundle( Bundle.class ).execute();
+        Assert.assertEquals( 1, bundle.getEntry().size() );
         PlanDefinition planDefinition = (PlanDefinition) bundle.getEntry().get( 0 ).getResource();
-        Assert.assertEquals( "Test Hospital", planDefinition.getName() );
-        Assert.assertEquals( 1, planDefinition.getIdentifier().size() );
-        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", planDefinition.getIdentifier().get( 0 ).getSystem() );
-        Assert.assertEquals( "OU_1234", planDefinition.getIdentifier().get( 0 ).getValue() );
-        planDefinition = (PlanDefinition) bundle.getEntry().get( 1 ).getResource();
-        Assert.assertEquals( "Test Hospital 2", planDefinition.getName() );
-        Assert.assertEquals( 1, planDefinition.getIdentifier().size() );
-        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", planDefinition.getIdentifier().get( 0 ).getSystem() );
-        Assert.assertEquals( "OU_4567", planDefinition.getIdentifier().get( 0 ).getValue() );
-    }
-
-    @Test
-    public void searchParentPlanDefinition() throws Exception
-    {
-        userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?filter=parent.id:eq:bdXIaLNUNEp&paging=true&page=1&pageSize=10&order=id" +
-                "&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/multi-org-unit.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1234" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        userDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_4567" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_4567.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-
-        final IGenericClient client = createGenericClient();
-        client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
-        Bundle bundle = client.search().forResource( PlanDefinition.class ).where( PlanDefinition.NAME.matchesExactly().value( "ChildProgram" ) ).returnBundle( Bundle.class ).execute();
-        Assert.assertEquals( 2, bundle.getEntry().size() );
-        PlanDefinition planDefinition = (PlanDefinition) bundle.getEntry().get( 0 ).getResource();
-        Assert.assertEquals( "Test Hospital", planDefinition.getName() );
-        Assert.assertEquals( 1, planDefinition.getIdentifier().size() );
-        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", planDefinition.getIdentifier().get( 0 ).getSystem() );
-        Assert.assertEquals( "OU_1234", planDefinition.getIdentifier().get( 0 ).getValue() );
-        planDefinition = (PlanDefinition) bundle.getEntry().get( 1 ).getResource();
-        Assert.assertEquals( "Test Hospital 2", planDefinition.getName() );
-        Assert.assertEquals( 1, planDefinition.getIdentifier().size() );
-        Assert.assertEquals( "http://www.dhis2.org/dhis2fhiradapter/systems/planDefinition-identifier", planDefinition.getIdentifier().get( 0 ).getSystem() );
-        Assert.assertEquals( "OU_4567", planDefinition.getIdentifier().get( 0 ).getValue() );
+        Assert.assertEquals( "Child Programme", planDefinition.getName() );
     }
 }

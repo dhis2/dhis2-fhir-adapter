@@ -208,10 +208,12 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
     public IBaseReference getDhisFhirResourceReference( @Nullable ScriptedDhisResource dhisResource, Object... fhirResourceTypes )
     {
         final List<IBaseReference> references = getDhisFhirResourceReferencesLimited( dhisResource, 1, fhirResourceTypes );
+
         if ( references.isEmpty() )
         {
             return null;
         }
+
         return references.get( 0 );
     }
 
@@ -229,6 +231,7 @@ public class DhisToFhirTransformerContextImpl implements DhisToFhirTransformerCo
         {
             return Collections.emptyList();
         }
+
         return fhirReferenceResolver.resolveFhirReferences( fhirClient, dhisResource, Stream.of( fhirResourceTypes ).map( frt -> {
             try
             {
