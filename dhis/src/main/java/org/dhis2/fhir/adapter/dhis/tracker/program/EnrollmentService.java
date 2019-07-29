@@ -28,6 +28,8 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.service.DhisService;
+
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
@@ -38,7 +40,7 @@ import java.util.Optional;
  * @author volsch
  * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService
+public interface EnrollmentService extends DhisService<Enrollment>
 {
     @Nonnull
     Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );

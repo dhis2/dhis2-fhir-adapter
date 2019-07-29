@@ -28,32 +28,25 @@ package org.dhis2.fhir.adapter.dhis.service;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
+import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
+import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
- * Service that provides access to DHIS2 metadata.
+ * Service that provides polled access to DHIS2 data.
  *
- * @param <T> the concrete type of the metadata.
+ * @param <T> the concrete type of the data.
  * @author volsch
  */
-public interface DhisMetadataService<T extends DhisResource & DhisMetadata> extends DhisPolledService<T>, DhisService<T>
+public interface DhisPolledService<T extends DhisResource> extends DhisService<T>
 {
     @Nonnull
-    Optional<T> findMetadataByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<T> findMetadataRefreshedByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<T> findOneByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
+        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

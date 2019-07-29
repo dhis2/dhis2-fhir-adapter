@@ -36,20 +36,25 @@ import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
 import org.dhis2.fhir.adapter.data.processor.DataProcessorItemRetriever;
 import org.dhis2.fhir.adapter.dhis.config.DhisConfig;
 import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.service.DhisPolledService;
+import org.dhis2.fhir.adapter.dhis.service.DhisService;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
-import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The item retriever that polls DHIS2 resources. All relevant resources are
@@ -66,13 +71,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
 
     private final Authorization systemDhis2Authorization;
 
-    private final OrganizationUnitService organizationUnitService;
-
-    private final ProgramMetadataService programMetadataService;
-
-    private final TrackedEntityService trackedEntityService;
-
-    private final EventService eventService;
+    private final Map<DhisResourceType, DhisPolledService<? extends DhisResource>> polledServices;
 
     private final DhisSyncProcessorConfig processorConfig;
 
@@ -80,20 +79,14 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         @Nonnull AuthorizationContext authorizationContext,
         @Nonnull @Qualifier( "systemDhis2Authorization" ) Authorization systemDhis2Authorization,
         @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
-        @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull ProgramMetadataService programMetadataService,
-        @Nonnull TrackedEntityService trackedEntityService,
-        @Nonnull EventService eventService,
+        @Nonnull List<DhisPolledService<? extends DhisResource>> polledServices,
         @Nonnull DhisSyncProcessorConfig processorConfig,
         @Nonnull DhisConfig config )
     {
         this.authorizationContext = authorizationContext;
         this.systemDhis2Authorization = systemDhis2Authorization;
         this.excludedDhisUsernameRetriever = excludedDhisUsernameRetriever;
-        this.trackedEntityService = trackedEntityService;
-        this.eventService = eventService;
-        this.organizationUnitService = organizationUnitService;
-        this.programMetadataService = programMetadataService;
+        this.polledServices = polledServices.stream().collect( Collectors.toMap( DhisService::getDhisResourceType, ps -> ps ) );
         this.processorConfig = processorConfig;
     }
 
@@ -103,38 +96,21 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
     {
         final int toleranceMillis = processorConfig.getToleranceMillis();
         final Set<DhisResourceType> resourceTypes = processorConfig.getResourceTypes();
+
         authorizationContext.setAuthorization( systemDhis2Authorization );
         try
         {
             final Set<String> excludedDhisUsernames = excludedDhisUsernameRetriever.findAllDhisUsernames();
-            Instant result = Instant.now();
+            final AtomicReference<Instant> result = new AtomicReference<>( Instant.now() );
 
-            if ( resourceTypes.contains( DhisResourceType.ORGANIZATION_UNIT ) )
-            {
-                final Instant currentResult = organizationUnitService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                    excludedDhisUsernames, consumer );
-                result = ObjectUtils.min( result, currentResult );
-            }
-            if ( resourceTypes.contains( DhisResourceType.PROGRAM_METADATA ) )
-            {
-                final Instant currentResult = programMetadataService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                    excludedDhisUsernames, consumer );
-                result = ObjectUtils.min( result, currentResult );
-            }
-            if ( resourceTypes.contains( DhisResourceType.TRACKED_ENTITY ) )
-            {
-                final Instant currentResult = trackedEntityService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                    excludedDhisUsernames, consumer );
-                result = ObjectUtils.min( result, currentResult );
-            }
-            if ( resourceTypes.contains( DhisResourceType.PROGRAM_STAGE_EVENT ) )
-            {
-                final Instant currentResult = eventService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
-                    excludedDhisUsernames, consumer );
-                result = ObjectUtils.min( result, currentResult );
-            }
+            Stream.of( DhisResourceType.values() ).filter( resourceTypes::contains ).map( polledServices::get ).filter( Objects::nonNull )
+                .forEach( polledService -> {
+                    final Instant currentResult = polledService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                        excludedDhisUsernames, consumer );
+                    result.set( ObjectUtils.min( result.get(), currentResult ) );
+                } );
 
-            return result;
+            return result.get();
         }
         finally
         {

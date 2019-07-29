@@ -36,20 +36,16 @@ import java.util.stream.Collectors;
 
 /**
  * Contains the different types of DHIS2 Resources that are can be created.
+ * The enum values should be listed in the order of the dependencies.
  *
  * @author volsch
  */
 public enum DhisResourceType
 {
     /**
-     * Resource is a tracked entity instance.
+     * Resource is a organisation unit.
      */
-    TRACKED_ENTITY( "trackedEntityInstances", "te", "TrackedEntityRule" ),
-
-    /**
-     * Resource is a tracked entity type.
-     */
-    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt", "TrackedEntityTypeRule" ),
+    ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" ),
 
     /**
      * The program metadata.
@@ -61,6 +57,17 @@ public enum DhisResourceType
      */
     PROGRAM_STAGE_METADATA( "programStages", "sm", "ProgramStageMetadataRule" ),
 
+
+    /**
+     * Resource is a tracked entity type.
+     */
+    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt", "TrackedEntityTypeRule" ),
+
+    /**
+     * Resource is a tracked entity instance.
+     */
+    TRACKED_ENTITY( "trackedEntityInstances", "te", "TrackedEntityRule" ),
+
     /**
      * Resource is a program instance (aka enrollment).
      */
@@ -69,12 +76,7 @@ public enum DhisResourceType
     /**
      * Resource is a program stage instance (aka event of a program instance).
      */
-    PROGRAM_STAGE_EVENT( "events", "ps", "ProgramStageRule" ),
-
-    /**
-     * Resource is a organisation unit.
-     */
-    ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" );
+    PROGRAM_STAGE_EVENT( "events", "ps", "ProgramStageRule" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
 

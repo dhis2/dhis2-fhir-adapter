@@ -250,7 +250,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     }
 
     @Nonnull
-    protected String createDhisFhirResourceId( @Nonnull RuleInfo<U> ruleInfo, @Nonnull ScriptedDhisResource dhisResource )
+    protected String createDhisFhirResourceId( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull ScriptedDhisResource dhisResource )
     {
         if ( ruleInfo.getRule().isSimpleFhirId() )
         {
@@ -532,10 +532,9 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     }
 
     @Nonnull
-    protected String createAdapterIdentifierValue( @Nonnull RuleInfo<? extends AbstractRule> rule, @Nonnull ScriptedDhisResource dhisResource )
+    protected String createAdapterIdentifierValue( @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull ScriptedDhisResource dhisResource )
     {
-        return DhisFhirResourceId.toString( rule.getRule().getDhisResourceType(),
-            Objects.requireNonNull( dhisResource.getId() ), rule.getRule().getId() );
+        return createDhisFhirResourceId( ruleInfo, dhisResource );
     }
 
     @Nullable

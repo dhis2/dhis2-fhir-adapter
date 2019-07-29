@@ -81,7 +81,8 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceId() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration," +
+            "captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
             .andExpect( method( HttpMethod.GET ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/program.json" ), MediaType.APPLICATION_JSON ) );
@@ -94,7 +95,7 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
@@ -106,7 +107,7 @@ public class ProgramMetadataServiceImplTest
     @Test( expected = HttpServerErrorException.class )
     public void findMetadataByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs/93783.json?fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
@@ -116,7 +117,7 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceCode() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
@@ -130,7 +131,7 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceCodeNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=code:eq:OU_3783" ) ).andExpect( method( HttpMethod.GET ) )
@@ -143,7 +144,7 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceName() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
@@ -157,7 +158,7 @@ public class ProgramMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceNameNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programs.json?paging=false&fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates," +
             "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
             "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
             "name%5D%5D%5D%5D%5D&filter=name:eq:Freetown" ) ).andExpect( method( HttpMethod.GET ) )
