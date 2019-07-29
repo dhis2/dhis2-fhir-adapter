@@ -49,7 +49,7 @@ import javax.annotation.Nonnull;
 public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<Program> implements ProgramMetadataService
 {
     protected static final String FIELDS =
-        "id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
+        "id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
             "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
             "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate," +
             "trackedEntityAttribute[id,name,code,valueType,generated]]," +
@@ -64,7 +64,7 @@ public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<
 
     @Nonnull
     @Override
-    protected DhisResourceType getDhisResourceType()
+    public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.PROGRAM_METADATA;
     }

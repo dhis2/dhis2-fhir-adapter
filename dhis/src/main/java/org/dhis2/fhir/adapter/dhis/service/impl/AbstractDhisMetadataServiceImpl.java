@@ -91,7 +91,7 @@ public abstract class AbstractDhisMetadataServiceImpl<T extends DhisResource & D
     }
 
     @Nonnull
-    protected abstract DhisResourceType getDhisResourceType();
+    public abstract DhisResourceType getDhisResourceType();
 
     @Nonnull
     protected abstract Class<? extends T> getItemClass();

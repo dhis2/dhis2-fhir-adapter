@@ -154,6 +154,13 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( TrackedEntityInstance.class, requestCacheService, this );
     }
 
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.TRACKED_ENTITY;
+    }
+
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
     @Override
     public void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type, @Nonnull Map<RequiredValueType, String> requiredValues )

@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
@@ -134,6 +135,13 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         this.polledProgramRetriever = polledProgramRetriever;
 
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( Event.class, requestCacheService, this );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.PROGRAM_STAGE_EVENT;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )

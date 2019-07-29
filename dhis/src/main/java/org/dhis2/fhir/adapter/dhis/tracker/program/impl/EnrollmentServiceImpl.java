@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
@@ -115,6 +116,13 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
         this.eventService = eventService;
 
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( Enrollment.class, requestCacheService, this );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.ENROLLMENT;
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )

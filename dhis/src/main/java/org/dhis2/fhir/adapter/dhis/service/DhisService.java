@@ -28,32 +28,19 @@ package org.dhis2.fhir.adapter.dhis.service;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 /**
- * Service that provides access to DHIS2 metadata.
+ * Service that provides access to DHIS2 data.
  *
- * @param <T> the concrete type of the metadata.
+ * @param <T> the concrete type of the DHIS2 resource.
  * @author volsch
  */
-public interface DhisMetadataService<T extends DhisResource & DhisMetadata> extends DhisPolledService<T>, DhisService<T>
+public interface DhisService<T extends DhisResource>
 {
     @Nonnull
-    Optional<T> findMetadataByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<T> findMetadataRefreshedByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<T> findOneByReference( @Nonnull Reference reference );
-
-    @Nonnull
-    DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    DhisResourceType getDhisResourceType();
 }
