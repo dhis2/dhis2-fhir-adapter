@@ -110,8 +110,8 @@ public abstract class AbstractDhisToFhirDataProvider<R extends AbstractRule> imp
     public PreparedDhisToFhirSearch prepareSearchCasted( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<? extends AbstractRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
         final Class<R> ruleClass = getRuleClass();
-        final List<RuleInfo<R>> castedRuleInfos =
-            ruleInfos.stream().map( r -> new RuleInfo<>( getRuleClass().cast( r.getRule() ), r.getDhisDataReferences() ) ).collect( Collectors.toList() );
+        final List<RuleInfo<R>> castedRuleInfos = ruleInfos.stream().map( r -> new RuleInfo<>( getRuleClass().cast( r.getRule() ), r.getDhisDataReferences() ) ).collect( Collectors.toList() );
+
         return prepareSearch( fhirVersion, castedRuleInfos, filter, lastUpdatedDateRange, count );
     }
 }

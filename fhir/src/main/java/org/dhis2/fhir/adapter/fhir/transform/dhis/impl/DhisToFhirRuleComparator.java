@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,11 +51,13 @@ public class DhisToFhirRuleComparator implements Comparator<RuleInfo<? extends A
     @Override
     public int compare( RuleInfo<? extends AbstractRule> o1, RuleInfo<? extends AbstractRule> o2 )
     {
-        int value = o1.getRule().getFhirResourceType().getOrder() - o2.getRule().getFhirResourceType().getOrder();
+        final int value = o1.getRule().getFhirResourceType().getOrder() - o2.getRule().getFhirResourceType().getOrder();
+
         if ( value != 0 )
         {
             return value;
         }
+
         return o1.getRule().compareTo( o2.getRule() );
     }
 }

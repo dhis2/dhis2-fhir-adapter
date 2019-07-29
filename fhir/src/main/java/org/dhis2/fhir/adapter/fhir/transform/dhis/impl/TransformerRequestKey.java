@@ -57,11 +57,19 @@ public class TransformerRequestKey implements Serializable
     @Override
     public boolean equals( Object o )
     {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
+        if ( this == o )
+        {
+            return true;
+        }
+
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
         TransformerRequestKey that = (TransformerRequestKey) o;
-        return ruleId.equals( that.ruleId ) &&
-            dhisResourceId.equals( that.dhisResourceId );
+
+        return ruleId.equals( that.ruleId ) && dhisResourceId.equals( that.dhisResourceId );
     }
 
     @Override

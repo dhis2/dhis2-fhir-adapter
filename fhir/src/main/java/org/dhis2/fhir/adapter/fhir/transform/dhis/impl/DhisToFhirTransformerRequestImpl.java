@@ -93,6 +93,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         {
             throw new FatalTransformerException( "Transformer input has not yet been set." );
         }
+
         return input;
     }
 
@@ -128,6 +129,7 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         {
             throw new FatalTransformerException( "Rule ID is not available." );
         }
+
         return rules.get( ruleIndex ).getRule().getId();
     }
 
@@ -159,11 +161,14 @@ public class DhisToFhirTransformerRequestImpl implements DhisToFhirTransformerRe
         {
             return null;
         }
+
         final RuleInfo<? extends AbstractRule> ruleInfo = rules.get( ruleIndex++ );
-        if ( (input != null) && (ruleInfo.getRule().getDhisResourceType() != input.getResourceType()) )
+
+        if ( input != null && ruleInfo.getRule().getDhisResourceType() != input.getResourceType() )
         {
             input = null;
         }
+
         return ruleInfo;
     }
 }
