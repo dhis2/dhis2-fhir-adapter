@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.dhis2.fhir.adapter.dhis.poll.PolledItems;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -72,6 +73,11 @@ public class DhisMetadataPolledItemDeserializer extends StdDeserializer<DhisMeta
             }
         }
 
-        return p.getCodec().treeToValue( rootNode, DhisMetadataPolledItems.class );
+        return new DhisMetadataPolledItems( p.getCodec().treeToValue( rootNode, InternalDhisMetadataPolledItems.class ) );
+    }
+
+    public static class InternalDhisMetadataPolledItems extends PolledItems<DhisMetadataPolledItem>
+    {
+        private static final long serialVersionUID = -3139366174834526658L;
     }
 }

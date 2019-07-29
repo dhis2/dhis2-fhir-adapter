@@ -53,4 +53,10 @@ public class DhisMetadataPolledItems extends PolledItems<DhisMetadataPolledItem>
     {
         setItems( items );
     }
+
+    public DhisMetadataPolledItems( @Nonnull PolledItems<DhisMetadataPolledItem> polledItems )
+    {
+        setItems( polledItems.getItems() );
+        setPager( polledItems.getPager() );
+    }
 }
