@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.sync.impl;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.sync.SyncExcludedDhisUsernameRetriever;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -67,6 +68,8 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
 
     private final OrganizationUnitService organizationUnitService;
 
+    private final ProgramMetadataService programMetadataService;
+
     private final TrackedEntityService trackedEntityService;
 
     private final EventService eventService;
@@ -78,6 +81,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         @Nonnull @Qualifier( "systemDhis2Authorization" ) Authorization systemDhis2Authorization,
         @Nonnull SyncExcludedDhisUsernameRetriever excludedDhisUsernameRetriever,
         @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull ProgramMetadataService programMetadataService,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull EventService eventService,
         @Nonnull DhisSyncProcessorConfig processorConfig,
@@ -89,6 +93,7 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
         this.trackedEntityService = trackedEntityService;
         this.eventService = eventService;
         this.organizationUnitService = organizationUnitService;
+        this.programMetadataService = programMetadataService;
         this.processorConfig = processorConfig;
     }
 
@@ -107,6 +112,12 @@ public class DhisDataProcessorItemRetrieverImpl implements DataProcessorItemRetr
             if ( resourceTypes.contains( DhisResourceType.ORGANIZATION_UNIT ) )
             {
                 final Instant currentResult = organizationUnitService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
+                    excludedDhisUsernames, consumer );
+                result = ObjectUtils.min( result, currentResult );
+            }
+            if ( resourceTypes.contains( DhisResourceType.PROGRAM_METADATA ) )
+            {
+                final Instant currentResult = programMetadataService.poll( group, lastUpdated, toleranceMillis, maxSearchCount,
                     excludedDhisUsernames, consumer );
                 result = ObjectUtils.min( result, currentResult );
             }
