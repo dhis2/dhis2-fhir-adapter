@@ -50,17 +50,16 @@ public abstract class AbstractEnrollmentTransformationAppTest extends AbstractAp
     {
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs/EPDyQuoRnXk.json?fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration," +
-                "withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name," +
-                "description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name," +
-                "options%5Bcode,name%5D%5D%5D%5D%5D" ) )
+                "withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid," +
+                "program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType," +
+                "optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs.json?paging=false&fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration," +
-                "withoutRegistration," +
-                "captureCoordinates," +
-                "trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates," +
-                "generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,description,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode," +
-                "name%5D%5D%5D%5D%5D&filter=name:eq:Child%20Programme" ) )
+                "withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid," +
+                "program%5Bid%5D," +
+                "lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,description,formName,valueType,optionSetValue," +
+                "optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=name:eq:Child%20Programme" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/all-programs.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityTypes/MCPQUTHX1Ze.json?fields=id,name,trackedEntityTypeAttributes%5Bid,name,valueType,mandatory,trackedEntityAttribute%5Bid,name,code,valueType,generated," +
@@ -75,9 +74,10 @@ public abstract class AbstractEnrollmentTransformationAppTest extends AbstractAp
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tracked-entity-type.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs.json?paging=false&" +
-                "fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType," +
-                "mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory," +
-                "allowProvidedElsewhere,dataElement%5Bid,name,code,description,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=name:eq:Child%20Programme" ) )
+                "fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration,withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid," +
+                "name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate," +
+                "minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,description,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" +
+                "&filter=name:eq:Child%20Programme" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
     }
 }

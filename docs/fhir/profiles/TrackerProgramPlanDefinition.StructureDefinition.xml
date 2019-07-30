@@ -96,13 +96,9 @@
       <path value="PlanDefinition.version" />
       <max value="0" />
     </element>
-    <element id="PlanDefinition.name">
-      <path value="PlanDefinition.name" />
-      <min value="1" />
-    </element>
     <element id="PlanDefinition.title">
       <path value="PlanDefinition.title" />
-      <max value="0" />
+      <min value="1" />
     </element>
     <element id="PlanDefinition.subtitle">
       <path value="PlanDefinition.subtitle" />

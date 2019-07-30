@@ -92,7 +92,8 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformer extends AbstractPr
         }
 
         fhirPlanDefinition.setUrl( dhisProgram.getId() );
-        fhirPlanDefinition.setName( dhisProgram.getName() );
+        fhirPlanDefinition.setName( dhisProgram.getCode() );
+        fhirPlanDefinition.setTitle( dhisProgram.getName() );
         fhirPlanDefinition.setStatus( Enumerations.PublicationStatus.ACTIVE );
         fhirPlanDefinition.setDescription( dhisProgram.getDescription() );
         fhirPlanDefinition.setAction( null );

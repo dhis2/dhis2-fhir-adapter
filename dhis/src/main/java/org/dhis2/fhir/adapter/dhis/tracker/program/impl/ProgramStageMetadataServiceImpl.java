@@ -31,9 +31,9 @@ package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.service.impl.AbstractDhisMetadataServiceImpl;
 import org.dhis2.fhir.adapter.dhis.service.impl.DhisMetadataItems;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgram;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgramStage;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -41,21 +41,17 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 
 /**
- * Implementation of a {@link ProgramMetadataService}.
+ * Implementation of a {@link ProgramStageMetadataService}.
  *
  * @author volsch
  */
 @Service
-public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<Program> implements ProgramMetadataService
+public class ProgramStageMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<ProgramStage> implements ProgramStageMetadataService
 {
-    protected static final String FIELDS =
-        "id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
-            "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
-            "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate," +
-            "trackedEntityAttribute[id,name,code,valueType,generated]]," +
-            "programStages[" + ProgramStageMetadataServiceImpl.FIELDS + "]";
+    protected static final String FIELDS = "id,program[id],lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
+        "programStageDataElements[id,compulsory,allowProvidedElsewhere,dataElement[id,name,code,formName,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]";
 
-    public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate systemRestTemplate, @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate userRestTemplate )
+    public ProgramStageMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate systemRestTemplate, @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate userRestTemplate )
     {
         super( systemRestTemplate, userRestTemplate );
     }
@@ -64,21 +60,21 @@ public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.PROGRAM_METADATA;
+        return DhisResourceType.PROGRAM_STAGE_METADATA;
     }
 
     @Nonnull
     @Override
-    protected Class<? extends Program> getItemClass()
+    protected Class<? extends ProgramStage> getItemClass()
     {
-        return WritableProgram.class;
+        return WritableProgramStage.class;
     }
 
     @Nonnull
     @Override
-    protected Class<? extends DhisMetadataItems<? extends Program>> getItemsClass()
+    protected Class<? extends DhisMetadataItems<? extends ProgramStage>> getItemsClass()
     {
-        return DhisPrograms.class;
+        return DhisProgramStages.class;
     }
 
     @Nonnull

@@ -28,43 +28,13 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import org.dhis2.fhir.adapter.dhis.service.DhisMetadataService;
 
 /**
- * Contains read-only access to the DHIS2 Program Stage. Implementations must
- * guarantee that in read-only implementations only read-only dependent/includes
- * object instances are returned.
+ * Metadata service for DHIS2 program stages.
  *
  * @author volsch
  */
-@Scriptable
-public interface ProgramStage extends DhisResource, DhisMetadata
+public interface ProgramStageMetadataService extends DhisMetadataService<ProgramStage>
 {
-    String getProgramId();
-
-    boolean isRepeatable();
-
-    boolean isCaptureCoordinates();
-
-    boolean isGeneratedByEnrollmentDate();
-
-    int getMinDaysFromStart();
-
-    String getDescription();
-
-    List<? extends ProgramStageDataElement> getDataElements();
-
-    @Nullable
-    ProgramStageDataElement getDataElement( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<? extends ProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference );
 }

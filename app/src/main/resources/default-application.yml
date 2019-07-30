@@ -357,6 +357,7 @@ dhis2.fhir-adapter:
       resource-types:
       - ORGANIZATION_UNIT
       - PROGRAM_METADATA
+      - PROGRAM_STAGE_METADATA
       - TRACKED_ENTITY
       - PROGRAM_STAGE_EVENT
     # The queue that is used to store distributed requests to synchronize the data from

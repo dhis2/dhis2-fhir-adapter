@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.dhis.tracker.program.impl;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,43 +28,35 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dhis2.fhir.adapter.dhis.service.impl.DhisMetadataItems;
+import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgramStage;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Contains read-only access to the DHIS2 Program Stage. Implementations must
- * guarantee that in read-only implementations only read-only dependent/includes
- * object instances are returned.
+ * Container object used for DHIS2 program stages.
  *
  * @author volsch
  */
-@Scriptable
-public interface ProgramStage extends DhisResource, DhisMetadata
+public class DhisProgramStages extends DhisMetadataItems<WritableProgramStage> implements Serializable
 {
-    String getProgramId();
+    private static final long serialVersionUID = 1084527285362478422L;
 
-    boolean isRepeatable();
+    @JsonProperty( "programStages" )
+    public List<WritableProgramStage> getProgramStages()
+    {
+        return getItems();
+    }
 
-    boolean isCaptureCoordinates();
+    public void setProgramStages( List<WritableProgramStage> programStages )
+    {
+        setItems( programStages );
+    }
 
-    boolean isGeneratedByEnrollmentDate();
-
-    int getMinDaysFromStart();
-
-    String getDescription();
-
-    List<? extends ProgramStageDataElement> getDataElements();
-
-    @Nullable
-    ProgramStageDataElement getDataElement( @Nonnull Reference reference );
-
-    @Nonnull
-    Optional<? extends ProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference );
+    public List<WritableProgramStage> toModel()
+    {
+        return getItems();
+    }
 }

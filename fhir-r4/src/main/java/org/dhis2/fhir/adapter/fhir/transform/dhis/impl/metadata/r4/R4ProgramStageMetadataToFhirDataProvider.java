@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,43 +28,43 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramStageMetadataToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilter;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchParamType;
+import org.hl7.fhir.r4.model.Questionnaire;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 /**
- * Contains read-only access to the DHIS2 Program Stage. Implementations must
- * guarantee that in read-only implementations only read-only dependent/includes
- * object instances are returned.
+ * R4 specific version of DHIS2 Program Stage Metadata data provider.
  *
  * @author volsch
  */
-@Scriptable
-public interface ProgramStage extends DhisResource, DhisMetadata
+@Component
+public class R4ProgramStageMetadataToFhirDataProvider extends AbstractProgramStageMetadataToFhirDataProvider
 {
-    String getProgramId();
-
-    boolean isRepeatable();
-
-    boolean isCaptureCoordinates();
-
-    boolean isGeneratedByEnrollmentDate();
-
-    int getMinDaysFromStart();
-
-    String getDescription();
-
-    List<? extends ProgramStageDataElement> getDataElements();
-
-    @Nullable
-    ProgramStageDataElement getDataElement( @Nonnull Reference reference );
+    public R4ProgramStageMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramStageMetadataService programStageMetadataService )
+    {
+        super( scriptExecutor, programStageMetadataService );
+    }
 
     @Nonnull
-    Optional<? extends ProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference );
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.R4_ONLY;
+    }
+
+    @Override
+    protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<ProgramStageMetadataRule> ruleInfo, @Nonnull SearchFilter searchFilter )
+    {
+        searchFilter.add( Questionnaire.SP_TITLE, SearchParamType.STRING, "name" );
+    }
 }

@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.dhis.model.AbstractDhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.model.Id;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,6 +48,11 @@ import java.util.stream.Collectors;
 public class WritableProgramStage extends AbstractDhisMetadata implements ProgramStage, Serializable
 {
     private static final long serialVersionUID = -7544648580734783374L;
+
+    private ZonedDateTime lastUpdated;
+
+    @JsonProperty
+    private Id program;
 
     private String id;
 
@@ -73,6 +79,17 @@ public class WritableProgramStage extends AbstractDhisMetadata implements Progra
 
     @JsonIgnore
     private transient volatile Map<String, WritableProgramStageDataElement> dataElementsByCode;
+
+    @JsonIgnore
+    public String getProgramId()
+    {
+        return program == null ? null : program.getId();
+    }
+
+    public void setProgramId( String programId )
+    {
+        program = programId == null ? null : new Id( programId );
+    }
 
     @Override
     public String getId()
@@ -262,7 +279,7 @@ public class WritableProgramStage extends AbstractDhisMetadata implements Progra
     @Override
     public ZonedDateTime getLastUpdated()
     {
-        return null;
+        return lastUpdated;
     }
 
     @Override

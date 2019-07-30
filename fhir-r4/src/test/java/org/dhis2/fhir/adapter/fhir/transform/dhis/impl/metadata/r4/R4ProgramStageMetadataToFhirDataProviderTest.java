@@ -28,8 +28,8 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -52,20 +52,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Unit tests for {@link R4ProgramMetadataToFhirDataProvider}.
+ * Unit tests for {@link R4ProgramStageMetadataToFhirDataProvider}.
  *
  * @author volsch
  */
-public class R4ProgramMetadataToFhirDataProviderTest
+public class R4ProgramStageMetadataToFhirDataProviderTest
 {
     @Mock
     private ScriptExecutor scriptExecutor;
 
     @Mock
-    private ProgramMetadataService programMetadataService;
+    private ProgramStageMetadataService programStageMetadataService;
 
     @InjectMocks
-    private R4ProgramMetadataToFhirDataProvider provider;
+    private R4ProgramStageMetadataToFhirDataProvider provider;
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -79,15 +79,15 @@ public class R4ProgramMetadataToFhirDataProviderTest
     @Test
     public void searchFilterName() throws URISyntaxException
     {
-        final SearchFilterCollector searchFilterCollector = new SearchFilterCollector( Collections.singletonMap( "title", Collections.singletonList( "Child Programme" ) ) );
+        final SearchFilterCollector searchFilterCollector = new SearchFilterCollector( Collections.singletonMap( "title", Collections.singletonList( "Birth" ) ) );
         final SearchFilter searchFilter = new SearchFilter( searchFilterCollector, false );
 
-        provider.initSearchFilter( FhirVersion.R4, new RuleInfo<>( new ProgramMetadataRule(), Collections.emptyList() ), searchFilter );
+        provider.initSearchFilter( FhirVersion.R4, new RuleInfo<>( new ProgramStageMetadataRule(), Collections.emptyList() ), searchFilter );
 
         final List<String> variables = new ArrayList<>();
         UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder();
         uriBuilder = searchFilterCollector.add( uriBuilder, variables );
 
-        Assert.assertEquals( new URI( "?filter=%5Bname:$ilike:Child%20Programme%5D" ), uriBuilder.build( variables ) );
+        Assert.assertEquals( new URI( "?filter=%5Bname:$ilike:Birth%5D" ), uriBuilder.build( variables ) );
     }
 }
