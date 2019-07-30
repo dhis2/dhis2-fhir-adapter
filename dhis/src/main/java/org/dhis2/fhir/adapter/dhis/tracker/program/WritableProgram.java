@@ -139,12 +139,12 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
     @Override
     public String getTrackedEntityTypeId()
     {
-        return (trackedEntityType == null) ? null : trackedEntityType.getId();
+        return trackedEntityType == null ? null : trackedEntityType.getId();
     }
 
     public void setTrackedEntityTypeId( String trackedEntityTypeId )
     {
-        this.trackedEntityType = (trackedEntityTypeId == null) ? null : new Id( trackedEntityTypeId );
+        this.trackedEntityType = trackedEntityTypeId == null ? null : new Id( trackedEntityTypeId );
     }
 
     @Override

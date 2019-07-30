@@ -152,7 +152,7 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformerTest
         transformer.transformInternal( fhirClient, context, new RuleInfo<>( new ProgramMetadataRule(), Collections.emptyList() ), new HashMap<>(),
             new WritableScriptedDhisMetadata( program, scriptExecutionContext ), fhirPlanDefinition );
 
-        Assert.assertEquals( "Test Program", fhirPlanDefinition.getName() );
+        Assert.assertEquals( "Test Program", fhirPlanDefinition.getTitle() );
         Assert.assertEquals( "Test Description", fhirPlanDefinition.getDescription() );
         Assert.assertEquals( 2, fhirPlanDefinition.getAction().size() );
 

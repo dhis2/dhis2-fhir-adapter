@@ -1,0 +1,24 @@
+{
+  "programStages": [
+    {
+      "name": "Birth", "id": "A03MvHHogjR", "program": { "id": "IpHINAT79UW" }, "generatedByEnrollmentDate": true, "repeatable": true, "captureCoordinates": true, "minDaysFromStart": 2, "programStageDataElements": [
+      { "id": "LBNxoXdMnkv", "compulsory": true, "allowProvidedElsewhere": true, "dataElement": { "code": "DE_2006098", "name": "MCH Apgar Score", "id": "a3kGcGDCuk6", "valueType": "NUMBER", "optionSetValue": false } },
+      {
+        "id": "O4dwFWakvGO", "compulsory": false, "allowProvidedElsewhere": false, "dataElement": {
+        "code": "DE_2006104", "name": "MCH OPV dose", "id": "ebaJjqltK5N", "valueType": "TEXT", "optionSetValue": true,
+        "optionSet": { "name": "MNCH Polio doses (0-3)", "id": "kzgQRhOCadd", "options": [ { "code": "0", "name": "Dose 0" }, { "code": "1", "name": "Dose 1" } ] }
+      }
+      }
+    ]
+    }, {
+      "name": "Baby Postnatal", "id": "ZzYYXq4fJie", "generatedByEnrollmentDate": false, "repeatable": false, "captureCoordinates": false, "minDaysFromStart": 6, "programStageDataElements": [
+        { "id": "ztoQtbuXzsI", "compulsory": false, "allowProvidedElsewhere": true, "dataElement": { "code": "DE_2006099", "name": "MCH Infant Weight  (g)", "id": "GQY2lXrypjO", "valueType": "NUMBER", "optionSetValue": false } }
+      ]
+    }
+  ], "programTrackedEntityAttributes": [
+  {
+    "name": "Child Programme First name", "id": "l2T72XzBCLd", "program": { "id": "IpHINAT79UW" }, "valueType": "TEXT", "allowFutureDate": true, "mandatory": true,
+    "trackedEntityAttribute": { "code": "MMD_PER_NAM", "name": "First name", "id": "w75KJ2mc4zz", "generated": true, "valueType": "TEXT" }
+  }, { "name": "Child Programme Last name", "id": "XmRd2ZDjWhF", "valueType": "TEXT", "allowFutureDate": false, "mandatory": false, "trackedEntityAttribute": { "name": "Last name", "id": "zDhUuAYrxNC", "generated": false, "valueType": "TEXT" } }
+]
+}

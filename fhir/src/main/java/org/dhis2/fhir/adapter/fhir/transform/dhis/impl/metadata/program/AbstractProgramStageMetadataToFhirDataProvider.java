@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,43 +28,39 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageMetadataService;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirDataProvider;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractDhisMetadataToFhirDataProvider;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 /**
- * Contains read-only access to the DHIS2 Program Stage. Implementations must
- * guarantee that in read-only implementations only read-only dependent/includes
- * object instances are returned.
+ * Abstract implementation of {@link DhisToFhirDataProvider} for DHIS2 Program Stage Metadata.
  *
  * @author volsch
  */
-@Scriptable
-public interface ProgramStage extends DhisResource, DhisMetadata
+public abstract class AbstractProgramStageMetadataToFhirDataProvider extends AbstractDhisMetadataToFhirDataProvider<ProgramStage, ProgramStageMetadataRule>
 {
-    String getProgramId();
-
-    boolean isRepeatable();
-
-    boolean isCaptureCoordinates();
-
-    boolean isGeneratedByEnrollmentDate();
-
-    int getMinDaysFromStart();
-
-    String getDescription();
-
-    List<? extends ProgramStageDataElement> getDataElements();
-
-    @Nullable
-    ProgramStageDataElement getDataElement( @Nonnull Reference reference );
+    public AbstractProgramStageMetadataToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramStageMetadataService programStageMetadataService )
+    {
+        super( scriptExecutor, programStageMetadataService );
+    }
 
     @Nonnull
-    Optional<? extends ProgramStageDataElement> getOptionalDataElement( @Nonnull Reference reference );
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.PROGRAM_STAGE_METADATA;
+    }
+
+    @Nonnull
+    @Override
+    protected Class<ProgramStageMetadataRule> getRuleClass()
+    {
+        return ProgramStageMetadataRule.class;
+    }
 }

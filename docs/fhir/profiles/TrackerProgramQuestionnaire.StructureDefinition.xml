@@ -96,9 +96,13 @@
       <path value="Questionnaire.version" />
       <max value="0" />
     </element>
+    <element id="Questionnaire.name">
+      <path value="Questionnaire.name" />
+      <max value="0" />
+    </element>
     <element id="Questionnaire.title">
       <path value="Questionnaire.title" />
-      <max value="0" />
+      <min value="1" />
     </element>
     <element id="Questionnaire.derivedFrom">
       <path value="Questionnaire.derivedFrom" />
@@ -186,6 +190,10 @@
     </element>
     <element id="Questionnaire.item.required">
       <path value="Questionnaire.item.required" />
+      <min value="1" />
+    </element>
+    <element id="Questionnaire.item.repeats">
+      <path value="Questionnaire.item.repeats" />
       <max value="0" />
     </element>
     <element id="Questionnaire.item.readOnly">
@@ -199,6 +207,12 @@
     <element id="Questionnaire.item.answerValueSet">
       <path value="Questionnaire.item.answerValueSet" />
       <max value="0" />
+    </element>
+    <element id="Questionnaire.item.answerOption.value[x]">
+      <path value="Questionnaire.item.answerOption.value[x]" />
+      <type>
+        <code value="Coding" />
+      </type>
     </element>
     <element id="Questionnaire.item.answerOption.initialSelected">
       <path value="Questionnaire.item.answerOption.initialSelected" />

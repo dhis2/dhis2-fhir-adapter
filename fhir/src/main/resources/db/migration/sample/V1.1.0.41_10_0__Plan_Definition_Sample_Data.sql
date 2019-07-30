@@ -34,5 +34,7 @@ WHERE id='73cd99c5-0ca8-42ad-a53b-1891fccce08f';
 -- virtual subscription for FHIR organizations
 INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
 VALUES ('2520acc5-86b4-4716-ae0f-ea0531eb885a', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'PLAN_DEFINITION', TRUE, NULL, 'Virtual subscription for all Plan Definitions.');
+INSERT INTO fhir_client_resource (id, version, fhir_client_id, fhir_resource_type, exp_only, fhir_criteria_parameters, description)
+VALUES ('0918c4f3-995c-4130-b607-b28023a1a3a0', 0, '73cd99c5-0ca8-42ad-a53b-1891fccce08f', 'QUESTIONNAIRE', TRUE, NULL, 'Virtual subscription for all Questionnaires.');
 INSERT INTO fhir_client_resource_update(id)
 VALUES ('2520acc5-86b4-4716-ae0f-ea0531eb885a');
