@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
@@ -36,6 +37,8 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.extension.ResourceTypeExtensionUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -46,11 +49,13 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.AbstractReadOnlyDhisMetadataToTypedFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.AccessibleScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.lock.LockManager;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.function.Function;
 
 /**
  * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
@@ -62,6 +67,8 @@ import javax.annotation.Nonnull;
 public abstract class AbstractProgramMetadataToFhirPlanDefinitionTransformer<F extends IBaseResource> extends AbstractReadOnlyDhisMetadataToTypedFhirTransformer<AccessibleScriptedDhisMetadata, F, ProgramMetadataRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    public static final FhirResourceType DEFAULT_SUBJECT_RESOURCE_TYPE = FhirResourceType.PATIENT;
 
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
@@ -104,20 +111,36 @@ public abstract class AbstractProgramMetadataToFhirPlanDefinitionTransformer<F e
         return ProgramMetadataRule.class;
     }
 
-    protected boolean isApplicableProgram( @Nonnull Program program )
+    protected boolean addSubjectResourceType( @Nonnull Program program, @Nonnull IBaseHasExtensions resource )
     {
-        if ( program.isWithoutRegistration() || program.getTrackedEntityTypeId() == null )
+        if ( program.getTrackedEntityTypeId() == null )
         {
-            return false;
+            ResourceTypeExtensionUtils.setValue( resource, null, getTypeFactory() );
+
+            return true;
         }
 
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) ).orElse( null );
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference(
+            new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) ).orElse( null );
 
         if ( trackedEntityType == null )
         {
             return false;
         }
 
-        return !trackedEntityRuleRepository.findByTypeRefs( trackedEntityType.getAllReferences() ).isEmpty();
+        final FhirResourceType fhirResourceType = trackedEntityRuleRepository.findByTypeRefs( trackedEntityType.getAllReferences() ).stream()
+            .sorted( ( o1, o2 ) -> o2.getEvaluationOrder() - o1.getEvaluationOrder() ).map( AbstractRule::getFhirResourceType ).findFirst().orElse( null );
+
+        if ( fhirResourceType == null )
+        {
+            return false;
+        }
+
+        ResourceTypeExtensionUtils.setValue( resource, fhirResourceType, getTypeFactory() );
+
+        return true;
     }
+
+    @Nonnull
+    protected abstract Function<String, IElement> getTypeFactory();
 }

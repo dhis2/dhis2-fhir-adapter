@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
@@ -50,11 +51,13 @@ import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.PlanDefinition;
 import org.hl7.fhir.r4.model.PlanDefinition.PlanDefinitionActionComponent;
+import org.hl7.fhir.r4.model.ResourceFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * R4 specific version of DHIS2 Program Metadata to FHIR Plan Definition transformer.
@@ -86,7 +89,7 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformer extends AbstractPr
         final Program dhisProgram = (Program) input.getDhisResource();
         final PlanDefinition fhirPlanDefinition = (PlanDefinition) output;
 
-        if ( !isApplicableProgram( dhisProgram ) )
+        if ( !addSubjectResourceType( dhisProgram, fhirPlanDefinition ) )
         {
             return false;
         }
@@ -110,5 +113,12 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformer extends AbstractPr
         } );
 
         return true;
+    }
+
+    @Nonnull
+    @Override
+    protected Function<String, IElement> getTypeFactory()
+    {
+        return ResourceFactory::createType;
     }
 }

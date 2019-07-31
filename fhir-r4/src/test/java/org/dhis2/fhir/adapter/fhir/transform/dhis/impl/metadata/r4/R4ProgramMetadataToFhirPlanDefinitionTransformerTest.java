@@ -36,9 +36,12 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.WritableTrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.extension.ResourceTypeExtensionUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
@@ -120,10 +123,13 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformerTest
     @Test
     public void transformInternal()
     {
+        final TrackedEntityRule rule2 = new TrackedEntityRule();
+        rule2.setEvaluationOrder( 100 );
+        rule2.setFhirResourceType( FhirResourceType.PATIENT );
+
         Mockito.doReturn( Optional.of( new WritableTrackedEntityType( "a1234567890", "Test", Collections.emptyList() ) ) )
             .when( trackedEntityMetadataService ).findTypeByReference( Mockito.eq( new Reference( "a1234567890", ReferenceType.ID ) ) );
-        Mockito.doReturn( Collections.singletonList( new RuleInfo<>( new ProgramMetadataRule(), Collections.emptyList() ) ) )
-            .when( trackedEntityRuleRepository ).findByTypeRefs( Mockito.eq( new HashSet<>(
+        Mockito.doReturn( Collections.singletonList( rule2 ) ).when( trackedEntityRuleRepository ).findByTypeRefs( Mockito.eq( new HashSet<>(
             Arrays.asList( new Reference( "a1234567890", ReferenceType.ID ), new Reference( "Test", ReferenceType.NAME ) ) ) ) );
 
         final WritableProgram program = new WritableProgram();
@@ -155,6 +161,10 @@ public class R4ProgramMetadataToFhirPlanDefinitionTransformerTest
         Assert.assertEquals( "Test Program", fhirPlanDefinition.getTitle() );
         Assert.assertEquals( "Test Description", fhirPlanDefinition.getDescription() );
         Assert.assertEquals( 2, fhirPlanDefinition.getAction().size() );
+
+        Assert.assertEquals( 1, fhirPlanDefinition.getExtension().size() );
+        Assert.assertEquals( ResourceTypeExtensionUtils.URL, fhirPlanDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( "Patient", fhirPlanDefinition.getExtension().get( 0 ).getValue().toString() );
 
         Assert.assertEquals( "b1234567890", fhirPlanDefinition.getAction().get( 0 ).getId() );
         Assert.assertEquals( "Test Stage 1", fhirPlanDefinition.getAction().get( 0 ).getTitle() );

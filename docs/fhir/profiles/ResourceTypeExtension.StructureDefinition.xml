@@ -28,9 +28,10 @@
   -->
 
 <StructureDefinition xmlns="http://hl7.org/fhir">
-  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/location" />
-  <name value="LocationExtension" />
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type" />
+  <name value="ResourceTypeExtension" />
   <status value="active" />
+  <experimental value="false" />
   <fhirVersion value="4.0.0" />
   <kind value="complex-type" />
   <abstract value="false" />
@@ -42,20 +43,14 @@
   <baseDefinition value="http://hl7.org/fhir/StructureDefinition/Extension" />
   <derivation value="constraint" />
   <differential>
-    <element id="Extension">
-      <path value="Extension" />
-      <short value="Location reference" />
-      <definition value="Location reference." />
-      <max value="1" />
-    </element>
     <element id="Extension.value[x]">
       <path value="Extension.value[x]" />
-      <short value="Reference of the location" />
-      <definition value="The reference of the location." />
+      <label value="FHIR Resource Type" />
+      <short value="FHIR Resource Type" />
+      <definition value="Must be a valid FHIR Resource Type like Patient." />
       <min value="1" />
       <type>
-        <code value="Reference" />
-        <targetProfile value="http://hl7.org/fhir/StructureDefinition/Location" />
+        <code value="string" />
       </type>
     </element>
   </differential>
