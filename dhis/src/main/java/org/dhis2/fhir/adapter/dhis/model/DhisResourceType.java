@@ -48,15 +48,14 @@ public enum DhisResourceType
     ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" ),
 
     /**
-     * The program metadata.
-     */
-    PROGRAM_METADATA( "programs", "pm", "ProgramMetadataRule" ),
-
-    /**
      * The program stage metadata.
      */
     PROGRAM_STAGE_METADATA( "programStages", "sm", "ProgramStageMetadataRule" ),
 
+    /**
+     * The program metadata.
+     */
+    PROGRAM_METADATA( "programs", "pm", "ProgramMetadataRule" ),
 
     /**
      * Resource is a tracked entity type.

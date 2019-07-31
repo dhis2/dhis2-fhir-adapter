@@ -276,7 +276,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         "T(org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType).getByResource(#resource).getResourceTypeName(), #resource.getIdElement().getIdPart(), true}" )
     @Nonnull
     @Override
-    public IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource )
+    public IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource, @Nullable String dhisResourceId )
     {
         if ( !fhirClient.getFhirEndpoint().isUseRemote() )
         {
@@ -287,25 +287,28 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         final FhirContext fhirContext = fhirContexts.get( fhirClient.getFhirVersion() );
         final IGenericClient client = FhirClientUtils.createClient( fhirContext, fhirClient.getFhirEndpoint() );
 
+        final IBaseResource preparedResource = prepareResource( resource, dhisResourceId );
         final MethodOutcome methodOutcome;
+
         if ( resource.getIdElement().hasIdPart() )
         {
             try
             {
-                methodOutcome = client.update().resource( resource ).prefer( PreferReturnEnum.REPRESENTATION ).execute();
+                methodOutcome = client.update().resource( preparedResource ).prefer( PreferReturnEnum.REPRESENTATION ).execute();
             }
             catch ( PreconditionFailedException e )
             {
                 throw new OptimisticFhirResourceLockException( "Could not update FHIR resource " +
-                    resource.getIdElement() + " because of an optimistic locking failure.", e );
+                    preparedResource.getIdElement() + " because of an optimistic locking failure.", e );
             }
         }
         else
         {
-            methodOutcome = client.create().resource( resource ).prefer( PreferReturnEnum.REPRESENTATION ).execute();
+            methodOutcome = client.create().resource( preparedResource ).prefer( PreferReturnEnum.REPRESENTATION ).execute();
         }
 
         ProcessedItemInfo processedItemInfo = null;
+
         if ( (methodOutcome.getResource() != null) && (methodOutcome.getResource().getMeta() != null) )
         {
             // resource itself may contain old version ID (even if it should not)
@@ -313,7 +316,7 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         }
         else if ( (methodOutcome.getId() != null) && methodOutcome.getId().hasVersionIdPart() )
         {
-            processedItemInfo = ProcessedFhirItemInfoUtils.create( resource, methodOutcome.getId() );
+            processedItemInfo = ProcessedFhirItemInfoUtils.create( preparedResource, methodOutcome.getId() );
         }
 
         if ( processedItemInfo == null )
@@ -327,9 +330,11 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         }
 
         final IBaseResource result;
+
         if ( methodOutcome.getResource() == null )
         {
             result = resource;
+
             if ( methodOutcome.getId() != null )
             {
                 result.setId( methodOutcome.getId() );
@@ -341,6 +346,24 @@ public class FhirResourceRepositoryImpl implements FhirResourceRepository
         }
 
         return result;
+    }
+
+    @Nonnull
+    protected <T extends IBaseResource> T prepareResource( @Nonnull T resource, @Nullable String dhisResourceId )
+    {
+        final FhirResourceType fhirResourceType = FhirResourceType.getByResource( resource );
+
+        if ( fhirResourceType == null )
+        {
+            throw new FhirResourceTransformationException( "Could not determine FHIR resource type for " + resource.getClass().getSimpleName() );
+        }
+
+        if ( fhirResourceType.isSyncDhisId() && dhisResourceId != null && !resource.getIdElement().hasIdPart() )
+        {
+            resource.setId( dhisResourceId );
+        }
+
+        return resource;
     }
 
     @TransactionalEventListener( phase = TransactionPhase.BEFORE_COMMIT, classes = AutoCreatedFhirClientResourceEvent.class )
