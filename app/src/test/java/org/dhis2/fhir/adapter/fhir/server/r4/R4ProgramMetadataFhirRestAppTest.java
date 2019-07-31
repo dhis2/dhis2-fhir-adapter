@@ -34,6 +34,7 @@ import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import org.apache.commons.io.IOUtils;
 import org.dhis2.fhir.adapter.AbstractAppTest;
+import org.dhis2.fhir.adapter.fhir.extension.ResourceTypeExtensionUtils;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.PlanDefinition;
@@ -124,6 +125,8 @@ public class R4ProgramMetadataFhirRestAppTest extends AbstractAppTest
         client.registerInterceptor( new BasicAuthInterceptor( "fhir_client", "fhir_client_1" ) );
         PlanDefinition planDefinition = client.read().resource( PlanDefinition.class ).withId( "EPDyQuoRnXk" ).execute();
         Assert.assertEquals( "Child Programme", planDefinition.getTitle() );
+        Assert.assertNotNull( planDefinition.getExtensionByUrl( ResourceTypeExtensionUtils.URL ) );
+        Assert.assertEquals( "Patient", planDefinition.getExtensionByUrl( ResourceTypeExtensionUtils.URL ).getValue().primitiveValue() );
 
         systemDhis2Server.verify();
         userDhis2Server.verify();

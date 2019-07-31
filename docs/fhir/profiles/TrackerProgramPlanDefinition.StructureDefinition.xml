@@ -50,6 +50,27 @@
       <path value="PlanDefinition.contained" />
       <max value="0" />
     </element>
+    <element id="PlanDefinition.extension">
+      <path value="PlanDefinition.extension" />
+      <slicing>
+        <discriminator>
+          <type value="value" />
+          <path value="url" />
+        </discriminator>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="PlanDefinition.extension:subjectResourceType">
+      <path value="PlanDefinition.extension" />
+      <sliceName value="subjectResourceType" />
+      <definition value="The FHIR resource type that is used by the tracked entity. If this is not specified, the associated program is an event program to which no tracked entity is associated." />
+      <min value="0" />
+      <max value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type" />
+      </type>
+    </element>
     <element id="PlanDefinition.url">
       <path value="PlanDefinition.url" />
       <min value="1" />
