@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.WritableProgramStageDataElement;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.extension.ValueTypeExtensionUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -49,6 +50,7 @@ import org.dhis2.fhir.adapter.lock.LockManager;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Questionnaire;
+import org.hl7.fhir.r4.model.StringType;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -157,6 +159,11 @@ public class R4ProgramStageMetadataToFhirQuestionnaireTransformerTest
         Assert.assertEquals( 0, fhirQuestionnaire.getItem().get( 0 ).getAnswerOption().size() );
         Assert.assertFalse( fhirQuestionnaire.getItem().get( 0 ).getRequired() );
 
+        Assert.assertEquals( 1, fhirQuestionnaire.getItem().get( 0 ).getExtension().size() );
+        Assert.assertEquals( ValueTypeExtensionUtils.URL, fhirQuestionnaire.getItem().get( 0 ).getExtension().get( 0 ).getUrl() );
+        Assert.assertTrue( fhirQuestionnaire.getItem().get( 0 ).getExtension().get( 0 ).getValue() instanceof StringType );
+        Assert.assertEquals( "TEXT", ( (StringType) fhirQuestionnaire.getItem().get( 0 ).getExtension().get( 0 ).getValue() ).getValue() );
+
         Assert.assertEquals( "d1123456789", fhirQuestionnaire.getItem().get( 1 ).getLinkId() );
         Assert.assertEquals( "Value 2", fhirQuestionnaire.getItem().get( 1 ).getText() );
         Assert.assertEquals( 2, fhirQuestionnaire.getItem().get( 1 ).getAnswerOption().size() );
@@ -166,5 +173,10 @@ public class R4ProgramStageMetadataToFhirQuestionnaireTransformerTest
         Assert.assertEquals( "7", ( (Coding) fhirQuestionnaire.getItem().get( 1 ).getAnswerOption().get( 1 ).getValue() ).getCode() );
         Assert.assertEquals( "Test Value 2", ( (Coding) fhirQuestionnaire.getItem().get( 1 ).getAnswerOption().get( 1 ).getValue() ).getDisplay() );
         Assert.assertTrue( fhirQuestionnaire.getItem().get( 1 ).getRequired() );
+
+        Assert.assertEquals( 1, fhirQuestionnaire.getItem().get( 1 ).getExtension().size() );
+        Assert.assertEquals( ValueTypeExtensionUtils.URL, fhirQuestionnaire.getItem().get( 1 ).getExtension().get( 0 ).getUrl() );
+        Assert.assertTrue( fhirQuestionnaire.getItem().get( 1 ).getExtension().get( 0 ).getValue() instanceof StringType );
+        Assert.assertEquals( "INTEGER", ( (StringType) fhirQuestionnaire.getItem().get( 1 ).getExtension().get( 0 ).getValue() ).getValue() );
     }
 }

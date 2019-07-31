@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.function.Function;
 
 /**
  * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
@@ -90,4 +92,7 @@ public abstract class AbstractProgramStageMetadataToFhirQuestionnaireTransformer
     {
         return ProgramStageMetadataRule.class;
     }
+
+    @Nonnull
+    protected abstract Function<String, IElement> getTypeFactory();
 }

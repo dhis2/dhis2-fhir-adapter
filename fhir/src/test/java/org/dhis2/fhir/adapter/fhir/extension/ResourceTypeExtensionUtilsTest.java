@@ -28,17 +28,9 @@ package org.dhis2.fhir.adapter.fhir.extension;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.model.api.ExtensionDt;
-import ca.uhn.fhir.model.api.IElement;
-import ca.uhn.fhir.model.primitive.StringDt;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.hl7.fhir.instance.model.api.IBaseExtension;
-import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Unit tests for {@link ResourceTypeExtensionUtils}.
@@ -50,7 +42,7 @@ public class ResourceTypeExtensionUtilsTest
     @Test
     public void resetValue()
     {
-        PlanDefinition planDefinition = new PlanDefinition();
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
         ResourceTypeExtensionUtils.setValue( planDefinition, FhirResourceType.PATIENT, TypeFactory::createType );
         ResourceTypeExtensionUtils.setValue( planDefinition, null, TypeFactory::createType );
@@ -61,47 +53,12 @@ public class ResourceTypeExtensionUtilsTest
     @Test
     public void setValue()
     {
-        PlanDefinition planDefinition = new PlanDefinition();
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
         ResourceTypeExtensionUtils.setValue( planDefinition, FhirResourceType.PATIENT, TypeFactory::createType );
 
         Assert.assertEquals( 1, planDefinition.getExtension().size() );
         Assert.assertEquals( ResourceTypeExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertEquals( "Patient", planDefinition.getExtension().get( 0 ).getValue().toString() );
-    }
-
-    public static class PlanDefinition implements IBaseHasExtensions
-    {
-        private final List<IBaseExtension<?, ?>> extensions = new ArrayList<>();
-
-        @Override
-        public IBaseExtension<?, ?> addExtension()
-        {
-            extensions.add( new ExtensionDt() );
-
-            return extensions.get( extensions.size() - 1 );
-        }
-
-        @Override
-        public List<? extends IBaseExtension<?, ?>> getExtension()
-        {
-            return extensions;
-        }
-
-        @Override
-        public boolean hasExtension()
-        {
-            return !extensions.isEmpty();
-        }
-    }
-
-    public static class TypeFactory
-    {
-        public static IElement createType( String name )
-        {
-            Assert.assertEquals( "string", name );
-
-            return new StringDt();
-        }
     }
 }

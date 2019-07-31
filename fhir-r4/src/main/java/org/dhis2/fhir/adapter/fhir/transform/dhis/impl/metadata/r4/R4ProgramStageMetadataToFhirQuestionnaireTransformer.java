@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.extension.ValueTypeExtensionUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
@@ -49,12 +51,14 @@ import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemComponent;
 import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemType;
+import org.hl7.fhir.r4.model.ResourceFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemType.*;
 
@@ -103,6 +107,8 @@ public class R4ProgramStageMetadataToFhirQuestionnaireTransformer extends Abstra
                 itemComponent.setText( dataElement.getElement().getName() );
                 itemComponent.setRequired( dataElement.isCompulsory() );
                 itemComponent.setType( type );
+
+                ValueTypeExtensionUtils.setValue( itemComponent, dataElement.getElement().getValueType(), getTypeFactory() );
 
                 if ( dataElement.getElement().isOptionSetValue() )
                 {
@@ -154,5 +160,12 @@ public class R4ProgramStageMetadataToFhirQuestionnaireTransformer extends Abstra
 
         // unhandled data type
         return null;
+    }
+
+    @Nonnull
+    @Override
+    protected Function<String, IElement> getTypeFactory()
+    {
+        return ResourceFactory::createType;
     }
 }

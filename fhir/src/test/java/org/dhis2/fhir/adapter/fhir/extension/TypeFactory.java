@@ -29,29 +29,20 @@ package org.dhis2.fhir.adapter.fhir.extension;
  */
 
 import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.function.Function;
+import ca.uhn.fhir.model.primitive.StringDt;
+import org.junit.Assert;
 
 /**
- * Utility class to process FHIR resource type extension.
+ * Test type factory.
  *
  * @author volsch
  */
-public abstract class ResourceTypeExtensionUtils
+class TypeFactory
 {
-    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type";
-
-    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable FhirResourceType fhirResourceType, @Nonnull Function<String, IElement> typeFactory )
+    public static IElement createType( String name )
     {
-        BaseExtensionUtils.setStringValue( URL, resource, fhirResourceType == null ? null : fhirResourceType.getResourceTypeName(), typeFactory );
-    }
+        Assert.assertEquals( "string", name );
 
-    private ResourceTypeExtensionUtils()
-    {
-        super();
+        return new StringDt();
     }
 }
