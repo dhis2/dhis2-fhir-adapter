@@ -75,7 +75,7 @@ public interface FhirResourceRepository
     IBaseResource transform( @Nonnull UUID fhirClientId, @Nonnull FhirVersion fhirVersion, @Nullable IBaseResource resource );
 
     @Nonnull
-    IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource );
+    IBaseResource save( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource, @Nullable String dhisResourceId );
 
     boolean delete( @Nonnull FhirClient fhirClient, @Nonnull IBaseResource resource );
 }

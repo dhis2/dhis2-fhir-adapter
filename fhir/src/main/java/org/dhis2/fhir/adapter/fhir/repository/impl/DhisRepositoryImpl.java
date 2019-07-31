@@ -451,7 +451,8 @@ public class DhisRepositoryImpl implements DhisRepository
                         }
                         else
                         {
-                            final IBaseResource resultingResource = fhirResourceRepository.save( transformerRequest.getFhirClient(), outcome.getResource() );
+                            final IBaseResource resultingResource = fhirResourceRepository
+                                .save( transformerRequest.getFhirClient(), outcome.getResource(), resource.getId() );
                             // resource may have been set as attribute in transformer context (e.g. shared encounter)
                             outcome.getResource().setId( resultingResource.getIdElement() );
                             fhirDhisAssignmentRepository.saveFhirResourceId( outcome.getRule(), transformerRequest.getFhirClient(),
@@ -482,6 +483,7 @@ public class DhisRepositoryImpl implements DhisRepository
                 if ( dhisResource == null )
                 {
                     logger.debug( "DHIS resource could not be found." );
+
                     return Optional.empty();
                 }
 
@@ -493,6 +495,7 @@ public class DhisRepositoryImpl implements DhisRepository
                 if ( transformerRequest == null )
                 {
                     logger.debug( "No matching rule has been found." );
+
                     return Optional.empty();
                 }
 
