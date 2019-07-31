@@ -28,8 +28,8 @@
   -->
 
 <StructureDefinition xmlns="http://hl7.org/fhir">
-  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type" />
-  <name value="ResourceTypeExtension" />
+  <url value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/value-type" />
+  <name value="ValueTypeExtension" />
   <status value="active" />
   <experimental value="false" />
   <fhirVersion value="4.0.0" />
@@ -37,7 +37,7 @@
   <abstract value="false" />
   <context>
     <type value="fhirpath" />
-    <expression value="DomainResource" />
+    <expression value="Questionnaire.item" />
   </context>
   <type value="Extension" />
   <baseDefinition value="http://hl7.org/fhir/StructureDefinition/Extension" />
@@ -46,8 +46,8 @@
     <element id="Extension.value[x]">
       <path value="Extension.value[x]" />
       <label value="FHIR Resource Type" />
-      <short value="FHIR Resource Type" />
-      <definition value="Must be a valid FHIR Resource Type like Patient." />
+      <short value="DHIS2 Value Type" />
+      <definition value="Must be a valid DHIS2 value type (like INTEGER_POSITIVE)." />
       <min value="1" />
       <type>
         <code value="string" />

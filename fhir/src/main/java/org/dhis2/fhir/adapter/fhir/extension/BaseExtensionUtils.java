@@ -29,28 +29,36 @@ package org.dhis2.fhir.adapter.fhir.extension;
  */
 
 import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * Utility class to process FHIR resource type extension.
+ * Utility class to process FHIR resource extensions.
  *
  * @author volsch
  */
-public abstract class ResourceTypeExtensionUtils
+abstract class BaseExtensionUtils
 {
-    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type";
-
-    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable FhirResourceType fhirResourceType, @Nonnull Function<String, IElement> typeFactory )
+    @SuppressWarnings( "unchecked" )
+    protected static void setStringValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable String value, @Nonnull Function<String, IElement> typeFactory )
     {
-        BaseExtensionUtils.setStringValue( URL, resource, fhirResourceType == null ? null : fhirResourceType.getResourceTypeName(), typeFactory );
+        resource.getExtension().removeIf( e -> url.equals( e.getUrl() ) );
+
+        if ( value != null )
+        {
+            final IBaseExtension<?, ?> extension = resource.addExtension();
+
+            extension.setUrl( url );
+            extension.setValue( ( (IPrimitiveType<String>) typeFactory.apply( "string" ) ).setValue( value ) );
+        }
     }
 
-    private ResourceTypeExtensionUtils()
+    private BaseExtensionUtils()
     {
         super();
     }

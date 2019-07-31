@@ -28,30 +28,39 @@ package org.dhis2.fhir.adapter.fhir.extension;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import ca.uhn.fhir.model.api.ExtensionDt;
+import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Utility class to process FHIR resource type extension.
+ * Test plan definition FHIR resource.
  *
  * @author volsch
  */
-public abstract class ResourceTypeExtensionUtils
+class TestPlanDefinition implements IBaseHasExtensions
 {
-    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type";
+    private final List<IBaseExtension<?, ?>> extensions = new ArrayList<>();
 
-    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable FhirResourceType fhirResourceType, @Nonnull Function<String, IElement> typeFactory )
+    @Override
+    public IBaseExtension<?, ?> addExtension()
     {
-        BaseExtensionUtils.setStringValue( URL, resource, fhirResourceType == null ? null : fhirResourceType.getResourceTypeName(), typeFactory );
+        extensions.add( new ExtensionDt() );
+
+        return extensions.get( extensions.size() - 1 );
     }
 
-    private ResourceTypeExtensionUtils()
+    @Override
+    public List<? extends IBaseExtension<?, ?>> getExtension()
     {
-        super();
+        return extensions;
+    }
+
+    @Override
+    public boolean hasExtension()
+    {
+        return !extensions.isEmpty();
     }
 }

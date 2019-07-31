@@ -164,6 +164,26 @@
       <path value="Questionnaire.code" />
       <max value="0" />
     </element>
+    <element id="Questionnaire.item.extension">
+      <path value="Questionnaire.item.extension" />
+      <slicing>
+        <discriminator>
+          <type value="value" />
+          <path value="url" />
+        </discriminator>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="Questionnaire.item.extension:valueType">
+      <path value="Questionnaire.item.extension" />
+      <sliceName value="valueType" />
+      <min value="0" />
+      <max value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/value-type" />
+      </type>
+    </element>
     <element id="Questionnaire.item.definition">
       <path value="Questionnaire.item.definition" />
       <max value="0" />

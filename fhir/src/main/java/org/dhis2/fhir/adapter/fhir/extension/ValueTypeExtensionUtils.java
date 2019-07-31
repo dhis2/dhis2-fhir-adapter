@@ -29,28 +29,27 @@ package org.dhis2.fhir.adapter.fhir.extension;
  */
 
 import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.model.ValueType;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * Utility class to process FHIR resource type extension.
+ * Utility class to process FHIR value type extension.
  *
  * @author volsch
  */
-public abstract class ResourceTypeExtensionUtils
+public abstract class ValueTypeExtensionUtils
 {
-    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type";
+    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/value-type";
 
-    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable FhirResourceType fhirResourceType, @Nonnull Function<String, IElement> typeFactory )
+    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nonnull ValueType valueType, @Nonnull Function<String, IElement> typeFactory )
     {
-        BaseExtensionUtils.setStringValue( URL, resource, fhirResourceType == null ? null : fhirResourceType.getResourceTypeName(), typeFactory );
+        BaseExtensionUtils.setStringValue( URL, resource, valueType.name(), typeFactory );
     }
 
-    private ResourceTypeExtensionUtils()
+    private ValueTypeExtensionUtils()
     {
         super();
     }

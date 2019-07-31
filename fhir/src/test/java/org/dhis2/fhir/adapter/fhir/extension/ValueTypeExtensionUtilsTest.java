@@ -28,30 +28,26 @@ package org.dhis2.fhir.adapter.fhir.extension;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import ca.uhn.fhir.model.api.IElement;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.function.Function;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Utility class to process FHIR resource type extension.
+ * Unit tests for {@link ValueTypeExtensionUtils}.
  *
  * @author volsch
  */
-public abstract class ResourceTypeExtensionUtils
+public class ValueTypeExtensionUtilsTest
 {
-    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/resource-type";
-
-    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable FhirResourceType fhirResourceType, @Nonnull Function<String, IElement> typeFactory )
+    @Test
+    public void setValue()
     {
-        BaseExtensionUtils.setStringValue( URL, resource, fhirResourceType == null ? null : fhirResourceType.getResourceTypeName(), typeFactory );
-    }
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    private ResourceTypeExtensionUtils()
-    {
-        super();
+        ValueTypeExtensionUtils.setValue( planDefinition, ValueType.INTEGER_POSITIVE, TypeFactory::createType );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( ValueTypeExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( "INTEGER_POSITIVE", planDefinition.getExtension().get( 0 ).getValue().toString() );
     }
 }
