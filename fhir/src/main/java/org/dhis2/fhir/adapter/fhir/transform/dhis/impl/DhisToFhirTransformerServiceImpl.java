@@ -220,7 +220,6 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     public List<IBaseReference> resolveFhirReferences( @Nonnull FhirClient fhirClient, @Nonnull ScriptedDhisResource dhisResource, @Nullable Set<FhirResourceType> fhirResourceTypes, int max )
     {
         final WritableDhisRequest dhisRequest = new WritableDhisRequest( true, false, false );
-        dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
         dhisRequest.setResourceType( dhisResource.getResourceType() );
 
         DhisToFhirTransformerRequest transformerRequest = createTransformerRequest(
@@ -240,6 +239,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
         }
         else
         {
+            // retrieving last updated may initialize resource event if not required for simple FHIR ID
+            dhisRequest.setLastUpdated( dhisResource.getLastUpdated() );
             final AbstractFhirResourceDhisToFhirTransformerUtils fhirResourceTransformerUtils = getFhirResourceTransformerUtils( fhirClient.getFhirVersion() );
 
             do

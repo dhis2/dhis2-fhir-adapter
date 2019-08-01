@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,26 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.dhis.model.IdentifiedDhisResource;
 
 import javax.annotation.Nonnull;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Identified tracked entity instance.
  *
  * @author volsch
  */
-@Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public class IdentifiedTrackedEntityInstance extends IdentifiedDhisResource<TrackedEntityInstance>
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private static final long serialVersionUID = 7975425868929861631L;
+
+    public IdentifiedTrackedEntityInstance( @Nonnull String id )
     {
-        super( resource, scriptExecutionContext );
+        super( id );
     }
 
-    @ScriptExecutionForbidden
-    @Nonnull
-    public DhisResource getDhisResource()
+    public IdentifiedTrackedEntityInstance( @Nonnull TrackedEntityInstance resource )
     {
-        if ( scriptExecutionContext.hasScriptExecution() )
-        {
-            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
-        }
-
-        return getInternalResource();
+        super( resource );
     }
 }

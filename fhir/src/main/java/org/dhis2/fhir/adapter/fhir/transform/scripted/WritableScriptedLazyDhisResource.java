@@ -29,29 +29,37 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Implementation of writable scripted resource. The included resource may not have been initialized.
+ * The included resource object can be accessed outside a script execution. Within a script
+ * execution {@link #getDhisResource()} will fail.
  *
  * @author volsch
  */
 @Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public class WritableScriptedLazyDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleWritableScriptedLazyDhisResource
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    public WritableScriptedLazyDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( resource, scriptExecutionContext );
     }
 
+    public WritableScriptedLazyDhisResource( @Nonnull DhisResourceType resourceType, @Nonnull String resourceId, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    {
+        super( resourceType, resourceId, scriptExecutionContext );
+    }
+
     @ScriptExecutionForbidden
-    @Nonnull
+    @Nullable
     public DhisResource getDhisResource()
     {
         if ( scriptExecutionContext.hasScriptExecution() )
@@ -59,6 +67,6 @@ public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisRe
             throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
         }
 
-        return getInternalResource();
+        return resource;
     }
 }

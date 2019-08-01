@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.fhir.transform.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,34 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Unit tests {@link TransformerUtils}.
  *
  * @author volsch
  */
-@Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public class TransformerUtilsTest
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    @Test
+    public void getOptionalScriptVariable()
     {
-        super( resource, scriptExecutionContext );
+        final Map<String, Object> variables = new HashMap<>();
+        variables.put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), "test1" );
+
+        Assert.assertEquals( "test1", TransformerUtils.getOptionalScriptVariable( variables, ScriptVariable.ORGANIZATION_UNIT_ID, String.class ) );
     }
 
-    @ScriptExecutionForbidden
-    @Nonnull
-    public DhisResource getDhisResource()
+    @Test
+    public void getOptionalScriptVariableNotFound()
     {
-        if ( scriptExecutionContext.hasScriptExecution() )
-        {
-            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
-        }
+        final Map<String, Object> variables = new HashMap<>();
 
-        return getInternalResource();
+        Assert.assertNull( TransformerUtils.getOptionalScriptVariable( variables, ScriptVariable.ORGANIZATION_UNIT_ID, String.class ) );
     }
 }

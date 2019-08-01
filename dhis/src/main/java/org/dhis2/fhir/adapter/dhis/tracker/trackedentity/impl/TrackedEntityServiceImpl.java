@@ -225,6 +225,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         return findOneByIdRefreshed( id );
     }
 
+    @Override
+    public boolean isLocal( @Nonnull String id )
+    {
+        return resourceRepositoryTemplate.isLocal( id );
+    }
+
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override

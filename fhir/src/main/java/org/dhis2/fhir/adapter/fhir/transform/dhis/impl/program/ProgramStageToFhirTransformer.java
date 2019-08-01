@@ -125,12 +125,14 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
+
         if ( !addScriptVariables( variables, input ) )
         {
             return null;
         }
 
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo );
+
         if ( isDataAbsent( context, input, ruleInfo ) )
         {
             return handleDataAbsent( fhirClient, context, ruleInfo, resourceMapping, variables );
@@ -139,20 +141,24 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         final IBaseResource trackedEntityFhirResource = getTrackedEntityFhirResource( fhirClient, context,
             new RuleInfo<>( ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityRule(), Collections.emptyList() ),
             ruleInfo.getRule().getProgramStage().getProgram().getTrackedEntityFhirResourceType(),
-            Objects.requireNonNull( input.getTrackedEntityInstance() ), variables )
-            .orElseThrow( () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
+            Objects.requireNonNull( input.getTrackedEntityInstance() ), variables ).orElseThrow(
+            () -> new MissingDhisResourceException( Objects.requireNonNull( input.getTrackedEntityInstance().getResourceId() ) ) );
         variables.put( ScriptVariable.TEI_FHIR_RESOURCE.getVariableName(), trackedEntityFhirResource );
 
         final IBaseResource resource = getResource( fhirClient, context, ruleInfo, variables ).orElse( null );
+
         if ( resource == null )
         {
             return null;
         }
+
         final IBaseResource modifiedResource = cloneToModified( context, ruleInfo, resource, variables );
+
         if ( modifiedResource == null )
         {
             return null;
         }
+
         variables.put( ScriptVariable.OUTPUT.getVariableName(), modifiedResource );
 
         if ( isDataDelete( context, ruleInfo, resourceMapping, variables ) )
