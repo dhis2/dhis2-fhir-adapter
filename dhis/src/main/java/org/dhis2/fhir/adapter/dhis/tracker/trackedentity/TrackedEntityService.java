@@ -57,6 +57,8 @@ public interface TrackedEntityService
     @Nonnull
     Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
 
+    boolean isLocal( @Nonnull String id );
+
     @Nonnull
     Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
         @Nonnull String attributeId, @Nonnull String value, int maxResult );

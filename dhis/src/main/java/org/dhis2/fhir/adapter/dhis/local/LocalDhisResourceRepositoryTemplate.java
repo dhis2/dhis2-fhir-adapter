@@ -124,6 +124,15 @@ public class LocalDhisResourceRepositoryTemplate<T extends DhisResource>
         return Optional.ofNullable( result );
     }
 
+    public boolean isLocal( @Nonnull String id )
+    {
+        final RequestCacheContext context = requestCacheService.getCurrentRequestCacheContext();
+        final Optional<LocalDhisResourceRepository<T>> repository = getRepository( context );
+
+        return repository.map( r -> r.findOneById( id ).map( DhisResource::isLocal ).orElse( false ) ).orElse( false );
+
+    }
+
     @Nonnull
     public Collection<T> find( @Nonnull Predicate<T> filter, @Nonnull Supplier<Collection<T>> collectionSupplier, boolean localOnly, @Nonnull String methodName, @Nonnull Object... args )
     {

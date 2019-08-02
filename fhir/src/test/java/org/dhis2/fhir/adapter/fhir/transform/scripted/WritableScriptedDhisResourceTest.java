@@ -28,37 +28,45 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
-import javax.annotation.Nonnull;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Unit tests for {@link WritableScriptedDhisResource}.
  *
  * @author volsch
  */
-@Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public class WritableScriptedDhisResourceTest
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    @Mock
+    private ScriptExecutionContext scriptExecutionContext;
+
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Test
+    public void getDhisResource()
     {
-        super( resource, scriptExecutionContext );
+        final TrackedEntityInstance resource = new TrackedEntityInstance();
+        final WritableScriptedDhisResource scriptedResource = new WritableScriptedDhisResource( resource, scriptExecutionContext );
+        Assert.assertSame( resource, scriptedResource.getDhisResource() );
     }
 
-    @ScriptExecutionForbidden
-    @Nonnull
-    public DhisResource getDhisResource()
+    @Test( expected = FatalTransformerException.class )
+    public void getDhisResourceScriptExecution()
     {
-        if ( scriptExecutionContext.hasScriptExecution() )
-        {
-            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
-        }
+        Mockito.doReturn( true ).when( scriptExecutionContext ).hasScriptExecution();
 
-        return getInternalResource();
+        final TrackedEntityInstance resource = new TrackedEntityInstance();
+        final WritableScriptedDhisResource scriptedResource = new WritableScriptedDhisResource( resource, scriptExecutionContext );
+        Assert.assertSame( resource, scriptedResource.getDhisResource() );
     }
 }

@@ -29,36 +29,21 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Scripted DHIS2 resource that allows access to the included resource instance. The
+ * included DHIS2 resource may not have been initialized and retrieving the resource
+ * may return <code>null</code>. The access is only granted outside script execution.
+ * Within a script an exception will be thrown.
  *
  * @author volsch
  */
-@Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public interface AccessibleWritableScriptedLazyDhisResource extends ScriptedDhisResource
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
-    {
-        super( resource, scriptExecutionContext );
-    }
-
+    @Nullable
     @ScriptExecutionForbidden
-    @Nonnull
-    public DhisResource getDhisResource()
-    {
-        if ( scriptExecutionContext.hasScriptExecution() )
-        {
-            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
-        }
-
-        return getInternalResource();
-    }
+    DhisResource getDhisResource();
 }

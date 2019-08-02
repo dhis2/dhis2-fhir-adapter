@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.scripted;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,37 +28,50 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
-import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
- * Implementation of writable scripted resource. The included metadata object can be accessed
- * outside a script execution. Within a script execution {@link #getDhisResource()} will fail.
+ * Contains either the ID of the resource or the resource itself.
  *
+ * @param <T> the concrete type of the DHIS2 resource.
  * @author volsch
  */
-@Scriptable
-public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
+public class IdentifiedDhisResource<T extends DhisResource> implements Serializable
 {
-    public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
+    private static final long serialVersionUID = -5373285083896395201L;
+
+    private final String id;
+
+    private final T resource;
+
+    public IdentifiedDhisResource( @Nonnull String id )
     {
-        super( resource, scriptExecutionContext );
+        this.id = id;
+        this.resource = null;
     }
 
-    @ScriptExecutionForbidden
-    @Nonnull
-    public DhisResource getDhisResource()
+    public IdentifiedDhisResource( @Nonnull T resource )
     {
-        if ( scriptExecutionContext.hasScriptExecution() )
-        {
-            throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
-        }
+        this.resource = resource;
+        this.id = null;
+    }
 
-        return getInternalResource();
+    @Nullable
+    public String getId()
+    {
+        return id;
+    }
+
+    @Nullable
+    public T getResource()
+    {
+        return resource;
+    }
+
+    public boolean hasResource()
+    {
+        return resource != null;
     }
 }

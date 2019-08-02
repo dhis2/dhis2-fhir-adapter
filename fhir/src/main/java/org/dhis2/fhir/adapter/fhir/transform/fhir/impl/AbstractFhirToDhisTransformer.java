@@ -29,13 +29,16 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.IdentifiedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttribute;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
@@ -48,6 +51,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionException;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
@@ -61,6 +65,7 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundE
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -93,15 +98,25 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
 
     private final TrackedEntityService trackedEntityService;
 
+    private final TrackedEntityMetadataService trackedEntityMetadataService;
+
     private final FhirDhisAssignmentRepository fhirDhisAssignmentRepository;
 
-    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+    private final ScriptExecutionContext scriptExecutionContext;
+
+    private final ValueConverter valueConverter;
+
+    public AbstractFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull ObjectProvider<TrackedEntityMetadataService> trackedEntityMetadataService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
         this.scriptExecutor = scriptExecutor;
         this.organizationUnitService = organizationUnitService;
+        this.trackedEntityMetadataService = trackedEntityMetadataService.getIfAvailable();
         this.trackedEntityService = trackedEntityService.getIfAvailable();
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
+        this.scriptExecutionContext = scriptExecutionContext;
+        this.valueConverter = valueConverter;
     }
 
     @Nullable
@@ -126,7 +141,19 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         {
             throw new FatalTransformerException( "Tracked entity service has not been provided." );
         }
+
         return trackedEntityService;
+    }
+
+    @Nonnull
+    protected TrackedEntityMetadataService getTrackedEntityMetadataService() throws FatalTransformerException
+    {
+        if ( trackedEntityMetadataService == null )
+        {
+            throw new FatalTransformerException( "Tracked entity metadata service has not been provided." );
+        }
+
+        return trackedEntityMetadataService;
     }
 
     protected abstract boolean isAlwaysActiveResource( @Nonnull RuleInfo<U> ruleInfo );
@@ -136,9 +163,11 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         boolean activeResource = true;
+
         if ( context.getFhirRequest().isDhisFhirId() )
         {
             final String id = getDhisId( context, ruleInfo );
+
             if ( id == null )
             {
                 activeResource = ( context.getFhirRequest().getRequestMethod() == null ) ||
@@ -147,24 +176,29 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
             else
             {
                 R resource = getResourceById( id ).orElse( null );
+
                 if ( resource != null )
                 {
                     return Optional.of( resource );
                 }
+
                 activeResource = false;
             }
         }
         else
         {
             final R resource = getResourceByAssignment( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
+
             if ( resource != null )
             {
                 return Optional.of( resource );
             }
         }
+
         if ( activeResource || isAlwaysActiveResource( ruleInfo ) )
         {
             final R resource = getActiveResource( context, ruleInfo, scriptVariables, false, true ).orElse( null );
+
             if ( resource != null )
             {
                 return Optional.of( resource );
@@ -172,18 +206,21 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         }
 
         R resource = null;
-        if ( ( context.getFhirRequest().getRequestMethod() == null ) || context.getFhirRequest().getRequestMethod().isCreate() )
+        if ( context.getFhirRequest().getRequestMethod() == null || context.getFhirRequest().getRequestMethod().isCreate() )
         {
             final String id = getDhisId( context, ruleInfo );
             resource = createResource( context, ruleInfo, id, scriptVariables, false, false );
-            if ( (resource != null) && isSyncRequired( context, ruleInfo, scriptVariables ) )
+
+            if ( resource != null && isSyncRequired( context, ruleInfo, scriptVariables ) )
             {
                 // the active resource may have been created in the meantime
                 resource = getActiveResource( context, ruleInfo, scriptVariables, true, true ).orElse( null );
+
                 if ( resource != null )
                 {
                     return Optional.of( resource );
                 }
+
                 resource = createResource( context, ruleInfo, id, scriptVariables, true, false );
             }
         }
@@ -208,10 +245,12 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         final IBaseResource fhirResource = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, IBaseResource.class );
         final String dhisResourceId = fhirDhisAssignmentRepository.findFirstDhisResourceId( ruleInfo.getRule(), fhirClientResource.getFhirClient(),
             fhirResource.getIdElement() );
+
         if ( dhisResourceId == null )
         {
             return Optional.empty();
         }
+
         return findResourceById( context, ruleInfo, dhisResourceId, scriptVariables );
     }
 
@@ -262,11 +301,10 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     }
 
     @Nonnull
-    protected Optional<TrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo,
+    protected Optional<IdentifiedTrackedEntityInstance> getTrackedEntityInstance( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<TrackedEntityRule> ruleInfo,
         @Nonnull FhirResourceMapping resourceMapping, @Nonnull Map<String, Object> scriptVariables, boolean sync )
     {
         final IBaseResource baseResource = getTrackedEntityInstanceResource( context, ruleInfo, resourceMapping, scriptVariables );
-        TrackedEntityInstance trackedEntityInstance;
 
         if ( baseResource == null )
         {
@@ -288,19 +326,35 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         switch ( reference.getType() )
         {
             case ID:
-                final Optional<TrackedEntityInstance> optTrackedEntityInstance = sync ?
-                    getTrackedEntityService().findOneByIdRefreshed( reference.getValue() ) : getTrackedEntityService().findOneById( reference.getValue() );
-                trackedEntityInstance = optTrackedEntityInstance.orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) );
-                break;
+                return Optional.of( new IdentifiedTrackedEntityInstance( reference.getValue() ) );
             case CODE:
-                trackedEntityInstance = getTrackedEntityInstanceByIdentifier( context, ruleInfo, baseResource, scriptVariables, sync )
-                    .orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) );
-                break;
+                return Optional.of( new IdentifiedTrackedEntityInstance( getTrackedEntityInstanceByIdentifier( context, ruleInfo, baseResource, scriptVariables, sync )
+                    .orElseThrow( () -> new TrackedEntityInstanceNotFoundException( "Tracked entity instance for FHIR Resource ID " + baseResource.getIdElement() + " could not be found.", baseResource ) ) ) );
             default:
                 throw new TransformerMappingException( "Reference type " + reference.getType() + " is not supported to retrieve tracked entity." );
         }
+    }
 
-        return Optional.of( trackedEntityInstance );
+    protected void addTrackedEntityScriptVariables( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<? extends AbstractRule> ruleInfo, @Nonnull IdentifiedTrackedEntityInstance trackedEntityInstance, @Nonnull Map<String, Object> variables ) throws TransformerException
+    {
+        final WritableScriptedTrackedEntityInstance scriptedTrackedEntityInstance;
+
+        if ( trackedEntityInstance.hasResource() )
+        {
+            scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance(
+                TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class ),
+                TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ),
+                Objects.requireNonNull( trackedEntityInstance.getResource() ), scriptExecutionContext, valueConverter );
+        }
+        else
+        {
+            scriptedTrackedEntityInstance = new WritableScriptedTrackedEntityInstance( getTrackedEntityMetadataService(), getTrackedEntityService(),
+                TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_ATTRIBUTES, TrackedEntityAttributes.class ),
+                TransformerUtils.getOptionalScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ),
+                Objects.requireNonNull( trackedEntityInstance.getId() ), scriptExecutionContext, valueConverter );
+        }
+
+        variables.put( ScriptVariable.TRACKED_ENTITY_INSTANCE.getVariableName(), scriptedTrackedEntityInstance );
     }
 
     @Nullable

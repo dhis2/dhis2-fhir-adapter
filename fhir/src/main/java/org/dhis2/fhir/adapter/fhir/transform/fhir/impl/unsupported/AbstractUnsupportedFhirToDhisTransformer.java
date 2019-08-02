@@ -28,9 +28,11 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
@@ -38,6 +40,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
@@ -62,10 +65,11 @@ import java.util.Set;
  */
 public abstract class AbstractUnsupportedFhirToDhisTransformer<R extends DhisResource, U extends AbstractRule> extends AbstractFhirToDhisTransformer<R, U>
 {
-    protected AbstractUnsupportedFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+    protected AbstractUnsupportedFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService, @Nonnull ObjectProvider<TrackedEntityMetadataService> trackedEntityMetadataService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
+        super( scriptExecutor, organizationUnitService, trackedEntityMetadataService, trackedEntityService, fhirDhisAssignmentRepository, scriptExecutionContext, valueConverter );
     }
 
     @Nonnull

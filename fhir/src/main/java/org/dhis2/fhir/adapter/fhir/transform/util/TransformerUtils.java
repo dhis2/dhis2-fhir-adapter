@@ -91,6 +91,12 @@ public abstract class TransformerUtils
         return value;
     }
 
+    @Nullable
+    public static <T> T getOptionalScriptVariable( @Nonnull Map<String, Object> scriptVariables, @Nonnull ScriptVariable scriptVariable, @Nonnull Class<T> type ) throws FatalTransformerException
+    {
+        return type.cast( scriptVariables.get( scriptVariable.getVariableName() ) );
+    }
+
     @Nonnull
     public static <T> T getScriptVariable( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull String name, @Nonnull Class<T> c )
     {

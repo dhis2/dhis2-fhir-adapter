@@ -216,6 +216,7 @@ public class FhirToEnrollmentTransformerTest
         trackedEntityInstance = new TrackedEntityInstance();
         trackedEntityInstance.setId( "jsy278shj12" );
         trackedEntityInstance.setIdentifier( "NAT01020304" );
+        trackedEntityInstance.setTypeId( "js73jhsyus91" );
 
         organizationUnit = new OrganizationUnit();
         organizationUnit.setId( "823njmdhsj2" );
