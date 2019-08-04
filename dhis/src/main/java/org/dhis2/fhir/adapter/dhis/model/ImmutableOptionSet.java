@@ -85,6 +85,8 @@ public class ImmutableOptionSet implements OptionSet, ImmutableDhisObject, Seria
     @Override
     public Optional<Option> getOptionalOptionByCode( @Nullable String code )
     {
-        return delegate.getOptionalOptionByCode( code );
+        final Option option = delegate.getOptionalOptionByCode( code ).orElse( null );
+
+        return option == null ? Optional.empty() : Optional.of( option instanceof WritableOption ? new ImmutableOption( (WritableOption) option ) : option );
     }
 }
