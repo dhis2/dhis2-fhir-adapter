@@ -58,7 +58,7 @@ public class OrganizationUnitServiceImpl extends AbstractDhisMetadataServiceImpl
 
     @Nonnull
     @Override
-    protected DhisResourceType getDhisResourceType()
+    public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.ORGANIZATION_UNIT;
     }

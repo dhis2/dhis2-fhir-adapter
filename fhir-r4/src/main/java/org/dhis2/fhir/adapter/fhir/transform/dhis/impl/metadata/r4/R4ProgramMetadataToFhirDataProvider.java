@@ -65,6 +65,7 @@ public class R4ProgramMetadataToFhirDataProvider extends AbstractProgramMetadata
     @Override
     protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<ProgramMetadataRule> ruleInfo, @Nonnull SearchFilter searchFilter )
     {
-        searchFilter.add( PlanDefinition.SP_NAME, SearchParamType.STRING, "name" );
+        searchFilter.add( PlanDefinition.SP_NAME, SearchParamType.STRING, "code" );
+        searchFilter.add( PlanDefinition.SP_TITLE, SearchParamType.STRING, "name" );
     }
 }

@@ -49,13 +49,11 @@ import javax.annotation.Nonnull;
 public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<Program> implements ProgramMetadataService
 {
     protected static final String FIELDS =
-        "id,name,code,description,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
+        "id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate," +
             "registration,withoutRegistration,captureCoordinates,trackedEntityType[id]," +
             "programTrackedEntityAttributes[id,name,valueType,mandatory,allowFutureDate," +
             "trackedEntityAttribute[id,name,code,valueType,generated]]," +
-            "programStages[id,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
-            "programStageDataElements[id,compulsory,allowProvidedElsewhere," +
-            "dataElement[id,name,code,formName,valueType,optionSetValue,optionSet[id,name,options[code,name]]]]]";
+            "programStages[" + ProgramStageMetadataServiceImpl.FIELDS + "]";
 
     public ProgramMetadataServiceImpl( @Nonnull @Qualifier( "systemDhis2RestTemplate" ) RestTemplate systemRestTemplate, @Nonnull @Qualifier( "userDhis2RestTemplate" ) RestTemplate userRestTemplate )
     {
@@ -64,7 +62,7 @@ public class ProgramMetadataServiceImpl extends AbstractDhisMetadataServiceImpl<
 
     @Nonnull
     @Override
-    protected DhisResourceType getDhisResourceType()
+    public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.PROGRAM_METADATA;
     }

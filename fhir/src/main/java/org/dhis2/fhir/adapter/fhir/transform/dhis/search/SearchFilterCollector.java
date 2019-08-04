@@ -79,6 +79,7 @@ public class SearchFilterCollector implements UriFilterApplier
     public SearchFilterCollector( @Nullable Function<Reference, String> dhisPropertyRefResolver, @Nullable Map<String, List<String>> filter )
     {
         this.dhisPropertyRefResolver = dhisPropertyRefResolver;
+
         if ( filter != null )
         {
             filter.forEach( ( key, value ) -> {
@@ -142,10 +143,11 @@ public class SearchFilterCollector implements UriFilterApplier
 
     public void addFilterExpression( @Nonnull String propertyName, @Nonnull String operator, @Nullable String value )
     {
-        if ( ( value != null ) && ( value.indexOf( ':' ) >= 0 ) )
+        if ( value != null && value.indexOf( ':' ) >= 0 )
         {
             throw new DhisToFhirDataProviderException( "Colon characters in search parameter values are not supported." );
         }
+
         filterExpressions.add( propertyName + ':' + operator + ':' + StringUtils.defaultString( value ) );
     }
 
@@ -162,11 +164,13 @@ public class SearchFilterCollector implements UriFilterApplier
         {
             throw new DhisToFhirDataProviderException( "Unhandled search parameters: " + StringUtils.join( filter.keySet(), ", " ) );
         }
+
         queryParams.forEach( ( key, values ) -> uriBuilder.queryParam( key, values.toArray() ) );
         filterExpressions.forEach( fe -> {
             uriBuilder.queryParam( "filter", "{sfc" + variables.size() + "}" );
             variables.add( fe );
         } );
+
         return uriBuilder;
     }
 }

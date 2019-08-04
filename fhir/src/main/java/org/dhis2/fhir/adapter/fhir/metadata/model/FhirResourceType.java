@@ -58,22 +58,22 @@ import java.util.stream.Collectors;
  */
 public enum FhirResourceType
 {
-    CONDITION( FhirVersion.ALL, "Condition", 19, Collections.emptySet(), Collections.singleton( "Condition" ) ),
-    DIAGNOSTIC_REPORT( FhirVersion.ALL, "DiagnosticReport", 30, Collections.emptySet(), Collections.singleton( "DiagnosticReport" ) ),
-    ENCOUNTER( FhirVersion.ALL, "Encounter", 4, Collections.emptySet(), Collections.singleton( "Encounter" ) ),
-    IMMUNIZATION( FhirVersion.ALL, "Immunization", 22, Collections.emptySet(), Collections.singleton( "Immunization" ) ),
-    LOCATION( FhirVersion.ALL, "Location", 2, Collections.emptySet(), Collections.singleton( "Location" ) ),
-    MEDICATION_REQUEST( FhirVersion.ALL, "MedicationRequest", 21, Collections.emptySet(), Collections.singleton( "MedicationRequest" ) ),
-    OBSERVATION( FhirVersion.ALL, "Observation", 20, Collections.emptySet(), Collections.singleton( "Observation" ) ),
-    ORGANIZATION( FhirVersion.ALL, "Organization", 1, Collections.emptySet(), Collections.singleton( "Organization" ) ),
-    PATIENT( FhirVersion.ALL, "Patient", 10, Collections.emptySet(), Collections.singleton( "Patient" ) ),
-    RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
-    PRACTITIONER( FhirVersion.ALL, "Practitioner", 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
-    MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) ),
-    PLAN_DEFINITION( FhirVersion.R4_ONLY, "PlanDefinition", 30, Collections.emptySet(), Collections.singleton( "PlanDefinition" ) ),
-    QUESTIONNAIRE( FhirVersion.R4_ONLY, "Questionnaire", 31, Collections.emptySet(), Collections.singleton( "Questionnaire" ) ),
-    CARE_PLAN( FhirVersion.R4_ONLY, "CarePlan", 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) ),
-    QUESTIONNAIRE_RESPONSE( FhirVersion.R4_ONLY, "QuestionnaireResponse", 40, Collections.emptySet(), Collections.singleton( "QuestionnaireResponse" ) );
+    CONDITION( FhirVersion.ALL, "Condition", false, 19, Collections.emptySet(), Collections.singleton( "Condition" ) ),
+    DIAGNOSTIC_REPORT( FhirVersion.ALL, "DiagnosticReport", false, 30, Collections.emptySet(), Collections.singleton( "DiagnosticReport" ) ),
+    ENCOUNTER( FhirVersion.ALL, "Encounter", false, 4, Collections.emptySet(), Collections.singleton( "Encounter" ) ),
+    IMMUNIZATION( FhirVersion.ALL, "Immunization", false, 22, Collections.emptySet(), Collections.singleton( "Immunization" ) ),
+    LOCATION( FhirVersion.ALL, "Location", false, 2, Collections.emptySet(), Collections.singleton( "Location" ) ),
+    MEDICATION_REQUEST( FhirVersion.ALL, "MedicationRequest", false, 21, Collections.emptySet(), Collections.singleton( "MedicationRequest" ) ),
+    OBSERVATION( FhirVersion.ALL, "Observation", false, 20, Collections.emptySet(), Collections.singleton( "Observation" ) ),
+    ORGANIZATION( FhirVersion.ALL, "Organization", false, 1, Collections.emptySet(), Collections.singleton( "Organization" ) ),
+    PATIENT( FhirVersion.ALL, "Patient", false, 10, Collections.emptySet(), Collections.singleton( "Patient" ) ),
+    RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", false, 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
+    PRACTITIONER( FhirVersion.ALL, "Practitioner", false, 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
+    MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", false, 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) ),
+    PLAN_DEFINITION( FhirVersion.R4_ONLY, "PlanDefinition", true, 30, Collections.emptySet(), Collections.singleton( "PlanDefinition" ) ),
+    QUESTIONNAIRE( FhirVersion.R4_ONLY, "Questionnaire", true, 31, Collections.emptySet(), Collections.singleton( "Questionnaire" ) ),
+    CARE_PLAN( FhirVersion.R4_ONLY, "CarePlan", false, 35, Collections.emptySet(), Collections.singleton( "CarePlan" ) ),
+    QUESTIONNAIRE_RESPONSE( FhirVersion.R4_ONLY, "QuestionnaireResponse", false, 40, Collections.emptySet(), Collections.singleton( "QuestionnaireResponse" ) );
 
     private static final Map<String, FhirResourceType> resourcesBySimpleClassName = Arrays.stream( values() ).flatMap( v -> v.getSimpleClassNames().stream().map( scn -> new SimpleEntry<>( scn, v ) ) )
         .collect( Collectors.toMap( SimpleEntry::getKey, SimpleEntry::getValue ) );
@@ -85,17 +85,21 @@ public enum FhirResourceType
         {
             return null;
         }
+
         FhirResourceType frt;
         Class<?> c = resource.getClass();
+
         do
         {
             frt = resourcesBySimpleClassName.get( c.getSimpleName() );
+
             if ( frt == null )
             {
                 c = c.getSuperclass();
             }
         }
         while ( (frt == null) && (c != null) && (c != Object.class) );
+
         return frt;
     }
 
@@ -115,6 +119,8 @@ public enum FhirResourceType
 
     private final String resourceTypeName;
 
+    private final boolean syncDhisId;
+
     private final int order;
 
     private final Set<String> transactionalWith;
@@ -123,10 +129,11 @@ public enum FhirResourceType
 
     private volatile Set<FhirResourceType> transactionalWithTypes;
 
-    FhirResourceType( Set<FhirVersion> fhirVersions, String resourceTypeName, int order, Collection<String> transactionalWith, Collection<String> simpleClassNames )
+    FhirResourceType( Set<FhirVersion> fhirVersions, String resourceTypeName, boolean syncDhisId, int order, Collection<String> transactionalWith, Collection<String> simpleClassNames )
     {
         this.fhirVersions = fhirVersions;
         this.resourceTypeName = resourceTypeName;
+        this.syncDhisId = syncDhisId;
         this.order = order;
         this.transactionalWith = new HashSet<>( transactionalWith );
         this.simpleClassNames = Collections.unmodifiableSet( new HashSet<>( simpleClassNames ) );
@@ -142,6 +149,11 @@ public enum FhirResourceType
     public String getResourceTypeName()
     {
         return resourceTypeName;
+    }
+
+    public boolean isSyncDhisId()
+    {
+        return syncDhisId;
     }
 
     public int getOrder()

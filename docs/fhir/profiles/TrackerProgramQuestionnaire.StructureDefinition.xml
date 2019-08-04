@@ -96,9 +96,13 @@
       <path value="Questionnaire.version" />
       <max value="0" />
     </element>
+    <element id="Questionnaire.name">
+      <path value="Questionnaire.name" />
+      <max value="0" />
+    </element>
     <element id="Questionnaire.title">
       <path value="Questionnaire.title" />
-      <max value="0" />
+      <min value="1" />
     </element>
     <element id="Questionnaire.derivedFrom">
       <path value="Questionnaire.derivedFrom" />
@@ -160,6 +164,26 @@
       <path value="Questionnaire.code" />
       <max value="0" />
     </element>
+    <element id="Questionnaire.item.extension">
+      <path value="Questionnaire.item.extension" />
+      <slicing>
+        <discriminator>
+          <type value="value" />
+          <path value="url" />
+        </discriminator>
+        <rules value="open" />
+      </slicing>
+    </element>
+    <element id="Questionnaire.item.extension:valueType">
+      <path value="Questionnaire.item.extension" />
+      <sliceName value="valueType" />
+      <min value="0" />
+      <max value="1" />
+      <type>
+        <code value="Extension" />
+        <profile value="http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/value-type" />
+      </type>
+    </element>
     <element id="Questionnaire.item.definition">
       <path value="Questionnaire.item.definition" />
       <max value="0" />
@@ -186,6 +210,10 @@
     </element>
     <element id="Questionnaire.item.required">
       <path value="Questionnaire.item.required" />
+      <min value="1" />
+    </element>
+    <element id="Questionnaire.item.repeats">
+      <path value="Questionnaire.item.repeats" />
       <max value="0" />
     </element>
     <element id="Questionnaire.item.readOnly">
@@ -199,6 +227,12 @@
     <element id="Questionnaire.item.answerValueSet">
       <path value="Questionnaire.item.answerValueSet" />
       <max value="0" />
+    </element>
+    <element id="Questionnaire.item.answerOption.value[x]">
+      <path value="Questionnaire.item.answerOption.value[x]" />
+      <type>
+        <code value="Coding" />
+      </type>
     </element>
     <element id="Questionnaire.item.answerOption.initialSelected">
       <path value="Questionnaire.item.answerOption.initialSelected" />

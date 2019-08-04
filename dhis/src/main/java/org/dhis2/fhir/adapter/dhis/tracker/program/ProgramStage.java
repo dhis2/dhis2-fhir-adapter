@@ -48,6 +48,8 @@ import java.util.Optional;
 @Scriptable
 public interface ProgramStage extends DhisResource, DhisMetadata
 {
+    String getProgramId();
+
     boolean isRepeatable();
 
     boolean isCaptureCoordinates();

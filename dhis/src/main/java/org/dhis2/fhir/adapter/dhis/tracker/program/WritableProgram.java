@@ -50,6 +50,8 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
 {
     private static final long serialVersionUID = -4906529875383953995L;
 
+    private ZonedDateTime lastUpdated;
+
     @JsonInclude( JsonInclude.Include.NON_NULL )
     private String id;
 
@@ -137,12 +139,12 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
     @Override
     public String getTrackedEntityTypeId()
     {
-        return (trackedEntityType == null) ? null : trackedEntityType.getId();
+        return trackedEntityType == null ? null : trackedEntityType.getId();
     }
 
     public void setTrackedEntityTypeId( String trackedEntityTypeId )
     {
-        this.trackedEntityType = (trackedEntityTypeId == null) ? null : new Id( trackedEntityTypeId );
+        this.trackedEntityType = trackedEntityTypeId == null ? null : new Id( trackedEntityTypeId );
     }
 
     @Override
@@ -294,7 +296,7 @@ public class WritableProgram extends AbstractDhisMetadata implements Program, Se
     @Override
     public ZonedDateTime getLastUpdated()
     {
-        return null;
+        return lastUpdated;
     }
 
     @Override

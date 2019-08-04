@@ -1,0 +1,11 @@
+{
+  "name": "Birth", "id": "A03MvHHogjR", "program": { "id": "IpHINAT79UW" }, "generatedByEnrollmentDate": true, "repeatable": true, "captureCoordinates": true, "minDaysFromStart": 2, "programStageDataElements": [
+  { "id": "LBNxoXdMnkv", "compulsory": true, "allowProvidedElsewhere": true, "dataElement": { "code": "DE_2006098", "name": "MCH Apgar Score", "id": "a3kGcGDCuk6", "valueType": "NUMBER", "optionSetValue": false } },
+  {
+    "id": "O4dwFWakvGO", "compulsory": false, "allowProvidedElsewhere": false, "dataElement": {
+    "code": "DE_2006104", "name": "MCH OPV dose", "id": "ebaJjqltK5N", "valueType": "TEXT", "optionSetValue": true,
+    "optionSet": { "name": "MNCH Polio doses (0-3)", "id": "kzgQRhOCadd", "options": [ { "code": "0", "name": "Dose 0" }, { "code": "1", "name": "Dose 1" } ] }
+  }
+  }
+]
+}

@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private final ProgramMetadataService programMetadataService;
 
+    private final ProgramStageMetadataService programStageMetadataService;
+
     private final TrackedEntityService trackedEntityService;
 
     private final EnrollmentService enrollmentService;
@@ -72,10 +75,12 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
     private final EventService eventService;
 
     public DhisResourceRepositoryImpl( @Nonnull OrganizationUnitService organizationUnitService, ProgramMetadataService programMetadataService,
-        @Nonnull TrackedEntityService trackedEntityService, @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
+        @Nonnull ProgramStageMetadataService programStageMetadataService, @Nonnull TrackedEntityService trackedEntityService,
+        @Nonnull EnrollmentService enrollmentService, @Nonnull EventService eventService )
     {
         this.organizationUnitService = organizationUnitService;
         this.programMetadataService = programMetadataService;
+        this.programStageMetadataService = programStageMetadataService;
         this.trackedEntityService = trackedEntityService;
         this.enrollmentService = enrollmentService;
         this.eventService = eventService;
@@ -91,6 +96,8 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 return organizationUnitService.findOneByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case PROGRAM_METADATA:
                 return programMetadataService.findOneByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
+            case PROGRAM_STAGE_METADATA:
+                return programStageMetadataService.findOneByReference( new Reference( dhisResourceId.getId(), ReferenceType.ID ) );
             case TRACKED_ENTITY:
                 return trackedEntityService.findOneByIdRefreshed( dhisResourceId.getId() );
             case PROGRAM_STAGE_EVENT:
@@ -112,6 +119,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
                 return eventService.findOneDeletedById( dhisResourceId.getId() );
             case ORGANIZATION_UNIT:
             case PROGRAM_METADATA:
+            case PROGRAM_STAGE_METADATA:
             case TRACKED_ENTITY:
             case ENROLLMENT:
                 throw new UnsupportedOperationException( "Retrieving deleted " + dhisResourceId.getType() + " DHIS resource items is not supported." );

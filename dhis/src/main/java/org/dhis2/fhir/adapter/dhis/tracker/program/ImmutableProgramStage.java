@@ -68,6 +68,13 @@ public class ImmutableProgramStage implements ProgramStage, ImmutableDhisObject,
 
     @JsonIgnore
     @Override
+    public String getProgramId()
+    {
+        return delegate.getProgramId();
+    }
+
+    @JsonIgnore
+    @Override
     public String getId()
     {
         return delegate.getId();
