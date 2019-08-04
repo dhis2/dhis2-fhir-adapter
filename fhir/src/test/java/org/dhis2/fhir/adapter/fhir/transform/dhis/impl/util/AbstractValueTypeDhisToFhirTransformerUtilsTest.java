@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.model;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,35 +28,51 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.scriptable.Scriptable;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 /**
- * Contains read-only access to a DHIS2 Option Set contains DHIS2 Options.
- * Implementations must guarantee that in read-only implementations only read-only
- * dependent/includes object instances are returned.
+ * Unit tests for {@link AbstractValueTypeDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-@Scriptable
-public interface OptionSet
+public class AbstractValueTypeDhisToFhirTransformerUtilsTest
 {
-    String getId();
+    @Mock
+    private ScriptExecutionContext scriptExecutionContext;
 
-    String getName();
+    @Mock
+    private ValueConverter valueConverter;
 
-    List<? extends Option> getOptions();
+    private AbstractValueTypeDhisToFhirTransformerUtils utils;
 
-    /**
-     * Returns the option for the specified code.
-     *
-     * @param code the code for which the option should be returned.
-     * @return the optional option.
-     */
-    @Nonnull
-    Optional<Option> getOptionalOptionByCode( @Nullable String code );
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Before
+    public void setUp()
+    {
+        utils = Mockito.mock( AbstractValueTypeDhisToFhirTransformerUtils.class, Mockito.withSettings()
+            .useConstructor( scriptExecutionContext, valueConverter ).defaultAnswer( Mockito.CALLS_REAL_METHODS ) );
+    }
+
+    @Test
+    public void isSupportedValueType()
+    {
+        Assert.assertTrue( utils.isSupportedValueType( "integer" ) );
+    }
+
+    @Test
+    public void isSupportedValueTypeNot()
+    {
+        Assert.assertFalse( utils.isSupportedValueType( "Image" ) );
+    }
 }
