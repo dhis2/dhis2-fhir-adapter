@@ -28,18 +28,13 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
-import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
-import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
@@ -51,43 +46,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.function.Function;
 
 /**
  * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
- * program metadata to FHIR Plan Definition.
+ * program stage metadata to FHIR Questionnaire.
  *
  * @param <F> the concrete type of the FHIR resource into which the DHIS2 resource should be transformed.
  * @author volsch
  */
-public abstract class AbstractProgramMetadataToFhirCarePlanTransformer<F extends IBaseResource> extends AbstractReadOnlyDhisMetadataToTypedFhirTransformer<AccessibleScriptedDhisMetadata, F, ProgramMetadataRule>
+public abstract class AbstractProgramStageMetadataToFhirQuestionnaireTransformer<F extends IBaseResource> extends AbstractReadOnlyDhisMetadataToTypedFhirTransformer<AccessibleScriptedDhisMetadata, F, ProgramStageMetadataRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final TrackedEntityMetadataService trackedEntityMetadataService;
-
-    private final TrackedEntityRuleRepository trackedEntityRuleRepository;
-
-    public AbstractProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository )
+    public AbstractProgramStageMetadataToFhirQuestionnaireTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
-        this.trackedEntityMetadataService = trackedEntityMetadataService;
-        this.trackedEntityRuleRepository = trackedEntityRuleRepository;
     }
 
     @Nonnull
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.PROGRAM_METADATA;
+        return DhisResourceType.PROGRAM_STAGE_METADATA;
     }
 
     @Nonnull
     @Override
     protected FhirResourceType getFhirResourceType()
     {
-        return FhirResourceType.PLAN_DEFINITION;
+        return FhirResourceType.QUESTIONNAIRE;
     }
 
     @Nonnull
@@ -99,25 +88,11 @@ public abstract class AbstractProgramMetadataToFhirCarePlanTransformer<F extends
 
     @Nonnull
     @Override
-    public Class<ProgramMetadataRule> getRuleClass()
+    public Class<ProgramStageMetadataRule> getRuleClass()
     {
-        return ProgramMetadataRule.class;
+        return ProgramStageMetadataRule.class;
     }
 
-    protected boolean isApplicableProgram( @Nonnull Program program )
-    {
-        if ( program.isWithoutRegistration() || program.getTrackedEntityTypeId() == null )
-        {
-            return false;
-        }
-
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) ).orElse( null );
-
-        if ( trackedEntityType == null )
-        {
-            return false;
-        }
-
-        return !trackedEntityRuleRepository.findByTypeRefs( trackedEntityType.getAllReferences() ).isEmpty();
-    }
+    @Nonnull
+    protected abstract Function<String, IElement> getTypeFactory();
 }

@@ -155,6 +155,45 @@ public class TrackedEntityServiceImplTest
     }
 
     @Test
+    public void isLocal() throws IOException
+    {
+        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/trackedEntityInstances.json?strategy=CREATE" ) )
+            .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
+            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance.json", StandardCharsets.UTF_8 ) ) )
+            .andExpect( method( HttpMethod.POST ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance-response.json" ), MediaType.APPLICATION_JSON ) );
+
+        final TrackedEntityInstance trackedEntityInstance = new TrackedEntityInstance( trackedEntityType, "Jskdsjeua1s", true );
+        trackedEntityInstance.setOrgUnitId( "pMEnu7BjqMz" );
+
+        try ( final RequestCacheContext cacheContext = requestCacheService.createRequestCacheContext() )
+        {
+            cacheContext.setAttribute( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME,
+                new LocalDhisResourceRepositoryContainerImpl( Collections.singleton( TrackedEntityInstance.class ) ) );
+
+            final TrackedEntityInstance createdTrackedEntityInstance = service.createOrUpdate( trackedEntityInstance );
+            Assert.assertTrue( service.isLocal( "Jskdsjeua1s" ) );
+        }
+    }
+
+    @Test
+    public void isLocalNot()
+    {
+        try ( final RequestCacheContext cacheContext = requestCacheService.createRequestCacheContext() )
+        {
+            Assert.assertFalse( service.isLocal( "Jskdsjeua1s" ) );
+        }
+    }
+
+    @Test
+    public void isLocalNoContextNot()
+    {
+        try ( final RequestCacheContext cacheContext = requestCacheService.createRequestCacheContext() )
+        {
+            Assert.assertFalse( service.isLocal( "Jskdsjeua1s" ) );
+        }
+    }
+
+    @Test
     public void findOneById() throws IOException
     {
         mockServer.expect( requestTo( "http://localhost:8080/api/trackedEntityInstances/Jskdsjeua1s.json?fields=deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
@@ -180,7 +219,7 @@ public class TrackedEntityServiceImplTest
     @Test
     public void create() throws IOException
     {
-        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/trackedEntityInstances/Jskdsjeua1s.json?strategy=CREATE" ) )
+        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/trackedEntityInstances.json?strategy=CREATE" ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance.json", StandardCharsets.UTF_8 ) ) )
             .andExpect( method( HttpMethod.POST ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createTrackedEntityInstance-response.json" ), MediaType.APPLICATION_JSON ) );

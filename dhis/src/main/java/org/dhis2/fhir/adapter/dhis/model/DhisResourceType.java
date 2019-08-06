@@ -36,50 +36,51 @@ import java.util.stream.Collectors;
 
 /**
  * Contains the different types of DHIS2 Resources that are can be created.
+ * The enum values should be listed in the order of the dependencies.
  *
  * @author volsch
  */
 public enum DhisResourceType
 {
     /**
-     * Resource is a tracked entity instance.
-     */
-    TRACKED_ENTITY( "trackedEntityInstances", "te" ),
-
-    /**
-     * Resource is a tracked entity type.
-     */
-    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt" ),
-
-    /**
-     * The program metadata.
-     */
-    PROGRAM_METADATA( "programs", "pm" ),
-
-    /**
-     * The program stage metadata.
-     */
-    PROGRAM_STAGE_METADATA( "programStages", "sm" ),
-
-    /**
-     * Resource is a program instance (aka enrollment).
-     */
-    ENROLLMENT( "enrollments", "en" ),
-
-    /**
-     * Resource is a program stage instance (aka event of a program instance).
-     */
-    PROGRAM_STAGE_EVENT( "events", "ps" ),
-
-    /**
      * Resource is a organisation unit.
      */
-    ORGANIZATION_UNIT( "organisationUnits", "ou" ),
+    ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" ),
 
     /**
      * Resource is a Data Value Set.
      */
-    DATA_VALUE_SET( "dataValueSets", "dvs" );
+    DATA_VALUE_SET( "dataValueSets", "dvs", "DataValueSetRule" ),
+
+    /**
+     * The program stage metadata.
+     */
+    PROGRAM_STAGE_METADATA( "programStages", "sm", "ProgramStageMetadataRule" ),
+
+    /**
+     * The program metadata.
+     */
+    PROGRAM_METADATA( "programs", "pm", "ProgramMetadataRule" ),
+
+    /**
+     * Resource is a tracked entity type.
+     */
+    TRACKED_ENTITY_TYPE( "trackedEntityTypes", "tt", "TrackedEntityTypeRule" ),
+
+    /**
+     * Resource is a tracked entity instance.
+     */
+    TRACKED_ENTITY( "trackedEntityInstances", "te", "TrackedEntityRule" ),
+
+    /**
+     * Resource is a program instance (aka enrollment).
+     */
+    ENROLLMENT( "enrollments", "en", "EnrollmentRule" ),
+
+    /**
+     * Resource is a program stage instance (aka event of a program instance).
+     */
+    PROGRAM_STAGE_EVENT( "events", "ps", "ProgramStageRule" );
 
     private static final Map<String, DhisResourceType> byTypeName = Arrays.stream( values() ).collect( Collectors.toMap( DhisResourceType::getTypeName, v -> v ) );
 
@@ -101,10 +102,13 @@ public enum DhisResourceType
 
     private final String abbreviation;
 
-    DhisResourceType( @Nonnull String typeName, @Nonnull String abbreviation )
+    private final String ruleType;
+
+    DhisResourceType( @Nonnull String typeName, @Nonnull String abbreviation, @Nonnull String ruleType )
     {
         this.typeName = typeName;
         this.abbreviation = abbreviation;
+        this.ruleType = ruleType;
     }
 
     @Nonnull
@@ -117,5 +121,11 @@ public enum DhisResourceType
     public String getAbbreviation()
     {
         return abbreviation;
+    }
+
+    @Nonnull
+    public String getRuleType()
+    {
+        return ruleType;
     }
 }

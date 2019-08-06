@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,15 @@ package org.dhis2.fhir.adapter.dhis.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Writable implementation of {@link OptionSet} that can also be used for
@@ -46,6 +53,9 @@ public class WritableOptionSet implements OptionSet, Serializable
     private String name;
 
     private List<WritableOption> options;
+
+    @JsonIgnore
+    private transient volatile Map<String, WritableOption> optionsByCode;
 
     @Override
     public String getId()
@@ -78,5 +88,22 @@ public class WritableOptionSet implements OptionSet, Serializable
     public void setOptions( List<WritableOption> options )
     {
         this.options = options;
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Option> getOptionalOptionByCode( @Nullable String code )
+    {
+        if ( code == null )
+        {
+            return Optional.empty();
+        }
+
+        if ( optionsByCode == null )
+        {
+            optionsByCode = options.stream().collect( Collectors.toMap( WritableOption::getCode, o -> o ) );
+        }
+
+        return Optional.ofNullable( optionsByCode.get( code ) );
     }
 }

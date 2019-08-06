@@ -111,7 +111,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
     protected static final String GENERATE_URI = "/trackedEntityAttributes/{attributeId}/generate.json";
 
-    protected static final String CREATE_URI = "/trackedEntityInstances/{id}.json?strategy=CREATE";
+    protected static final String CREATE_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
     protected static final String CREATES_URI = "/trackedEntityInstances.json?strategy=CREATE";
 
@@ -152,6 +152,13 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         this.storedItemService = storedItemService;
 
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( TrackedEntityInstance.class, requestCacheService, this );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.TRACKED_ENTITY;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
@@ -223,6 +230,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
     public Optional<TrackedEntityInstance> findOneById( @Nonnull String id )
     {
         return findOneByIdRefreshed( id );
+    }
+
+    @Override
+    public boolean isLocal( @Nonnull String id )
+    {
+        return resourceRepositoryTemplate.isLocal( id );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -467,7 +480,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         try
         {
             clear( trackedEntityInstance );
-            response = restTemplate.postForEntity( CREATE_URI, trackedEntityInstance, ImportSummariesWebMessage.class, trackedEntityInstance.getId() );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( trackedEntityInstance ), ImportSummariesWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {

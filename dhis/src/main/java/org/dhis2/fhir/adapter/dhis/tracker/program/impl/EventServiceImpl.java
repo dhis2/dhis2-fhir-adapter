@@ -45,6 +45,7 @@ import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DataValue;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
@@ -100,7 +101,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
     protected static final String FIND_ID_URI = "/events/{id}.json?fields=" + FIELDS;
 
-    protected static final String CREATE_URI = ID_URI + "?importStrategy=CREATE";
+    protected static final String CREATE_URI = "/events.json?strategy=CREATE";
 
     protected static final String CREATES_URI = "/events.json?strategy=CREATE";
 
@@ -134,6 +135,13 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         this.polledProgramRetriever = polledProgramRetriever;
 
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( Event.class, requestCacheService, this );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.PROGRAM_STAGE_EVENT;
     }
 
     @HystrixCommand( ignoreExceptions = { DhisConflictException.class, UnauthorizedException.class } )
@@ -382,8 +390,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
 
         try
         {
-            response = restTemplate.exchange( CREATE_URI, HttpMethod.PUT, new HttpEntity<>( event ),
-                ImportSummariesWebMessage.class, event.getId() );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( event ), ImportSummariesWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {

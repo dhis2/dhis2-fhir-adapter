@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.spring;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,11 @@ package org.dhis2.fhir.adapter.spring;
  */
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.ObjectProvider;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Object provider for a static non-null object.
@@ -42,7 +44,7 @@ public class StaticObjectProvider<T> implements ObjectProvider<T>
 {
     private final T object;
 
-    public StaticObjectProvider( @Nonnull T object )
+    public StaticObjectProvider( @Nullable T object )
     {
         this.object = object;
     }
@@ -51,6 +53,11 @@ public class StaticObjectProvider<T> implements ObjectProvider<T>
     @Nonnull
     public T getObject( @Nonnull Object... args ) throws BeansException
     {
+        if ( object == null )
+        {
+            throw new BeanCreationException( "Bean has not been provided." );
+        }
+
         return object;
     }
 
@@ -70,6 +77,11 @@ public class StaticObjectProvider<T> implements ObjectProvider<T>
     @Nonnull
     public T getObject() throws BeansException
     {
+        if ( object == null )
+        {
+            throw new BeanCreationException( "Bean has not been provided." );
+        }
+
         return object;
     }
 }

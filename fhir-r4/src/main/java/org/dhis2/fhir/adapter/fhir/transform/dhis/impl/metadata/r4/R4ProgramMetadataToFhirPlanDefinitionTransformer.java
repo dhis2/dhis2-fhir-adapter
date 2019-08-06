@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
@@ -42,7 +43,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirCarePlanTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.AbstractProgramMetadataToFhirPlanDefinitionTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.AccessibleScriptedDhisMetadata;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -50,11 +51,13 @@ import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.Enumerations;
 import org.hl7.fhir.r4.model.PlanDefinition;
 import org.hl7.fhir.r4.model.PlanDefinition.PlanDefinitionActionComponent;
+import org.hl7.fhir.r4.model.ResourceFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * R4 specific version of DHIS2 Program Metadata to FHIR Plan Definition transformer.
@@ -62,9 +65,9 @@ import java.util.Set;
  * @author volsch
  */
 @Component
-public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramMetadataToFhirCarePlanTransformer<PlanDefinition>
+public class R4ProgramMetadataToFhirPlanDefinitionTransformer extends AbstractProgramMetadataToFhirPlanDefinitionTransformer<PlanDefinition>
 {
-    public R4ProgramMetadataToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+    public R4ProgramMetadataToFhirPlanDefinitionTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository )
     {
@@ -86,13 +89,14 @@ public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramM
         final Program dhisProgram = (Program) input.getDhisResource();
         final PlanDefinition fhirPlanDefinition = (PlanDefinition) output;
 
-        if ( !isApplicableProgram( dhisProgram ) )
+        if ( !addSubjectResourceType( dhisProgram, fhirPlanDefinition ) )
         {
             return false;
         }
 
         fhirPlanDefinition.setUrl( dhisProgram.getId() );
-        fhirPlanDefinition.setName( dhisProgram.getName() );
+        fhirPlanDefinition.setName( dhisProgram.getCode() );
+        fhirPlanDefinition.setTitle( dhisProgram.getName() );
         fhirPlanDefinition.setStatus( Enumerations.PublicationStatus.ACTIVE );
         fhirPlanDefinition.setDescription( dhisProgram.getDescription() );
         fhirPlanDefinition.setAction( null );
@@ -109,5 +113,12 @@ public class R4ProgramMetadataToFhirCarePlanTransformer extends AbstractProgramM
         } );
 
         return true;
+    }
+
+    @Nonnull
+    @Override
+    protected Function<String, IElement> getTypeFactory()
+    {
+        return ResourceFactory::createType;
     }
 }

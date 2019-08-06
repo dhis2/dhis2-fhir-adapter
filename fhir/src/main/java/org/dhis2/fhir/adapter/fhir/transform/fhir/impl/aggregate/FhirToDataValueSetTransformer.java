@@ -30,13 +30,16 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.aggregate;
 
 import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSet;
 import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSetService;
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
@@ -51,6 +54,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author David Katuscak
@@ -64,9 +68,11 @@ public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer
         @Nonnull ScriptExecutor scriptExecutor,
         @Nonnull OrganizationUnitService organizationUnitService,
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository,
-        @Nonnull DataValueSetService dataValueSetService )
+        @Nonnull DataValueSetService dataValueSetService,
+        @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( dataValueSetService ), fhirDhisAssignmentRepository );
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( null ), new StaticObjectProvider<>( null ),
+            fhirDhisAssignmentRepository, scriptExecutionContext, valueConverter );
 
         this.dataValueSetService = dataValueSetService;
     }
@@ -90,6 +96,13 @@ public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer
     public Class<DataValueSetRule> getRuleClass()
     {
         return DataValueSetRule.class;
+    }
+
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.ALL;
     }
 
     @Nonnull

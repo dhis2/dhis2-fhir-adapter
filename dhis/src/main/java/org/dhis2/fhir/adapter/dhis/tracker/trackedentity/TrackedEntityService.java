@@ -28,25 +28,22 @@ package org.dhis2.fhir.adapter.dhis.tracker.trackedentity;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
+import org.dhis2.fhir.adapter.dhis.service.DhisPolledService;
+import org.dhis2.fhir.adapter.dhis.service.DhisService;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Service that allows to create, read and update tracked entity instances.
  *
  * @author volsch
  */
-public interface TrackedEntityService
+public interface TrackedEntityService extends DhisService<TrackedEntityInstance>, DhisPolledService<TrackedEntityInstance>
 {
     void updateGeneratedValues( @Nonnull TrackedEntityInstance trackedEntityInstance, @Nonnull TrackedEntityType type,
         @Nonnull Map<RequiredValueType, String> requiredValues );
@@ -56,6 +53,8 @@ public interface TrackedEntityService
 
     @Nonnull
     Optional<TrackedEntityInstance> findOneById( @Nonnull String id );
+
+    boolean isLocal( @Nonnull String id );
 
     @Nonnull
     Collection<TrackedEntityInstance> findByAttrValueRefreshed( @Nonnull String typeId,
@@ -72,8 +71,4 @@ public interface TrackedEntityService
 
     @Nonnull
     DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

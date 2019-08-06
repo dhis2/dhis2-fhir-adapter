@@ -42,6 +42,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
@@ -69,17 +70,22 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
 
     private final TrackedEntityRuleRepository ruleRepository;
 
+    private final ScriptExecutionContext scriptExecutionContext;
+
     private final ValueConverter valueConverter;
 
     public TrackedEntityToFhirRequestResolver(
         @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull TrackedEntityRuleRepository ruleRepository,
+        @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull ValueConverter valueConverter )
     {
         super( fhirClientRepository );
+
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.ruleRepository = ruleRepository;
+        this.scriptExecutionContext = scriptExecutionContext;
         this.valueConverter = valueConverter;
     }
 
@@ -95,6 +101,7 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
+
         return ruleRepository.findAllByType( tei.getType().getAllReferences() ).stream()
             .sorted( DhisToFhirRuleComparator.INSTANCE ).collect( Collectors.toList() );
     }
@@ -105,6 +112,7 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
     {
         final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
         final TrackedEntityType type = tei.getType();
+
         return rules.stream().map( ri -> new RuleInfo<>( (TrackedEntityRule) ri.getRule(), ri.getDhisDataReferences() ) )
             .filter( ri -> type.isReference( ri.getRule().getTrackedEntity().getTrackedEntityReference() ) &&
                 ri.getRule().getTrackedEntity().isEnabled() && ri.getRule().getTrackedEntity().isExpEnabled() )
@@ -115,12 +123,13 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
     @Override
     public ScriptedDhisResource convert( @Nonnull DhisResource dhisResource, @Nonnull DhisRequest dhisRequest )
     {
-        final TrackedEntityInstance tei = (TrackedEntityInstance) dhisResource;
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( new Reference( tei.getTypeId(), ReferenceType.ID ) )
-            .orElseThrow( () -> new TransformerDataException( "Tracked entity type " + tei.getTypeId() + " of tracked entity instance " +
-                tei.getId() + " could not be found." ) );
+        final TrackedEntityInstance trackedEntityInstance = (TrackedEntityInstance) dhisResource;
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( new Reference( trackedEntityInstance.getTypeId(), ReferenceType.ID ) )
+            .orElseThrow( () -> new TransformerDataException( "Tracked entity type " + trackedEntityInstance.getTypeId() +
+                " of tracked entity instance " + trackedEntityInstance.getId() + " could not be found." ) );
         final TrackedEntityAttributes trackedEntityAttributes = trackedEntityMetadataService.getAttributes();
+
         return new ImmutableScriptedTrackedEntityInstance( new WritableScriptedTrackedEntityInstance(
-            trackedEntityAttributes, trackedEntityType, tei, valueConverter ) );
+            trackedEntityAttributes, trackedEntityType, trackedEntityInstance, scriptExecutionContext, valueConverter ) );
     }
 }

@@ -39,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
@@ -88,7 +89,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
     protected static final String ENROLLMENT_ID_URI = "/enrollments/{id}.json";
 
-    protected static final String ENROLLMENT_CREATE_URI = "/enrollments/{id}.json?importStrategy=CREATE";
+    protected static final String ENROLLMENT_CREATE_URI = "/enrollments.json?strategy=CREATE";
 
     protected static final String ENROLLMENT_CREATES_URI = "/enrollments.json?strategy=CREATE";
 
@@ -115,6 +116,13 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
         this.eventService = eventService;
 
         this.resourceRepositoryTemplate = new LocalDhisResourceRepositoryTemplate<>( Enrollment.class, requestCacheService, this );
+    }
+
+    @Nonnull
+    @Override
+    public DhisResourceType getDhisResourceType()
+    {
+        return DhisResourceType.ENROLLMENT;
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
@@ -229,8 +237,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
         try
         {
-            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.PUT, new HttpEntity<>( enrollment ),
-                ImportSummariesWebMessage.class, enrollment.getId() );
+            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.POST, new HttpEntity<>( enrollment ), ImportSummariesWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {

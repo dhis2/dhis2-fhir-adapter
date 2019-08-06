@@ -263,10 +263,10 @@ public class EventServiceImplTest
     @Test
     public void create() throws IOException
     {
-        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/events/jShdkweusi2.json?importStrategy=CREATE" ) )
+        mockServer.expect( ExpectedCount.once(), requestTo( "http://localhost:8080/api/events.json?strategy=CREATE" ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createEvent.json", StandardCharsets.UTF_8 ) ) )
-            .andExpect( method( HttpMethod.PUT ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createEvent-response.json" ), MediaType.APPLICATION_JSON ) );
+            .andExpect( method( HttpMethod.POST ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/createEvent-response.json" ), MediaType.APPLICATION_JSON ) );
 
         final WritableDataValue dataValue1 = new WritableDataValue();
         dataValue1.setDataElementId( "dsf84sfsdf" );

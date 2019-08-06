@@ -175,6 +175,68 @@ public class LocalDhisResourceRepositoryTemplateTest
     }
 
     @Test
+    public void isLocal()
+    {
+        final TrackedEntityInstance tei = new TrackedEntityInstance();
+        final Object resourceKey = new Object();
+
+        tei.setLocal( true );
+
+        Mockito.doReturn( requestCacheContext ).when( requestCacheService ).getCurrentRequestCacheContext();
+        Mockito.doReturn( resourceRepositoryContainer ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME ),
+            Mockito.eq( LocalDhisResourceRepositoryContainer.class ) );
+        Mockito.doReturn( resourceKey ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME ), Mockito.eq( Object.class ) );
+        Mockito.doReturn( resourceRepository ).when( resourceRepositoryContainer ).getRepository( Mockito.eq( TrackedEntityInstance.class ), Mockito.same( persistCallback ) );
+        Mockito.doReturn( Optional.of( tei ) ).when( resourceRepository ).findOneById( Mockito.eq( "h1234567890" ) );
+
+        Assert.assertTrue( template.isLocal( "h1234567890" ) );
+
+        Mockito.verifyZeroInteractions( persistCallback );
+    }
+
+    @Test
+    public void isLocalIncludedNot()
+    {
+        final TrackedEntityInstance tei = new TrackedEntityInstance();
+        final Object resourceKey = new Object();
+
+        Mockito.doReturn( requestCacheContext ).when( requestCacheService ).getCurrentRequestCacheContext();
+        Mockito.doReturn( resourceRepositoryContainer ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME ),
+            Mockito.eq( LocalDhisResourceRepositoryContainer.class ) );
+        Mockito.doReturn( resourceKey ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME ), Mockito.eq( Object.class ) );
+        Mockito.doReturn( resourceRepository ).when( resourceRepositoryContainer ).getRepository( Mockito.eq( TrackedEntityInstance.class ), Mockito.same( persistCallback ) );
+        Mockito.doReturn( Optional.of( tei ) ).when( resourceRepository ).findOneById( Mockito.eq( "h1234567890" ) );
+
+        Assert.assertFalse( template.isLocal( "h1234567890" ) );
+
+        Mockito.verifyZeroInteractions( persistCallback );
+    }
+
+    @Test
+    public void isLocalNotIncluded()
+    {
+        final TrackedEntityInstance tei = new TrackedEntityInstance();
+        final Object resourceKey = new Object();
+
+        Mockito.doReturn( requestCacheContext ).when( requestCacheService ).getCurrentRequestCacheContext();
+        Mockito.doReturn( resourceRepositoryContainer ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.CONTAINER_REQUEST_CACHE_ATTRIBUTE_NAME ),
+            Mockito.eq( LocalDhisResourceRepositoryContainer.class ) );
+        Mockito.doReturn( resourceKey ).when( requestCacheContext ).getAttribute(
+            Mockito.eq( LocalDhisResourceRepositoryTemplate.RESOURCE_KEY_REQUEST_CACHE_ATTRIBUTE_NAME ), Mockito.eq( Object.class ) );
+        Mockito.doReturn( resourceRepository ).when( resourceRepositoryContainer ).getRepository( Mockito.eq( TrackedEntityInstance.class ), Mockito.same( persistCallback ) );
+        Mockito.doReturn( Optional.empty() ).when( resourceRepository ).findOneById( Mockito.eq( "h1234567890" ) );
+
+        Assert.assertFalse( template.isLocal( "h1234567890" ) );
+
+        Mockito.verifyZeroInteractions( persistCallback );
+    }
+
+    @Test
     public void findOneByIdNoLocal()
     {
         final TrackedEntityInstance tei = new TrackedEntityInstance();

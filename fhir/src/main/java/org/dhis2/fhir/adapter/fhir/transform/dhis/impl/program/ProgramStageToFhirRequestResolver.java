@@ -38,7 +38,6 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityAttributes;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityInstance;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
@@ -47,6 +46,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirRequestResolver;
@@ -80,6 +80,8 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
 
     private final TrackedEntityMetadataService trackedEntityMetadataService;
 
+    private final ScriptExecutionContext scriptExecutionContext;
+
     private final ValueConverter valueConverter;
 
     public ProgramStageToFhirRequestResolver(
@@ -88,13 +90,16 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
         @Nonnull ProgramStageRuleRepository ruleRepository,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
+        @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull ValueConverter valueConverter )
     {
         super( fhirClientRepository );
+
         this.programMetadataService = programMetadataService;
         this.ruleRepository = ruleRepository;
         this.trackedEntityService = trackedEntityService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
+        this.scriptExecutionContext = scriptExecutionContext;
         this.valueConverter = valueConverter;
     }
 
@@ -110,8 +115,8 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         final ScriptedEvent event = (ScriptedEvent) dhisResource;
-        return ruleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null ).stream()
-            .sorted().collect( Collectors.toList() );
+        return ruleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null )
+            .stream().sorted().collect( Collectors.toList() );
     }
 
     @Nonnull
@@ -135,22 +140,18 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     {
         final Event event = (Event) dhisResource;
 
-        final TrackedEntityInstance tei = trackedEntityService.findOneById( event.getTrackedEntityInstanceId() )
-            .orElseThrow( () -> new TransformerDataException( "Tracked entity instance " + event.getTrackedEntityInstanceId() +
-                " of event " + event.getId() + " could not be found." ) );
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( new Reference( tei.getTypeId(), ReferenceType.ID ) )
-            .orElseThrow( () -> new TransformerDataException( "Tracked entity type " + tei.getTypeId() + " of tracked entity instance " +
-                tei.getId() + " could not be found." ) );
-        final TrackedEntityAttributes trackedEntityAttributes = trackedEntityMetadataService.getAttributes();
-        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new ImmutableScriptedTrackedEntityInstance(
-            new WritableScriptedTrackedEntityInstance( trackedEntityAttributes, trackedEntityType, tei, valueConverter ) );
-
         final Program program = programMetadataService.findMetadataByReference( new Reference( event.getProgramId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Program " + event.getProgramId() + " of event " + event.getId() + " could not be found." ) );
         final ProgramStage programStage = program.getOptionalStage( new Reference( event.getProgramStageId(), ReferenceType.ID ) )
             .orElseThrow( () -> new TransformerDataException( "Program stage " + event.getProgramStageId() + " of event " + event.getId() +
                 " could not be found as part of program " + event.getProgramId() + "." ) );
-        return new ImmutableScriptedEvent( new WritableScriptedEvent( program, programStage, event,
-            scriptedTrackedEntityInstance, valueConverter ) );
+        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference( Reference.createIdReference( program.getTrackedEntityTypeId() ) )
+            .orElseThrow( () -> new TransformerDataException( "Tracked entity type " + program.getTrackedEntityTypeId() + " of program " + program.getId() + "." ) );
+
+        final TrackedEntityAttributes trackedEntityAttributes = trackedEntityMetadataService.getAttributes();
+        final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = new ImmutableScriptedTrackedEntityInstance( new WritableScriptedTrackedEntityInstance(
+            trackedEntityMetadataService, trackedEntityService, trackedEntityAttributes, trackedEntityType, event.getTrackedEntityInstanceId(), scriptExecutionContext, valueConverter ) );
+
+        return new ImmutableScriptedEvent( new WritableScriptedEvent( program, programStage, event, scriptedTrackedEntityInstance, valueConverter ) );
     }
 }

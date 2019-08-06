@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,10 @@ package org.dhis2.fhir.adapter.dhis.model;
 
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Contains read-only access to a DHIS2 Option Set contains DHIS2 Options.
@@ -47,4 +50,13 @@ public interface OptionSet
     String getName();
 
     List<? extends Option> getOptions();
+
+    /**
+     * Returns the option for the specified code.
+     *
+     * @param code the code for which the option should be returned.
+     * @return the optional option.
+     */
+    @Nonnull
+    Optional<Option> getOptionalOptionByCode( @Nullable String code );
 }

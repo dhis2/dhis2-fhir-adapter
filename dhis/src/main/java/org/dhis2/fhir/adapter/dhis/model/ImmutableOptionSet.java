@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -76,5 +78,15 @@ public class ImmutableOptionSet implements OptionSet, ImmutableDhisObject, Seria
     public List<Option> getOptions()
     {
         return (delegate.getOptions() == null) ? null : delegate.getOptions().stream().map( ImmutableOption::new ).collect( Collectors.toList() );
+    }
+
+    @JsonIgnore
+    @Nonnull
+    @Override
+    public Optional<Option> getOptionalOptionByCode( @Nullable String code )
+    {
+        final Option option = delegate.getOptionalOptionByCode( code ).orElse( null );
+
+        return option == null ? Optional.empty() : Optional.of( option instanceof WritableOption ? new ImmutableOption( (WritableOption) option ) : option );
     }
 }

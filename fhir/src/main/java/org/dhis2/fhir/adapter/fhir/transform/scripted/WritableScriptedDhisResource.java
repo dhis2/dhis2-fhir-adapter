@@ -29,18 +29,12 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionForbidden;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
 
 /**
  * Implementation of writable scripted resource. The included metadata object can be accessed
@@ -49,18 +43,11 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-public class WritableScriptedDhisResource implements AccessibleScriptedDhisResource, Serializable
+public class WritableScriptedDhisResource extends AbstractWritableScriptedDhisResource implements AccessibleScriptedDhisResource
 {
-    private static final long serialVersionUID = 8245822986881397171L;
-
-    protected final DhisResource resource;
-
-    protected final ScriptExecutionContext scriptExecutionContext;
-
     public WritableScriptedDhisResource( @Nonnull DhisResource resource, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
-        this.resource = resource;
-        this.scriptExecutionContext = scriptExecutionContext;
+        super( resource, scriptExecutionContext );
     }
 
     @ScriptExecutionForbidden
@@ -72,72 +59,6 @@ public class WritableScriptedDhisResource implements AccessibleScriptedDhisResou
             throw new FatalTransformerException( "Resource instance cannot be accessed within script execution." );
         }
 
-        return resource;
-    }
-
-    @Nullable
-    @Override
-    public String getId()
-    {
-        return resource.getId();
-    }
-
-    @Nonnull
-    @Override
-    public DhisResourceType getResourceType()
-    {
-        return resource.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return resource.getResourceId();
-    }
-
-    @Override
-    public boolean isNewResource()
-    {
-        return resource.isNewResource();
-    }
-
-    @Override
-    public boolean isLocal()
-    {
-        return resource.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return resource.isDeleted();
-    }
-
-    @Nullable
-    @Override
-    public ZonedDateTime getLastUpdated()
-    {
-        return resource.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return resource.getOrgUnitId();
-    }
-
-    @Nullable
-    @Override
-    public ScriptedTrackedEntityInstance getTrackedEntityInstance()
-    {
-        return null;
-    }
-
-    @Override
-    public void validate() throws TransformerException
-    {
-        // nothing to be done
+        return getInternalResource();
     }
 }

@@ -28,8 +28,6 @@ package org.dhis2.fhir.adapter.dhis.service;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.data.model.ProcessedItemInfo;
-import org.dhis2.fhir.adapter.dhis.metadata.model.DhisSyncGroup;
 import org.dhis2.fhir.adapter.dhis.model.DhisMetadata;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
@@ -37,11 +35,7 @@ import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Service that provides access to DHIS2 metadata.
@@ -49,7 +43,7 @@ import java.util.function.Consumer;
  * @param <T> the concrete type of the metadata.
  * @author volsch
  */
-public interface DhisMetadataService<T extends DhisResource & DhisMetadata>
+public interface DhisMetadataService<T extends DhisResource & DhisMetadata> extends DhisPolledService<T>, DhisService<T>
 {
     @Nonnull
     Optional<T> findMetadataByReference( @Nonnull Reference reference );
@@ -62,8 +56,4 @@ public interface DhisMetadataService<T extends DhisResource & DhisMetadata>
 
     @Nonnull
     DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
-
-    @Nonnull
-    Instant poll( @Nonnull DhisSyncGroup group, @Nonnull Instant lastUpdated, int toleranceMillis,
-        int maxSearchCount, @Nonnull Set<String> excludedStoredBy, @Nonnull Consumer<Collection<ProcessedItemInfo>> consumer );
 }

@@ -28,12 +28,15 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.unsupported;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.OrganizationUnitRule;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
@@ -48,10 +51,11 @@ import javax.annotation.Nonnull;
 @Component
 public class OrganizationUnitFhirToDhisTransformer extends AbstractUnsupportedFhirToDhisTransformer<OrganizationUnit, OrganizationUnitRule>
 {
-    public OrganizationUnitFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository )
+    public OrganizationUnitFhirToDhisTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull OrganizationUnitService organizationUnitService,
+        @Nonnull ObjectProvider<TrackedEntityMetadataService> trackedEntityMetadataService, @Nonnull ObjectProvider<TrackedEntityService> trackedEntityService,
+        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
-        super( scriptExecutor, organizationUnitService, trackedEntityService, fhirDhisAssignmentRepository );
+        super( scriptExecutor, organizationUnitService, trackedEntityService, trackedEntityMetadataService, fhirDhisAssignmentRepository, scriptExecutionContext, valueConverter );
     }
 
     @Nonnull

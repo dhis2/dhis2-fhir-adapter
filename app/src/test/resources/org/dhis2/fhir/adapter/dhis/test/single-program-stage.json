@@ -1,0 +1,99 @@
+{
+  "name": "Birth",
+  "id": "MsWxkiY6tMS",
+  "program": {
+    "id": "EPDyQuoRnXk"
+  },
+  "generatedByEnrollmentDate": false,
+  "repeatable": false,
+  "minDaysFromStart": 0,
+  "programStageDataElements": [
+    {
+      "id": "uRAfo19lLtY",
+      "compulsory": false,
+      "allowProvidedElsewhere": false,
+      "dataElement": {
+        "code": "DE_391382",
+        "name": "MCH Apgar comment",
+        "id": "wquzcS4X6He",
+        "formName": "Apgar comment",
+        "valueType": "TEXT",
+        "optionSetValue": false
+      }
+    },
+    {
+      "id": "Ije8HSPh71d",
+      "compulsory": false,
+      "allowProvidedElsewhere": false,
+      "dataElement": {
+        "code": "DE_2006098",
+        "name": "MCH Apgar Score",
+        "id": "uzKeaNjgQz9",
+        "formName": "Apgar Score",
+        "valueType": "NUMBER",
+        "optionSetValue": false
+      }
+    },
+    {
+      "id": "GLrVTw75zSK",
+      "compulsory": false,
+      "allowProvidedElsewhere": false,
+      "dataElement": {
+        "code": "DE_2005736",
+        "name": "MCH Weight (g)",
+        "id": "BnplxU2jGvX",
+        "formName": "Weight (g)",
+        "valueType": "NUMBER",
+        "optionSetValue": false
+      }
+    },
+    {
+      "id": "aQd5KKFge1U",
+      "compulsory": false,
+      "allowProvidedElsewhere": false,
+      "dataElement": {
+        "code": "DE_2006101",
+        "name": "MCH BCG dose",
+        "id": "Lon4lYDF0SH",
+        "formName": "BCG dose",
+        "valueType": "BOOLEAN",
+        "optionSetValue": false
+      }
+    },
+    {
+      "id": "lm3Cxju7CL0",
+      "compulsory": false,
+      "allowProvidedElsewhere": false,
+      "dataElement": {
+        "code": "DE_2006104",
+        "name": "MCH OPV dose",
+        "id": "ft7iD5ZzPxJ",
+        "formName": "OPV dose",
+        "valueType": "TEXT",
+        "optionSetValue": true,
+        "optionSet": {
+          "name": "MNCH Polio doses (0-3)",
+          "id": "kzgQRhOCadd",
+          "options": [
+            {
+              "code": "0",
+              "name": "Dose 0"
+            },
+            {
+              "code": "1",
+              "name": "Dose 1"
+            },
+            {
+              "code": "2",
+              "name": "Dose 2"
+            },
+            {
+              "code": "3",
+              "name": "Dose 3"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
