@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.spring;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.listener;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,60 +28,15 @@ package org.dhis2.fhir.adapter.spring;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.ObjectProvider;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
+import org.springframework.stereotype.Component;
 
 /**
- * Object provider for a static non-null object.
+ * Event listener that prepares {@link DataValueSetRule} class before saving.
  *
- * @param <T> the concrete type of the object.
+ * @author David Katuscak
  */
-public class StaticObjectProvider<T> implements ObjectProvider<T>
+@Component
+public class DataValueSetRuleEventListener extends AbstractRuleEventListener<DataValueSetRule>
 {
-    private final T object;
-
-    public StaticObjectProvider( @Nullable T object )
-    {
-        this.object = object;
-    }
-
-    @Override
-    @Nonnull
-    public T getObject( @Nonnull Object... args ) throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
-
-        return object;
-    }
-
-    @Override
-    public T getIfAvailable() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    public T getIfUnique() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    @Nonnull
-    public T getObject() throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
-
-        return object;
-    }
 }

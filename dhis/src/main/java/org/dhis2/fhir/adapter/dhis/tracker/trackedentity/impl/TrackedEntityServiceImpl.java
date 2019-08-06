@@ -47,8 +47,8 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
-import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.sync.DhisLastUpdated;
@@ -306,10 +306,10 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
 
         trackedEntityInstances.forEach( this::clear );
 
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( create ? CREATES_URI : UPDATES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = trackedEntityInstances.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
@@ -388,10 +388,10 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         }
 
         final List<TrackedEntityInstance> trackedEntityInstances = ids.stream().map( TrackedEntityInstance::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( DELETES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( DELETES_URI, new TrackedEntityInstances( trackedEntityInstances ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = trackedEntityInstances.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
@@ -470,7 +470,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
     {
         final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
 
         if ( trackedEntityInstance.getId() == null )
         {
@@ -480,7 +480,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         try
         {
             clear( trackedEntityInstance );
-            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( trackedEntityInstance ), ImportSummaryWebMessage.class );
+            response = restTemplate.exchange( CREATE_URI, HttpMethod.POST, new HttpEntity<>( trackedEntityInstance ), ImportSummariesWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {
@@ -492,7 +492,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
             throw e;
         }
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.isNotSuccessful() )
         {
@@ -513,12 +513,12 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         final DhisSyncGroup syncGroup = storedItemService.findSyncGroupById( DhisSyncGroup.DEFAULT_ID )
             .orElseThrow( () -> new DhisResourceException( "Could not load default DHIS2 sync group." ) );
 
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
         try
         {
             clear( trackedEntityInstance );
             response = restTemplate.exchange( UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( trackedEntityInstance ),
-                ImportSummaryWebMessage.class, trackedEntityInstance.getId() );
+                ImportSummariesWebMessage.class, trackedEntityInstance.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -528,7 +528,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
             }
             throw e;
         }
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         if ( result.getStatus() != Status.OK )
         {
             throw new DhisImportUnsuccessfulException( "Response indicates an unsuccessful import of tracked entity instance: " + result.getStatus() );

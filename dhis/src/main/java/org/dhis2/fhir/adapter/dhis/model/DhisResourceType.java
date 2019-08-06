@@ -48,6 +48,11 @@ public enum DhisResourceType
     ORGANIZATION_UNIT( "organisationUnits", "ou", "OrganizationUnitRule" ),
 
     /**
+     * Resource is a Data Value Set.
+     */
+    DATA_VALUE_SET( "dataValueSets", "dvs", "DataValueSetRule" ),
+
+    /**
      * The program stage metadata.
      */
     PROGRAM_STAGE_METADATA( "programStages", "sm", "ProgramStageMetadataRule" ),

@@ -94,7 +94,8 @@ public class ProgramStageMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceIdNotFound()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programStages/93783.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programStages/93783.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid," +
+            "compulsory," +
             "allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withStatus( HttpStatus.NOT_FOUND ).body( "{}" ).contentType( MediaType.APPLICATION_JSON ) );
 
@@ -105,7 +106,8 @@ public class ProgramStageMetadataServiceImplTest
     @Test( expected = HttpServerErrorException.class )
     public void findMetadataByReferenceIdServerError()
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programStages/93783.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programStages/93783.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid," +
+            "compulsory," +
             "allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( MockRestResponseCreators.withServerError() );
         service.findMetadataByReference( new Reference( "93783", ReferenceType.ID ) );
@@ -114,7 +116,8 @@ public class ProgramStageMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceName() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programStages.json?paging=false&fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programStages.json?paging=false&fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid," +
+            "compulsory," +
             "allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D&filter=name:eq:Birth" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/programStages.json" ), MediaType.APPLICATION_JSON ) );
 
@@ -126,7 +129,8 @@ public class ProgramStageMetadataServiceImplTest
     @Test
     public void findMetadataByReferenceNameNotFound() throws IOException
     {
-        mockServer.expect( requestTo( "http://localhost:8080/api/programStages.json?paging=false&fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory," +
+        mockServer.expect( requestTo( "http://localhost:8080/api/programStages.json?paging=false&fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid," +
+            "compulsory," +
             "allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D&filter=name:eq:xBirth" ) ).andExpect( method( HttpMethod.GET ) )
             .andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/emptyPrograms.json" ), MediaType.APPLICATION_JSON ) );
 

@@ -42,8 +42,8 @@ import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
+import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
-import org.dhis2.fhir.adapter.dhis.model.ImportSummaryWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.Status;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
@@ -215,7 +215,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
     @Nonnull
     protected Enrollment _create( @Nonnull Enrollment enrollment )
     {
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
 
         if ( enrollment.getId() == null )
         {
@@ -237,7 +237,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
 
         try
         {
-            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.POST, new HttpEntity<>( enrollment ), ImportSummaryWebMessage.class );
+            response = restTemplate.exchange( ENROLLMENT_CREATE_URI, HttpMethod.POST, new HttpEntity<>( enrollment ), ImportSummariesWebMessage.class );
         }
         catch ( HttpClientErrorException e )
         {
@@ -249,7 +249,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
             throw e;
         }
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.isNotSuccessful() )
         {
@@ -290,11 +290,11 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
         // update of included events is not supported
         enrollment.setEvents( Collections.emptyList() );
 
-        final ResponseEntity<ImportSummaryWebMessage> response;
+        final ResponseEntity<ImportSummariesWebMessage> response;
         try
         {
             response = restTemplate.exchange( ENROLLMENT_UPDATE_URI, HttpMethod.PUT, new HttpEntity<>( enrollment ),
-                ImportSummaryWebMessage.class, enrollment.getId() );
+                ImportSummariesWebMessage.class, enrollment.getId() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -306,7 +306,7 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
             throw e;
         }
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
 
         if ( result.getStatus() != Status.OK )
         {
@@ -334,10 +334,10 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
         final List<Enrollment> enrollments = resources.stream().sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
         enrollments.forEach( e -> e.setEvents( Collections.emptyList() ) );
 
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( create ? ENROLLMENT_CREATES_URI : ENROLLMENT_UPDATES_URI, new DhisEnrollments( enrollments ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( create ? ENROLLMENT_CREATES_URI : ENROLLMENT_UPDATES_URI, new DhisEnrollments( enrollments ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = enrollments.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )
@@ -413,10 +413,10 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
         }
 
         final List<Enrollment> Enrollments = ids.stream().map( Enrollment::new ).sorted( DhisResourceComparator.INSTANCE ).collect( Collectors.toList() );
-        final ResponseEntity<ImportSummaryWebMessage> response =
-            restTemplate.postForEntity( ENROLLMENT_DELETES_URI, new DhisEnrollments( Enrollments ), ImportSummaryWebMessage.class );
+        final ResponseEntity<ImportSummariesWebMessage> response =
+            restTemplate.postForEntity( ENROLLMENT_DELETES_URI, new DhisEnrollments( Enrollments ), ImportSummariesWebMessage.class );
 
-        final ImportSummaryWebMessage result = Objects.requireNonNull( response.getBody() );
+        final ImportSummariesWebMessage result = Objects.requireNonNull( response.getBody() );
         final int size = Enrollments.size();
 
         if ( result.getStatus() != Status.OK || result.getResponse() == null || result.getResponse().getImportSummaries().size() != size )

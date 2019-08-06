@@ -42,6 +42,7 @@ public enum TransformDataType
     DHIS_TRACKED_ENTITY_INSTANCE( null ),
     DHIS_ENROLLMENT( null ),
     DHIS_EVENT( null ),
+    DHIS_DATA_VALUE_SET( null ),
     FHIR_ENCOUNTER( FhirResourceType.ENCOUNTER ),
     FHIR_LOCATION( FhirResourceType.LOCATION ),
     FHIR_ORGANIZATION( FhirResourceType.ORGANIZATION ),
@@ -56,7 +57,8 @@ public enum TransformDataType
     FHIR_PLAN_DEFINITION( FhirResourceType.PLAN_DEFINITION ),
     FHIR_QUESTIONNAIRE( FhirResourceType.QUESTIONNAIRE ),
     FHIR_CARE_PLAN( FhirResourceType.CARE_PLAN ),
-    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE );
+    FHIR_QUESTIONNAIRE_RESPONSE( FhirResourceType.QUESTIONNAIRE_RESPONSE ),
+    FHIR_MEASURE_REPORT( FhirResourceType.MEASURE_REPORT );
 
     private final FhirResourceType fhirResourceType;
 

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.spring;
+package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,60 +28,26 @@ package org.dhis2.fhir.adapter.spring;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.ObjectProvider;
+import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
+import org.dhis2.fhir.adapter.scriptable.Scriptable;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.List;
 
 /**
- * Object provider for a static non-null object.
+ * Mutable or immutable data value set resource that can be used by scripts safely.
  *
- * @param <T> the concrete type of the object.
+ * @author David Katuscak
  */
-public class StaticObjectProvider<T> implements ObjectProvider<T>
+@Scriptable
+public interface ScriptedDataValueSet extends ScriptedDhisResource
 {
-    private final T object;
-
-    public StaticObjectProvider( @Nullable T object )
-    {
-        this.object = object;
-    }
-
-    @Override
     @Nonnull
-    public T getObject( @Nonnull Object... args ) throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
+    String getDataSetId();
 
-        return object;
-    }
-
-    @Override
-    public T getIfAvailable() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    public T getIfUnique() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
     @Nonnull
-    public T getObject() throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
+    String getPeriod();
 
-        return object;
-    }
+    @Nonnull
+    List<WritableDataValue> getDataValues();
 }

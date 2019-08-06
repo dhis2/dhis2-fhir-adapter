@@ -1,7 +1,7 @@
-package org.dhis2.fhir.adapter.spring;
+package org.dhis2.fhir.adapter.dhis.model;
 
 /*
- * Copyright (c) 2004-2019, University of Oslo
+ * Copyright (c) 2004-2018, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,60 +28,33 @@ package org.dhis2.fhir.adapter.spring;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.ObjectProvider;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
- * Object provider for a static non-null object.
+ * The web message that contains (1 to many) import summaries for creating and updating
+ * DHIS2 resources.
  *
- * @param <T> the concrete type of the object.
+ * @author David Katuscak
  */
-public class StaticObjectProvider<T> implements ObjectProvider<T>
+public class ImportSummariesWebMessage extends WebMessage
 {
-    private final T object;
+    private static final long serialVersionUID = -7713823944527785249L;
 
-    public StaticObjectProvider( @Nullable T object )
+    private ImportSummaries response;
+
+    public ImportSummaries getResponse()
     {
-        this.object = object;
+        return response;
     }
 
-    @Override
-    @Nonnull
-    public T getObject( @Nonnull Object... args ) throws BeansException
+    public void setResponse( ImportSummaries response )
     {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
-
-        return object;
+        this.response = response;
     }
 
-    @Override
-    public T getIfAvailable() throws BeansException
+    public boolean isNotSuccessful()
     {
-        return object;
-    }
-
-    @Override
-    public T getIfUnique() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    @Nonnull
-    public T getObject() throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
-
-        return object;
+        return (getStatus() != Status.OK) ||
+            (getResponse().getImportSummaries().size() != 1) ||
+            (getResponse().getImportSummaries().get( 0 ).getStatus() != ImportStatus.SUCCESS) ||
+            (getResponse().getImportSummaries().get( 0 ).getReference() == null);
     }
 }

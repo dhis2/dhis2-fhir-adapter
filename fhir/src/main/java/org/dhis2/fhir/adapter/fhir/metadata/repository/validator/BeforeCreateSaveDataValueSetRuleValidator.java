@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.spring;
+package org.dhis2.fhir.adapter.fhir.metadata.repository.validator;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,60 +28,34 @@ package org.dhis2.fhir.adapter.spring;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.ObjectProvider;
+import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.TransformDataType;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 /**
- * Object provider for a static non-null object.
+ * Spring Data REST validator for {@link DataValueSetRule}.
  *
- * @param <T> the concrete type of the object.
+ * @author David Katuscak
  */
-public class StaticObjectProvider<T> implements ObjectProvider<T>
+@Component
+public class BeforeCreateSaveDataValueSetRuleValidator extends AbstractBeforeCreateSaveRuleValidator<DataValueSetRule>
+    implements MetadataValidator<DataValueSetRule>
 {
-    private final T object;
-
-    public StaticObjectProvider( @Nullable T object )
+    public BeforeCreateSaveDataValueSetRuleValidator( @Nonnull EntityManager entityManager )
     {
-        this.object = object;
+        super( DataValueSetRule.class, entityManager );
     }
 
-    @Override
-    @Nonnull
-    public T getObject( @Nonnull Object... args ) throws BeansException
+    @Override protected void doValidate( @Nonnull DataValueSetRule rule, @Nonnull Errors errors )
     {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
+        validate( rule, TransformDataType.DHIS_DATA_VALUE_SET, errors );
 
-        return object;
-    }
-
-    @Override
-    public T getIfAvailable() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    public T getIfUnique() throws BeansException
-    {
-        return object;
-    }
-
-    @Override
-    @Nonnull
-    public T getObject() throws BeansException
-    {
-        if ( object == null )
-        {
-            throw new BeanCreationException( "Bean has not been provided." );
-        }
-
-        return object;
+        //TODO: Do I need to validate some script? E.g. as in Enrollment validator?
+        BeforeCreateSaveFhirResourceMappingValidator.checkValidOrgLookupScript( errors, "DataValueSetRule.", "orgUnitLookupScript", rule.getFhirResourceType(), rule.getOrgUnitLookupScript() );
+        BeforeCreateSaveFhirResourceMappingValidator.checkValidLocationLookupScript( errors, "DataValueSetRule.", "locationLookupScript", rule.getFhirResourceType(), rule.getLocationLookupScript() );
     }
 }
