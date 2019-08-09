@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.server.provider.dstu3;
+package org.dhis2.fhir.adapter.fhir.server.provider.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -41,8 +41,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisRepository;
 import org.dhis2.fhir.adapter.fhir.repository.FhirRepository;
 import org.dhis2.fhir.adapter.fhir.server.provider.AbstractReadWriteResourceProvider;
-import org.hl7.fhir.dstu3.model.MeasureReport;
-import org.springframework.stereotype.Component;
+import org.hl7.fhir.r4.model.Measure;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,25 +49,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DSTU3 resource provider
+ * r4 resource provider
  *
  * @author David Katuscak
  */
-@Component
-public class Dstu3MeasureReportResourceProvider extends AbstractReadWriteResourceProvider<MeasureReport>
+public class R4MeasureResourceProvider extends AbstractReadWriteResourceProvider<Measure>
 {
-    public Dstu3MeasureReportResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
+    public R4MeasureResourceProvider( @Nonnull FhirClientResourceRepository fhirClientResourceRepository,
         @Nonnull FhirClientSystemRepository fhirClientSystemRepository,
         @Nonnull FhirRepository fhirRepository, @Nonnull DhisRepository dhisRepository )
     {
-        super( MeasureReport.class, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
+        super( Measure.class, fhirClientResourceRepository, fhirClientSystemRepository, fhirRepository, dhisRepository );
     }
 
     @Nonnull
     @Override
     public FhirVersion getFhirVersion()
     {
-        return FhirVersion.DSTU3;
+        return FhirVersion.R4;
     }
 
     @Search( allowUnknownParams = true )

@@ -102,8 +102,9 @@ public class DataValueSet implements DhisResource, Serializable
         this.id = id;
     }
 
-    public DataValueSet( boolean newResource )
+    public DataValueSet( @Nonnull String id, boolean newResource )
     {
+        this.id = id;
         this.newResource = newResource;
         this.modified = newResource;
         this.local = newResource;

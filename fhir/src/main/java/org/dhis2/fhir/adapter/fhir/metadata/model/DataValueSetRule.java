@@ -55,17 +55,14 @@ public class DataValueSetRule extends AbstractRule
 {
     private static final long serialVersionUID = 5463810804987445631L;
 
-    //TODO: Not sure about scripts yet
     private ExecutableScript orgUnitLookupScript;
 
-    private ExecutableScript locationLookupScript;
+    private ExecutableScript dataSetIdLookupScript;
 
     public DataValueSetRule()
     {
         super( DhisResourceType.DATA_VALUE_SET );
     }
-
-    //TODO: Not sure about scripts yet - BEGIN
 
     @JsonCacheId
     @ManyToOne
@@ -82,18 +79,16 @@ public class DataValueSetRule extends AbstractRule
 
     @JsonCacheId
     @ManyToOne
-    @JoinColumn( name = "loc_lookup_script_id" )
-    public ExecutableScript getLocationLookupScript()
+    @JoinColumn( name = "data_set_lookup_script_id" )
+    public ExecutableScript getDataSetIdLookupScript()
     {
-        return locationLookupScript;
+        return dataSetIdLookupScript;
     }
 
-    public void setLocationLookupScript( ExecutableScript locationLookupScript )
+    public void setDataSetIdLookupScript( ExecutableScript dataSetIdLookupScript )
     {
-        this.locationLookupScript = locationLookupScript;
+        this.dataSetIdLookupScript = dataSetIdLookupScript;
     }
-
-    //Not sure about scripts yet - END
 
     @Override
     @Transient

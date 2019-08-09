@@ -29,15 +29,17 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.aggregate;
  */
 
 import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSet;
-import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSetService;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
+import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
+import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.DataValueSetRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClientResource;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
@@ -48,33 +50,25 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.AbstractFhirToDhisTransformer;
 import org.dhis2.fhir.adapter.spring.StaticObjectProvider;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
-/**
- * @author David Katuscak
- */
-@Component
-public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer<DataValueSet, DataValueSetRule>
+public abstract class AbstractFhirMeasureReportToDataValueSetTranformer extends AbstractFhirToDhisTransformer<DataValueSet, DataValueSetRule>
 {
-    private final DataValueSetService dataValueSetService;
-
-    public FhirToDataValueSetTransformer(
-        @Nonnull ScriptExecutor scriptExecutor,
-        @Nonnull OrganizationUnitService organizationUnitService,
-        @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository,
-        @Nonnull DataValueSetService dataValueSetService,
-        @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
+    public AbstractFhirMeasureReportToDataValueSetTranformer( @Nonnull final ScriptExecutor scriptExecutor,
+        @Nonnull final TrackedEntityMetadataService trackedEntityMetadataService,
+        @Nonnull final OrganizationUnitService organizationUnitService,
+        @Nonnull final TrackedEntityService trackedEntityService,
+        @Nonnull final FhirDhisAssignmentRepository fhirDhisAssignmentRepository,
+        @Nonnull ScriptExecutionContext scriptExecutionContext,
+        @Nonnull ValueConverter valueConverter)
     {
-        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( null ), new StaticObjectProvider<>( null ),
-            fhirDhisAssignmentRepository, scriptExecutionContext, valueConverter );
-
-        this.dataValueSetService = dataValueSetService;
+        super( scriptExecutor, organizationUnitService, new StaticObjectProvider<>( trackedEntityMetadataService ),
+            new StaticObjectProvider<>( trackedEntityService ), fhirDhisAssignmentRepository, scriptExecutionContext,
+            valueConverter );
     }
 
     @Nonnull
@@ -96,13 +90,6 @@ public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer
     public Class<DataValueSetRule> getRuleClass()
     {
         return DataValueSetRule.class;
-    }
-
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.ALL;
     }
 
     @Nonnull
@@ -137,31 +124,12 @@ public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer
         return false;
     }
 
-    @Nullable
     @Override
-    protected DataValueSet createResource( @Nonnull final FhirToDhisTransformerContext context,
-        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nullable final String id,
-        @Nonnull final Map<String, Object> scriptVariables, final boolean sync, final boolean refreshed )
-        throws TransformerException
-    {
-        if ( context.isCreationDisabled() )
-        {
-            return null;
-        }
-
-        //TODO:
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public FhirToDhisTransformOutcome<DataValueSet> transform( @Nonnull final FhirClientResource fhirClientResource,
-        @Nonnull final FhirToDhisTransformerContext context, @Nonnull final IBaseResource input,
+    protected boolean isSyncRequired( @Nonnull final FhirToDhisTransformerContext context,
         @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables )
         throws TransformerException
     {
-        //TODO:
-        return null;
+        return context.getFhirRequest().isSync();
     }
 
     @Nullable
@@ -173,11 +141,43 @@ public class FhirToDataValueSetTransformer extends AbstractFhirToDhisTransformer
         return null;
     }
 
+    @Nullable
     @Override
-    protected boolean isSyncRequired( @Nonnull final FhirToDhisTransformerContext context,
+    public FhirToDhisTransformOutcome<DataValueSet> transform( @Nonnull final FhirClientResource fhirClientResource,
+        @Nonnull final FhirToDhisTransformerContext context, @Nonnull final IBaseResource input,
         @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables )
         throws TransformerException
     {
-        return context.getFhirRequest().isSync();
+        return transformInternal( fhirClientResource, context, input, ruleInfo, scriptVariables );
+    }
+
+    abstract protected FhirToDhisTransformOutcome<DataValueSet> transformInternal( @Nonnull final FhirClientResource fhirClientResource,
+        @Nonnull final FhirToDhisTransformerContext context, @Nonnull final IBaseResource input,
+        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables ) throws TransformerException;
+
+    @Nonnull
+    protected Optional<String> getDataSetId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<DataValueSetRule> ruleInfo, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
+    {
+        //TODO: I need to figure out how to obtain DataSetId -> It should be done in similar way as it is done for OrgUnits
+        final Reference orgUnitReference = executeScript( context, ruleInfo, lookupScript, scriptVariables, Reference.class );
+//        if ( orgUnitReference == null )
+//        {
+//            logger.info( "Could not extract organization unit reference." );
+//            return Optional.empty();
+//        }
+        return getDataSetId( context, orgUnitReference, scriptVariables );
+    }
+
+    @Nonnull
+    protected Optional<String> getDataSetId( @Nonnull FhirToDhisTransformerContext context, @Nonnull Reference orgUnitReference, @Nonnull Map<String, Object> scriptVariables )
+    {
+//        final Optional<OrganizationUnit> organisationUnit = organizationUnitService.findMetadataByReference( orgUnitReference );
+//        if ( !organisationUnit.isPresent() )
+//        {
+//            logger.info( "Organization unit of reference does not exist: " + orgUnitReference );
+//        }
+//        return organisationUnit;
+
+        return Optional.empty();
     }
 }
