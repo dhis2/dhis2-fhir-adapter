@@ -252,7 +252,8 @@ public class DhisRepositoryImpl implements DhisRepository
         }.read( fhirClient, fhirResourceType );
     }
 
-    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, DhisToFhirDataProviderException.class, UnauthorizedException.class, ForbiddenException.class } )
+    @HystrixCommand( ignoreExceptions = { MissingDhisResourceException.class, TransformerDataException.class, TransformerMappingException.class, DhisToFhirDataProviderException.class, UnauthorizedException.class, ForbiddenException.class,
+        DhisToFhirDataProviderException.class } )
     @Nonnull
     @Override
     public IBundleProvider search( @Nonnull FhirClient fhirClient, @Nonnull FhirResourceType fhirResourceType, @Nullable Integer count, boolean unlimitedCount,

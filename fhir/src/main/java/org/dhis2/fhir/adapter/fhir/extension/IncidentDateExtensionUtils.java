@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,30 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import ca.uhn.fhir.model.api.IElement;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.function.Function;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Utility class to process FHIR incident date extension.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public abstract class IncidentDateExtensionUtils
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/incident-date";
 
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable Date date, @Nonnull Function<String, IElement> typeFactory )
+    {
+        BaseExtensionUtils.setDateValue( URL, resource, date, typeFactory );
+    }
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
-
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
-
-    boolean delete( @Nonnull String enrollmentId );
-
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    private IncidentDateExtensionUtils()
+    {
+        super();
+    }
 }

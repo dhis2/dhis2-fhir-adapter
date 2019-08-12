@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,41 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import ca.uhn.fhir.model.primitive.DateDt;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.Date;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Unit tests for {@link IncidentDateExtensionUtils}.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public class IncidentDateExtensionUtilsTest
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    @Test
+    public void resetValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+        IncidentDateExtensionUtils.setValue( planDefinition, new Date(), TypeFactory::createType );
+        IncidentDateExtensionUtils.setValue( planDefinition, null, TypeFactory::createType );
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
+        Assert.assertTrue( planDefinition.getExtension().isEmpty() );
+    }
 
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
+    @Test
+    public void setValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    boolean delete( @Nonnull String enrollmentId );
+        final Date date = new Date();
 
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+        IncidentDateExtensionUtils.setValue( planDefinition, date, TypeFactory::createType );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( IncidentDateExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertSame( date, ( (DateDt) planDefinition.getExtension().get( 0 ).getValue() ).getValue() );
+    }
 }

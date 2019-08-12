@@ -28,8 +28,12 @@ package org.dhis2.fhir.adapter.fhir.extension;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.DateDt;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Date;
 
 /**
  * Unit tests for {@link BaseExtensionUtils}.
@@ -39,7 +43,7 @@ import org.junit.Test;
 public class BaseExtensionUtilsTest
 {
     @Test
-    public void resetValue()
+    public void resetStringValue()
     {
         TestPlanDefinition planDefinition = new TestPlanDefinition();
 
@@ -50,7 +54,7 @@ public class BaseExtensionUtilsTest
     }
 
     @Test
-    public void setValue()
+    public void setStringValue()
     {
         TestPlanDefinition planDefinition = new TestPlanDefinition();
 
@@ -61,4 +65,53 @@ public class BaseExtensionUtilsTest
         Assert.assertEquals( "testValue", planDefinition.getExtension().get( 0 ).getValue().toString() );
     }
 
+    @Test
+    public void resetDateValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        BaseExtensionUtils.setDateValue( "testUrl", planDefinition, new Date(), TypeFactory::createType );
+        BaseExtensionUtils.setDateValue( "testUrl", planDefinition, null, TypeFactory::createType );
+
+        Assert.assertTrue( planDefinition.getExtension().isEmpty() );
+    }
+
+    @Test
+    public void setDateValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final Date date = new Date();
+
+        BaseExtensionUtils.setDateValue( "testUrl", planDefinition, new Date(), TypeFactory::createType );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( "testUrl", planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( date, ( (DateDt) planDefinition.getExtension().get( 0 ).getValue() ).getValue() );
+    }
+
+    @Test
+    public void resetReferenceValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        BaseExtensionUtils.setReferenceValue( "testUrl", planDefinition, new TestReference() );
+        BaseExtensionUtils.setReferenceValue( "testUrl", planDefinition, null );
+
+        Assert.assertTrue( planDefinition.getExtension().isEmpty() );
+    }
+
+    @Test
+    public void setReferenceValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final IBaseReference reference = new TestReference();
+
+        BaseExtensionUtils.setReferenceValue( "testUrl", planDefinition, reference );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( "testUrl", planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertSame( reference, planDefinition.getExtension().get( 0 ).getValue() );
+    }
 }

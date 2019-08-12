@@ -433,7 +433,7 @@ public class TrackedEntityServiceImpl implements TrackedEntityService, LocalDhis
         return _delete( id );
     }
 
-    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
+    @HystrixCommand( ignoreExceptions = { UnauthorizedException.class, DhisFindException.class } )
     @Nonnull
     @Override
     public DhisResourceResult<TrackedEntityInstance> find( @Nonnull String trackedEntityTypeId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
