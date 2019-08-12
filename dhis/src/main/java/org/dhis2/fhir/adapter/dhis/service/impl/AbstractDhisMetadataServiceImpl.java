@@ -123,13 +123,12 @@ public abstract class AbstractDhisMetadataServiceImpl<T extends DhisResource & D
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
     @Nonnull
     @Override
-    @CachePut( cacheResolver = "dhisMetadataCacheResolver", unless = "#result==null" )
     public Optional<T> findOneByReference( @Nonnull Reference reference )
     {
         return findOneByReference( userRestTemplate, reference );
     }
 
-    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
+    @HystrixCommand( ignoreExceptions = { UnauthorizedException.class, DhisFindException.class } )
     @Nonnull
     @Override
     public DhisResourceResult<T> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )

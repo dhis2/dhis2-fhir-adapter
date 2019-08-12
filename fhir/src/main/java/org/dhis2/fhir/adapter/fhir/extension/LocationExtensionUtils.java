@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,30 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Utility class to process FHIR location extension.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public abstract class LocationExtensionUtils
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/location";
 
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    public static final String LOCATION_SEARCH_PARAM = "location";
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
+    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable IBaseReference locationReference )
+    {
+        BaseExtensionUtils.setReferenceValue( URL, resource, locationReference );
+    }
 
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
-
-    boolean delete( @Nonnull String enrollmentId );
-
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    private LocationExtensionUtils()
+    {
+        super();
+    }
 }

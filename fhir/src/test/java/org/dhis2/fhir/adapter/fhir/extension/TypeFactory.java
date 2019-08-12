@@ -29,8 +29,8 @@ package org.dhis2.fhir.adapter.fhir.extension;
  */
 
 import ca.uhn.fhir.model.api.IElement;
+import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import org.junit.Assert;
 
 /**
  * Test type factory.
@@ -41,8 +41,15 @@ class TypeFactory
 {
     public static IElement createType( String name )
     {
-        Assert.assertEquals( "string", name );
+        if ( "string".equals( name ) )
+        {
+            return new StringDt();
+        }
+        else if ( "date".equals( name ) )
+        {
+            return new DateDt();
+        }
 
-        return new StringDt();
+        throw new IllegalArgumentException( name );
     }
 }

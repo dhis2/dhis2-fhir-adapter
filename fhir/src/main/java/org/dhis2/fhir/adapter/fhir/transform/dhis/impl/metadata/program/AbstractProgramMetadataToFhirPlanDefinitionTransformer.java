@@ -30,15 +30,11 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program;
 
 import ca.uhn.fhir.model.api.IElement;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
-import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.extension.ResourceTypeExtensionUtils;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramMetadataRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemRepository;
@@ -113,32 +109,12 @@ public abstract class AbstractProgramMetadataToFhirPlanDefinitionTransformer<F e
 
     protected boolean addSubjectResourceType( @Nonnull Program program, @Nonnull IBaseHasExtensions resource )
     {
-        if ( program.getTrackedEntityTypeId() == null )
-        {
-            ResourceTypeExtensionUtils.setValue( resource, null, getTypeFactory() );
-
-            return true;
-        }
-
-        final TrackedEntityType trackedEntityType = trackedEntityMetadataService.findTypeByReference(
-            new Reference( program.getTrackedEntityTypeId(), ReferenceType.ID ) ).orElse( null );
-
-        if ( trackedEntityType == null )
-        {
-            return false;
-        }
-
-        final FhirResourceType fhirResourceType = trackedEntityRuleRepository.findByTypeRefs( trackedEntityType.getAllReferences() ).stream()
-            .sorted( ( o1, o2 ) -> o2.getEvaluationOrder() - o1.getEvaluationOrder() ).map( AbstractRule::getFhirResourceType ).findFirst().orElse( null );
-
-        if ( fhirResourceType == null )
-        {
-            return false;
-        }
+        final FhirResourceType fhirResourceType = ProgramTrackedEntityTypeUtils.getTrackedEntityFhirResourceType(
+            trackedEntityMetadataService, trackedEntityRuleRepository, program );
 
         ResourceTypeExtensionUtils.setValue( resource, fhirResourceType, getTypeFactory() );
 
-        return true;
+        return program.getTrackedEntityTypeId() == null || fhirResourceType != null;
     }
 
     @Nonnull

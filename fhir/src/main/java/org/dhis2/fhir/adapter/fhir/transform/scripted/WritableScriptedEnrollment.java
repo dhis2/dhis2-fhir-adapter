@@ -29,11 +29,10 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.ScriptedDateTimeUtils;
@@ -61,7 +60,7 @@ import java.util.Objects;
 @Scriptable
 @ScriptType( value = "Enrollment", var = "enrollment", transformDataType = "DHIS_ENROLLMENT",
     description = "Program instance (aka enrollment). If enrollment is not new and will be modified, it will be persisted." )
-public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializable
+public class WritableScriptedEnrollment extends WritableScriptedDhisResource implements AccessibleScriptedDhisResource, ScriptedEnrollment, Serializable
 {
     private static final long serialVersionUID = -9043373621936561310L;
 
@@ -73,69 +72,14 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEnrollment( @Nonnull Program program, @Nonnull Enrollment enrollment, @Nonnull ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEnrollment( @Nonnull Program program, @Nonnull Enrollment enrollment, @Nonnull ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
+        super( enrollment, scriptExecutionContext );
+
         this.program = program;
         this.enrollment = enrollment;
         this.trackedEntityInstance = trackedEntityInstance;
         this.valueConverter = valueConverter;
-    }
-
-    @Override
-    @ScriptMethod( description = "Returns if the event is new ans has not yet been saved on DHIS2." )
-    public boolean isNewResource()
-    {
-        return enrollment.isNewResource();
-    }
-
-    @Override
-    public boolean isLocal()
-    {
-        return enrollment.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the ID of the event on DHIS2. Return null if the instance is new." )
-    public String getId()
-    {
-        return enrollment.getId();
-    }
-
-    @Nonnull
-    @Override
-    public DhisResourceType getResourceType()
-    {
-        return enrollment.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return enrollment.getResourceId();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the date and time when the resource has been updated the last time or null if this is a new resource." )
-    public ZonedDateTime getLastUpdated()
-    {
-        return enrollment.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the ID of the organisation unit on DHIS2 where this event has been registered." )
-    public String getOrganizationUnitId()
-    {
-        return enrollment.getOrgUnitId();
     }
 
     @Nullable
@@ -236,6 +180,13 @@ public class WritableScriptedEnrollment implements ScriptedEnrollment, Serializa
         enrollment.setStatus( convertedStatus );
 
         return true;
+    }
+
+    @Nullable
+    @Override
+    public String getProgramId()
+    {
+        return program.getId();
     }
 
     @Override

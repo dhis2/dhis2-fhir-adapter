@@ -166,46 +166,13 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
             return handleDataDelete( fhirClient, context, ruleInfo, resourceMapping, modifiedResource, variables );
         }
 
+        if ( !transformFhirResourceType( context, ruleInfo, variables, resourceMapping, input, modifiedResource ) )
+        {
+            return null;
+        }
+
         if ( context.getDhisRequest().isCompleteTransformation() )
         {
-            if ( (resourceMapping.getExpStatusTransformScript() != null) &&
-                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpStatusTransformScript(), variables, Boolean.class ) ) )
-            {
-                logger.info( "Resulting DHIS status could not be transformed into FHIR resource {} with type {}.",
-                    trackedEntityFhirResource.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
-                return null;
-            }
-
-            if ( (resourceMapping.getExpTeiTransformScript() != null) &&
-                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpTeiTransformScript(), variables, Boolean.class ) ) )
-            {
-                logger.info( "Resulting DHIS TEI {} could not be transformed into FHIR resource {}.",
-                    trackedEntityFhirResource.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
-                return null;
-            }
-
-            if ( (resourceMapping.getExpOrgUnitTransformScript() != null) &&
-                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpOrgUnitTransformScript(), variables, Boolean.class ) ) )
-            {
-                logger.info( "DHIS Organization Unit {} could not be transformed into FHIR resource {}.",
-                    input.getOrganizationUnitId(), resourceMapping.getFhirResourceType() );
-                return null;
-            }
-
-            if ( (resourceMapping.getExpGeoTransformScript() != null) &&
-                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
-            {
-                return null;
-            }
-
-            if ( (resourceMapping.getExpDateTransformScript() != null) &&
-                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpDateTransformScript(), variables, Boolean.class ) ) )
-            {
-                logger.info( "Event date could not be transformed into FHIR resource {}.",
-                    resourceMapping.getFhirResourceType() );
-                return null;
-            }
-
             TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.CODE_UTILS, AbstractCodeDhisToFhirTransformerUtils.class )
                 .setRuleCodeableConcept( ruleInfo, resource );
         }

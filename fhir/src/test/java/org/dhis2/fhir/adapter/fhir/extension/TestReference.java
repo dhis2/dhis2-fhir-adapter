@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,80 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import org.hl7.fhir.instance.model.api.IBase;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.List;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Implementation of a reference for test purpose.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public class TestReference implements IBaseReference
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    private static final long serialVersionUID = -5545480164325932302L;
 
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    @Override
+    public IBaseResource getResource()
+    {
+        return null;
+    }
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
+    @Override
+    public void setResource( IBaseResource theResource )
+    {
 
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
+    }
 
-    boolean delete( @Nonnull String enrollmentId );
+    @Override
+    public IIdType getReferenceElement()
+    {
+        return null;
+    }
 
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    @Override
+    public IBaseReference setReference( String theReference )
+    {
+        return null;
+    }
+
+    @Override
+    public IBase setDisplay( String theValue )
+    {
+        return null;
+    }
+
+    @Override
+    public IPrimitiveType<String> getDisplayElement()
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean hasFormatComment()
+    {
+        return false;
+    }
+
+    @Override
+    public List<String> getFormatCommentsPre()
+    {
+        return null;
+    }
+
+    @Override
+    public List<String> getFormatCommentsPost()
+    {
+        return null;
+    }
 }

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,27 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import ca.uhn.fhir.rest.param.DateRangeParam;
+import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Implementation of {@link PreparedDhisToFhirSearch} for DHIS2 enrollments.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public class PreparedEnrollmentToFhirSearch extends AbstractPreparedDhisToFhirSearch<EnrollmentRule>
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
-
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
-
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
-
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
-
-    boolean delete( @Nonnull String enrollmentId );
-
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    public PreparedEnrollmentToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<EnrollmentRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count )
+    {
+        super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
+    }
 }

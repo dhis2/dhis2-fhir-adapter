@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.scripted;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,11 @@ import java.time.ZonedDateTime;
  * @author volsch
  */
 @Scriptable
-public interface ScriptedEnrollment extends ScriptedDhisResource
+public interface ScriptedEnrollment extends AccessibleScriptedDhisResource
 {
+    @Nullable
+    String getProgramId();
+
     @Nullable
     ZonedDateTime getEnrollmentDate();
 

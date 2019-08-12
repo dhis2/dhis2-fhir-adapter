@@ -195,4 +195,10 @@ public enum FhirResourceType
     {
         return simpleClassNames;
     }
+
+    @Nonnull
+    public String withId( @Nonnull String id )
+    {
+        return resourceTypeName + "/" + id;
+    }
 }
