@@ -118,6 +118,11 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
             case NUMBER:
             case PERCENTAGE:
             case UNIT_INTERVAL:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof IPrimitiveType && ( (IPrimitiveType) fhirValue ).getValue() instanceof Number )
                 {
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
@@ -127,6 +132,11 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
             case DATETIME:
             case DATE:
             case AGE:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof DateTimeType )
                 {
                     return DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -143,6 +153,11 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
                 break;
             case BOOLEAN:
             case TRUE_ONLY:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof IPrimitiveType && ( (IPrimitiveType) fhirValue ).getValue() instanceof Boolean )
                 {
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();

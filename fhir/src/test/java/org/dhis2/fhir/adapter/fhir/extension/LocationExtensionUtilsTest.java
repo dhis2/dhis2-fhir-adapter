@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,38 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
-
-import javax.annotation.Nonnull;
-import java.util.Optional;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Unit tests for {@link LocationExtensionUtils}.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public class LocationExtensionUtilsTest
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    @Test
+    public void resetValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+        LocationExtensionUtils.setValue( planDefinition, new TestReference() );
+        LocationExtensionUtils.setValue( planDefinition, null );
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
+        Assert.assertTrue( planDefinition.getExtension().isEmpty() );
+    }
 
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
+    @Test
+    public void setValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    boolean delete( @Nonnull String enrollmentId );
+        final TestReference reference = new TestReference();
 
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+        LocationExtensionUtils.setValue( planDefinition, reference );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( LocationExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( reference, planDefinition.getExtension().get( 0 ).getValue() );
+    }
 }

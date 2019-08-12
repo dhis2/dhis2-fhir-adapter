@@ -104,6 +104,11 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
             case INTEGER_POSITIVE:
             case INTEGER_NEGATIVE:
             case INTEGER_ZERO_OR_POSITIVE:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof IPrimitiveType && ( (IPrimitiveType) fhirValue ).getValue() instanceof Integer )
                 {
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
@@ -118,6 +123,11 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
             case NUMBER:
             case PERCENTAGE:
             case UNIT_INTERVAL:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof IPrimitiveType && ( (IPrimitiveType) fhirValue ).getValue() instanceof Number )
                 {
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
@@ -127,6 +137,11 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
             case DATETIME:
             case DATE:
             case AGE:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof DateTimeType )
                 {
                     return DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -143,6 +158,11 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
                 break;
             case BOOLEAN:
             case TRUE_ONLY:
+                if ( fhirValue.isEmpty() )
+                {
+                    return null;
+                }
+
                 if ( fhirValue instanceof IPrimitiveType && ( (IPrimitiveType) fhirValue ).getValue() instanceof Boolean )
                 {
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();

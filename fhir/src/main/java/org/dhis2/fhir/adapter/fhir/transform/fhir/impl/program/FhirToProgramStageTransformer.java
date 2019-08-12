@@ -224,7 +224,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final List<WritableScriptedEvent> scriptedProgramStageEvents = createScriptedProgramStageEvents( context, program, programStage, event.getEnrollment().getEvents(), scriptedTrackedEntityInstance );
         variables.put( ScriptVariable.PROGRAM_STAGE_EVENTS.getVariableName(), scriptedProgramStageEvents );
 
-        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, event.getEnrollment(), scriptedTrackedEntityInstance, valueConverter );
+        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, event.getEnrollment(), scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), scriptedEnrollment );
         if ( !event.isNewResource() && !beforeEnrollmentEvent( context, ruleInfo, programStage, event.getEnrollment(), scriptVariables ) )
         {
@@ -634,7 +634,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
         final Program program = eventInfo.getProgram();
         final ProgramStage programStage = eventInfo.getProgramStage();
-        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, valueConverter );
+        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         final List<WritableScriptedEvent> scriptedProgramStageEvents = createScriptedProgramStageEvents( context, program, programStage, enrollment.getEvents(), scriptedTrackedEntityInstance );
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), scriptedEnrollment );
         variables.put( ScriptVariable.PROGRAM_STAGE_EVENTS.getVariableName(), scriptedProgramStageEvents );
@@ -752,7 +752,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         enrollment.setOrgUnitId( organisationUnit.get().getId() );
         enrollment.setEnrollmentDate( enrollmentDate );
 
-        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, valueConverter );
+        final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.ENROLLMENT.getVariableName(), scriptedEnrollment );
 
         if ( (mappedProgram.getCreationScript() != null) &&
@@ -928,7 +928,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-        variables.put( ScriptVariable.ENROLLMENT.getVariableName(), new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, valueConverter ) ) );
+        variables.put( ScriptVariable.ENROLLMENT.getVariableName(), new ImmutableScriptedEnrollment( new WritableScriptedEnrollment( program, enrollment, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter ) ) );
         return getOrgUnit( context, ruleInfo, resourceMapping.getImpEventOrgLookupScript(), variables );
     }
 

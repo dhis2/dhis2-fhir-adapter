@@ -447,7 +447,7 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
         return event;
     }
 
-    @HystrixCommand( ignoreExceptions = UnauthorizedException.class )
+    @HystrixCommand( ignoreExceptions = { UnauthorizedException.class, DhisFindException.class } )
     @Nonnull
     @Override
     public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )

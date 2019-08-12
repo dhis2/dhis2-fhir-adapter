@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.dhis.tracker.program;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,36 +28,44 @@ package org.dhis2.fhir.adapter.dhis.tracker.program;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
-import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
-import org.dhis2.fhir.adapter.dhis.service.DhisService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageId;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 /**
- * Service to create, update and read DHIS2 Program Instances (aka enrollments)
- * on DHIS2.
+ * Implementation of {@link DhisToFhirSearchState} for enrollments.
  *
  * @author volsch
- * @author Charles Chigoriwa (ITINORDIC)
  */
-public interface EnrollmentService extends DhisService<Enrollment>
+public class EnrollmentToFhirSearchState implements DhisToFhirSearchState
 {
-    @Nonnull
-    Optional<Enrollment> findLatestActiveRefreshed( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    private final ProgramStageId programStageId;
+
+    private final int from;
+
+    private final boolean more;
+
+    public EnrollmentToFhirSearchState( @Nonnull ProgramStageId programStageId, int from, boolean more )
+    {
+        this.programStageId = programStageId;
+        this.from = from;
+        this.more = more;
+    }
 
     @Nonnull
-    Optional<Enrollment> findLatestActive( @Nonnull String programId, @Nonnull String trackedEntityInstanceId, boolean localOnly );
+    public ProgramStageId getProgramStageId()
+    {
+        return programStageId;
+    }
 
-    @Nonnull
-    Optional<Enrollment> findOneById( @Nonnull String id );
+    public int getFrom()
+    {
+        return from;
+    }
 
-    @Nonnull
-    Enrollment createOrUpdate( @Nonnull Enrollment enrollment );
-
-    boolean delete( @Nonnull String enrollmentId );
-
-    @Nonnull
-    DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    public boolean isMore()
+    {
+        return more;
+    }
 }

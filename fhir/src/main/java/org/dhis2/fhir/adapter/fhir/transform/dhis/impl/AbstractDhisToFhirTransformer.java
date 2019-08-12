@@ -35,6 +35,7 @@ import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
@@ -438,6 +439,56 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
             getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) )
                 .lock( "fhir-identifier:" + systemCodeValue.toString() );
         }
+    }
+
+    protected boolean transformFhirResourceType( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> variables, @Nonnull FhirResourceMapping resourceMapping,
+        @Nonnull ScriptedDhisResource input, @Nonnull IBaseResource output )
+    {
+        if ( context.getDhisRequest().isCompleteTransformation() )
+        {
+            if ( ( resourceMapping.getExpStatusTransformScript() != null ) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpStatusTransformScript(), variables, Boolean.class ) ) )
+            {
+                logger.info( "Resulting DHIS status could not be transformed into FHIR resource {} with type {}.",
+                    output.getIdElement().toUnqualifiedVersionless(), resourceMapping.getFhirResourceType() );
+
+                return false;
+            }
+
+            if ( ( resourceMapping.getExpTeiTransformScript() != null ) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpTeiTransformScript(), variables, Boolean.class ) ) )
+            {
+                logger.info( "Resulting DHIS TEI could not be transformed into FHIR resource {}.",
+                    resourceMapping.getFhirResourceType() );
+
+                return false;
+            }
+
+            if ( ( resourceMapping.getExpOrgUnitTransformScript() != null ) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpOrgUnitTransformScript(), variables, Boolean.class ) ) )
+            {
+                logger.info( "DHIS Organization Unit {} could not be transformed into FHIR resource {}.",
+                    input.getOrganizationUnitId(), resourceMapping.getFhirResourceType() );
+
+                return false;
+            }
+
+            if ( ( resourceMapping.getExpGeoTransformScript() != null ) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpGeoTransformScript(), variables, Boolean.class ) ) )
+            {
+                return false;
+            }
+
+            if ( ( resourceMapping.getExpDateTransformScript() != null ) &&
+                !Boolean.TRUE.equals( executeScript( context, ruleInfo, resourceMapping.getExpDateTransformScript(), variables, Boolean.class ) ) )
+            {
+                logger.info( "Date could not be transformed into FHIR resource {}.",
+                    resourceMapping.getFhirResourceType() );
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected Optional<? extends IBaseResource> getTrackedEntityFhirResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,

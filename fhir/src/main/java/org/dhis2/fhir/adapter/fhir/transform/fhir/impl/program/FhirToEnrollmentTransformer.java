@@ -251,7 +251,7 @@ public class FhirToEnrollmentTransformer extends AbstractFhirToDhisTransformer<E
         final Program program = TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class );
 
         final WritableScriptedEnrollment scriptedEnrollment = new WritableScriptedEnrollment(
-            program, enrollment, scriptedTrackedEntityInstance, valueConverter );
+            program, enrollment, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedEnrollment );
 
         if ( !transform( context, ruleInfo, variables ) )

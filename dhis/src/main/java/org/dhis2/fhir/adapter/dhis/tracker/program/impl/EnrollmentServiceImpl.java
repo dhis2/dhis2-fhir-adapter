@@ -33,24 +33,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.auth.UnauthorizedException;
 import org.dhis2.fhir.adapter.cache.RequestCacheService;
 import org.dhis2.fhir.adapter.dhis.DhisConflictException;
+import org.dhis2.fhir.adapter.dhis.DhisFindException;
 import org.dhis2.fhir.adapter.dhis.DhisImportUnsuccessfulException;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistCallback;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistResult;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisRepositoryPersistStatus;
 import org.dhis2.fhir.adapter.dhis.local.LocalDhisResourceRepositoryTemplate;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceComparator;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceResult;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImportStatus;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummaries;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummariesWebMessage;
 import org.dhis2.fhir.adapter.dhis.model.ImportSummary;
 import org.dhis2.fhir.adapter.dhis.model.Status;
+import org.dhis2.fhir.adapter.dhis.model.UriFilterApplier;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
 import org.dhis2.fhir.adapter.dhis.util.CodeGenerator;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingQuery;
+import org.dhis2.fhir.adapter.dhis.util.DhisPagingUtils;
 import org.dhis2.fhir.adapter.rest.RestTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,9 +69,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -123,6 +130,37 @@ public class EnrollmentServiceImpl implements EnrollmentService, LocalDhisReposi
     public DhisResourceType getDhisResourceType()
     {
         return DhisResourceType.ENROLLMENT;
+    }
+
+    @HystrixCommand( ignoreExceptions = { UnauthorizedException.class, DhisFindException.class } )
+    @Nonnull
+    @Override
+    public DhisResourceResult<Enrollment> find( @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
+    {
+        final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
+        final List<String> variables = new ArrayList<>();
+        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/enrollments.json" )
+            .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
+            .queryParam( "ouMode", uriFilterApplier.containsQueryParam( "ou" ) ? "SELECTED" : "ACCESSIBLE" )
+            .queryParam( "fields", ":all" ).build().toString();
+        final ResponseEntity<DhisEnrollments> result;
+        try
+        {
+            result = restTemplate.getForEntity( uri, DhisEnrollments.class, variables.toArray() );
+        }
+        catch ( HttpClientErrorException e )
+        {
+            if ( e.getStatusCode() == HttpStatus.BAD_REQUEST || e.getStatusCode() == HttpStatus.CONFLICT )
+            {
+                throw new DhisFindException( e.getMessage(), e );
+            }
+            throw e;
+        }
+        final DhisEnrollments enrollments = Objects.requireNonNull( result.getBody() );
+
+        return new DhisResourceResult<>( ( enrollments.getEnrollments().size() > pagingQuery.getResultOffset() ) ?
+            enrollments.getEnrollments().subList( pagingQuery.getResultOffset(), enrollments.getEnrollments().size() ) : Collections.emptyList(),
+            ( enrollments.getEnrollments().size() >= pagingQuery.getPageSize() ) );
     }
 
     @HystrixCommand( ignoreExceptions = UnauthorizedException.class )

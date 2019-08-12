@@ -31,10 +31,12 @@ package org.dhis2.fhir.adapter.fhir.extension;
 import ca.uhn.fhir.model.api.IElement;
 import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Date;
 import java.util.function.Function;
 
 /**
@@ -55,6 +57,33 @@ abstract class BaseExtensionUtils
 
             extension.setUrl( url );
             extension.setValue( ( (IPrimitiveType<String>) typeFactory.apply( "string" ) ).setValue( value ) );
+        }
+    }
+
+    @SuppressWarnings( "unchecked" )
+    protected static void setDateValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable Date value, @Nonnull Function<String, IElement> typeFactory )
+    {
+        resource.getExtension().removeIf( e -> url.equals( e.getUrl() ) );
+
+        if ( value != null )
+        {
+            final IBaseExtension<?, ?> extension = resource.addExtension();
+
+            extension.setUrl( url );
+            extension.setValue( ( (IPrimitiveType<Date>) typeFactory.apply( "date" ) ).setValue( value ) );
+        }
+    }
+
+    protected static void setReferenceValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable IBaseReference value )
+    {
+        resource.getExtension().removeIf( e -> url.equals( e.getUrl() ) );
+
+        if ( value != null )
+        {
+            final IBaseExtension<?, ?> extension = resource.addExtension();
+
+            extension.setUrl( url );
+            extension.setValue( value );
         }
     }
 

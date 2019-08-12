@@ -66,6 +66,7 @@
       <label value="Incident date" />
       <short value="Incident date of enrollment" />
       <definition value="The incident date of the enrollment." />
+      <max value="1" />
       <type>
         <code value="Extension" />
         <profile value="http://www.dhis2.org/dhis2-fhir-adapter/extensions/incident-date" />
@@ -145,8 +146,8 @@
     </element>
     <element id="CarePlan.status">
       <path value="CarePlan.status" />
-      <short value="active | completed | cancelled" />
-      <definition value="active | completed | cancelled" />
+      <short value="active | completed | revoked" />
+      <definition value="active | completed | revoked (cancelled)" />
     </element>
     <element id="CarePlan.intent">
       <path value="CarePlan.intent" />
@@ -225,6 +226,10 @@
     </element>
     <element id="CarePlan.goal">
       <path value="CarePlan.goal" />
+      <max value="0" />
+    </element>
+    <element id="CarePlan.activity">
+      <path value="CarePlan.activity" />
       <max value="0" />
     </element>
     <element id="CarePlan.activity.outcomeCodeableConcept">
