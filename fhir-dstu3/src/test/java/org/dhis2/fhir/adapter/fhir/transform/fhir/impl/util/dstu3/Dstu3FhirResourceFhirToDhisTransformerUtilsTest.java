@@ -109,6 +109,44 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtilsTest
     }
 
     @Test
+    public void getCanonicalReferenceNull()
+    {
+        Assert.assertNull( utils.getCanonicalAdapterReference( null, "MEASURE" ) );
+    }
+
+    @Test
+    public void getCanonicalAdapterReferenceFqDhisFhirId()
+    {
+        Mockito.doReturn( request ).when( context ).getFhirRequest();
+        Mockito.doReturn( true ).when( request ).isDhisFhirId();
+        Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID" ) ).when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
+        Mockito.doReturn( "1234" ).when( context ).extractDhisId( Mockito.eq( "1234" ) );
+
+        final org.dhis2.fhir.adapter.dhis.model.Reference adapterReference = utils.getCanonicalAdapterReference( new Reference( "Patient/1234" ), "Patient" );
+
+        Assert.assertNotNull( adapterReference );
+        Assert.assertEquals( new org.dhis2.fhir.adapter.dhis.model.Reference( "1234", ReferenceType.ID ), adapterReference );
+    }
+
+    @Test
+    public void getCanonicalAdapterReferenceNonFqDhisFhirId()
+    {
+        Mockito.doReturn( request ).when( context ).getFhirRequest();
+        Mockito.doReturn( true ).when( request ).isDhisFhirId();
+        Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID" ) ).when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
+        Mockito.doReturn( "1234" ).when( context ).extractDhisId( Mockito.eq( "1234" ) );
+
+        final org.dhis2.fhir.adapter.dhis.model.Reference adapterReference = utils.getCanonicalAdapterReference( new Reference( "1234" ), "Patient" );
+
+        Assert.assertNotNull( adapterReference );
+        Assert.assertEquals( new org.dhis2.fhir.adapter.dhis.model.Reference( "1234", ReferenceType.ID ), adapterReference );
+    }
+
+    @Test
     public void getIdentifierReferenceDhisFhirIdOnly()
     {
         Mockito.doReturn( request ).when( context ).getFhirRequest();

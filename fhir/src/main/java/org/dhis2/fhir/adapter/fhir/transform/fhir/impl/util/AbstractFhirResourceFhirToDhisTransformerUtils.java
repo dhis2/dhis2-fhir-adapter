@@ -34,20 +34,23 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.System;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
-import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValues;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionRequired;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
 import org.dhis2.fhir.adapter.scriptable.ScriptType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
+import org.dhis2.fhir.adapter.util.NameUtils;
+import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -57,7 +60,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +77,8 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
     public static final String SCRIPT_ATTR_NAME = "fhirResourceUtils";
 
     protected static final String INTERNAL_REFERENCE_BEGIN = "urn:";
+
+    protected final Pattern CANONICAL_PATTERN = Pattern.compile( "([^/]+)/([^/]+)" );
 
     private final ReferenceFhirToDhisTransformerUtils referenceUtils;
 
@@ -92,13 +98,6 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
     public final String getScriptAttrName()
     {
         return SCRIPT_ATTR_NAME;
-    }
-
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.ALL;
     }
 
     @Nonnull
@@ -228,17 +227,69 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
 
     @Nullable
     @ScriptExecutionRequired
+    @ScriptMethod( description = "Returns the adapter reference by ID, code or name for the specified canonical FHIR reference (if this can be resolved).",
+        args = {
+            @ScriptMethodArg( value = "canonical", description = "The canonical FHIR reference for which the adapter reference should be returned." ),
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type of the resource." )
+        },
+        returnDescription = "The adapter reference for the specified reference or null if it cannot be resolved." )
+    public Reference getCanonicalAdapterReference( @Nullable IBaseDatatype canonical, @Nonnull Object fhirResourceType )
+    {
+        if ( canonical == null )
+        {
+            return null;
+        }
+
+        final FhirResourceType resourceType;
+        try
+        {
+            resourceType = NameUtils.toEnumValue( FhirResourceType.class, fhirResourceType );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+        }
+
+        final String canonicalUri = getCanonicalString( canonical, resourceType );
+
+        if ( canonicalUri == null )
+        {
+            return null;
+        }
+
+        final Matcher canonicalMatcher = CANONICAL_PATTERN.matcher( canonicalUri );
+
+        if ( !canonicalMatcher.matches() )
+        {
+            throw new TransformerDataException( "Unhandled canonical URI: " + canonicalUri );
+        }
+
+        final String type = canonicalMatcher.group( 1 );
+        final String id = canonicalMatcher.group( 2 );
+
+        final FhirResourceType canonicalResourceType = FhirResourceType.getByResourceTypeName( type );
+
+        if ( canonicalResourceType == null )
+        {
+            throw new TransformerDataException( "Unknown FHIR resource type in canonical URI: " + type );
+        }
+
+        return getAdapterReference( createReference( canonicalResourceType.getResourceTypeName(), id ), fhirResourceType );
+    }
+
+    @Nullable
+    @ScriptExecutionRequired
     @ScriptMethod( description = "Returns the adapter reference by ID, code or name for the specified FHIR reference (if this can be resolved).",
         args = {
             @ScriptMethodArg( value = "reference", description = "The FHIR reference for which the adapter reference should be returned." ),
-            @ScriptMethodArg( value = "resourceType", description = "The FHIR resource type of the resource." )
+            @ScriptMethodArg( value = "fhirResourceType", description = "The FHIR resource type of the resource." )
         },
         returnDescription = "The adapter reference for the specified reference or null if it cannot be resolved." )
-    public Reference getAdapterReference( @Nullable IBaseReference reference, @Nonnull Object resourceType )
+    public Reference getAdapterReference( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType )
     {
         final FhirToDhisTransformerContext context = getScriptVariable(
             ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
-        final IBaseReference identifiedReference = getIdentifiedReference( context, reference, resourceType );
+        final IBaseReference identifiedReference = getIdentifiedReference( context, reference, fhirResourceType );
         Reference adapterReference = null;
 
         if ( identifiedReference != null )
@@ -353,4 +404,10 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
     protected abstract SystemCodeValues getIdentifiers( @Nonnull IBaseResource baseResource );
 
     protected abstract boolean addIdentifiers( @Nonnull IBaseResource resource, @Nonnull SystemCodeValues identifiers );
+
+    @Nullable
+    protected abstract String getCanonicalString( @Nonnull IBaseDatatype canonicalReference, @Nonnull FhirResourceType defaultResourceType );
+
+    @Nonnull
+    protected abstract IBaseReference createReference( @Nonnull String type, @Nonnull String id );
 }

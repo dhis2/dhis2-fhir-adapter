@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.dstu3;
  */
 
 import org.apache.commons.lang.StringUtils;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.SystemCodeRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.model.SystemCodeValue;
@@ -44,6 +45,7 @@ import org.hl7.fhir.dstu3.model.Identifier;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.ResourceFactory;
 import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
@@ -185,5 +187,22 @@ public class Dstu3FhirResourceFhirToDhisTransformerUtils extends AbstractFhirRes
         return new SystemCodeValues( resourceIdentifiers.stream()
             .filter( i -> StringUtils.isNotBlank( i.getSystem() ) && StringUtils.isNotBlank( i.getValue() ) )
             .map( i -> new SystemCodeValue( i.getSystem(), i.getValue() ) ).collect( Collectors.toList() ) );
+    }
+
+    @Nullable
+    @Override
+    protected String getCanonicalString( @Nonnull IBaseDatatype canonicalReference, @Nonnull FhirResourceType defaultResourceType )
+    {
+        final IIdType idType = ( (Reference) canonicalReference ).getReferenceElement();
+        final String resourceType = idType.getResourceType() == null ? defaultResourceType.getResourceTypeName() : idType.getResourceType();
+
+        return resourceType + "/" + idType.getIdPart();
+    }
+
+    @Nonnull
+    @Override
+    protected IBaseReference createReference( @Nonnull String type, @Nonnull String id )
+    {
+        return new Reference( type + "/" + id );
     }
 }

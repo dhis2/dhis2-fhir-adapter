@@ -69,6 +69,7 @@ public enum FhirResourceType
     PATIENT( FhirVersion.ALL, "Patient", false, 10, Collections.emptySet(), Collections.singleton( "Patient" ) ),
     RELATED_PERSON( FhirVersion.ALL, "RelatedPerson", false, 11, Collections.emptySet(), Collections.singleton( "RelatedPerson" ) ),
     PRACTITIONER( FhirVersion.ALL, "Practitioner", false, 9, Collections.emptySet(), Collections.singleton( "Practitioner" ) ),
+    MEASURE( FhirVersion.ALL, "Measure", false, 29, Collections.singleton( "Measure" ), Collections.singleton( "Measure" ) ),
     MEASURE_REPORT( FhirVersion.ALL, "MeasureReport", false, 30, Collections.singleton( "MeasureReport" ), Collections.singleton( "MeasureReport" ) ),
     PLAN_DEFINITION( FhirVersion.R4_ONLY, "PlanDefinition", true, 30, Collections.emptySet(), Collections.singleton( "PlanDefinition" ) ),
     QUESTIONNAIRE( FhirVersion.R4_ONLY, "Questionnaire", true, 31, Collections.emptySet(), Collections.singleton( "Questionnaire" ) ),
