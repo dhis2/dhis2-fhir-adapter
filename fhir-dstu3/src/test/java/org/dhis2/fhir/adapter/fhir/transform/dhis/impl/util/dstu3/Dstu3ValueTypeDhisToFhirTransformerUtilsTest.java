@@ -36,7 +36,6 @@ import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.hl7.fhir.dstu3.model.Base;
 import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
@@ -165,7 +164,7 @@ public class Dstu3ValueTypeDhisToFhirTransformerUtilsTest
         final WritableOptionSet optionSet = new WritableOptionSet();
         optionSet.setOptions( Collections.singletonList( new WritableOption( "test1", "Test 1" ) ) );
 
-        Assert.assertTrue( new CodeableConcept().addCoding( new Coding().setCode( "test1" ).setDisplay( "Test 1" ) )
+        Assert.assertTrue( new Coding().setCode( "test1" ).setDisplay( "Test 1" )
             .equalsDeep( (Base) utils.convert( "test1", "text", optionSet ) ) );
 
         Mockito.verify( valueConverter ).convert( Mockito.any(), Mockito.any(), Mockito.eq( String.class ) );
@@ -177,7 +176,7 @@ public class Dstu3ValueTypeDhisToFhirTransformerUtilsTest
         final WritableOptionSet optionSet = new WritableOptionSet();
         optionSet.setOptions( Collections.singletonList( new WritableOption( "test1", "Test 1" ) ) );
 
-        Assert.assertTrue( new CodeableConcept().addCoding( new Coding().setCode( "test2" ).setDisplay( "test2" ) )
+        Assert.assertTrue( new Coding().setCode( "test2" ).setDisplay( "test2" )
             .equalsDeep( (Base) utils.convert( "test2", "text", optionSet ) ) );
 
         Mockito.verify( valueConverter ).convert( Mockito.any(), Mockito.any(), Mockito.eq( String.class ) );

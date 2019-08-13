@@ -29,8 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  */
 
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
@@ -55,195 +53,147 @@ import java.util.regex.Pattern;
  * @author volsch
  */
 @Scriptable
-public class ImmutableScriptedEvent implements ScriptedEvent, ImmutableDhisObject, Serializable
+public class ImmutableScriptedEvent extends ImmutableScriptedDhisResource implements ScriptedEvent, ImmutableDhisObject, Serializable
 {
     private static final long serialVersionUID = -3248712035742910069L;
 
-    private final ScriptedEvent delegate;
-
-    public ImmutableScriptedEvent( @Nonnull ScriptedEvent delegate )
+    public ImmutableScriptedEvent( @Nonnull WritableScriptedEvent delegate )
     {
-        this.delegate = delegate;
+        super( delegate );
     }
 
-    @Override
-    public boolean isNewResource()
-    {
-        return delegate.isNewResource();
-    }
-
-    @Override
-    public boolean isLocal()
-    {
-        return delegate.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return delegate.isDeleted();
-    }
-
-    @Nullable
-    @Override
-    public String getId()
-    {
-        return delegate.getId();
-    }
-
-    @Override
     @Nonnull
-    public DhisResourceType getResourceType()
+    protected ScriptedEvent getInternalDelegate()
     {
-        return delegate.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return delegate.getResourceId();
-    }
-
-    @Nullable
-    @Override
-    public ZonedDateTime getLastUpdated()
-    {
-        return delegate.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    public String getOrganizationUnitId()
-    {
-        return delegate.getOrganizationUnitId();
+        return (ScriptedEvent) super.getDelegate();
     }
 
     @Nullable
     @Override
     public String getEnrollmentId()
     {
-        return delegate.getEnrollmentId();
+        return getInternalDelegate().getEnrollmentId();
     }
 
     @Override
     @Nonnull
     public Program getProgram()
     {
-        return delegate.getProgram();
+        return getInternalDelegate().getProgram();
     }
 
     @Nonnull
     @Override
     public ProgramStage getProgramStage()
     {
-        return delegate.getProgramStage();
+        return getInternalDelegate().getProgramStage();
     }
 
     @Nullable
     @Override
     public ScriptedTrackedEntityInstance getTrackedEntityInstance()
     {
-        if ( delegate.getTrackedEntityInstance() instanceof ImmutableDhisObject )
+        if ( getInternalDelegate().getTrackedEntityInstance() instanceof ImmutableDhisObject )
         {
-            return delegate.getTrackedEntityInstance();
+            return getInternalDelegate().getTrackedEntityInstance();
         }
-        return new ImmutableScriptedTrackedEntityInstance( Objects.requireNonNull( delegate.getTrackedEntityInstance() ) );
+
+        return new ImmutableScriptedTrackedEntityInstance( Objects.requireNonNull( getInternalDelegate().getTrackedEntityInstance() ) );
     }
 
     @Nullable
     @Override
     public ZonedDateTime getEventDate()
     {
-        return delegate.getEventDate();
+        return getInternalDelegate().getEventDate();
     }
 
     @Override
     @Nullable
     public ZonedDateTime getDueDate()
     {
-        return delegate.getDueDate();
+        return getInternalDelegate().getDueDate();
     }
 
     @Nullable
     @Override
     public EventStatus getStatus()
     {
-        return delegate.getStatus();
+        return getInternalDelegate().getStatus();
     }
 
     @Override
     @Nullable
     public Location getCoordinate()
     {
-        return delegate.getCoordinate();
+        return getInternalDelegate().getCoordinate();
     }
 
     @Nullable
     @Override
     public Object getValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getValue( dataElementReference );
+        return getInternalDelegate().getValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public Boolean getBooleanValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getBooleanValue( dataElementReference );
+        return getInternalDelegate().getBooleanValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public Integer getIntegerValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getIntegerValue( dataElementReference );
+        return getInternalDelegate().getIntegerValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public BigDecimal getBigDecimalValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getBigDecimalValue( dataElementReference );
+        return getInternalDelegate().getBigDecimalValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public ZonedDateTime getDateTimeValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getDateTimeValue( dataElementReference );
+        return getInternalDelegate().getDateTimeValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public LocalDate getDateValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getDateValue( dataElementReference );
+        return getInternalDelegate().getDateValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public String getStringValue( @Nonnull Reference dataElementReference )
     {
-        return delegate.getStringValue( dataElementReference );
+        return getInternalDelegate().getStringValue( dataElementReference );
     }
 
     @Nullable
     @Override
     public Integer getIntegerOptionValue( @Nonnull Reference dataElementReference, int valueBase, @Nullable Pattern optionValuePattern )
     {
-        return delegate.getIntegerOptionValue( dataElementReference, valueBase, optionValuePattern );
+        return getInternalDelegate().getIntegerOptionValue( dataElementReference, valueBase, optionValuePattern );
     }
 
     @Override
     public boolean isProvidedElsewhere( @Nonnull Reference dataElementReference )
     {
-        return delegate.isProvidedElsewhere( dataElementReference );
+        return getInternalDelegate().isProvidedElsewhere( dataElementReference );
     }
 
     @Override
     public void validate() throws TransformerException
     {
-        delegate.validate();
+        getInternalDelegate().validate();
     }
 }

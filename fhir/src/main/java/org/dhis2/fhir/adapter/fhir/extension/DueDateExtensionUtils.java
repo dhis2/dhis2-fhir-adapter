@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,49 +28,30 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.api.IElement;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.function.Function;
+
 /**
- * Defines the different types of script variables that are available when executing a script.
+ * Utility class to process FHIR due date extension.
  *
  * @author volsch
  */
-public enum ScriptVariable
+public abstract class DueDateExtensionUtils
 {
-    CONTEXT( "context" ),
-    INPUT( "input" ),
-    OUTPUT( "output" ),
-    UTILS( "utils" ),
-    RESOURCE( "resource" ),
-    TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
-    TRACKED_ENTITY_TYPE( "trackedEntityType" ),
-    TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
-    TRACKED_ENTITY_RESOURCE_TYPE( "trackedEntityResourceType" ),
-    PROGRAM( "program" ),
-    PROGRAM_STAGE( "programStage" ),
-    ENROLLMENT( "enrollment" ),
-    EVENT( "event" ),
-    DATE_TIME( "dateTime" ),
-    IDENTIFIER_UTILS( "identifierUtils" ),
-    CODE_UTILS( "codeUtils" ),
-    FHIR_CLIENT_UTILS( "fhirClientUtils" ),
-    FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
-    PROGRAM_STAGE_EVENTS( "programStageEvents" ),
-    ORGANIZATION_UNIT_ID( "organizationUnitId" ),
-    ORGANIZATION_UNIT( "organizationUnit" ),
-    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
-    TEI_FHIR_RESOURCE( "teiFhirResource" ),
-    SEARCH_FILTER( "searchFilter" ),
-    ASSIGNMENT_UTILS( "assignmentUtils" ),
-    VALUE_TYPE_UTILS( "valueTypeUtils" );
+    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/due-date";
 
-    private final String variableName;
-
-    ScriptVariable( String variableName )
+    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable Date date, @Nonnull Function<String, IElement> typeFactory )
     {
-        this.variableName = variableName;
+        BaseExtensionUtils.setDateValue( URL, resource, date, typeFactory );
     }
 
-    public String getVariableName()
+    private DueDateExtensionUtils()
     {
-        return variableName;
+        super();
     }
 }

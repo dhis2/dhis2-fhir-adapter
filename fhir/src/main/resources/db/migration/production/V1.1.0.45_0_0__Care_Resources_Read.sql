@@ -30,3 +30,8 @@
 UPDATE fhir_rule SET exp_enabled=TRUE WHERE id='c4e17e7d-880e-45b5-9bc5-568da8c79742';
 
 ALTER TABLE fhir_program_stage_rule ALTER COLUMN program_stage_id DROP NOT NULL;
+
+INSERT INTO fhir_rule(id, version, fhir_resource_type, dhis_resource_type, name, description, enabled, imp_enabled, exp_enabled, contained_allowed, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled, grouping, evaluation_order, simple_fhir_id)
+VALUES('e54a6c5a-ef9a-4bcf-b911-29b8b857f58c', 0, 'QUESTIONNAIRE_RESPONSE', 'PROGRAM_STAGE_EVENT', 'Default FHIR Questionnaire Response to DHIS2 Program Stage', 'Default rule that transforms a FHIR Questionnaire Response to a DHIS2 Program Stage.',
+true, true, true, false, true, true, true, false, -2147483648, true);
+INSERT INTO fhir_program_stage_rule(id) VALUES ('e54a6c5a-ef9a-4bcf-b911-29b8b857f58c');

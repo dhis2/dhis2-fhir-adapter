@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
@@ -46,7 +47,7 @@ import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.repository.FhirResourceRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment.AbstractEnrollmentToCarePlanFhirTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment.AbstractEnrollmentToFhirCarePlanTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEnrollment;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -64,14 +65,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * R4 specific implementation of {@link AbstractEnrollmentToCarePlanFhirTransformer}.
+ * R4 specific implementation of {@link AbstractEnrollmentToFhirCarePlanTransformer}.
  *
  * @author volsch
  */
 @Component
-public class R4EnrollmentToCarePlanFhirTransformer extends AbstractEnrollmentToCarePlanFhirTransformer
+public class R4EnrollmentToFhirCarePlanTransformer extends AbstractEnrollmentToFhirCarePlanTransformer
 {
-    public R4EnrollmentToCarePlanFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+    public R4EnrollmentToFhirCarePlanTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository, @Nonnull ProgramMetadataService programMetadataService )
     {
@@ -99,8 +100,8 @@ public class R4EnrollmentToCarePlanFhirTransformer extends AbstractEnrollmentToC
         fhirCarePlan.setIntent( CarePlan.CarePlanIntent.PLAN );
         fhirCarePlan.setStatus( convertStatus( enrollment.getStatus() ) );
 
-        LocationExtensionUtils.setValue( fhirCarePlan,
-            new Reference( FhirResourceType.LOCATION.withId( enrollment.getOrgUnitId() ) ) );
+        LocationExtensionUtils.setValue( fhirCarePlan, createAssignedFhirReference( context, ruleInfo, scriptVariables,
+            DhisResourceType.ORGANIZATION_UNIT, enrollment.getOrgUnitId(), FhirResourceType.LOCATION ) );
         fhirCarePlan.setSubject( new Reference( trackedEntityResource.getIdElement() ) );
 
         fhirCarePlan.setPeriod( null );

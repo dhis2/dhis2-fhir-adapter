@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,49 +28,33 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program.AbstractProgramStageToFhirDataProvider;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
+
 /**
- * Defines the different types of script variables that are available when executing a script.
+ * DSTU3 specific implementation of {@link AbstractProgramStageToFhirDataProvider}.
  *
  * @author volsch
  */
-public enum ScriptVariable
+@Component
+public class Dstu3ProgramStageToFhirDataProvider extends AbstractProgramStageToFhirDataProvider
 {
-    CONTEXT( "context" ),
-    INPUT( "input" ),
-    OUTPUT( "output" ),
-    UTILS( "utils" ),
-    RESOURCE( "resource" ),
-    TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
-    TRACKED_ENTITY_TYPE( "trackedEntityType" ),
-    TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
-    TRACKED_ENTITY_RESOURCE_TYPE( "trackedEntityResourceType" ),
-    PROGRAM( "program" ),
-    PROGRAM_STAGE( "programStage" ),
-    ENROLLMENT( "enrollment" ),
-    EVENT( "event" ),
-    DATE_TIME( "dateTime" ),
-    IDENTIFIER_UTILS( "identifierUtils" ),
-    CODE_UTILS( "codeUtils" ),
-    FHIR_CLIENT_UTILS( "fhirClientUtils" ),
-    FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
-    PROGRAM_STAGE_EVENTS( "programStageEvents" ),
-    ORGANIZATION_UNIT_ID( "organizationUnitId" ),
-    ORGANIZATION_UNIT( "organizationUnit" ),
-    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
-    TEI_FHIR_RESOURCE( "teiFhirResource" ),
-    SEARCH_FILTER( "searchFilter" ),
-    ASSIGNMENT_UTILS( "assignmentUtils" ),
-    VALUE_TYPE_UTILS( "valueTypeUtils" );
-
-    private final String variableName;
-
-    ScriptVariable( String variableName )
+    public Dstu3ProgramStageToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService metadataService, @Nonnull EventService eventService )
     {
-        this.variableName = variableName;
+        super( scriptExecutor, metadataService, eventService );
     }
 
-    public String getVariableName()
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return variableName;
+        return FhirVersion.DSTU3_ONLY;
     }
 }

@@ -253,7 +253,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
 
         final WritableScriptedEvent scriptedEvent = new WritableScriptedEvent(
-            context, program, programStage, event, scriptedTrackedEntityInstance, valueConverter );
+            context, program, programStage, event, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedEvent );
 
         updateEventDate( context, ruleInfo, resourceMapping, event.getEnrollment(), programStage, event, variables );
@@ -484,7 +484,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         if ( ruleInfo.getRule().getProgramStage().getBeforeScript() != null )
         {
             variables.get().put( ScriptVariable.EVENT.getVariableName(), new WritableScriptedEvent(
-                context, eventInfo.getProgram(), eventInfo.getProgramStage(), event, scriptedTrackedEntityInstance, valueConverter ) );
+                context, eventInfo.getProgram(), eventInfo.getProgramStage(), event, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter ) );
             variables.get().put( ScriptVariable.DATE_TIME.getVariableName(), getEffectiveDate( context, ruleInfo, resourceMapping.get(), variables.get() ) );
             final Optional<OrganizationUnit> orgUnit = getEventOrgUnit( context, ruleInfo, resourceMapping.get(), enrollment, variables.get() );
             variables.get().put( ScriptVariable.ORGANIZATION_UNIT_ID.getVariableName(), orgUnit.map( OrganizationUnit::getId ).orElse( null ) );
@@ -585,7 +585,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
 
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
         final WritableScriptedEvent scriptedEvent = new WritableScriptedEvent(
-            context, eventInfo.getProgram(), eventInfo.getProgramStage(), event, scriptedTrackedEntityInstance, valueConverter );
+            context, eventInfo.getProgram(), eventInfo.getProgramStage(), event, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.EVENT.getVariableName(), scriptedEvent );
 
         final ZonedDateTime eventDate;
@@ -840,7 +840,8 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
         }
 
         return events.stream().filter( e -> programStage.getId().equals( e.getProgramStageId() ) ).sorted( new EventComparator() )
-            .map( e -> new WritableScriptedEvent( transformerContext, program, programStage, e, scriptedTrackedEntityInstance, valueConverter ) ).collect( Collectors.toList() );
+            .map( e -> new WritableScriptedEvent( transformerContext, program, programStage, e, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter ) )
+            .collect( Collectors.toList() );
     }
 
     protected boolean initAndValidateTrackedEntity( @Nonnull Program program, @Nonnull Map<String, Object> variables )

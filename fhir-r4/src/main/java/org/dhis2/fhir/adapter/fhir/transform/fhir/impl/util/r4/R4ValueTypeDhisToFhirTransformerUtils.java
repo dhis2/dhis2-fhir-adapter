@@ -41,7 +41,6 @@ import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.r4.model.BooleanType;
-import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.DecimalType;
@@ -88,7 +87,7 @@ public class R4ValueTypeDhisToFhirTransformerUtils extends AbstractValueTypeDhis
         {
             final Option option = optionSet.getOptionalOptionByCode( dhisValue ).orElseGet( () -> new WritableOption( dhisValue, dhisValue ) );
 
-            return new CodeableConcept().addCoding( new Coding().setCode( option.getCode() ).setDisplay( option.getName() ) );
+            return new Coding().setCode( option.getCode() ).setDisplay( option.getName() );
         }
 
         try

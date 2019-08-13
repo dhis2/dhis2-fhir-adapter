@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,31 +28,44 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
-import org.hl7.fhir.instance.model.api.IIdType;
+import ca.uhn.fhir.model.primitive.IdDt;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractAssignmentDhisToFhirTransformerUtils;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
- * Custom repository for {@link FhirDhisAssignment}s.
+ * DSTU3 implementation of {@link AbstractAssignmentDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-public interface CustomFhirDhisAssignmentRepository
+@Component
+public class Dstu3AssignmentDhisToFhirTransformerUtils extends AbstractAssignmentDhisToFhirTransformerUtils
 {
-    @Nullable
-    String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
+    public Dstu3AssignmentDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirDhisAssignmentRepository assignmentRepository, @Nonnull FhirClientRepository fhirClientRepository )
+    {
+        super( scriptExecutionContext, assignmentRepository, fhirClientRepository );
+    }
 
-    @Nullable
-    String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId );
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
+    {
+        return FhirVersion.DSTU3_ONLY;
+    }
 
-    boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
-
-    boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId );
-
-    boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
+    @Nonnull
+    @Override
+    protected IBaseReference createReference( @Nonnull FhirResourceType fhirResourceType, @Nonnull String fhirId )
+    {
+        return new Reference( new IdDt( fhirResourceType.getResourceTypeName(), fhirId ) );
+    }
 }

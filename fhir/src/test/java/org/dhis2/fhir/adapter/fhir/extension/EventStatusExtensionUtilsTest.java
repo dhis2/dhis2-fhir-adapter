@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,49 +28,26 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.junit.Assert;
+import org.junit.Test;
+
 /**
- * Defines the different types of script variables that are available when executing a script.
+ * Unit tests for {@link EventStatusExtensionUtils}.
  *
  * @author volsch
  */
-public enum ScriptVariable
+public class EventStatusExtensionUtilsTest
 {
-    CONTEXT( "context" ),
-    INPUT( "input" ),
-    OUTPUT( "output" ),
-    UTILS( "utils" ),
-    RESOURCE( "resource" ),
-    TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
-    TRACKED_ENTITY_TYPE( "trackedEntityType" ),
-    TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
-    TRACKED_ENTITY_RESOURCE_TYPE( "trackedEntityResourceType" ),
-    PROGRAM( "program" ),
-    PROGRAM_STAGE( "programStage" ),
-    ENROLLMENT( "enrollment" ),
-    EVENT( "event" ),
-    DATE_TIME( "dateTime" ),
-    IDENTIFIER_UTILS( "identifierUtils" ),
-    CODE_UTILS( "codeUtils" ),
-    FHIR_CLIENT_UTILS( "fhirClientUtils" ),
-    FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
-    PROGRAM_STAGE_EVENTS( "programStageEvents" ),
-    ORGANIZATION_UNIT_ID( "organizationUnitId" ),
-    ORGANIZATION_UNIT( "organizationUnit" ),
-    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
-    TEI_FHIR_RESOURCE( "teiFhirResource" ),
-    SEARCH_FILTER( "searchFilter" ),
-    ASSIGNMENT_UTILS( "assignmentUtils" ),
-    VALUE_TYPE_UTILS( "valueTypeUtils" );
-
-    private final String variableName;
-
-    ScriptVariable( String variableName )
+    @Test
+    public void setValue()
     {
-        this.variableName = variableName;
-    }
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    public String getVariableName()
-    {
-        return variableName;
+        EventStatusExtensionUtils.setValue( planDefinition, EventStatus.OVERDUE, TypeFactory::createType );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( EventStatusExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( "OVERDUE", planDefinition.getExtension().get( 0 ).getValue().toString() );
     }
 }

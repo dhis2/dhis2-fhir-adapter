@@ -56,7 +56,7 @@ import java.util.function.Function;
 public class SearchFilterCollector implements UriFilterApplier
 {
     public static final Set<String> QUERY_PARAM_NAMES = Collections.unmodifiableSet(
-        new HashSet<>( Arrays.asList( "event", "orgUnit", "ou", "status", "trackedEntityInstance" ) ) );
+        new HashSet<>( Arrays.asList( "event", "orgUnit", "ou", "status", "trackedEntityInstance", "program", "programStage" ) ) );
 
     private final Function<Reference, String> dhisPropertyRefResolver;
 
