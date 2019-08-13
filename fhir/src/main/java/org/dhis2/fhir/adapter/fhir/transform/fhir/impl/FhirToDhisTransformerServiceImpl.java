@@ -71,6 +71,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -89,7 +91,7 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
 
     private final RuleRepository ruleRepository;
 
-    private final Map<FhirVersionedValue<DhisResourceType>, FhirToDhisTransformer<?, ?>> transformers = new HashMap<>();
+    private final Map<FhirVersionedValue<DhisResourceType>, SortedSet<FhirToDhisTransformer<?, ?>>> transformers = new HashMap<>();
 
     private final Map<FhirVersion, Map<String, FhirToDhisTransformerUtils>> transformerUtils = new HashMap<>();
 
@@ -112,10 +114,12 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             {
                 for ( final FhirVersion fhirVersion : transformer.getFhirVersions() )
                 {
-                    this.transformers.put( new FhirVersionedValue<>( fhirVersion, transformer.getDhisResourceType() ), transformer );
+                    this.transformers.computeIfAbsent( new FhirVersionedValue<>( fhirVersion, transformer.getDhisResourceType() ),
+                        fvv -> new TreeSet<>( Collections.reverseOrder() ) ).add( transformer );
                 }
             }
         } );
+
         transformUtilsProvider.ifAvailable( fhirToDhisTransformerUtils ->
         {
             for ( final FhirToDhisTransformerUtils tu : fhirToDhisTransformerUtils )
@@ -174,17 +178,27 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             return null;
         }
 
-        final FhirToDhisTransformer<?, ?> transformer = this.transformers.get(
+        final SortedSet<FhirToDhisTransformer<?, ?>> transformers = this.transformers.get(
             new FhirVersionedValue<>( fhirClientResource.getFhirClient().getFhirVersion(), ruleInfo.getRule().getDhisResourceType() ) );
 
-        if ( transformer == null )
+        if ( transformers == null )
         {
             throw new TransformerMappingException( "No transformer can be found for FHIR version " +
-                fhirClientResource.getFhirClient().getFhirVersion() +
-                " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
+                fhirClientResource.getFhirClient().getFhirVersion() + " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
         }
 
-        return transformer.transformDeletionCasted( fhirClientResource, ruleInfo, dhisFhirResourceId );
+        for ( final FhirToDhisTransformer<?, ?> transformer : transformers )
+        {
+            final FhirToDhisDeleteTransformOutcome<? extends DhisResource> outcome =
+                transformer.transformDeletionCasted( fhirClientResource, ruleInfo, dhisFhirResourceId );
+
+            if ( outcome != null )
+            {
+                return outcome;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
@@ -224,13 +238,13 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
         RuleInfo<? extends AbstractRule> ruleInfo;
         while ( (ruleInfo = transformerRequestImpl.nextRule()) != null )
         {
-            final FhirToDhisTransformer<?, ?> transformer = this.transformers.get(
+            final SortedSet<FhirToDhisTransformer<?, ?>> transformers = this.transformers.get(
                 new FhirVersionedValue<>( transformerRequestImpl.getContext().getFhirRequest().getVersion(), ruleInfo.getRule().getDhisResourceType() ) );
-            if ( transformer == null )
+
+            if ( transformers == null )
             {
                 throw new TransformerMappingException( "No transformer can be found for FHIR version " +
-                    transformerRequestImpl.getContext().getFhirRequest().getVersion() +
-                    " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
+                    transformerRequestImpl.getContext().getFhirRequest().getVersion() + " mapping of DHIS resource type " + ruleInfo.getRule().getDhisResourceType() );
             }
 
             final Map<String, Object> scriptVariables = new HashMap<>( transformerUtils );
@@ -238,18 +252,23 @@ public class FhirToDhisTransformerServiceImpl implements FhirToDhisTransformerSe
             scriptVariables.put( ScriptVariable.INPUT.getVariableName(), transformerRequestImpl.getInput() );
             if ( isApplicable( transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables ) )
             {
-                final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getFhirClientResource(),
-                    transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
-                if ( outcome != null )
+                for ( final FhirToDhisTransformer<?, ?> transformer : transformers )
                 {
-                    logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
-                        ruleInfo, transformerRequestImpl.getInput().getIdElement(), ruleInfo.getRule().isStop() );
-                    transformerRequestImpl.executed( ruleInfo );
-                    return new FhirToDhisTransformOutcome<>( outcome, (ruleInfo.getRule().isStop() || transformerRequestImpl.isLastRule()) ? null : transformerRequestImpl );
-                }
+                    final FhirToDhisTransformOutcome<? extends DhisResource> outcome = transformer.transformCasted( transformerRequest.getFhirClientResource(),
+                        transformerRequestImpl.getContext(), transformerRequestImpl.getInput(), ruleInfo, scriptVariables );
 
-                // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
-                lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
+                    if ( outcome != null )
+                    {
+                        logger.info( "Rule {} used successfully for transformation of {} (stop={}).",
+                            ruleInfo, transformerRequestImpl.getInput().getIdElement(), ruleInfo.getRule().isStop() );
+                        transformerRequestImpl.executed( ruleInfo );
+
+                        return new FhirToDhisTransformOutcome<>( outcome, ( ruleInfo.getRule().isStop() || transformerRequestImpl.isLastRule() ) ? null : transformerRequestImpl );
+                    }
+
+                    // if the previous transformation caused a lock of any resource this must be released since the transformation has been rolled back
+                    lockManager.getCurrentLockContext().ifPresent( LockContext::unlockAll );
+                }
             }
         }
 
