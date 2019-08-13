@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,45 +28,26 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * @author Charles Chigoriwa (ITINORDIC)
+ * Unit tests for {@link EventStatusExtensionUtils}.
+ *
+ * @author volsch
  */
-@Entity
-@Table( name = "fhir_enrollment_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractSimpleRule
+public class EventStatusExtensionUtilsTest
 {
-    private static final long serialVersionUID = 3878610804052444321L;
-
-    private ExecutableScript programRefLookupScript;
-
-    public EnrollmentRule()
+    @Test
+    public void setValue()
     {
-        super( DhisResourceType.ENROLLMENT );
-    }
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "program_ref_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getProgramRefLookupScript()
-    {
-        return programRefLookupScript;
-    }
+        EventStatusExtensionUtils.setValue( planDefinition, EventStatus.OVERDUE, TypeFactory::createType );
 
-    public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
-    {
-        this.programRefLookupScript = programRefLookupScript;
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( EventStatusExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertEquals( "OVERDUE", planDefinition.getExtension().get( 0 ).getValue().toString() );
     }
 }

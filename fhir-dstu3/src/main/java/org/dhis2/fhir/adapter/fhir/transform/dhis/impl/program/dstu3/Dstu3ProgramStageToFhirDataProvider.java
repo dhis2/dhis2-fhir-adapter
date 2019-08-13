@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program.dstu3;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,45 +28,33 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventService;
+import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program.AbstractProgramStageToFhirDataProvider;
+import org.springframework.stereotype.Component;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.annotation.Nonnull;
+import java.util.Set;
 
 /**
- * @author Charles Chigoriwa (ITINORDIC)
+ * DSTU3 specific implementation of {@link AbstractProgramStageToFhirDataProvider}.
+ *
+ * @author volsch
  */
-@Entity
-@Table( name = "fhir_enrollment_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractSimpleRule
+@Component
+public class Dstu3ProgramStageToFhirDataProvider extends AbstractProgramStageToFhirDataProvider
 {
-    private static final long serialVersionUID = 3878610804052444321L;
-
-    private ExecutableScript programRefLookupScript;
-
-    public EnrollmentRule()
+    public Dstu3ProgramStageToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService metadataService, @Nonnull EventService eventService )
     {
-        super( DhisResourceType.ENROLLMENT );
+        super( scriptExecutor, metadataService, eventService );
     }
 
-    @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "program_ref_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getProgramRefLookupScript()
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return programRefLookupScript;
-    }
-
-    public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
-    {
-        this.programRefLookupScript = programRefLookupScript;
+        return FhirVersion.DSTU3_ONLY;
     }
 }

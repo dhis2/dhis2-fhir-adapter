@@ -28,7 +28,6 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.dhis2.fhir.adapter.dhis.model.ImmutableDhisObject;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
@@ -53,14 +52,12 @@ public class ImmutableScriptedEnrollment extends ImmutableScriptedDhisResource i
         super( delegate );
     }
 
-    @JsonIgnore
     @Nonnull
     protected ScriptedEnrollment getInternalDelegate()
     {
         return (ScriptedEnrollment) super.getDelegate();
     }
 
-    @JsonIgnore
     @Override
     @Nullable
     public ZonedDateTime getEnrollmentDate()
@@ -68,7 +65,6 @@ public class ImmutableScriptedEnrollment extends ImmutableScriptedDhisResource i
         return getInternalDelegate().getEnrollmentDate();
     }
 
-    @JsonIgnore
     @Override
     @Nullable
     public ZonedDateTime getIncidentDate()
@@ -76,7 +72,6 @@ public class ImmutableScriptedEnrollment extends ImmutableScriptedDhisResource i
         return getInternalDelegate().getIncidentDate();
     }
 
-    @JsonIgnore
     @Override
     @Nullable
     public Location getCoordinate()
@@ -84,7 +79,6 @@ public class ImmutableScriptedEnrollment extends ImmutableScriptedDhisResource i
         return getInternalDelegate().getCoordinate();
     }
 
-    @JsonIgnore
     @Nullable
     @Override
     public String getProgramId()

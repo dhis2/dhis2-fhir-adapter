@@ -99,7 +99,7 @@ public class SearchFilter
     @Nullable
     private DhisFhirResourceId getSearchedDhisResourceId( @Nonnull String fhirSearchParamName, @Nullable Object defaultFhirResourceType, @Nonnull Object dhisResourceType )
     {
-        final FhirResourceType fhirType = resolveFhirResourceType( defaultFhirResourceType );
+        final FhirResourceType fhirType = defaultFhirResourceType == null ? null : resolveFhirResourceType( defaultFhirResourceType );
         final DhisResourceType dhisType = resolveDhisResourceType( dhisResourceType );
 
         final List<SearchParamValue> searchParamValues = searchFilterCollector.getSearchParamValues( fhirSearchParamName );

@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
@@ -121,6 +122,13 @@ public class R4ProgramStageFhirToDhisTransformerUtilsTest
         public TestScriptedEvent( Event event )
         {
             this.event = event;
+        }
+
+        @Nonnull
+        @Override
+        public DhisResource getDhisResource()
+        {
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings( "ConstantConditions" )

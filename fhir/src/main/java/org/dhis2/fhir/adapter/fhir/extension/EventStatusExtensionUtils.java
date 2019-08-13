@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,45 +28,30 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import ca.uhn.fhir.model.api.IElement;
+import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.function.Function;
 
 /**
- * @author Charles Chigoriwa (ITINORDIC)
+ * Utility class to process DHIS2 event status extension.
+ *
+ * @author volsch
  */
-@Entity
-@Table( name = "fhir_enrollment_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractSimpleRule
+public abstract class EventStatusExtensionUtils
 {
-    private static final long serialVersionUID = 3878610804052444321L;
+    public static final String URL = "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/event-status";
 
-    private ExecutableScript programRefLookupScript;
-
-    public EnrollmentRule()
+    public static void setValue( @Nonnull IBaseHasExtensions resource, @Nullable EventStatus eventStatus, @Nonnull Function<String, IElement> typeFactory )
     {
-        super( DhisResourceType.ENROLLMENT );
+        BaseExtensionUtils.setStringValue( URL, resource, eventStatus == null ? null : eventStatus.name(), typeFactory );
     }
 
-    @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "program_ref_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getProgramRefLookupScript()
+    private EventStatusExtensionUtils()
     {
-        return programRefLookupScript;
-    }
-
-    public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
-    {
-        this.programRefLookupScript = programRefLookupScript;
+        super();
     }
 }

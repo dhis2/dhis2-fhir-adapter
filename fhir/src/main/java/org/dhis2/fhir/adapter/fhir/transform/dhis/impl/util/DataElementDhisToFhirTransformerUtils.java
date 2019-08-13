@@ -1,7 +1,7 @@
 package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
 
 /*
- * Copyright (c) 2004-2018, University of Oslo
+ * Copyright (c) 2004-2019, University of Oslo
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ public class DataElementDhisToFhirTransformerUtils extends AbstractDhisToFhirTra
 {
     public static final String SCRIPT_ATTR_NAME = "dataElementUtils";
 
-    protected DataElementDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
+    public DataElementDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutionContext );
     }

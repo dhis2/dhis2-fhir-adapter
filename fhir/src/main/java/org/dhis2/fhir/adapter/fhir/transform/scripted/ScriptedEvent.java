@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  * @author volsch
  */
 @Scriptable
-public interface ScriptedEvent extends ScriptedDhisResource
+public interface ScriptedEvent extends AccessibleScriptedDhisResource
 {
     @Nonnull
     Program getProgram();
