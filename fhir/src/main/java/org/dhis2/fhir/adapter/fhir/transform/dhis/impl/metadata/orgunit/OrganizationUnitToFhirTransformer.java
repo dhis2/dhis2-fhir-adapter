@@ -74,6 +74,7 @@ public class OrganizationUnitToFhirTransformer extends AbstractReadOnlyDhisMetad
         @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ScriptExecutionContext scriptExecutionContext )
     {
         super( scriptExecutor, lockManager, systemRepository, fhirResourceRepository, fhirDhisAssignmentRepository );
+
         this.organizationUnitService = organizationUnitService;
         this.scriptExecutionContext = scriptExecutionContext;
     }
