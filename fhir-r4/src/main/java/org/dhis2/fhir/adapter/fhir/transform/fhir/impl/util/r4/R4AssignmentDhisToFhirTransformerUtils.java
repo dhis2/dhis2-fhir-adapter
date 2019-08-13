@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.r4;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,49 +28,44 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.IdDt;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractAssignmentDhisToFhirTransformerUtils;
+import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.hl7.fhir.r4.model.Reference;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
+
 /**
- * Defines the different types of script variables that are available when executing a script.
+ * DSTU3 implementation of {@link AbstractAssignmentDhisToFhirTransformerUtils}.
  *
  * @author volsch
  */
-public enum ScriptVariable
+@Component
+public class R4AssignmentDhisToFhirTransformerUtils extends AbstractAssignmentDhisToFhirTransformerUtils
 {
-    CONTEXT( "context" ),
-    INPUT( "input" ),
-    OUTPUT( "output" ),
-    UTILS( "utils" ),
-    RESOURCE( "resource" ),
-    TRACKED_ENTITY_ATTRIBUTES( "trackedEntityAttributes" ),
-    TRACKED_ENTITY_TYPE( "trackedEntityType" ),
-    TRACKED_ENTITY_INSTANCE( "trackedEntityInstance" ),
-    TRACKED_ENTITY_RESOURCE_TYPE( "trackedEntityResourceType" ),
-    PROGRAM( "program" ),
-    PROGRAM_STAGE( "programStage" ),
-    ENROLLMENT( "enrollment" ),
-    EVENT( "event" ),
-    DATE_TIME( "dateTime" ),
-    IDENTIFIER_UTILS( "identifierUtils" ),
-    CODE_UTILS( "codeUtils" ),
-    FHIR_CLIENT_UTILS( "fhirClientUtils" ),
-    FHIR_RESOURCE_UTILS( "fhirResourceUtils" ),
-    PROGRAM_STAGE_EVENTS( "programStageEvents" ),
-    ORGANIZATION_UNIT_ID( "organizationUnitId" ),
-    ORGANIZATION_UNIT( "organizationUnit" ),
-    ORGANIZATION_UNIT_RESOLVER( "organizationUnitResolver" ),
-    TEI_FHIR_RESOURCE( "teiFhirResource" ),
-    SEARCH_FILTER( "searchFilter" ),
-    ASSIGNMENT_UTILS( "assignmentUtils" ),
-    VALUE_TYPE_UTILS( "valueTypeUtils" );
-
-    private final String variableName;
-
-    ScriptVariable( String variableName )
+    public R4AssignmentDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull FhirDhisAssignmentRepository assignmentRepository, @Nonnull FhirClientRepository fhirClientRepository )
     {
-        this.variableName = variableName;
+        super( scriptExecutionContext, assignmentRepository, fhirClientRepository );
     }
 
-    public String getVariableName()
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        return variableName;
+        return FhirVersion.R4_ONLY;
+    }
+
+    @Nonnull
+    @Override
+    protected IBaseReference createReference( @Nonnull FhirResourceType fhirResourceType, @Nonnull String fhirId )
+    {
+        return new Reference( new IdDt( fhirResourceType.getResourceTypeName(), fhirId ) );
     }
 }

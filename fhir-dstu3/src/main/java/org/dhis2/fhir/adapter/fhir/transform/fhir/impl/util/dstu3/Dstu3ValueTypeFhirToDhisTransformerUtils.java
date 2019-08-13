@@ -34,7 +34,6 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractValueTypeFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.TimeType;
@@ -94,9 +93,9 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
                 }
 
-                if ( fhirValue instanceof CodeableConcept )
+                if ( fhirValue instanceof Coding )
                 {
-                    return getCode( (CodeableConcept) fhirValue );
+                    return getCode( (Coding) fhirValue );
                 }
 
                 break;
@@ -114,9 +113,9 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
                 }
 
-                if ( fhirValue instanceof CodeableConcept )
+                if ( fhirValue instanceof Coding )
                 {
-                    return getCode( (CodeableConcept) fhirValue );
+                    return getCode( (Coding) fhirValue );
                 }
 
                 break;
@@ -177,9 +176,8 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeF
     }
 
     @Nullable
-    protected String getCode( @Nonnull CodeableConcept codeableConcept )
+    protected String getCode( @Nonnull Coding coding )
     {
-        return codeableConcept.getCoding().stream().filter( c -> c.getSystem() == null ).map( Coding::getCode )
-            .findFirst().orElseThrow( () -> new TransformerDataException( "Codeable concept does not include a code (system must not be set)." ) );
+        return coding.getCode();
     }
 }

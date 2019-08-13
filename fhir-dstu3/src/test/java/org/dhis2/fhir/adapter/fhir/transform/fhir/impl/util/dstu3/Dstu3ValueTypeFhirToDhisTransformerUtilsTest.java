@@ -92,7 +92,7 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtilsTest
     @Test
     public void convertTextCode()
     {
-        Assert.assertEquals( "test1", utils.convert( new CodeableConcept().addCoding( new Coding().setCode( "test1" ) ), "Text" ) );
+        Assert.assertEquals( "test1", utils.convert( new Coding().setCode( "test1" ), "Text" ) );
     }
 
     @Test( expected = TransformerDataException.class )
@@ -110,7 +110,7 @@ public class Dstu3ValueTypeFhirToDhisTransformerUtilsTest
     @Test
     public void convertIntegerCode()
     {
-        Assert.assertEquals( "736384", utils.convert( new CodeableConcept().addCoding( new Coding().setCode( "736384" ) ), "integer" ) );
+        Assert.assertEquals( "736384", utils.convert( new Coding().setCode( "736384" ), "integer" ) );
     }
 
     @Test( expected = TransformerDataException.class )

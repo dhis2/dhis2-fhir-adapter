@@ -85,6 +85,7 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         @Nonnull FhirResourceRepository fhirResourceRepository )
     {
         super( scriptExecutionContext );
+
         this.fhirClientResourceRepository = fhirClientResourceRepository;
         this.fhirResourceRepository = fhirResourceRepository;
     }
@@ -143,6 +144,7 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
         }
 
         final FhirResourceType fhirResourceType;
+
         if ( resourceType == null )
         {
             fhirResourceType = null;
@@ -165,8 +167,10 @@ public class ReferenceFhirToDhisTransformerUtils extends AbstractFhirToDhisTrans
             {
                 logger.debug( "The referenced resource ID contains resource type {}, but requested resource type is {}.",
                     FhirResourceType.getByResource( reference.getResource() ), fhirResourceType );
+
                 return null;
             }
+
             // also handles the case of a local reference
             return reference.getResource();
         }

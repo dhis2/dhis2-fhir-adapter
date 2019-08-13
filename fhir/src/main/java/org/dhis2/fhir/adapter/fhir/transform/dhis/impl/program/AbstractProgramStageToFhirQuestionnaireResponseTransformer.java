@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment;
+package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -34,11 +34,11 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceMapping;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
@@ -56,7 +56,7 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.DhisToFhirTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.metadata.program.ProgramTrackedEntityTypeUtils;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEnrollment;
+import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.lock.LockManager;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -73,11 +73,11 @@ import java.util.Optional;
 
 /**
  * Implementation of {@link DhisToFhirTransformer} for transforming DHIS2
- * Enrollment to FHIR Care Plan.
+ * Program Stage to FHIR Questionnaire Response.
  *
  * @author volsch
  */
-public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends AbstractDhisToFhirTransformer<ScriptedEnrollment, EnrollmentRule>
+public abstract class AbstractProgramStageToFhirQuestionnaireResponseTransformer extends AbstractDhisToFhirTransformer<ScriptedEvent, ProgramStageRule>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -89,7 +89,7 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
 
     private final ProgramMetadataService programMetadataService;
 
-    public AbstractEnrollmentToCarePlanFhirTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
+    public AbstractProgramStageToFhirQuestionnaireResponseTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull LockManager lockManager, @Nonnull SystemRepository systemRepository, @Nonnull FhirResourceRepository fhirResourceRepository,
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository,
         @Nonnull ProgramMetadataService programMetadataService )
@@ -106,38 +106,44 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
     @Override
     public DhisResourceType getDhisResourceType()
     {
-        return DhisResourceType.ENROLLMENT;
+        return DhisResourceType.PROGRAM_STAGE_EVENT;
     }
 
     @Nonnull
     @Override
-    public Class<ScriptedEnrollment> getDhisResourceClass()
+    public Class<ScriptedEvent> getDhisResourceClass()
     {
-        return ScriptedEnrollment.class;
+        return ScriptedEvent.class;
     }
 
     @Nonnull
     @Override
-    public Class<EnrollmentRule> getRuleClass()
+    public Class<ProgramStageRule> getRuleClass()
     {
-        return EnrollmentRule.class;
+        return ProgramStageRule.class;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return 10;
     }
 
     @Nullable
     @Override
     public DhisToFhirTransformOutcome<? extends IBaseResource> transform(
-        @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEnrollment input,
-        @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+        @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
+        @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( ruleInfo.getRule().getFhirResourceType() != FhirResourceType.CARE_PLAN )
+        if ( ruleInfo.getRule().getFhirResourceType() != FhirResourceType.QUESTIONNAIRE_RESPONSE || ruleInfo.getRule().getProgramStage() != null )
         {
             return null;
         }
 
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
 
-        final Program program = programMetadataService.findMetadataByReference( Reference.createIdReference( Objects.requireNonNull( input.getProgramId() ) ) )
-            .orElseThrow( () -> new TransformerMappingException( "Program " + input.getProgramId() + " could not be found." ) );
+        final Program program = programMetadataService.findMetadataByReference( Reference.createIdReference( input.getProgram().getId() ) )
+            .orElseThrow( () -> new TransformerMappingException( "Program " + input.getProgram().getId() + " could not be found." ) );
 
         final TrackedEntityRule trackedEntityRule = getTrackedEntityRule( program );
 
@@ -189,7 +195,7 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
     }
 
     @Nonnull
-    private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> variables,
+    private DhisToFhirTransformOutcome<? extends IBaseResource> createResult( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> variables,
         @Nonnull IBaseResource resource, @Nonnull IBaseResource modifiedResource )
     {
         if ( !context.getDhisRequest().isDhisFhirId() && evaluateNotModified( context, variables, resource, modifiedResource ) )
@@ -201,8 +207,9 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
         return new DhisToFhirTransformOutcome<>( ruleInfo.getRule(), modifiedResource );
     }
 
-    protected boolean transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
-        @Nonnull ScriptedEnrollment input, @Nonnull IBaseResource output, @Nonnull IBaseResource trackedEntityResource )
+    protected boolean transformInternal( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context,
+        @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull ScriptedEvent input, @Nonnull IBaseResource output, @Nonnull IBaseResource trackedEntityResource )
     {
         // method can be overridden
         return true;
@@ -210,22 +217,22 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
 
     @Nonnull
     @Override
-    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected Optional<? extends IBaseResource> getActiveResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         return Optional.empty();
     }
 
     @Override
-    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
+    protected void lockResource( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( !context.getDhisRequest().isDhisFhirId() )
         {
-            final ScriptedEnrollment scriptedEnrollment = TransformerUtils.getScriptVariable(
-                scriptVariables, ScriptVariable.INPUT, ScriptedEnrollment.class );
+            final ScriptedEvent scriptedEvent = TransformerUtils.getScriptVariable(
+                scriptVariables, ScriptVariable.INPUT, ScriptedEvent.class );
 
-            if ( scriptedEnrollment.getId() != null )
+            if ( scriptedEvent.getId() != null )
             {
-                final String lockKey = "out-en:" + scriptedEnrollment.getId();
+                final String lockKey = "out-ps:" + scriptedEvent.getId();
                 getLockManager().getCurrentLockContext().orElseThrow( () -> new FatalTransformerException( "No lock context available." ) ).lock( lockKey );
             }
         }
@@ -233,15 +240,15 @@ public abstract class AbstractEnrollmentToCarePlanFhirTransformer extends Abstra
 
     @Nullable
     @Override
-    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript,
-        @Nonnull ScriptedEnrollment scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
+    protected String getIdentifierValue( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nullable ExecutableScript identifierLookupScript,
+        @Nonnull ScriptedEvent scriptedDhisResource, @Nonnull Map<String, Object> scriptVariables )
     {
         // for enrollments no identifier value can be created
         return null;
     }
 
     @Nonnull
-    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull FhirResourceType trackedEntityFhirResourceType )
+    protected FhirResourceMapping getResourceMapping( @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull FhirResourceType trackedEntityFhirResourceType )
     {
         return resourceMappingRepository.findOneByFhirResourceType( ruleInfo.getRule().getFhirResourceType(), trackedEntityFhirResourceType )
             .orElseThrow( () -> new FatalTransformerException( "No FHIR resource mapping has been defined for " + ruleInfo.getRule().getFhirResourceType() + "." ) );

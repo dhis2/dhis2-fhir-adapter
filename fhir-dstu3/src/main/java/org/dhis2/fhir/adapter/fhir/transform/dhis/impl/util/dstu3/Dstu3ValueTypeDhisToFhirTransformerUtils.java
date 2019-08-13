@@ -40,7 +40,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractValueTypeDhi
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.dstu3.model.BooleanType;
-import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DateTimeType;
 import org.hl7.fhir.dstu3.model.DecimalType;
@@ -88,7 +87,7 @@ public class Dstu3ValueTypeDhisToFhirTransformerUtils extends AbstractValueTypeD
         {
             final Option option = optionSet.getOptionalOptionByCode( dhisValue ).orElseGet( () -> new WritableOption( dhisValue, dhisValue ) );
 
-            return new CodeableConcept().addCoding( new Coding().setCode( option.getCode() ).setDisplay( option.getName() ) );
+            return new Coding().setCode( option.getCode() ).setDisplay( option.getName() );
         }
 
         try

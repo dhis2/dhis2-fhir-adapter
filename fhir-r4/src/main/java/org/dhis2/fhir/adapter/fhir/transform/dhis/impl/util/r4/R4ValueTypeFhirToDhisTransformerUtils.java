@@ -36,7 +36,6 @@ import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.instance.model.api.IPrimitiveType;
-import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.TimeType;
@@ -94,9 +93,9 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
                 }
 
-                if ( fhirValue instanceof CodeableConcept )
+                if ( fhirValue instanceof Coding )
                 {
-                    return getCode( (CodeableConcept) fhirValue );
+                    return getCode( (Coding) fhirValue );
                 }
 
                 break;
@@ -109,9 +108,9 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
                     return ( (IPrimitiveType) fhirValue ).getValueAsString();
                 }
 
-                if ( fhirValue instanceof CodeableConcept )
+                if ( fhirValue instanceof Coding )
                 {
-                    return getCode( (CodeableConcept) fhirValue );
+                    return getCode( (Coding) fhirValue );
                 }
 
                 break;
@@ -172,9 +171,8 @@ public class R4ValueTypeFhirToDhisTransformerUtils extends AbstractValueTypeFhir
     }
 
     @Nullable
-    protected String getCode( @Nonnull CodeableConcept codeableConcept )
+    protected String getCode( @Nonnull Coding coding )
     {
-        return codeableConcept.getCoding().stream().filter( c -> c.getSystem() == null ).map( Coding::getCode )
-            .findFirst().orElseThrow( () -> new TransformerDataException( "Codeable concept does not include a code (system must not be set)." ) );
+        return coding.getCode();
     }
 }
