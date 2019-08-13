@@ -28,3 +28,5 @@
 
 -- @formatter:off
 UPDATE fhir_rule SET exp_enabled=TRUE WHERE id='c4e17e7d-880e-45b5-9bc5-568da8c79742';
+
+ALTER TABLE fhir_program_stage_rule ALTER COLUMN program_stage_id DROP NOT NULL;

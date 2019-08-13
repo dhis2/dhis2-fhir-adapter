@@ -188,10 +188,16 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     public FhirToDhisTransformOutcome<Event> transform( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context, @Nonnull IBaseResource input,
         @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( ruleInfo.getRule().getProgramStage() == null )
+        {
+            return null;
+        }
+
         if ( !ruleInfo.getRule().getProgramStage().isEnabled() || !ruleInfo.getRule().getProgramStage().getProgram().isEnabled() )
         {
             logger.debug( "Ignoring not enabled program stage \"{}\" of program \"{}\".",
                 ruleInfo.getRule().getProgramStage().getName(), ruleInfo.getRule().getProgramStage().getProgram().getName() );
+
             return null;
         }
 
