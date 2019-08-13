@@ -31,7 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageId;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Implementation of {@link DhisToFhirSearchState} for program stages.
@@ -46,14 +46,14 @@ public class ProgramStageToFhirSearchState implements DhisToFhirSearchState
 
     private final boolean more;
 
-    public ProgramStageToFhirSearchState( @Nonnull ProgramStageId programStageId, int from, boolean more )
+    public ProgramStageToFhirSearchState( @Nullable ProgramStageId programStageId, int from, boolean more )
     {
         this.programStageId = programStageId;
         this.from = from;
         this.more = more;
     }
 
-    @Nonnull
+    @Nullable
     public ProgramStageId getProgramStageId()
     {
         return programStageId;

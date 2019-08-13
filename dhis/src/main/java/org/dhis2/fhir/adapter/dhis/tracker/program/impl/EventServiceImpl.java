@@ -450,19 +450,30 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
     @HystrixCommand( ignoreExceptions = { UnauthorizedException.class, DhisFindException.class } )
     @Nonnull
     @Override
-    public DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
+    public DhisResourceResult<Event> find( @Nullable String programId, @Nullable String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max )
     {
         final DhisPagingQuery pagingQuery = DhisPagingUtils.createPagingQuery( from, max );
         final List<String> variables = new ArrayList<>();
-        final String uri = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/events.json" )
+
+        UriComponentsBuilder builder = uriFilterApplier.add( UriComponentsBuilder.newInstance(), variables ).path( "/events.json" )
             .queryParam( "skipPaging", "false" ).queryParam( "page", pagingQuery.getPage() ).queryParam( "pageSize", pagingQuery.getPageSize() )
-            .queryParam( "program", programId ).queryParam( "programStage", programStageId )
             .queryParam( "ouMode", uriFilterApplier.containsQueryParam( "orgUnit" ) ? "SELECTED" : "ACCESSIBLE" )
-            .queryParam( "fields", FIELDS ).build().toString();
+            .queryParam( "fields", FIELDS );
+
+        if ( programId != null )
+        {
+            builder = builder.queryParam( "program", programId );
+        }
+
+        if ( programStageId != null )
+        {
+            builder = builder.queryParam( "programStage", programStageId );
+        }
+
         final ResponseEntity<DhisEvents> result;
         try
         {
-            result = restTemplate.getForEntity( uri, DhisEvents.class, variables.toArray() );
+            result = restTemplate.getForEntity( builder.build().toString(), DhisEvents.class, variables.toArray() );
         }
         catch ( HttpClientErrorException e )
         {
@@ -470,8 +481,10 @@ public class EventServiceImpl implements EventService, LocalDhisRepositoryPersis
             {
                 throw new DhisFindException( e.getMessage(), e );
             }
+
             throw e;
         }
+
         final DhisEvents events = Objects.requireNonNull( result.getBody() );
 
         return new DhisResourceResult<>( (events.getEvents().size() > pagingQuery.getResultOffset()) ?

@@ -137,8 +137,9 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
     {
         expectProgramStageMetadataRequests();
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6aW52YWxpZF8x" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=10&program=EPDyQuoRnXk&programStage=qowTSevVSkd&ouMode=ACCESSIBLE&" +
-                "fields=deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=10&ouMode=ACCESSIBLE&" +
+                "fields=deleted,event,orgUnit,program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" +
+                "&program=EPDyQuoRnXk&programStage=qowTSevVSkd" ) )
             .andRespond( withStatus( HttpStatus.UNAUTHORIZED ) );
 
         final IGenericClient client = createGenericClient();
@@ -160,12 +161,12 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
 
         expectProgramStageMetadataRequests();
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=10&program=EPDyQuoRnXk&programStage=qowTSevVSkd&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit,program,enrollment," +
-                "trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=10&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit,program,enrollment," +
+                "trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D&program=EPDyQuoRnXk&programStage=qowTSevVSkd" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-70-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=9&program=EPDyQuoRnXk&programStage=MsWxkiY6tMS&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit,program,enrollment," +
-                "trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?skipPaging=false&page=1&pageSize=9&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit,program,enrollment," +
+                "trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D&program=EPDyQuoRnXk&programStage=MsWxkiY6tMS" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-71-only-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEp.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
@@ -189,12 +190,12 @@ public class Dstu3ProgramStageFhirRestAppTest extends AbstractProgramStageFhirRe
     {
         expectProgramStageMetadataRequests();
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=10&program=EPDyQuoRnXk&programStage=qowTSevVSkd&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
-                "program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=10&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
+                "program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D&program=EPDyQuoRnXk&programStage=qowTSevVSkd" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-70-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", "Basic Zmhpcl9jbGllbnQ6Zmhpcl9jbGllbnRfMQ==" ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=9&program=EPDyQuoRnXk&programStage=MsWxkiY6tMS&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
-                "program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D" ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?trackedEntityInstance=JeR2Ul4mZfx&skipPaging=false&page=1&pageSize=9&ouMode=ACCESSIBLE&fields=deleted,event,orgUnit," +
+                "program,enrollment,trackedEntityInstance,programStage,status,eventDate,dueDate,coordinate,lastUpdated,dataValues%5BdataElement,value,providedElsewhere,lastUpdated,storedBy%5D&program=EPDyQuoRnXk&programStage=MsWxkiY6tMS" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-71-only-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEp.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )

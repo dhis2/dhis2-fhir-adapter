@@ -124,6 +124,11 @@ public class ProgramStageToFhirTransformer extends AbstractDhisToFhirTransformer
         @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull ScriptedEvent input,
         @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
+        if ( ruleInfo.getRule().getProgramStage() == null )
+        {
+            return null;
+        }
+
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
 
         if ( !addScriptVariables( variables, input ) )

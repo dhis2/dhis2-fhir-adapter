@@ -56,8 +56,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -117,18 +115,26 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
     @Override
     public PreparedDhisToFhirSearch prepareSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<ProgramStageRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count ) throws DhisToFhirDataProviderException
     {
-        final Set<ReferenceTuple> refs = ruleInfos.stream()
-            .filter( ri -> ri.getRule().getProgramStage().isEnabled() && ri.getRule().getProgramStage().isExpEnabled() && ri.getRule().getProgramStage().getProgram().isEnabled() && ri.getRule().getProgramStage().getProgram().isExpEnabled() )
-            .map( ri -> new ReferenceTuple( ri.getRule().getProgramStage().getProgram().getProgramReference(), ri.getRule().getProgramStage().getProgramStageReference() ) )
-            .collect( Collectors.toCollection( TreeSet::new ) );
-        final Set<ProgramStageId> programStageIds = refs.stream().map( ref -> {
-            final Program program = metadataService.findMetadataByReference( ref.getProgramReference() )
-                .orElseThrow( () -> new TransformerMappingException( "Program does not exist: " + ref.getProgramReference() ) );
-            final ProgramStage programStage = program.getOptionalStage( ref.getProgramStageReference() )
-                .orElseThrow( () -> new TransformerMappingException( "Program stage does not exist: " + ref.getProgramStageReference() ) );
-            return new ProgramStageId( program.getId(), programStage.getId() );
-        } ).collect( Collectors.toCollection( LinkedHashSet::new ) );
-        return new PreparedProgramStageToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count, new ArrayList<>( programStageIds ) );
+        List<ProgramStageId> programStageIds = null;
+
+        if ( ruleInfos.stream().noneMatch( ri -> ri.getRule().getProgramStage() == null ) )
+        {
+            final Set<ReferenceTuple> refs = ruleInfos.stream()
+                .filter( ri -> ri.getRule().getProgramStage().isEnabled() && ri.getRule().getProgramStage().isExpEnabled() && ri.getRule().getProgramStage().getProgram().isEnabled() && ri.getRule().getProgramStage().getProgram().isExpEnabled() )
+                .map( ri -> new ReferenceTuple( ri.getRule().getProgramStage().getProgram().getProgramReference(), ri.getRule().getProgramStage().getProgramStageReference() ) )
+                .collect( Collectors.toCollection( TreeSet::new ) );
+
+            programStageIds = refs.stream().map( ref -> {
+                final Program program = metadataService.findMetadataByReference( ref.getProgramReference() )
+                    .orElseThrow( () -> new TransformerMappingException( "Program does not exist: " + ref.getProgramReference() ) );
+                final ProgramStage programStage = program.getOptionalStage( ref.getProgramStageReference() )
+                    .orElseThrow( () -> new TransformerMappingException( "Program stage does not exist: " + ref.getProgramStageReference() ) );
+
+                return new ProgramStageId( program.getId(), programStage.getId() );
+            } ).distinct().collect( Collectors.toList() );
+        }
+
+        return new PreparedProgramStageToFhirSearch( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count, programStageIds );
     }
 
     @Nullable
@@ -140,13 +146,27 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
 
         final ProgramStageId programStageId;
         final int from;
-        if ( (ss == null) || !ss.isMore() )
+
+        if ( ss == null || !ss.isMore() )
         {
-            programStageId = ps.getNextProgramStageId( (ss == null) ? null : ss.getProgramStageId() );
-            if ( programStageId == null )
+            if ( ps.isProgramStageRestricted() )
+            {
+                programStageId = ps.getNextProgramStageId( ss == null ? null : ss.getProgramStageId() );
+
+                if ( programStageId == null )
+                {
+                    return null;
+                }
+            }
+            else if ( ss == null )
+            {
+                programStageId = null;
+            }
+            else
             {
                 return null;
             }
+
             from = 0;
 
             // may be filtered by ID of program stage
@@ -162,15 +182,17 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
         try
         {
             result = eventService.find(
-                programStageId.getProgramId(), programStageId.getProgramStageId(), ps, from, max );
+                programStageId == null ? null : programStageId.getProgramId(),
+                programStageId == null ? null : programStageId.getProgramStageId(),
+                ps, from, max );
         }
         catch ( DhisFindException e )
         {
             throw new DhisToFhirDataProviderException( e.getMessage(), e );
         }
-        return new DhisToFhirSearchResult<>( result.getResources(),
-            new ProgramStageToFhirSearchState( programStageId, from + result.getResources().size(),
-                !result.getResources().isEmpty() && result.isMore() ) );
+
+        return new DhisToFhirSearchResult<>( result.getResources(), new ProgramStageToFhirSearchState( programStageId, from + result.getResources().size(),
+            !result.getResources().isEmpty() && result.isMore() ) );
     }
 
     public static class ReferenceTuple implements Comparable<ReferenceTuple>
@@ -217,10 +239,12 @@ public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvid
         public int compareTo( @Nonnull ReferenceTuple o )
         {
             int value = programReference.compareTo( o.programReference );
+
             if ( value != 0 )
             {
                 return value;
             }
+
             return programStageReference.compareTo( o.programStageReference );
         }
     }

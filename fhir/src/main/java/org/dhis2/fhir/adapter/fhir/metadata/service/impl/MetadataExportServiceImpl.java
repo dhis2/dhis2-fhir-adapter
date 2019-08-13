@@ -211,7 +211,7 @@ public class MetadataExportServiceImpl extends AbstractMetadataService implement
     {
         final Map<FhirResourceType, Set<FhirResourceType>> fhirResourceMappingKeys = new HashMap<>();
 
-        typedContainer.getContainer( ProgramStageRule.class ).getObjects().stream().map( r -> (ProgramStageRule) r ).forEach( r ->
+        typedContainer.getContainer( ProgramStageRule.class ).getObjects().stream().map( r -> (ProgramStageRule) r ).filter( r -> r.getProgramStage() != null ).forEach( r ->
             fhirResourceMappingKeys.computeIfAbsent( r.getProgramStage().getProgram().getTrackedEntityFhirResourceType(),
                 resourceType -> new HashSet<>( Collections.singleton( resourceType ) ) ).add( r.getFhirResourceType() ) );
 
