@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.data.repository;
+package org.dhis2.fhir.adapter.fhir.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,31 +28,57 @@ package org.dhis2.fhir.adapter.fhir.data.repository;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.fhir.data.model.FhirDhisAssignment;
-import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
-import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
+import ca.uhn.fhir.model.primitive.IdDt;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.hl7.fhir.instance.model.api.IIdType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Custom repository for {@link FhirDhisAssignment}s.
+ * Utility class that handles FHIR URIs.
  *
  * @author volsch
  */
-public interface CustomFhirDhisAssignmentRepository
+public abstract class FhirUriUtils
 {
-    @Nullable
-    String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
+    protected static final Pattern CANONICAL_PATTERN = Pattern.compile( "(?:([^/]+)/)?([^/]+)" );
 
-    @Nullable
-    String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId );
+    @Nonnull
+    public static IIdType createIdFromUri( @Nonnull String uri, @Nullable FhirResourceType fhirResourceType ) throws IllegalArgumentException
+    {
+        final Matcher matcher = CANONICAL_PATTERN.matcher( uri );
 
-    boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
+        if ( !matcher.matches() )
+        {
+            throw new IllegalArgumentException( "URI is invalid: " + uri );
+        }
 
-    boolean saveFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId );
+        String resourceTypeName = matcher.group( 1 );
+        final String id = matcher.group( 2 );
 
-    boolean deleteFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
+        if ( resourceTypeName == null && fhirResourceType != null )
+        {
+            resourceTypeName = fhirResourceType.getResourceTypeName();
+        }
+
+        if ( resourceTypeName == null )
+        {
+            throw new IllegalArgumentException( "URI must include a valid FHIR resource type: " + uri );
+        }
+
+        if ( fhirResourceType != null && !fhirResourceType.getResourceTypeName().equals( resourceTypeName ) )
+        {
+            throw new IllegalArgumentException( "Resource type in URI differs from expected resource type " + fhirResourceType + ": " + uri );
+        }
+
+        return new IdDt( resourceTypeName, id );
+    }
+
+    private FhirUriUtils()
+    {
+        super();
+    }
 }

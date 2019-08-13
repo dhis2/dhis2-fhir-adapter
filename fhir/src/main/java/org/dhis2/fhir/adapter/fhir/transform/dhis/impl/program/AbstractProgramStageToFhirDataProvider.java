@@ -52,7 +52,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchResult;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirSearchState;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirDataProvider;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,25 +67,18 @@ import java.util.stream.Collectors;
  *
  * @author volsch
  */
-@Component
-public class ProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvider<ProgramStageRule>
+public abstract class AbstractProgramStageToFhirDataProvider extends AbstractDhisToFhirDataProvider<ProgramStageRule>
 {
     private final ProgramMetadataService metadataService;
 
     private final EventService eventService;
 
-    public ProgramStageToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService metadataService, @Nonnull EventService eventService )
+    public AbstractProgramStageToFhirDataProvider( @Nonnull ScriptExecutor scriptExecutor, @Nonnull ProgramMetadataService metadataService, @Nonnull EventService eventService )
     {
         super( scriptExecutor, false );
+
         this.metadataService = metadataService;
         this.eventService = eventService;
-    }
-
-    @Nonnull
-    @Override
-    public Set<FhirVersion> getFhirVersions()
-    {
-        return FhirVersion.ALL;
     }
 
     @Nonnull

@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.TransformerScriptException;
+import org.dhis2.fhir.adapter.fhir.util.FhirUriUtils;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethodArg;
 import org.dhis2.fhir.adapter.scriptable.ScriptTransformType;
@@ -51,6 +52,8 @@ import org.dhis2.fhir.adapter.scriptable.Scriptable;
 import org.dhis2.fhir.adapter.util.EnumValueUtils;
 import org.dhis2.fhir.adapter.util.NameUtils;
 import org.hl7.fhir.instance.model.api.IBaseDatatype;
+import org.hl7.fhir.instance.model.api.IBaseExtension;
+import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
@@ -60,8 +63,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -77,8 +78,6 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
     public static final String SCRIPT_ATTR_NAME = "fhirResourceUtils";
 
     protected static final String INTERNAL_REFERENCE_BEGIN = "urn:";
-
-    protected final Pattern CANONICAL_PATTERN = Pattern.compile( "([^/]+)/([^/]+)" );
 
     private final ReferenceFhirToDhisTransformerUtils referenceUtils;
 
@@ -277,24 +276,17 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
             return null;
         }
 
-        final Matcher canonicalMatcher = CANONICAL_PATTERN.matcher( canonicalUri );
-
-        if ( !canonicalMatcher.matches() )
+        final IIdType canonicalId;
+        try
         {
-            throw new TransformerDataException( "Unhandled canonical URI: " + canonicalUri );
+            canonicalId = FhirUriUtils.createIdFromUri( canonicalUri, null );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerDataException( e.getMessage(), e );
         }
 
-        final String type = canonicalMatcher.group( 1 );
-        final String id = canonicalMatcher.group( 2 );
-
-        final FhirResourceType canonicalResourceType = FhirResourceType.getByResourceTypeName( type );
-
-        if ( canonicalResourceType == null )
-        {
-            throw new TransformerDataException( "Unknown FHIR resource type in canonical URI: " + type );
-        }
-
-        return getAdapterReference( context, createReference( canonicalResourceType.getResourceTypeName(), id ), fhirResourceType );
+        return getAdapterReference( context, createReference( canonicalId.getResourceType(), canonicalId.getIdPart() ), fhirResourceType );
     }
 
     @Nullable
@@ -426,6 +418,27 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
     public <T extends Enum<T>> T resolveEnumValue( @Nonnull Object object, @Nonnull String propertyPath, @Nullable Object enumValueName )
     {
         return EnumValueUtils.resolveEnumValue( object, propertyPath, enumValueName );
+    }
+
+    @ScriptMethod( description = "Returns if the specified resource contains the extension with the specified URL.", returnDescription = "If the specified resource contains the extension with the specified URL.",
+        args = {
+            @ScriptMethodArg( value = "resource", description = "The resource that should be checked." ),
+            @ScriptMethodArg( value = "url", description = "The URL that should be checked." )
+        } )
+    public boolean hasExtension( @Nonnull IBaseHasExtensions resource, @Nonnull String url )
+    {
+        return resource.getExtension().stream().anyMatch( e -> url.equals( e.getUrl() ) );
+    }
+
+    @Nullable
+    @ScriptMethod( description = "Returns the value of the extension with the specified URL from the specified resource.", returnDescription = "Returns the value of the extension or null if the resource has no such extension.",
+        args = {
+            @ScriptMethodArg( value = "resource", description = "The resource from which the value should be returned." ),
+            @ScriptMethodArg( value = "url", description = "The URL for which the extension value should be returned." )
+        } )
+    public IBaseDatatype getExtensionValue( @Nonnull IBaseHasExtensions resource, @Nonnull String url )
+    {
+        return resource.getExtension().stream().filter( e -> url.equals( e.getUrl() ) ).findFirst().map( IBaseExtension::getValue ).orElse( null );
     }
 
     @Nonnull

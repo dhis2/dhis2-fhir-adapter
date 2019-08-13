@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,45 +28,54 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.jackson.JsonCacheId;
-
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * @author Charles Chigoriwa (ITINORDIC)
+ * Unit tests for {@link FhirUriUtils}.
+ *
+ * @author volsch
  */
-@Entity
-@Table( name = "fhir_enrollment_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractSimpleRule
+public class FhirUriUtilsTest
 {
-    private static final long serialVersionUID = 3878610804052444321L;
-
-    private ExecutableScript programRefLookupScript;
-
-    public EnrollmentRule()
+    @Test
+    public void createIdFromUri()
     {
-        super( DhisResourceType.ENROLLMENT );
+        final IIdType id = FhirUriUtils.createIdFromUri( "Location/4711", null );
+        Assert.assertEquals( "Location/4711", id.getValue() );
     }
 
-    @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "program_ref_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getProgramRefLookupScript()
+    @Test
+    public void createIdFromUriWithType()
     {
-        return programRefLookupScript;
+        final IIdType id = FhirUriUtils.createIdFromUri( "Location/4711", FhirResourceType.LOCATION );
+        Assert.assertEquals( "Location/4711", id.getValue() );
     }
 
-    public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
+    @Test
+    public void createIdFromUriWithUnspecifiedType()
     {
-        this.programRefLookupScript = programRefLookupScript;
+        final IIdType id = FhirUriUtils.createIdFromUri( "4711", FhirResourceType.LOCATION );
+        Assert.assertEquals( "Location/4711", id.getValue() );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void createIdFromUriWithNonMatchingType()
+    {
+        FhirUriUtils.createIdFromUri( "Location/4711", FhirResourceType.ORGANIZATION );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void createIdFromUriWithMissingType()
+    {
+        FhirUriUtils.createIdFromUri( "4711", null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void createIdFromUriInvalid()
+    {
+        FhirUriUtils.createIdFromUri( "No/Location/4711", FhirResourceType.LOCATION );
     }
 }

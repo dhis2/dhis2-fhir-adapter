@@ -28,15 +28,16 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment.r4;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
 import org.dhis2.fhir.adapter.fhir.extension.LocationExtensionUtils;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
+import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.enrollment.AbstractEnrollmentToFhirDataProvider;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchFilter;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.search.SearchParamType;
 import org.hl7.fhir.r4.model.CarePlan;
 import org.springframework.stereotype.Component;
 
@@ -66,10 +67,10 @@ public class R4EnrollmentToFhirDataProvider extends AbstractEnrollmentToFhirData
     @Override
     protected void initSearchFilter( @Nonnull FhirVersion fhirVersion, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull SearchFilter searchFilter )
     {
-        searchFilter.add( CarePlan.SP_INSTANTIATES_CANONICAL, SearchParamType.REFERENCE, "program" );
-        searchFilter.add( CarePlan.SP_INSTANTIATES_URI, SearchParamType.REFERENCE, "program" );
-        searchFilter.add( CarePlan.SP_PATIENT, SearchParamType.REFERENCE, "trackedEntityInstance" );
-        searchFilter.add( CarePlan.SP_SUBJECT, SearchParamType.REFERENCE, "trackedEntityInstance" );
-        searchFilter.add( LocationExtensionUtils.LOCATION_SEARCH_PARAM, SearchParamType.REFERENCE, "ou" );
+        searchFilter.addReference( CarePlan.SP_INSTANTIATES_CANONICAL, FhirResourceType.PLAN_DEFINITION, DhisResourceType.PROGRAM_METADATA, "program" );
+        searchFilter.addReference( CarePlan.SP_INSTANTIATES_URI, FhirResourceType.PLAN_DEFINITION, DhisResourceType.PROGRAM_METADATA, "program" );
+        searchFilter.addReference( CarePlan.SP_PATIENT, FhirResourceType.PATIENT, DhisResourceType.TRACKED_ENTITY, "trackedEntityInstance" );
+        searchFilter.addReference( CarePlan.SP_SUBJECT, null, DhisResourceType.TRACKED_ENTITY, "trackedEntityInstance" );
+        searchFilter.addReference( LocationExtensionUtils.LOCATION_SEARCH_PARAM, DhisResourceType.ORGANIZATION_UNIT, FhirResourceType.LOCATION, "ou" );
     }
 }

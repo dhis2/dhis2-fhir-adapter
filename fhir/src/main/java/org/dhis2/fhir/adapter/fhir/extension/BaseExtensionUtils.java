@@ -29,6 +29,7 @@ package org.dhis2.fhir.adapter.fhir.extension;
  */
 
 import ca.uhn.fhir.model.api.IElement;
+import org.hl7.fhir.instance.model.api.IBaseDatatype;
 import org.hl7.fhir.instance.model.api.IBaseExtension;
 import org.hl7.fhir.instance.model.api.IBaseHasExtensions;
 import org.hl7.fhir.instance.model.api.IBaseReference;
@@ -60,6 +61,24 @@ abstract class BaseExtensionUtils
         }
     }
 
+    @Nullable
+    protected static Date getDateValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource )
+    {
+        final IBaseDatatype value = getValue( url, resource );
+
+        if ( value instanceof IPrimitiveType )
+        {
+            final Object primitiveValue = ( (IPrimitiveType) value ).getValue();
+
+            if ( primitiveValue instanceof Date )
+            {
+                return (Date) primitiveValue;
+            }
+        }
+
+        return null;
+    }
+
     @SuppressWarnings( "unchecked" )
     protected static void setDateValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable Date value, @Nonnull Function<String, IElement> typeFactory )
     {
@@ -85,6 +104,13 @@ abstract class BaseExtensionUtils
             extension.setUrl( url );
             extension.setValue( value );
         }
+    }
+
+    @Nullable
+    protected static IBaseDatatype getValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource )
+    {
+        return resource.getExtension().stream().filter( e -> url.equals( e.getUrl() ) ).findFirst()
+            .map( IBaseExtension::getValue ).orElse( null );
     }
 
     private BaseExtensionUtils()

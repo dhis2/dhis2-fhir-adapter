@@ -74,9 +74,6 @@ public abstract class AbstractCarePlanToEnrollmentTransformationAppTest
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?program=EPDyQuoRnXk&programStatus=ACTIVE&trackedEntityInstance=JeR2Ul4mZfx&ouMode=ACCESSIBLE&fields=:all&" +
-            "order=lastUpdated:desc&pageSize=1" ) ).andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-empty.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
@@ -115,15 +112,27 @@ public abstract class AbstractCarePlanToEnrollmentTransformationAppTest
             .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
-        userDhis2Server.expect( ExpectedCount.between( 1, 3 ), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?program=EPDyQuoRnXk&programStatus=ACTIVE&trackedEntityInstance=JeR2Ul4mZfx&ouMode=ACCESSIBLE&fields=:all&" +
-            "order=lastUpdated:desc&pageSize=1" ) ).andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-90-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
+            .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
+            .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
+            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-90-create.json", StandardCharsets.UTF_8 ) ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-90-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+                .headers( createDefaultHeaders() ) );
+
+        userDhis2Server.expect( ExpectedCount.between( 1, 3 ), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments/ieR4nl4muff.json" ) ).andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization",
+            testConfiguration.getDhis2UserAuthorization() ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-enrollment-90-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments/ieR4nl4muff.json?mergeMode=MERGE" ) ).andExpect( method( HttpMethod.PUT ) )
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
             .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-90-update.json", StandardCharsets.UTF_8 ) ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-90-update-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
+
+        notifyResource( FhirResourceType.CARE_PLAN, null,
+            "90", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-care-plan-90.json", StandardCharsets.UTF_8 ), true );
+
+        waitForEmptyResourceQueue();
 
         notifyResource( FhirResourceType.CARE_PLAN, null,
             "90", IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-care-plan-90-update.json", StandardCharsets.UTF_8 ), true );

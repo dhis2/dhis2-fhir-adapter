@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.metadata.model;
+package org.dhis2.fhir.adapter.fhir.extension;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,45 +28,41 @@ package org.dhis2.fhir.adapter.fhir.metadata.model;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
-import org.dhis2.fhir.adapter.jackson.AdapterBeanPropertyFilter;
-import org.dhis2.fhir.adapter.jackson.JsonCacheId;
+import ca.uhn.fhir.model.primitive.DateDt;
+import org.junit.Assert;
+import org.junit.Test;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import java.util.Date;
 
 /**
- * @author Charles Chigoriwa (ITINORDIC)
+ * Unit tests for {@link DueDateExtensionUtils}.
+ *
+ * @author volsch
  */
-@Entity
-@Table( name = "fhir_enrollment_rule" )
-@DiscriminatorValue( "ENROLLMENT" )
-@JsonFilter( value = AdapterBeanPropertyFilter.FILTER_NAME )
-public class EnrollmentRule extends AbstractSimpleRule
+public class DueDateExtensionUtilsTest
 {
-    private static final long serialVersionUID = 3878610804052444321L;
-
-    private ExecutableScript programRefLookupScript;
-
-    public EnrollmentRule()
+    @Test
+    public void resetValue()
     {
-        super( DhisResourceType.ENROLLMENT );
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        DueDateExtensionUtils.setValue( planDefinition, new Date(), TypeFactory::createType );
+        DueDateExtensionUtils.setValue( planDefinition, null, TypeFactory::createType );
+
+        Assert.assertTrue( planDefinition.getExtension().isEmpty() );
     }
 
-    @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "program_ref_lookup_script_id", referencedColumnName = "id" )
-    public ExecutableScript getProgramRefLookupScript()
+    @Test
+    public void setValue()
     {
-        return programRefLookupScript;
-    }
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
 
-    public void setProgramRefLookupScript( ExecutableScript programRefLookupScript )
-    {
-        this.programRefLookupScript = programRefLookupScript;
+        final Date date = new Date();
+
+        DueDateExtensionUtils.setValue( planDefinition, date, TypeFactory::createType );
+
+        Assert.assertEquals( 1, planDefinition.getExtension().size() );
+        Assert.assertEquals( DueDateExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
+        Assert.assertSame( date, ( (DateDt) planDefinition.getExtension().get( 0 ).getValue() ).getValue() );
     }
 }

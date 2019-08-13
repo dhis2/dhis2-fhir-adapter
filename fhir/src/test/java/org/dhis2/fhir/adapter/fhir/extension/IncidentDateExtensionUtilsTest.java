@@ -65,4 +65,15 @@ public class IncidentDateExtensionUtilsTest
         Assert.assertEquals( IncidentDateExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertSame( date, ( (DateDt) planDefinition.getExtension().get( 0 ).getValue() ).getValue() );
     }
+
+    @Test
+    public void getDateValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final Date date = new Date();
+
+        IncidentDateExtensionUtils.setValue( planDefinition, date, TypeFactory::createType );
+        Assert.assertEquals( date, IncidentDateExtensionUtils.getValue( planDefinition ) );
+    }
 }

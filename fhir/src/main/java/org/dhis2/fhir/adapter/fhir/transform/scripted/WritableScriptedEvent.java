@@ -32,8 +32,6 @@ package org.dhis2.fhir.adapter.fhir.transform.scripted;
 import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.converter.ConversionException;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
 import org.dhis2.fhir.adapter.dhis.model.WritableDataValue;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Event;
@@ -41,6 +39,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.EventStatus;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Program;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStage;
 import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageDataElement;
+import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
@@ -72,7 +71,7 @@ import java.util.regex.Pattern;
 @Scriptable
 @ScriptType( value = "Event", var = "event", transformDataType = "DHIS_EVENT",
     description = "Program stage instance (aka event). If event is not new and will be modified, it will be persisted." )
-public class WritableScriptedEvent implements ScriptedEvent, Serializable
+public class WritableScriptedEvent extends WritableScriptedDhisResource implements AccessibleScriptedDhisResource, ScriptedEvent, Serializable
 {
     private static final long serialVersionUID = 3407593545422372222L;
 
@@ -88,77 +87,23 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
 
     private final ValueConverter valueConverter;
 
-    public WritableScriptedEvent( @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance, @Nonnull ValueConverter valueConverter )
+    public WritableScriptedEvent( @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance,
+        @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
-        this( null, program, programStage, event, trackedEntityInstance, valueConverter );
+        this( null, program, programStage, event, trackedEntityInstance, scriptExecutionContext, valueConverter );
     }
 
     public WritableScriptedEvent( @Nullable TransformerContext transformerContext, @Nonnull Program program, @Nonnull ProgramStage programStage, @Nonnull Event event, @Nullable ScriptedTrackedEntityInstance trackedEntityInstance,
-        @Nonnull ValueConverter valueConverter )
+        @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
+        super( event, scriptExecutionContext );
+
         this.transformerContext = transformerContext;
         this.program = program;
         this.programStage = programStage;
         this.event = event;
         this.trackedEntityInstance = trackedEntityInstance;
         this.valueConverter = valueConverter;
-    }
-
-    @Override
-    @ScriptMethod( description = "Returns if the event is new ans has not yet been saved on DHIS2." )
-    public boolean isNewResource()
-    {
-        return event.isNewResource();
-    }
-
-    @Override
-    public boolean isLocal()
-    {
-        return event.isLocal();
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return event.isDeleted();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the ID of the event on DHIS2. Return null if the instance is new." )
-    public String getId()
-    {
-        return event.getId();
-    }
-
-    @Nonnull
-    @Override
-    public DhisResourceType getResourceType()
-    {
-        return event.getResourceType();
-    }
-
-    @Nullable
-    @Override
-    public DhisResourceId getResourceId()
-    {
-        return event.getResourceId();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the date and time when the resource has been updated the last time or null if this is a new resource." )
-    public ZonedDateTime getLastUpdated()
-    {
-        return event.getLastUpdated();
-    }
-
-    @Nullable
-    @Override
-    @ScriptMethod( description = "Returns the ID of the organisation unit on DHIS2 where this event has been registered." )
-    public String getOrganizationUnitId()
-    {
-        return event.getOrgUnitId();
     }
 
     @Nullable
@@ -227,11 +172,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public boolean setDueDate( @Nullable Object dueDate )
     {
         final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( dueDate, valueConverter );
+
         if ( !Objects.equals( event.getDueDate(), zonedDateTime ) )
         {
             event.setModified( true );
         }
+
         event.setDueDate( zonedDateTime );
+
         return (dueDate != null);
     }
 
@@ -257,11 +205,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
         {
             throw new TransformerScriptException( "Event status has not been defined: " + status, e );
         }
+
         if ( !Objects.equals( event.getStatus(), convertedStatus ) )
         {
             event.setModified( true );
         }
+
         event.setStatus( convertedStatus );
+
         return true;
     }
 
@@ -279,11 +230,14 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     public boolean setCoordinate( @Nullable Object coordinate )
     {
         final Location convertedCoordinate = valueConverter.convert( coordinate, ValueType.COORDINATE, Location.class );
+
         if ( !Objects.equals( event.getCoordinate(), convertedCoordinate ) )
         {
             event.setModified( true );
         }
+
         event.setCoordinate( convertedCoordinate );
+
         return true;
     }
 
@@ -294,6 +248,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
         final WritableDataValue dataValue = getDataValue( dataElement );
+
         return dataValue.isProvidedElsewhere();
     }
 
@@ -305,6 +260,7 @@ public class WritableScriptedEvent implements ScriptedEvent, Serializable
     {
         final ProgramStageDataElement dataElement = getProgramStageDataElement( dataElementReference );
         final WritableDataValue dataValue = getDataValue( dataElement );
+
         return dataValue.getValue();
     }
 

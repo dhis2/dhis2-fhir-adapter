@@ -31,6 +31,7 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ExecutableScript;
@@ -52,6 +53,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
+import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractAssignmentDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractFhirResourceDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.AbstractIdentifierDhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
@@ -68,7 +70,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -622,6 +626,25 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         }
 
         return Boolean.TRUE.equals( executeScript( context, ruleInfo, ruleInfo.getRule().getTransformExpScript(), scriptVariables, Boolean.class ) );
+    }
+
+    @Nonnull
+    protected <T extends IBaseReference> List<T> createAssignedFhirReferences( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull DhisResourceType dhisResourceType, @Nullable String dhisId, @Nonnull FhirResourceType fhirResourceType )
+    {
+        @SuppressWarnings( "unchecked" ) final T reference = (T) createAssignedFhirReference( context, ruleInfo, scriptVariables, dhisResourceType, dhisId, fhirResourceType );
+
+        return reference == null ? Collections.emptyList() : Collections.singletonList( reference );
+    }
+
+    @Nullable
+    protected IBaseReference createAssignedFhirReference( @Nonnull DhisToFhirTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables,
+        @Nonnull DhisResourceType dhisResourceType, @Nullable String dhisId, @Nonnull FhirResourceType fhirResourceType )
+    {
+        final AbstractAssignmentDhisToFhirTransformerUtils assignmentTransformerUtils = TransformerUtils.getScriptVariable(
+            scriptVariables, ScriptVariable.ASSIGNMENT_UTILS, AbstractAssignmentDhisToFhirTransformerUtils.class );
+
+        return assignmentTransformerUtils.getMappedFhirId( context, ruleInfo.getRule(), dhisResourceType, dhisId, fhirResourceType );
     }
 
     /**

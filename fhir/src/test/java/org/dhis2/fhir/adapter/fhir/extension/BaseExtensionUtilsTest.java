@@ -91,6 +91,17 @@ public class BaseExtensionUtilsTest
     }
 
     @Test
+    public void getDateValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final Date date = new Date();
+
+        BaseExtensionUtils.setDateValue( "testUrl", planDefinition, new Date(), TypeFactory::createType );
+        Assert.assertEquals( date, BaseExtensionUtils.getDateValue( "testUrl", planDefinition ) );
+    }
+
+    @Test
     public void resetReferenceValue()
     {
         TestPlanDefinition planDefinition = new TestPlanDefinition();
