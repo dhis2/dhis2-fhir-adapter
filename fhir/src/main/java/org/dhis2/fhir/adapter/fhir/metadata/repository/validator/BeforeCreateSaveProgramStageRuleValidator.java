@@ -69,9 +69,5 @@ public class BeforeCreateSaveProgramStageRuleValidator extends AbstractBeforeCre
         {
             rule.setEventStatusUpdate( new EventStatusUpdate() );
         }
-        if ( rule.getProgramStage() == null )
-        {
-            errors.rejectValue( "programStage", "ProgramStageRule.programStage.null", "Program stage is mandatory." );
-        }
     }
 }

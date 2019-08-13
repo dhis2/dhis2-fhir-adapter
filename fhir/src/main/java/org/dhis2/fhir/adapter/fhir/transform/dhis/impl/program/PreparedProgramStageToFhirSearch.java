@@ -33,6 +33,7 @@ import org.dhis2.fhir.adapter.dhis.tracker.program.ProgramStageId;
 import org.dhis2.fhir.adapter.fhir.metadata.model.ProgramStageRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.PreparedDhisToFhirSearch;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractPreparedDhisToFhirSearch;
 
@@ -51,15 +52,26 @@ public class PreparedProgramStageToFhirSearch extends AbstractPreparedDhisToFhir
     private final List<ProgramStageId> programStageIds;
 
     public PreparedProgramStageToFhirSearch( @Nonnull FhirVersion fhirVersion, @Nonnull List<RuleInfo<ProgramStageRule>> ruleInfos, @Nullable Map<String, List<String>> filter, @Nullable DateRangeParam lastUpdatedDateRange, int count,
-        @Nonnull List<ProgramStageId> programStageIds )
+        @Nullable List<ProgramStageId> programStageIds )
     {
         super( fhirVersion, ruleInfos, filter, lastUpdatedDateRange, count );
+
         this.programStageIds = programStageIds;
+    }
+
+    public boolean isProgramStageRestricted()
+    {
+        return programStageIds != null;
     }
 
     @Nullable
     public ProgramStageId getNextProgramStageId( @Nullable ProgramStageId previousProgramStageId )
     {
+        if ( programStageIds == null )
+        {
+            throw new FatalTransformerException( "No program stages have been selected." );
+        }
+
         if ( previousProgramStageId == null )
         {
             return programStageIds.get( 0 );

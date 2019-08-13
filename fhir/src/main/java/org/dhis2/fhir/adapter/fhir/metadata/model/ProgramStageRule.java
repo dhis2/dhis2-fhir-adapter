@@ -49,6 +49,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.Objects;
 
 /**
  * AbstractRule for program stage that defines also if and how to enroll into a program.
@@ -60,17 +61,15 @@ import javax.persistence.Transient;
 @DiscriminatorValue( "PROGRAM_STAGE_EVENT" )
 @NamedQueries( {
     @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_NAMED_QUERY,
-        query = "SELECT psr FROM ProgramStageRule psr JOIN psr.programStage ps JOIN ps.program p WHERE " +
-            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND psr.transformExpScript IS NOT NULL AND " +
-            "ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND " +
-            "p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND " +
-            "p.programReference IN (:programReferences) AND ps.programStageReference IN (:programStageReferences)" ),
+        query = "SELECT psr FROM ProgramStageRule psr " +
+            "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
+            "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND psr.transformExpScript IS NOT NULL" ),
     @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY,
-        query = "SELECT psr FROM ProgramStageRule psr JOIN psr.programStage ps JOIN ps.program p WHERE " +
+        query = "SELECT psr FROM ProgramStageRule psr " +
+            "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
+            "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
             "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND psr.transformExpScript IS NOT NULL AND " +
-            "ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND " +
-            "p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND " +
-            "p.programReference IN (:programReferences) AND ps.programStageReference IN (:programStageReferences) AND " +
             "EXISTS (SELECT 1 FROM RuleDhisDataReference edr WHERE edr.rule=psr AND edr.dataReference IN (:dataReferences))" )
 } )
 @Relation( value = "rule", collectionRelation = "rules" )
@@ -154,9 +153,8 @@ public class ProgramStageRule extends AbstractRule
         this.updateEventDate = updateEventDate;
     }
 
-
-    @ManyToOne( optional = false )
-    @JoinColumn( name = "program_stage_id", referencedColumnName = "id", nullable = false )
+    @ManyToOne
+    @JoinColumn( name = "program_stage_id", referencedColumnName = "id" )
     public MappedTrackerProgramStage getProgramStage()
     {
         return programStage;
@@ -265,28 +263,28 @@ public class ProgramStageRule extends AbstractRule
     @Transient
     public EventPeriodDayType getResultingBeforePeriodDayType()
     {
-        return (getBeforePeriodDayType() == null) ? getProgramStage().getBeforePeriodDayType() : getBeforePeriodDayType();
+        return getBeforePeriodDayType() == null && getProgramStage() != null ? getProgramStage().getBeforePeriodDayType() : getBeforePeriodDayType();
     }
 
     @JsonIgnore
     @Transient
     public int getResultingBeforePeriodDays()
     {
-        return (getBeforePeriodDays() == null) ? getProgramStage().getBeforePeriodDays() : getBeforePeriodDays();
+        return getBeforePeriodDays() == null && getProgramStage() != null ? getProgramStage().getBeforePeriodDays() : getBeforePeriodDays();
     }
 
     @JsonIgnore
     @Transient
     public EventPeriodDayType getResultingAfterPeriodDayType()
     {
-        return (getAfterPeriodDayType() == null) ? getProgramStage().getAfterPeriodDayType() : getAfterPeriodDayType();
+        return getAfterPeriodDayType() == null && getProgramStage() != null ? getProgramStage().getAfterPeriodDayType() : getAfterPeriodDayType();
     }
 
     @JsonIgnore
     @Transient
     public int getResultingAfterPeriodDays()
     {
-        return (getAfterPeriodDays() == null) ? getProgramStage().getAfterPeriodDays() : getAfterPeriodDays();
+        return getAfterPeriodDays() == null && getProgramStage() != null ? getProgramStage().getAfterPeriodDays() : getAfterPeriodDays();
     }
 
     @Override
@@ -294,7 +292,7 @@ public class ProgramStageRule extends AbstractRule
     @JsonIgnore
     public boolean isEffectiveFhirCreateEnable()
     {
-        return isExpEnabled() && isFhirCreateEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirCreateEnabled();
+        return isExpEnabled() && isFhirCreateEnabled() && ( getProgramStage() == null || ( getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirCreateEnabled() ) );
     }
 
     @Override
@@ -302,7 +300,7 @@ public class ProgramStageRule extends AbstractRule
     @JsonIgnore
     public boolean isEffectiveFhirUpdateEnable()
     {
-        return isExpEnabled() && isFhirUpdateEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirUpdateEnabled();
+        return isExpEnabled() && isFhirUpdateEnabled() && ( getProgramStage() == null || ( getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirUpdateEnabled() ) );
     }
 
     @Override
@@ -310,13 +308,14 @@ public class ProgramStageRule extends AbstractRule
     @JsonIgnore
     public boolean isEffectiveFhirDeleteEnable()
     {
-        return isExpEnabled() && isFhirDeleteEnabled() && getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirDeleteEnabled();
+        return isExpEnabled() && isFhirDeleteEnabled() && ( getProgramStage() == null || ( getProgramStage().isExpEnabled() && getProgramStage().isEffectiveFhirDeleteEnabled() ) );
     }
 
     @Override
     public boolean coversExecutedRule( @Nonnull AbstractRule executedRule )
     {
-        return executedRule instanceof ProgramStageRule && ( (ProgramStageRule) executedRule )
-            .getProgramStage().getId().equals( getProgramStage().getId() );
+        return executedRule instanceof ProgramStageRule && Objects.equals(
+            ( (ProgramStageRule) executedRule ).getProgramStage() == null ? null : ( (ProgramStageRule) executedRule ).getProgramStage().getId(),
+            getProgramStage() == null ? null : getProgramStage().getId() );
     }
 }

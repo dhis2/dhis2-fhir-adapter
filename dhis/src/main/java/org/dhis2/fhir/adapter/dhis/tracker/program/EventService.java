@@ -34,6 +34,7 @@ import org.dhis2.fhir.adapter.dhis.service.DhisPolledService;
 import org.dhis2.fhir.adapter.dhis.service.DhisService;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -65,5 +66,5 @@ public interface EventService extends DhisService<Event>, DhisPolledService<Even
     boolean delete( @Nonnull String eventId );
 
     @Nonnull
-    DhisResourceResult<Event> find( @Nonnull String programId, @Nonnull String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
+    DhisResourceResult<Event> find( @Nullable String programId, @Nullable String programStageId, @Nonnull UriFilterApplier uriFilterApplier, int from, int max );
 }
