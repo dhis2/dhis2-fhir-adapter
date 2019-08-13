@@ -130,7 +130,7 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         final Patient patient = new Patient();
         patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
 
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null, false );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -152,7 +152,7 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         final Patient patient = new Patient();
         patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
 
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null, false );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );
@@ -189,7 +189,7 @@ public class Dstu3IdentifierFhirToDhisTransformerUtilsTest
         final Patient patient = new Patient();
         patient.addIdentifier().setSystem( "http://test.com" ).setValue( "ABC_123" );
 
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.PATIENT, "http://test.com", null, null, null, false );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );

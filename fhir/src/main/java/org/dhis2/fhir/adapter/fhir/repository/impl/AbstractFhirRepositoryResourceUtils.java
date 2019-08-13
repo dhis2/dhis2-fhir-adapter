@@ -86,7 +86,7 @@ public abstract class AbstractFhirRepositoryResourceUtils
         }
 
         return fhirClientSystemRepository.findOneByFhirClientResourceType( fhirClientId, fhirResourceType )
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName(), s.isFhirId() ) )
             .orElse( null );
     }
 

@@ -335,7 +335,7 @@ public class Dstu3CodeFhirToDhisTransformerUtilsTest
     @Test
     public void getMappedCodeNotFound()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null, false );
 
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
@@ -349,7 +349,7 @@ public class Dstu3CodeFhirToDhisTransformerUtilsTest
     @Test
     public void getMappedCodeFound()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null, false );
 
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
@@ -367,7 +367,7 @@ public class Dstu3CodeFhirToDhisTransformerUtilsTest
     @Test
     public void getMappedCodeFoundMapped()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "http://test.com/2", null, null, null, false );
 
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();

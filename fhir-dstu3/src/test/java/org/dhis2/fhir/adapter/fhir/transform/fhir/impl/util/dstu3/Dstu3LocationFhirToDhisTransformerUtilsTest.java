@@ -111,7 +111,7 @@ public class Dstu3LocationFhirToDhisTransformerUtilsTest
         final UUID fhirClientResourceId = UUID.randomUUID();
         final FhirClientResource fhirClientResource = new FhirClientResource();
         fhirClientResource.setFhirClient( fhirClient );
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.LOCATION, "http://test.com", "OT_", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.LOCATION, "http://test.com", "OT_", null, null, false );
         Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
         Mockito.doReturn( variables ).when( scriptExecution ).getVariables();
         Mockito.doReturn( context ).when( variables ).get( Mockito.eq( "context" ) );

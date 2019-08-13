@@ -191,7 +191,7 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
     @Test
     public void getByMappedCode()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null, false );
         final SystemCode systemCode = new SystemCode();
         systemCode.setSystemCode( "837232" );
 
@@ -215,7 +215,7 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
     @Test
     public void getByMappedCodeNotFound()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null, false );
 
         final Map<String, Object> variables = new HashMap<>();
         variables.put( ScriptVariable.CONTEXT.getVariableName(), context );
@@ -237,7 +237,7 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
     @Test
     public void getCodeWithoutPrefixPrefix()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", "SE_", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", "SE_", null, null, false );
 
         final Map<String, Object> variables = new HashMap<>();
         variables.put( ScriptVariable.CONTEXT.getVariableName(), context );
@@ -253,7 +253,7 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
     @Test
     public void getCodeWithoutPrefixNoPrefix()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", "SE_", null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", "SE_", null, null, false );
 
         final Map<String, Object> variables = new HashMap<>();
         variables.put( ScriptVariable.CONTEXT.getVariableName(), context );
@@ -269,7 +269,7 @@ public class Dstu3CodeDhisToFhirTransformerUtilsTest
     @Test
     public void getCodeWithoutPrefixNoPrefixSystem()
     {
-        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null );
+        final ResourceSystem resourceSystem = new ResourceSystem( FhirResourceType.ORGANIZATION, "TestSystem", null, null, null, false );
 
         final Map<String, Object> variables = new HashMap<>();
         variables.put( ScriptVariable.CONTEXT.getVariableName(), context );

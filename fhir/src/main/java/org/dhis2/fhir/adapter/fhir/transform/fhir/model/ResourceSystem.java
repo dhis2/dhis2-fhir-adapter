@@ -37,6 +37,8 @@ import java.util.Objects;
 
 /**
  * Contains the system that is used for a specific FHIR resource type.
+ *
+ * @author volsch
  */
 public class ResourceSystem implements Serializable
 {
@@ -52,13 +54,16 @@ public class ResourceSystem implements Serializable
 
     private final String fhirDisplayName;
 
-    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix, @Nullable String defaultValue, @Nullable String fhirDisplayName )
+    private final boolean fhirId;
+
+    public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system, @Nullable String codePrefix, @Nullable String defaultValue, @Nullable String fhirDisplayName, boolean fhirId )
     {
         this.fhirResourceType = fhirResourceType;
         this.system = system;
         this.codePrefix = codePrefix;
         this.defaultValue = defaultValue;
         this.fhirDisplayName = fhirDisplayName;
+        this.fhirId = fhirId;
     }
 
     public ResourceSystem( @Nonnull FhirResourceType fhirResourceType, @Nonnull String system )
@@ -68,6 +73,7 @@ public class ResourceSystem implements Serializable
         this.codePrefix = null;
         this.defaultValue = null;
         this.fhirDisplayName = null;
+        this.fhirId = false;
     }
 
     @Nonnull
@@ -100,14 +106,18 @@ public class ResourceSystem implements Serializable
         return fhirDisplayName;
     }
 
+    public boolean isFhirId()
+    {
+        return fhirId;
+    }
+
     @Override
     public boolean equals( Object o )
     {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
         ResourceSystem that = (ResourceSystem) o;
-        return fhirResourceType == that.fhirResourceType &&
-            Objects.equals( system, that.system );
+        return fhirResourceType == that.fhirResourceType && Objects.equals( system, that.system );
     }
 
     @Override

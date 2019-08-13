@@ -407,7 +407,7 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
 
         final Collection<FhirClientSystem> systems = fhirClientSystemRepository.findByFhirClient( fhirClient );
         final Map<FhirResourceType, ResourceSystem> resourceSystemsByType = systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName(), s.isFhirId() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) );
 
         final Map<String, DhisToFhirTransformerUtils> transformerUtils = this.transformerUtils.get( fhirClient.getFhirVersion() );

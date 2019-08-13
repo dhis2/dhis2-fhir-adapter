@@ -35,7 +35,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,7 +54,7 @@ public class SystemCodeValues implements Serializable
     public SystemCodeValues( @JsonProperty( "text" ) @Nullable String text, @JsonProperty( "systemCodeValues" ) @Nonnull List<SystemCodeValue> systemCodeValues )
     {
         this.text = text;
-        this.systemCodeValues = systemCodeValues;
+        this.systemCodeValues = new ArrayList<>( systemCodeValues );
     }
 
     public SystemCodeValues( @Nonnull SystemCodeValues systemCodeValues )
@@ -67,13 +66,13 @@ public class SystemCodeValues implements Serializable
     public SystemCodeValues( @Nonnull List<SystemCodeValue> systemCodeValues )
     {
         this.text = null;
-        this.systemCodeValues = systemCodeValues;
+        this.systemCodeValues = new ArrayList<>( systemCodeValues );
     }
 
     public SystemCodeValues()
     {
         this.text = null;
-        this.systemCodeValues = Collections.emptyList();
+        this.systemCodeValues = new ArrayList<>();
     }
 
     @Nullable

@@ -79,6 +79,8 @@ public class FhirClientSystem extends VersionedBaseMetadata implements Serializa
     @Size( max = MAX_DEFAULT_VALUE_LENGTH )
     private String defaultValue;
 
+    private boolean fhirId;
+
     public FhirClientSystem()
     {
         super();
@@ -149,5 +151,17 @@ public class FhirClientSystem extends VersionedBaseMetadata implements Serializa
     public void setDefaultValue( String defaultValue )
     {
         this.defaultValue = defaultValue;
+    }
+
+    @Basic
+    @Column( name = "fhir_id", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE NOT NULL" )
+    public boolean isFhirId()
+    {
+        return fhirId;
+    }
+
+    public void setFhirId( boolean fhirId )
+    {
+        this.fhirId = fhirId;
     }
 }

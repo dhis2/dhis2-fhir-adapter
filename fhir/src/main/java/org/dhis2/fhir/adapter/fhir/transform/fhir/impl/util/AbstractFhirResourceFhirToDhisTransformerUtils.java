@@ -140,11 +140,19 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
         final IBaseReference fhirReference;
 
         SystemCodeValues identifiers = getIdentifiers( reference );
+        boolean resetIdElement = false;
         boolean containsSufficientIdentifier = false;
 
         if ( identifiers.getSystemCodeValues().isEmpty() && reference.getResource() != null )
         {
             identifiers = getIdentifiers( reference.getResource() );
+        }
+
+        if ( resourceSystem != null && resourceSystem.isFhirId() && reference.getReferenceElement().hasIdPart() && !reference.getReferenceElement().isLocal() &&
+            identifiers.getSystemCodeValues().stream().noneMatch( scv -> Objects.equals( resourceSystem.getSystem(), scv.getSystem() ) ) )
+        {
+            identifiers.getSystemCodeValues().add( new SystemCodeValue( resourceSystem.getSystem(), reference.getReferenceElement().getIdPart() ) );
+            resetIdElement = true;
         }
 
         if ( !identifiers.getSystemCodeValues().isEmpty() )
@@ -169,9 +177,14 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
             }
         }
 
-        if ( containsSufficientIdentifier || context.getFhirRequest().isDhisFhirId() )
+        if ( containsSufficientIdentifier || fhirResourceType.isSyncDhisId() || context.getFhirRequest().isDhisFhirId() )
         {
             fhirReference = createReference( reference.getResource() == null ? reference.getReferenceElement() : reference.getResource().getIdElement() );
+
+            if ( resetIdElement )
+            {
+                fhirReference.setReference( null );
+            }
 
             identifiers.getSystemCodeValues().stream().filter( scv -> ( resourceSystem != null && resourceSystem.getSystem().equals( scv.getSystem() ) ) )
                 .forEach( scv -> addIdentifier( fhirReference, scv ) );
@@ -235,6 +248,13 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
         returnDescription = "The adapter reference for the specified reference or null if it cannot be resolved." )
     public Reference getCanonicalAdapterReference( @Nullable IBaseDatatype canonical, @Nonnull Object fhirResourceType )
     {
+        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+
+        return getCanonicalAdapterReference( context, canonical, fhirResourceType );
+    }
+
+    public Reference getCanonicalAdapterReference( @Nonnull FhirToDhisTransformerContext context, @Nullable IBaseDatatype canonical, @Nonnull Object fhirResourceType )
+    {
         if ( canonical == null )
         {
             return null;
@@ -274,7 +294,7 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
             throw new TransformerDataException( "Unknown FHIR resource type in canonical URI: " + type );
         }
 
-        return getAdapterReference( createReference( canonicalResourceType.getResourceTypeName(), id ), fhirResourceType );
+        return getAdapterReference( context, createReference( canonicalResourceType.getResourceTypeName(), id ), fhirResourceType );
     }
 
     @Nullable
@@ -287,14 +307,30 @@ public abstract class AbstractFhirResourceFhirToDhisTransformerUtils extends Abs
         returnDescription = "The adapter reference for the specified reference or null if it cannot be resolved." )
     public Reference getAdapterReference( @Nullable IBaseReference reference, @Nonnull Object fhirResourceType )
     {
-        final FhirToDhisTransformerContext context = getScriptVariable(
-            ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+        final FhirToDhisTransformerContext context = getScriptVariable( ScriptVariable.CONTEXT.getVariableName(), FhirToDhisTransformerContext.class );
+
+        return getAdapterReference( context, reference, fhirResourceType );
+    }
+
+    public Reference getAdapterReference( @Nonnull FhirToDhisTransformerContext context, @Nullable IBaseReference reference, @Nonnull Object fhirResourceType )
+    {
         final IBaseReference identifiedReference = getIdentifiedReference( context, reference, fhirResourceType );
         Reference adapterReference = null;
 
         if ( identifiedReference != null )
         {
-            if ( identifiedReference.getReferenceElement().hasIdPart() && !identifiedReference.getReferenceElement().isLocal() && context.getFhirRequest().isDhisFhirId() )
+            final FhirResourceType resourceType;
+            try
+            {
+                resourceType = NameUtils.toEnumValue( FhirResourceType.class, fhirResourceType );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                throw new TransformerScriptException( "Invalid FHIR resource type: " + fhirResourceType, e );
+            }
+
+            if ( identifiedReference.getReferenceElement().hasIdPart() && !identifiedReference.getReferenceElement().isLocal() &&
+                ( resourceType.isSyncDhisId() || context.getFhirRequest().isDhisFhirId() ) )
             {
                 final String dhisId = context.extractDhisId( identifiedReference.getReferenceElement().getIdPart() );
 

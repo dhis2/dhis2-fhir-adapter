@@ -90,7 +90,8 @@ public class FhirClientSystemRepositoryRestDocsTest extends AbstractJpaRepositor
                 fields.withPath( "system" ).description( "The reference to the system URI that should be mapped to the FHIR client." ).type( JsonFieldType.STRING ),
                 fields.withPath( "fhirResourceType" ).description( "The FHIR resource type to which the system URI should be mapped." ).type( JsonFieldType.STRING ),
                 fields.withPath( "codePrefix" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
-                fields.withPath( "defaultValue" ).description( "The default value that may be used when FHIR resource does not contain the corresponding value." ).type( JsonFieldType.STRING ).optional()
+                fields.withPath( "defaultValue" ).description( "The default value that may be used when FHIR resource does not contain the corresponding value." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "fhirId" ).description( "Specifies if the FHIR ID should be taken as identifier value is no identifier has been specified." ).type( JsonFieldType.BOOLEAN ).optional()
             ) ) ).andReturn().getResponse().getHeader( "Location" );
 
         mockMvc
@@ -121,6 +122,7 @@ public class FhirClientSystemRepositoryRestDocsTest extends AbstractJpaRepositor
                 fields.withPath( "fhirResourceType" ).description( "The FHIR resource type to which the system URI should be mapped." ).type( JsonFieldType.STRING ),
                 fields.withPath( "codePrefix" ).description( "The prefix that should be added to the codes when mapping them to DHIS2." ).type( JsonFieldType.STRING ).optional(),
                 fields.withPath( "defaultValue" ).description( "The default value that may be used when FHIR resource does not contain the corresponding value." ).type( JsonFieldType.STRING ).optional(),
+                fields.withPath( "fhirId" ).description( "Specifies if the FHIR ID should be taken as identifier value is no identifier has been specified." ).type( JsonFieldType.BOOLEAN ).optional(),
                 subsectionWithPath( "_links" ).description( "Links to other resources" )
             ) ) );
     }

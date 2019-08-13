@@ -112,6 +112,8 @@ public class R4FhirResourceFhirToDhisTransformerUtilsTest
     @Test
     public void getCanonicalReferenceNull()
     {
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
         Assert.assertNull( utils.getCanonicalAdapterReference( null, "MEASURE" ) );
     }
 
@@ -196,6 +198,22 @@ public class R4FhirResourceFhirToDhisTransformerUtilsTest
         final Reference reference = (Reference) utils.getIdentifiedReference( new Reference().setReference( "Patient/1234" ), "Patient" );
 
         Assert.assertNull( reference );
+    }
+
+    @Test
+    public void getAdapterReferenceDhisFhirIdCode()
+    {
+        Mockito.doReturn( request ).when( context ).getFhirRequest();
+        Mockito.doReturn( true ).when( request ).isDhisFhirId();
+        Mockito.doReturn( new ResourceSystem( FhirResourceType.PATIENT, "National ID", null, null, null, true ) )
+            .when( request ).getResourceSystem( Mockito.eq( FhirResourceType.PATIENT ) );
+        Mockito.doReturn( scriptExecution ).when( scriptExecutionContext ).getScriptExecution();
+        Mockito.doReturn( Collections.singletonMap( ScriptVariable.CONTEXT.getVariableName(), context ) ).when( scriptExecution ).getVariables();
+
+        final org.dhis2.fhir.adapter.dhis.model.Reference adapterReference = utils.getAdapterReference( new Reference( "Patient/5678" ), "PATIENT" );
+
+        Assert.assertNotNull( adapterReference );
+        Assert.assertEquals( new org.dhis2.fhir.adapter.dhis.model.Reference( "5678", ReferenceType.CODE ), adapterReference );
     }
 
     @Test

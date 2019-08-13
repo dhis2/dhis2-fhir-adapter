@@ -351,7 +351,7 @@ public class FhirRepositoryImpl implements FhirRepository
         fhirRequest.setParameters( ArrayListMultimap.create() );
         fhirRequest.setFhirClientCode( fhirClientResource.getFhirClient().getCode() );
         fhirRequest.setResourceSystemsByType( systems.stream()
-            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName() ) )
+            .map( s -> new ResourceSystem( s.getFhirResourceType(), s.getSystem().getSystemUri(), s.getCodePrefix(), s.getDefaultValue(), s.getSystem().getFhirDisplayName(), s.isFhirId() ) )
             .collect( Collectors.toMap( ResourceSystem::getFhirResourceType, rs -> rs ) ) );
 
         if ( fhirRepositoryOperation == null )
