@@ -74,7 +74,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Transforms a DHIS2 resource to a FHIR resource.
+ * Transforms a DHIS2 resource to a FHIR resource. The default priority of the transformer is <code>0</code>.
  *
  * @param <R> the concrete type of the DHIS2 resource that is processed by this transformer.
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
@@ -103,6 +103,25 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
         this.systemRepository = systemRepository;
         this.fhirResourceRepository = fhirResourceRepository;
         this.fhirDhisAssignmentRepository = fhirDhisAssignmentRepository;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return 0;
+    }
+
+    @Override
+    public int compareTo( @Nonnull DhisToFhirTransformer<?, ?> o )
+    {
+        final int value = getPriority() - o.getPriority();
+
+        if ( value != 0 )
+        {
+            return value;
+        }
+
+        return getClass().getSimpleName().compareTo( o.getClass().getSimpleName() );
     }
 
     @Nonnull

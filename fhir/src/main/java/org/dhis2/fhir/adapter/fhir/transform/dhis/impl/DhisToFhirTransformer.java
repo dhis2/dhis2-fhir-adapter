@@ -50,7 +50,7 @@ import java.util.Map;
  * @param <U> the concrete type of the transformer rule that is processed by this transformer.
  * @author volsch
  */
-public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends AbstractRule> extends FhirVersionRestricted
+public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends AbstractRule> extends FhirVersionRestricted, Comparable<DhisToFhirTransformer<?, ?>>
 {
     @Nonnull
     DhisResourceType getDhisResourceType();
@@ -60,6 +60,11 @@ public interface DhisToFhirTransformer<R extends ScriptedDhisResource, U extends
 
     @Nonnull
     Class<U> getRuleClass();
+
+    /**
+     * @return the priority of this transformer (matching transformers with a higher priority are used first).
+     */
+    int getPriority();
 
     @Nullable
     DhisToFhirTransformOutcome<? extends IBaseResource> transform( @Nonnull FhirClient fhirClient, @Nonnull DhisToFhirTransformerContext context, @Nonnull R input, @Nonnull RuleInfo<U> ruleInfo,
