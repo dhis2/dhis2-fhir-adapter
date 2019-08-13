@@ -280,36 +280,20 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private boolean saveDataValueSet( @Nonnull DataValueSet dataValueSet )
     {
-        if ( validateDataValueSet( dataValueSet ) )
+        if ( dataValueSet.isNewResource() )
         {
-            if ( dataValueSet.isNewResource() )
-            {
-                logger.info( "Creating new DataValueSet." );
-                dataValueSetService.createOrUpdate( dataValueSet );
-                logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
-                    dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
-                return true;
-            }
-            else if ( dataValueSet.isModified() )
-            {
-                logger.info( "Updating existing DataValueSet." );
-                dataValueSetService.createOrUpdate( dataValueSet );
-                logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
-                    dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
-                return true;
-            }
+            logger.info( "Creating new DataValueSet." );
+            dataValueSetService.createOrUpdate( dataValueSet );
+            logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
+                dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
+            return true;
         }
-
-        return false;
-    }
-
-    private boolean validateDataValueSet( @Nonnull DataValueSet dataValueSet )
-    {
-        if ( dataValueSet.getDataSetId() != null && !dataValueSet.getDataSetId().isEmpty() &&
-            dataValueSet.getOrgUnitId() != null && !dataValueSet.getOrgUnitId().isEmpty() &&
-            dataValueSet.getPeriod() != null && !dataValueSet.getPeriod().isEmpty() &&
-            dataValueSet.getDataValues() != null && !dataValueSet.getDataValues().isEmpty() )
+        else if ( dataValueSet.isModified() )
         {
+            logger.info( "Updating existing DataValueSet." );
+            dataValueSetService.createOrUpdate( dataValueSet );
+            logger.info( "Created new DataValueSet for dataSetId: {}, orgUnit: {}, period: {}.",
+                dataValueSet.getDataSetId(), dataValueSet.getOrgUnitId(), dataValueSet.getPeriod() );
             return true;
         }
 
