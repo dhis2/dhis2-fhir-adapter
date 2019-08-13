@@ -43,6 +43,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
@@ -60,6 +61,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -97,37 +99,13 @@ public class R4FhirMeasureReportToDataValueSetTransformer extends AbstractFhirMe
     @Override
     public FhirToDhisTransformOutcome<DataValueSet> transformInternal( @Nonnull final FhirClientResource fhirClientResource,
         @Nonnull final FhirToDhisTransformerContext context, @Nonnull final IBaseResource input,
-        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables )
+        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables,
+        @Nonnull final DataValueSet dataValueSet )
         throws TransformerException
     {
         final Map<String, Object> variables = new HashMap<>( scriptVariables );
-
-        final DataValueSet dataValueSet = getResource( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
-        if ( dataValueSet == null )
-        {
-            return null;
-        }
-
         final MeasureReport mr = (MeasureReport) input;
 
-        final Optional<OrganizationUnit> organizationUnit;
-        if ( ruleInfo.getRule().getOrgUnitLookupScript() == null )
-        {
-            logger.info( "Rule does not define an organization unit lookup script and data value set does not yet include one." );
-            return null;
-        }
-        else
-        {
-            organizationUnit = getOrgUnit( context, ruleInfo, ruleInfo.getRule().getOrgUnitLookupScript(), variables );
-            organizationUnit.ifPresent( ou -> dataValueSet.setOrgUnitId( ou.getId() ) );
-        }
-
-        if ( !organizationUnit.isPresent() )
-        {
-            return null;
-        }
-
-        //------------------------------
         if ( ruleInfo.getRule().getDataSetIdLookupScript() == null )
         {
             logger.info( "Rule does not define a data value set lookup script and data value set does not yet include one." );
@@ -141,30 +119,48 @@ public class R4FhirMeasureReportToDataValueSetTransformer extends AbstractFhirMe
 
         if ( dataValueSet.getDataSetId() == null )
         {
-            return null;
+            throw new TransformerDataException( "Data Value Set ID cannot be decided." );
         }
-        //------------------------------
+
+        try
+        {
+            if ( Objects.isNull( mr.getPeriod() ) || Objects.isNull( mr.getPeriod().getStart() ) || Objects.isNull( mr.getPeriod().getEnd() ) )
+            {
+                throw new TransformerDataException( "Period start and/or end is not provided. Period cannot be decided." );
+            }
+
+            dataValueSet.setPeriod( PeriodUtils.getDHIS2PeriodString( mr.getPeriod().getStart(), mr.getPeriod().getEnd() ) );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerDataException( e.getMessage() );
+        }
 
         ZonedDateTime lastUpdated = ZonedDateTime.ofInstant( mr.getMeta().getLastUpdated().toInstant(), zoneId );
+        transformDataValues( mr, dataValueSet, lastUpdated );
         //        String version = mr.getMeta().getVersionId();
 
         dataValueSet.setId( createArtificialDataValueSetId( mr ) );
-        dataValueSet.setLastUpdated( lastUpdated );
-        dataValueSet.setPeriod( PeriodUtils.getDHIS2PeriodString( mr.getPeriod().getStart(), mr.getPeriod().getEnd() ) );
-        transformDataValues( mr, dataValueSet, lastUpdated );
 
         return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), dataValueSet, dataValueSet.isNewResource() );
     }
 
     private String createArtificialDataValueSetId( MeasureReport measureReport )
     {
-        String measureUuid = measureReport.getMeasure().substring( 8 );
-        String locationId = measureReport.getReporter().getReference().substring( 9 );
-        String period = PeriodUtils.getDHIS2PeriodString( measureReport.getPeriod().getStart(), measureReport.getPeriod().getEnd() );
+        try
+        {
+            String measureUuid = measureReport.getMeasure().substring( 8 );
+            String locationId = measureReport.getReporter().getReference().substring( 9 );
+            String period = PeriodUtils.getDHIS2PeriodString( measureReport.getPeriod().getStart(), measureReport.getPeriod().getEnd() );
 
-        //DataValueSet doesn't use IDs. Therefore, creating the artificial one only for the Adapter purposes. It consists of:
-        //measure UUID (equivalent of DHIS2 DataSetId), location UUID (equivalent of DHIS2 OrgUnitUID) and period in DHIS2 format
-        return measureUuid + ":" + locationId + ":" + period;
+            //DataValueSet doesn't use IDs. Therefore, creating the artificial one only for the Adapter purposes. It consists of:
+            //measure UUID (equivalent of DHIS2 DataSetId), location UUID (equivalent of DHIS2 OrgUnitUID) and period in DHIS2 format
+            return measureUuid + ":" + locationId + ":" + period;
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new TransformerDataException( e.getMessage() );
+        }
     }
 
     private void transformDataValues( MeasureReport measureReport, DataValueSet dataValueSet, ZonedDateTime lastUpdated )

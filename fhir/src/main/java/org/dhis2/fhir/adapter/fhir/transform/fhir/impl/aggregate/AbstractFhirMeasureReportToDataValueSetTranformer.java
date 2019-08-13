@@ -32,6 +32,7 @@ import org.dhis2.fhir.adapter.dhis.aggregate.DataValueSet;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityMetadataService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.TrackedEntityService;
@@ -43,6 +44,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.repository.DhisFhirResourceId;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisDeleteTransformOutcome;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformOutcome;
@@ -53,6 +55,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -148,12 +151,38 @@ public abstract class AbstractFhirMeasureReportToDataValueSetTranformer extends 
         @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables )
         throws TransformerException
     {
-        return transformInternal( fhirClientResource, context, input, ruleInfo, scriptVariables );
+        final Map<String, Object> variables = new HashMap<>( scriptVariables );
+
+        final DataValueSet dataValueSet = getResource( fhirClientResource, context, ruleInfo, scriptVariables ).orElse( null );
+        if ( dataValueSet == null )
+        {
+            return null;
+        }
+
+        final Optional<OrganizationUnit> organizationUnit;
+        if ( ruleInfo.getRule().getOrgUnitLookupScript() == null )
+        {
+            logger.info( "Rule does not define an organization unit lookup script and data value set does not yet include one." );
+            return null;
+        }
+        else
+        {
+            organizationUnit = getOrgUnit( context, ruleInfo, ruleInfo.getRule().getOrgUnitLookupScript(), variables );
+            organizationUnit.ifPresent( ou -> dataValueSet.setOrgUnitId( ou.getId() ) );
+        }
+
+        if ( !organizationUnit.isPresent() )
+        {
+            throw new TransformerDataException( "Organization unit ID cannot be decided." );
+        }
+
+        return transformInternal( fhirClientResource, context, input, ruleInfo, scriptVariables, dataValueSet );
     }
 
     abstract protected FhirToDhisTransformOutcome<DataValueSet> transformInternal( @Nonnull final FhirClientResource fhirClientResource,
         @Nonnull final FhirToDhisTransformerContext context, @Nonnull final IBaseResource input,
-        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables ) throws TransformerException;
+        @Nonnull final RuleInfo<DataValueSetRule> ruleInfo, @Nonnull final Map<String, Object> scriptVariables,
+        @Nonnull final DataValueSet dataValueSet ) throws TransformerException;
 
     @Nonnull
     protected Optional<String> getDataSetId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<DataValueSetRule> ruleInfo, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )

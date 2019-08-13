@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.util;
 
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.time.DayOfWeek;
 import java.time.Period;
 import java.time.ZoneId;
@@ -55,7 +56,7 @@ public class PeriodUtils
 
     private static final ZoneId zoneId = ZoneId.systemDefault();
 
-    public static String getDHIS2PeriodString( Date periodStart, Date periodEnd )
+    public static String getDHIS2PeriodString( @Nonnull Date periodStart, @Nonnull Date periodEnd )
     {
         ZonedDateTime startDate = ZonedDateTime.ofInstant( periodStart.toInstant(), zoneId );
         ZonedDateTime endDate = ZonedDateTime.ofInstant( periodEnd.toInstant(), zoneId );
