@@ -37,8 +37,6 @@ import org.dhis2.fhir.adapter.jackson.JsonCacheId;
 import javax.annotation.Nonnull;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -68,8 +66,9 @@ public class DataValueSetRule extends AbstractRule
     //TODO: Not sure about scripts yet - BEGIN
 
     @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "org_lookup_script_id" )
+    // @ManyToOne
+    // @JoinColumn( name = "org_lookup_script_id" )
+    @Transient
     public ExecutableScript getOrgUnitLookupScript()
     {
         return orgUnitLookupScript;
@@ -81,8 +80,9 @@ public class DataValueSetRule extends AbstractRule
     }
 
     @JsonCacheId
-    @ManyToOne
-    @JoinColumn( name = "loc_lookup_script_id" )
+    // @ManyToOne
+    // @JoinColumn( name = "loc_lookup_script_id" )
+    @Transient
     public ExecutableScript getLocationLookupScript()
     {
         return locationLookupScript;
