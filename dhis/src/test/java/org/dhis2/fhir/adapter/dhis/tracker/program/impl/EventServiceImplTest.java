@@ -308,7 +308,7 @@ public class EventServiceImplTest
             .andExpect( method( HttpMethod.PUT ) ).andRespond( withSuccess( IOUtils.resourceToByteArray( "/org/dhis2/fhir/adapter/dhis/tracker/program/impl/updateEvent-response.json" ), MediaType.APPLICATION_JSON ) );
 
         final Event event = new Event();
-        event.setModified( true );
+        event.setModified();
         event.setId( "jShdkweusi2" );
         event.setEnrollmentId( "Jskdsjeua1s" );
         event.setEventDate( ZonedDateTime.of( 2018, 10, 5, 22, 12, 34, 998000000, ZoneId.systemDefault() ) );

@@ -67,7 +67,7 @@ public class IncidentDateExtensionUtilsTest
     }
 
     @Test
-    public void getDateValue()
+    public void getValue()
     {
         TestPlanDefinition planDefinition = new TestPlanDefinition();
 

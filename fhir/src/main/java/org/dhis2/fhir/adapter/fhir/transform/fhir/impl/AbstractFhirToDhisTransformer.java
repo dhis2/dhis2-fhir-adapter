@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.DhisResource;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.model.ReferenceType;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.trackedentity.IdentifiedTrackedEntityInstance;
@@ -64,12 +65,14 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.TrackedEntityInstanceNotFoundException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractFhirResourceFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AbstractIdentifierFhirToDhisTransformerUtils;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util.AssignmentFhirToDhisTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.model.ResourceSystem;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
 import org.dhis2.fhir.adapter.geo.Location;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IDomainResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -286,6 +289,15 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
         return context.getFhirRequest().getDhisResourceId();
     }
 
+    @Nullable
+    protected String getAssignedDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nullable IIdType fhirId )
+    {
+        final AssignmentFhirToDhisTransformerUtils assignmentTransformerUtils = TransformerUtils.getScriptVariable(
+            scriptVariables, ScriptVariable.ASSIGNMENT_UTILS, AssignmentFhirToDhisTransformerUtils.class );
+
+        return assignmentTransformerUtils.getMappedDhisId( context, ruleInfo.getRule(), fhirId );
+    }
+
     protected boolean transform( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
         if ( ruleInfo.getRule().getTransformImpScript() == null )
@@ -300,12 +312,35 @@ public abstract class AbstractFhirToDhisTransformer<R extends DhisResource, U ex
     protected Optional<OrganizationUnit> getOrgUnit( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
     {
         final Reference orgUnitReference = executeScript( context, ruleInfo, lookupScript, scriptVariables, Reference.class );
+
         if ( orgUnitReference == null )
         {
             logger.info( "Could not extract organization unit reference." );
+
             return Optional.empty();
         }
+
         return getOrgUnit( context, orgUnitReference, scriptVariables );
+    }
+
+    @Nonnull
+    protected Optional<String> getOrgUnitId( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<U> ruleInfo, @Nonnull ExecutableScript lookupScript, @Nonnull Map<String, Object> scriptVariables )
+    {
+        final Reference orgUnitReference = executeScript( context, ruleInfo, lookupScript, scriptVariables, Reference.class );
+
+        if ( orgUnitReference == null )
+        {
+            logger.info( "Could not extract organization unit reference." );
+
+            return Optional.empty();
+        }
+
+        if ( orgUnitReference.getType() == ReferenceType.ID )
+        {
+            return Optional.of( orgUnitReference.getValue() );
+        }
+
+        return getOrgUnit( context, orgUnitReference, scriptVariables ).map( OrganizationUnit::getId );
     }
 
     @Nonnull

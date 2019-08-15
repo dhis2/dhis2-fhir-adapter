@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo

@@ -65,4 +65,15 @@ public class DueDateExtensionUtilsTest
         Assert.assertEquals( DueDateExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertSame( date, ( (DateDt) planDefinition.getExtension().get( 0 ).getValue() ).getValue() );
     }
+
+    @Test
+    public void getValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final Date date = new Date();
+
+        DueDateExtensionUtils.setValue( planDefinition, date, TypeFactory::createType );
+        Assert.assertEquals( date, DueDateExtensionUtils.getValue( planDefinition ) );
+    }
 }

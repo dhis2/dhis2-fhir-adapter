@@ -54,18 +54,24 @@ import java.util.UUID;
 @Entity
 @Table( name = "fhir_dhis_assignment" )
 @NamedQueries( {
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, query = "SELECT a.dhisResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, query = "SELECT a.fhirResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
-    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_DHIS_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_RULED_ID_BY_FHIR_NAMED_QUERY, query = "SELECT a.dhisResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId ORDER BY a.id" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, query = "SELECT a.dhisResourceId FROM FhirDhisAssignment a WHERE a.fhirClient.id=:fhirClientId AND a.fhirResourceId=:fhirResourceId ORDER BY a.id" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_FHIR_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.fhirResourceId=:fhirResourceId ORDER BY a.id" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_RULED_ID_BY_DHIS_NAMED_QUERY, query = "SELECT a.fhirResourceId FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId ORDER BY a.id" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, query = "SELECT a.fhirResourceId FROM FhirDhisAssignment a WHERE a.fhirClient.id=:fhirClientId AND a.dhisResourceId=:dhisResourceId ORDER BY a.id" ),
+    @NamedQuery( name = FhirDhisAssignment.FIND_FIRST_BY_DHIS_NAMED_QUERY, query = "SELECT a FROM FhirDhisAssignment a WHERE a.rule.id=:ruleId AND a.fhirClient.id=:subscriptionId AND a.dhisResourceId=:dhisResourceId ORDER BY a.id" )
 } )
 public class FhirDhisAssignment implements Serializable
 {
     private static final long serialVersionUID = 5203344475315981090L;
 
+    public static final String FIND_FIRST_RULED_ID_BY_FHIR_NAMED_QUERY = "FhirDhisAssignment.findFirstRuledIdByFhir";
+
     public static final String FIND_FIRST_ID_BY_FHIR_NAMED_QUERY = "FhirDhisAssignment.findFirstIdByFhir";
 
     public static final String FIND_FIRST_BY_FHIR_NAMED_QUERY = "FhirDhisAssignment.findFirstByFhir";
+
+    public static final String FIND_FIRST_RULED_ID_BY_DHIS_NAMED_QUERY = "FhirDhisAssignment.findFirstRuledIdByDhis";
 
     public static final String FIND_FIRST_ID_BY_DHIS_NAMED_QUERY = "FhirDhisAssignment.findFirstIdByDhis";
 

@@ -61,6 +61,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.CanonicalType;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent;
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.ResourceFactory;
 import org.hl7.fhir.r4.model.Type;
@@ -122,11 +123,11 @@ public class R4ProgramStageToFhirQuestionnaireResponseTransformer extends Abstra
 
         if ( event.getStatus() == EventStatus.COMPLETED )
         {
-            fhirQuestionnaireResponse.setStatus( QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED );
+            fhirQuestionnaireResponse.setStatus( QuestionnaireResponseStatus.COMPLETED );
         }
         else
         {
-            fhirQuestionnaireResponse.setStatus( QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS );
+            fhirQuestionnaireResponse.setStatus( QuestionnaireResponseStatus.INPROGRESS );
         }
 
         final AbstractValueTypeDhisToFhirTransformerUtils valueTypeUtils =

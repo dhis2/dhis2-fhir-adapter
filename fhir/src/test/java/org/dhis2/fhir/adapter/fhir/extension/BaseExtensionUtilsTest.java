@@ -66,6 +66,15 @@ public class BaseExtensionUtilsTest
     }
 
     @Test
+    public void getStringValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        BaseExtensionUtils.setStringValue( "testUrl", planDefinition, "My Test", TypeFactory::createType );
+        Assert.assertEquals( "My Test", BaseExtensionUtils.getStringValue( "testUrl", planDefinition ) );
+    }
+
+    @Test
     public void resetDateValue()
     {
         TestPlanDefinition planDefinition = new TestPlanDefinition();

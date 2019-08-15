@@ -2682,11 +2682,6 @@ imp_enrollment_org_lookup_script_id, imp_enrollment_date_lookup_script_id)
 VALUES('417d0db376bc48bebc4223e7a7e663b0', 0, 'QUESTIONNAIRE_RESPONSE', 'PATIENT', '762b4137a98b4b10a0f5629d93e23461', '25a97bb47b394ed48677db4bcaa28ccf', '521b3a008ecc487ba7e3fe12b68e388a', '385e52d28674403db42586b5d4e9faf0',
 '25a97bb47b394ed48677db4bcaa28ccf', '521b3a008ecc487ba7e3fe12b68e388a');
 
-INSERT INTO fhir_rule (id, version, name, description, enabled, evaluation_order, fhir_resource_type, dhis_resource_type, transform_imp_script_id, exp_enabled, fhir_create_enabled, fhir_update_enabled, fhir_delete_enabled)
-VALUES ('e113ec6ec61048aa9df2cf7739f40985', 0, 'Child Programme Birth Stage Questionnaire Response', NULL, TRUE, 0, 'QUESTIONNAIRE_RESPONSE', 'PROGRAM_STAGE_EVENT', '2d5ec1318fbc44d395c52544f7ff284f', TRUE, TRUE, TRUE, TRUE);
-INSERT INTO fhir_program_stage_rule (id, program_stage_id, enrollment_creation_enabled,event_creation_enabled)
-VALUES ('e113ec6ec61048aa9df2cf7739f40985','4c074c85be494b9d89739e16b9615dad', TRUE, TRUE);
-
 -- Tracker Program Child Programme, Birth: OPV Dose
 INSERT INTO fhir_rule_dhis_data_ref(id, version, rule_id, data_ref, script_arg_name, required)
 SELECT 'e66efbcb7142445a8e1ad1ef524977c1', 0, id, 'CODE:DE_2006104', 'dataElement', true

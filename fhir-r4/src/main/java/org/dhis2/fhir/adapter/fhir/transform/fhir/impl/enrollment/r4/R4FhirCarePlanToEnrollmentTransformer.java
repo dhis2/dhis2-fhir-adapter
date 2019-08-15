@@ -30,7 +30,6 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment.r4;
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
-import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
@@ -54,7 +53,7 @@ import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerException;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
 import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
-import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program.AbstractFhirCarePlanToEnrollmentTransformer;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment.AbstractFhirCarePlanToEnrollmentTransformer;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.util.FhirUriUtils;
@@ -105,8 +104,8 @@ public class R4FhirCarePlanToEnrollmentTransformer extends AbstractFhirCarePlanT
 
         enrollment.setProgramId( program.getId() );
         enrollment.setStatus( convertStatus( fhirCarePlan.getStatus() ) );
-        enrollment.setOrgUnitId( getOrgUnit( context, ruleInfo, fhirResourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables )
-            .map( OrganizationUnit::getId ).orElseThrow( () -> new TransformerMappingException( "Care plan contains location that cannot be mapped." ) ) );
+        enrollment.setOrgUnitId( getOrgUnitId( context, ruleInfo, fhirResourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables )
+            .orElseThrow( () -> new TransformerMappingException( "Care plan contains location that cannot be mapped." ) ) );
         enrollment.setTrackedEntityInstanceId( scriptedTrackedEntityInstance.getId() );
 
         if ( fhirCarePlan.getPeriod().hasStart() )
@@ -151,7 +150,7 @@ public class R4FhirCarePlanToEnrollmentTransformer extends AbstractFhirCarePlanT
     protected Reference getProgramRef( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull IBaseResource carePlan )
     {
         final CarePlan fhirCarePlan = (CarePlan) carePlan;
-        final String uri;
+        String uri = null;
 
         if ( !fhirCarePlan.getInstantiatesUri().isEmpty() )
         {
@@ -161,7 +160,8 @@ public class R4FhirCarePlanToEnrollmentTransformer extends AbstractFhirCarePlanT
         {
             uri = fhirCarePlan.getInstantiatesCanonical().get( 0 ).getValueAsString();
         }
-        else
+
+        if ( uri == null )
         {
             throw new TransformerDataException( "No reference to a plan definition that is instantiated by this care plan has been given." );
         }

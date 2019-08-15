@@ -28,15 +28,20 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.programstage;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import ca.uhn.fhir.model.primitive.IdDt;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.commons.io.IOUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.ExpectedCount;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -52,8 +57,11 @@ public abstract class AbstractQuestionnaireResponseToProgramStageTransformationA
     extends AbstractProgramStageTransformationAppTest
 {
     @Test
-    public void createEnrollment() throws Exception
+    public void createQuestionnaireResponse() throws Exception
     {
+        createAssignment( UUID.fromString( "c4e17e7d-880e-45b5-9bc5-568da8c79742" ), testConfiguration.getFhirClientId( FhirVersion.R4 ),
+            new DhisResourceId( DhisResourceType.ENROLLMENT, "ieR4nl4muff" ), new IdDt( "CarePlan", "90" ) );
+
         expectMetadataRequests();
         fhirMockServer.stubFor( WireMock.get( urlPathEqualTo( getBaseFhirContext() + "/Patient/15" ) ).willReturn( aResponse()
             .withHeader( "Content-Type", "application/fhir+json" )
@@ -62,27 +70,30 @@ public abstract class AbstractQuestionnaireResponseToProgramStageTransformationA
             .withHeader( "Content-Type", "application/fhir+json" )
             .withBody( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/fhir/test/" + getResourceDir() + "/get-organization-20.json", StandardCharsets.UTF_8 ) ) ) );
 
+        systemDhis2Server.expect( ExpectedCount.once(), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programStages/MsWxkiY6tMS.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
+                "programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-program-stage.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
         systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits.json?paging=false&fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D&filter=code:eq:OU_1357" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1357.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programs/EPDyQuoRnXk.json?fields=id,name,code,description,lastUpdated,selectIncidentDatesInFuture,selectEnrollmentDatesInFuture,displayIncidentDate,registration," +
+                "withoutRegistration,captureCoordinates,trackedEntityType%5Bid%5D,programTrackedEntityAttributes%5Bid,name,valueType,mandatory,allowFutureDate,trackedEntityAttribute%5Bid,name,code,valueType,generated%5D%5D,programStages%5Bid," +
+                "program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType," +
+                "optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
         userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/trackedEntityInstances.json?trackedEntityType=MCPQUTHX1Ze&ouMode=ACCESSIBLE&filter=jD1NGmSntCt:EQ:PT_88589&pageSize=2&fields=" +
             "deleted,trackedEntityInstance,trackedEntityType,orgUnit,coordinates,lastUpdated,attributes%5Battribute,value,lastUpdated,storedBy%5D" ) )
             .andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-tei-15-get.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
 
-        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
-            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/organisationUnits/ldXIdLNUNEn.json?fields=lastUpdated,id,code,name,shortName,displayName,level,openingDate,closedDate,coordinates,leaf,parent%5Bid%5D" ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-org-unit-OU_1234.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-
-        userDhis2Server.expect( ExpectedCount.between( 2, 4 ), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?program=EPDyQuoRnXk&programStatus=ACTIVE&trackedEntityInstance=JeR2Ul4mZfx&ouMode=ACCESSIBLE&fields=:all&" +
-            "order=lastUpdated:desc&pageSize=1" ) ).andExpect( method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-empty.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
-        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/enrollments.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
+        userDhis2Server.expect( ExpectedCount.once(), requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/events.json?strategy=CREATE" ) ).andExpect( method( HttpMethod.POST ) )
             .andExpect( header( "Authorization", testConfiguration.getDhis2UserAuthorization() ) )
             .andExpect( content().contentTypeCompatibleWith( MediaType.APPLICATION_JSON ) )
-            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-91-create.json", StandardCharsets.UTF_8 ) ) )
-            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-enrollment-91-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
+            .andExpect( content().json( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-91-create.json", StandardCharsets.UTF_8 ) ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-event-91-create-response.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON )
                 .headers( createDefaultHeaders() ) );
 
         notifyResource( FhirResourceType.QUESTIONNAIRE_RESPONSE, null,
