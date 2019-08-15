@@ -50,6 +50,26 @@ public abstract class EventStatusExtensionUtils
         BaseExtensionUtils.setStringValue( URL, resource, eventStatus == null ? null : eventStatus.name(), typeFactory );
     }
 
+    @Nullable
+    public static EventStatus getValue( @Nonnull IBaseHasExtensions resource ) throws IllegalArgumentException
+    {
+        final String stringValue = BaseExtensionUtils.getStringValue( URL, resource );
+
+        if ( stringValue == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            return EventStatus.valueOf( stringValue );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new IllegalArgumentException( "Invalid event status: " + stringValue );
+        }
+    }
+
     private EventStatusExtensionUtils()
     {
         super();

@@ -47,6 +47,19 @@ import java.util.function.Function;
  */
 abstract class BaseExtensionUtils
 {
+    @Nullable
+    protected static String getStringValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource )
+    {
+        final IBaseDatatype value = getValue( url, resource );
+
+        if ( value instanceof IPrimitiveType )
+        {
+            return ( (IPrimitiveType) value ).getValueAsString();
+        }
+
+        return null;
+    }
+
     @SuppressWarnings( "unchecked" )
     protected static void setStringValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable String value, @Nonnull Function<String, IElement> typeFactory )
     {

@@ -84,10 +84,12 @@ public abstract class TransformerUtils
     public static <T> T getScriptVariable( @Nonnull Map<String, Object> scriptVariables, @Nonnull ScriptVariable scriptVariable, @Nonnull Class<T> type ) throws FatalTransformerException
     {
         final T value = type.cast( scriptVariables.get( scriptVariable.getVariableName() ) );
+
         if ( value == null )
         {
-            throw new FatalTransformerException( "Script variable is not included: " + scriptVariable );
+            throw new FatalTransformerException( "Script variable is not included: " + scriptVariable.getVariableName() );
         }
+
         return value;
     }
 

@@ -41,8 +41,14 @@ import org.apache.activemq.artemis.api.core.management.ManagementHelper;
 import org.apache.activemq.artemis.jms.client.ActiveMQSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
+import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
+import org.dhis2.fhir.adapter.fhir.security.AdapterSystemAuthenticationToken;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -59,6 +65,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jms.UncategorizedJmsException;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.TestSecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -74,6 +82,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -173,6 +182,15 @@ public abstract class AbstractAppTest
     @Autowired
     protected PlatformTransactionManager transactionManager;
 
+    @Autowired
+    protected FhirDhisAssignmentRepository assignmentRepository;
+
+    @Autowired
+    protected RuleRepository ruleRepository;
+
+    @Autowired
+    protected FhirClientRepository fhirClientRepository;
+
     private long resourceDlQueueCount;
 
     @Nonnull
@@ -250,7 +268,31 @@ public abstract class AbstractAppTest
     {
         final HttpHeaders headers = new HttpHeaders();
         headers.setDate( System.currentTimeMillis() );
+
         return headers;
+    }
+
+    protected void createAssignment( @Nonnull UUID ruleId, @Nonnull UUID fhirClientId, @Nonnull DhisResourceId dhisResourceId, @Nonnull IIdType fhirResourceId )
+    {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.getContext().setAuthentication( new AdapterSystemAuthenticationToken() );
+        try
+        {
+            assignmentRepository.saveFhirResourceId(
+                ruleRepository.findById( ruleId ).orElseGet( () -> {
+                    Assert.fail( "Rule could not be found: " + ruleId );
+                    return null;
+                } ),
+                fhirClientRepository.findById( fhirClientId ).orElseGet( () -> {
+                    Assert.fail( "FHIR client could not be found: " + fhirClientId );
+                    return null;
+                } ),
+                dhisResourceId, fhirResourceId );
+        }
+        finally
+        {
+            SecurityContextHolder.getContext().setAuthentication( authentication );
+        }
     }
 
     protected void notifyResource( @Nonnull FhirResourceType resourceType, @Nullable String resourceSearchResponse,
@@ -261,6 +303,7 @@ public abstract class AbstractAppTest
             fhirMockServer.removeStub( previousResourceSearchStubMapping );
             previousResourceSearchStubMapping = null;
         }
+
         if ( StringUtils.isNotBlank( resourceSearchResponse ) )
         {
             final UrlPattern urlPattern = urlMatching( getBaseFhirContext() +
@@ -271,6 +314,7 @@ public abstract class AbstractAppTest
                 .withHeader( "Content-Type", "application/fhir+json" )
                 .withBody( resourceSearchResponse ) ) );
         }
+
         if ( StringUtils.isNotBlank( resourceId ) && StringUtils.isNotBlank( resourceResponse ) )
         {
             fhirMockServer.stubFor( WireMock.get( urlEqualTo( getBaseFhirContext() +
@@ -306,16 +350,19 @@ public abstract class AbstractAppTest
         {
             messageCount = getQueueMessageCount( fhirRestHookRequestQueueJmsTemplate, null ) +
                 getQueueMessageCount( fhirResourceQueueJmsTemplate, null );
+
             if ( messageCount > 0 )
             {
                 if ( (System.currentTimeMillis() - begin) > MAX_COMPLETED_POLL_TIME )
                 {
                     Assert.fail( "Waited more than " + MAX_COMPLETED_POLL_TIME + " ms, but there are still " + messageCount + " messages in the queues." );
                 }
+
                 Thread.sleep( 100L );
             }
         }
         while ( messageCount > 0 );
+
         Assert.assertEquals( "Resource dead letter queue contains messages.",
             resourceDlQueueCount, getQueueMessageCount( fhirResourceQueueJmsTemplate, RESOURCE_DL_QUEUE_NAME ) );
     }

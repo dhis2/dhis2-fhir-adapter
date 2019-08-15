@@ -152,7 +152,7 @@ public class WritableScriptedEvent extends WritableScriptedDhisResource implemen
         final ZonedDateTime zonedDateTime = ScriptedDateTimeUtils.toZonedDateTime( eventDate, valueConverter );
         if ( !Objects.equals( event.getEventDate(), zonedDateTime ) )
         {
-            event.setModified( true );
+            event.setModified();
         }
         event.setEventDate( zonedDateTime );
         return (eventDate != null);
@@ -175,7 +175,7 @@ public class WritableScriptedEvent extends WritableScriptedDhisResource implemen
 
         if ( !Objects.equals( event.getDueDate(), zonedDateTime ) )
         {
-            event.setModified( true );
+            event.setModified();
         }
 
         event.setDueDate( zonedDateTime );
@@ -208,7 +208,7 @@ public class WritableScriptedEvent extends WritableScriptedDhisResource implemen
 
         if ( !Objects.equals( event.getStatus(), convertedStatus ) )
         {
-            event.setModified( true );
+            event.setModified();
         }
 
         event.setStatus( convertedStatus );
@@ -233,7 +233,7 @@ public class WritableScriptedEvent extends WritableScriptedDhisResource implemen
 
         if ( !Objects.equals( event.getCoordinate(), convertedCoordinate ) )
         {
-            event.setModified( true );
+            event.setModified();
         }
 
         event.setCoordinate( convertedCoordinate );
@@ -563,6 +563,7 @@ public class WritableScriptedEvent extends WritableScriptedDhisResource implemen
         {
             return new WritableDataValue( dataElement.getElementId(), true );
         }
+
         return event.getDataValue( dataElement.getElementId() );
     }
 

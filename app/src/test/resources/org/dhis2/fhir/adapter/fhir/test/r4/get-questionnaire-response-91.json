@@ -5,15 +5,15 @@
     "versionId": "6",
     "lastUpdated": "2018-11-19T21:31:14.644+01:00"
   },
-  "questionnaire": "MsWxkiY6tMS",
+  "questionnaire": "Questionnaire/MsWxkiY6tMS",
+  "partOf": {
+    "reference": "CarePlan/90"
+  },
   "status": "in-progress",
   "subject": {
     "reference": "Patient/15"
   },
   "authored": "2018-11-10",
-  "author": {
-    "reference": "Organization/20"
-  },
   "item": [
     {
       "linkId": "BnplxU2jGvX",
@@ -30,6 +30,25 @@
           "valueString": "1"
         }
       ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/location",
+      "valueReference": {
+        "identifier": {
+          "system": "http://www.dhis2.org/dhis2-fhir-adapter/systems/DHIS2-FHIR-Identifier",
+          "value": "ldXIdLNUNEn"
+        }
+      }
+    },
+    {
+      "url": "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/due-date",
+      "valueDate": "2018-11-12"
+    },
+    {
+      "url": "http://www.dhis2.org/dhis2-fhir-adapter/fhir/extensions/event-status",
+      "valueString": "ACTIVE"
     }
   ]
 }

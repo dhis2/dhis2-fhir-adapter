@@ -79,6 +79,8 @@ public class WritableFhirRequest implements FhirRequest, Serializable
 
     private String dhisUsername;
 
+    private UUID fhirClientId;
+
     private String fhirClientCode;
 
     private UUID fhirClientResourceId;
@@ -258,6 +260,18 @@ public class WritableFhirRequest implements FhirRequest, Serializable
     public void setFhirClientResourceId( UUID fhirClientResourceId )
     {
         this.fhirClientResourceId = fhirClientResourceId;
+    }
+
+    @Nullable
+    @Override
+    public UUID getFhirClientId()
+    {
+        return fhirClientId;
+    }
+
+    public void setFhirClientId( UUID fhirClientId )
+    {
+        this.fhirClientId = fhirClientId;
     }
 
     @Nullable

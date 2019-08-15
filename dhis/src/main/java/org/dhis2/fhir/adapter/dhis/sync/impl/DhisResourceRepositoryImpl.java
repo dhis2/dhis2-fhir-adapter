@@ -205,7 +205,7 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
     {
         boolean updated = false;
 
-        if ( (event.getTrackedEntityInstance() != null) && event.getTrackedEntityInstance().isModified() )
+        if ( event.getTrackedEntityInstance() != null && event.getTrackedEntityInstance().isModified() )
         {
             logger.debug( "Persisting tracked entity instance." );
             trackedEntityService.createOrUpdate( event.getTrackedEntityInstance() );
@@ -213,18 +213,21 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
             updated = true;
         }
 
-        if ( event.getEnrollment().isNewResource() )
+        final Enrollment enrollment = event.getEnrollment();
+
+        if ( enrollment != null && enrollment.isNewResource() )
         {
             logger.info( "Creating new enrollment." );
-            event.getEnrollment().setEvents( Collections.singletonList( event ) );
-            enrollmentService.createOrUpdate( event.getEnrollment() );
-            logger.info( "Created new enrollment {} with new event {}.", event.getEnrollment().getId(), event.getId() );
+            enrollment.setEvents( Collections.singletonList( event ) );
+            enrollmentService.createOrUpdate( enrollment );
+            logger.info( "Created new enrollment {} with new event {}.", enrollment.getId(), event.getId() );
             updated = true;
         }
         else
         {
-            final List<Event> events = event.getEnrollment().getEvents();
-            if ( event.getEnrollment().isModified() )
+            final List<Event> events = enrollment == null ? Collections.singletonList( event ) : enrollment.getEvents();
+
+            if ( enrollment != null && enrollment.isModified() )
             {
                 logger.info( "Updating existing enrollment." );
                 event.setEnrollment( enrollmentService.createOrUpdate( event.getEnrollment() ) );
@@ -305,14 +308,9 @@ public class DhisResourceRepositoryImpl implements DhisResourceRepository
 
     private boolean validateDataValueSet( @Nonnull DataValueSet dataValueSet )
     {
-        if ( dataValueSet.getDataSetId() != null && !dataValueSet.getDataSetId().isEmpty() &&
+        return dataValueSet.getDataSetId() != null && !dataValueSet.getDataSetId().isEmpty() &&
             dataValueSet.getOrgUnitId() != null && !dataValueSet.getOrgUnitId().isEmpty() &&
             dataValueSet.getPeriod() != null && !dataValueSet.getPeriod().isEmpty() &&
-            dataValueSet.getDataValues() != null && !dataValueSet.getDataValues().isEmpty() )
-        {
-            return true;
-        }
-
-        return false;
+            dataValueSet.getDataValues() != null && !dataValueSet.getDataValues().isEmpty();
     }
 }
