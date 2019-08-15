@@ -335,9 +335,9 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
         return modified;
     }
 
-    public void setModified( boolean modified )
+    public void setModified()
     {
-        this.modified = modified;
+        this.modified = true;
     }
 
     @Nonnull
@@ -347,13 +347,16 @@ public class Event implements TrackedEntityDhisResource, Serializable, Comparabl
         {
             dataValues = new ArrayList<>();
         }
+
         WritableDataValue dataValue = dataValues.stream().filter(
             dv -> Objects.equals( dataElementId, dv.getDataElementId() ) ).findFirst().orElse( null );
+
         if ( dataValue == null )
         {
             dataValue = new WritableDataValue( dataElementId, true );
             dataValues.add( dataValue );
         }
+
         return dataValue;
     }
 

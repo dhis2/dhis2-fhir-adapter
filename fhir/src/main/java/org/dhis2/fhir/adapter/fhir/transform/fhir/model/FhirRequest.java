@@ -99,6 +99,9 @@ public interface FhirRequest
     boolean isSync();
 
     @Nullable
+    UUID getFhirClientId();
+
+    @Nullable
     UUID getFhirClientResourceId();
 
     @Nullable

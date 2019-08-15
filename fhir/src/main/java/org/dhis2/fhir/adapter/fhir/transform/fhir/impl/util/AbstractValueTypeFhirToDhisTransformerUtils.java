@@ -29,7 +29,6 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
  */
 
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util.DhisToFhirTransformerUtils;
 import org.dhis2.fhir.adapter.fhir.transform.util.AbstractTransformerUtils;
 import org.dhis2.fhir.adapter.model.ValueType;
 import org.dhis2.fhir.adapter.scriptable.ScriptMethod;
@@ -51,7 +50,7 @@ import javax.annotation.Nullable;
 @Scriptable
 @ScriptType( value = "ValueTypeUtils", transformType = ScriptTransformType.IMP, var = AbstractValueTypeFhirToDhisTransformerUtils.SCRIPT_ATTR_NAME,
     description = "Utilities for handling conversion of DHIS2 values with a DHIS2 value type." )
-public abstract class AbstractValueTypeFhirToDhisTransformerUtils extends AbstractTransformerUtils implements DhisToFhirTransformerUtils
+public abstract class AbstractValueTypeFhirToDhisTransformerUtils extends AbstractTransformerUtils implements FhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "valueTypeUtils";
 

@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.util;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -28,27 +28,30 @@ package org.dhis2.fhir.adapter.fhir.transform.dhis.impl.util;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceId;
-import org.dhis2.fhir.adapter.dhis.model.DhisResourceType;
 import org.dhis2.fhir.adapter.fhir.data.repository.FhirDhisAssignmentRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirClient;
 import org.dhis2.fhir.adapter.fhir.metadata.model.FhirResourceType;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.FatalTransformerException;
-import org.dhis2.fhir.adapter.fhir.transform.dhis.DhisToFhirTransformerContext;
-import org.hl7.fhir.instance.model.api.IBaseReference;
+import org.dhis2.fhir.adapter.fhir.transform.TransformerMappingException;
+import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
- * DHIS2 to FHIR transformer utility methods for assignment of IDs.
+ * FHIR to DHIS2 transformer utility methods for assignment of IDs.
  *
  * @author volsch
  */
-public abstract class AbstractAssignmentDhisToFhirTransformerUtils extends AbstractDhisToFhirTransformerUtils
+@Component
+public class AssignmentFhirToDhisTransformerUtils extends AbstractFhirToDhisTransformerUtils
 {
     public static final String SCRIPT_ATTR_NAME = "assignmentUtils";
 
@@ -56,7 +59,7 @@ public abstract class AbstractAssignmentDhisToFhirTransformerUtils extends Abstr
 
     private final FhirClientRepository fhirClientRepository;
 
-    protected AbstractAssignmentDhisToFhirTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
+    protected AssignmentFhirToDhisTransformerUtils( @Nonnull ScriptExecutionContext scriptExecutionContext,
         @Nonnull FhirDhisAssignmentRepository assignmentRepository, @Nonnull FhirClientRepository fhirClientRepository )
     {
         super( scriptExecutionContext );
@@ -72,34 +75,42 @@ public abstract class AbstractAssignmentDhisToFhirTransformerUtils extends Abstr
         return SCRIPT_ATTR_NAME;
     }
 
-    @Nullable
-    public IBaseReference getMappedFhirId( @Nonnull DhisToFhirTransformerContext context, @Nonnull AbstractRule rule,
-        @Nonnull DhisResourceType dhisResourceType, @Nullable String dhisId, @Nonnull FhirResourceType fhirResourceType )
+    @Nonnull
+    @Override
+    public Set<FhirVersion> getFhirVersions()
     {
-        if ( dhisId == null )
-        {
-            return null;
-        }
-
-        if ( fhirResourceType.isSyncDhisId() || context.getDhisRequest().isDhisFhirId() )
-        {
-            return createReference( fhirResourceType, dhisId );
-        }
-
-        final FhirClient fhirClient = fhirClientRepository.findOneByIdCached( context.getFhirClientId() )
-            .orElseThrow( () -> new FatalTransformerException( "FHIR Client with ID " + context.getFhirClientId() + " could not be found." ) );
-
-        // rule must not be used to determine different assigment
-        final String fhirId = assignmentRepository.findFirstFhirResourceId( fhirClient, new DhisResourceId( dhisResourceType, dhisId ) );
-
-        if ( fhirId == null )
-        {
-            return null;
-        }
-
-        return createReference( fhirResourceType, fhirId );
+        return FhirVersion.ALL;
     }
 
-    @Nonnull
-    protected abstract IBaseReference createReference( @Nonnull FhirResourceType fhirResourceType, @Nonnull String fhirId );
+    @Nullable
+    public String getMappedDhisId( @Nonnull FhirToDhisTransformerContext context, @Nonnull AbstractRule rule, @Nullable IIdType fhirId )
+    {
+        if ( fhirId == null || !fhirId.hasIdPart() )
+        {
+            return null;
+        }
+
+        if ( fhirId.getResourceType() == null )
+        {
+            throw new IllegalArgumentException( "FHIR resource type is not included: " + fhirId.getValue() );
+        }
+
+        final FhirResourceType fhirResourceType = FhirResourceType.getByResourceTypeName( fhirId.getResourceType() );
+
+        if ( fhirResourceType == null )
+        {
+            throw new TransformerMappingException( "FHIR ID contains unsupported resource type: " + fhirId.getResourceType() );
+        }
+
+        if ( fhirResourceType.isSyncDhisId() || context.getFhirRequest().isDhisFhirId() )
+        {
+            return fhirId.getIdPart();
+        }
+
+        final FhirClient fhirClient = fhirClientRepository.findOneByIdCached( context.getFhirRequest().getFhirClientId() )
+            .orElseThrow( () -> new FatalTransformerException( "FHIR Client with ID " + context.getFhirRequest().getFhirClientId() + " could not be found." ) );
+
+        // rule must not be used to determine different assignment
+        return assignmentRepository.findFirstDhisResourceId( fhirClient, fhirId );
+    }
 }

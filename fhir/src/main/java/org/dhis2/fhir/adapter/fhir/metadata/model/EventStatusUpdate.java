@@ -113,7 +113,7 @@ public class EventStatusUpdate implements Serializable
                 if ( event.getStatus() != resulting )
                 {
                     event.setStatus( resulting );
-                    event.setModified( true );
+                    event.setModified();
                 }
             }
         }

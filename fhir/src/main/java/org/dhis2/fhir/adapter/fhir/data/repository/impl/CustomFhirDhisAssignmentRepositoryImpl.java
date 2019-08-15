@@ -84,7 +84,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     protected String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull IIdType fhirResourceId, boolean locked )
     {
-        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, String.class )
+        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_RULED_ID_BY_FHIR_NAMED_QUERY, String.class )
             .setLockMode( locked ? LockModeType.PESSIMISTIC_WRITE : LockModeType.NONE )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
             .setParameter( "fhirResourceId", fhirResourceId.getIdPart() ).getResultList().stream().findFirst().orElse( null );
@@ -92,11 +92,27 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
 
     @Nullable
     @Override
+    public String findFirstDhisResourceId( @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId )
+    {
+        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_FHIR_NAMED_QUERY, String.class )
+            .setParameter( "fhirClientId", fhirClient.getId() ).setParameter( "fhirResourceId", fhirResourceId.getIdPart() ).getResultList().stream().findFirst().orElse( null );
+    }
+
+    @Nullable
+    @Override
     public String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient subscription, @Nonnull DhisResourceId dhisResourceId )
     {
-        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, String.class )
+        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_RULED_ID_BY_DHIS_NAMED_QUERY, String.class )
             .setParameter( "ruleId", rule.getId() ).setParameter( "subscriptionId", subscription.getId() )
             .setParameter( "dhisResourceId", dhisResourceId.getId() ).getResultList().stream().findFirst().orElse( null );
+    }
+
+    @Nullable
+    @Override
+    public String findFirstFhirResourceId( @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId )
+    {
+        return entityManager.createNamedQuery( FhirDhisAssignment.FIND_FIRST_ID_BY_DHIS_NAMED_QUERY, String.class )
+            .setParameter( "fhirClientId", fhirClient.getId() ).setParameter( "dhisResourceId", dhisResourceId.getId() ).getResultList().stream().findFirst().orElse( null );
     }
 
     @Override
@@ -180,6 +196,7 @@ public class CustomFhirDhisAssignmentRepositoryImpl implements CustomFhirDhisAss
         assignment.setFhirClient( entityManager.getReference( FhirClient.class, subscription.getId() ) );
         assignment.setFhirResourceId( fhirResourceId.getIdPart() );
         assignment.setDhisResourceId( dhisResourceId.getId() );
+
         try
         {
             entityManager.persist( assignment );

@@ -302,6 +302,11 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
     @Override
     public FhirToDhisDeleteTransformOutcome<Event> transformDeletion( @Nonnull FhirClientResource fhirClientResource, @Nonnull RuleInfo<ProgramStageRule> ruleInfo, @Nonnull DhisFhirResourceId dhisFhirResourceId ) throws TransformerException
     {
+        if ( ruleInfo.getRule().getProgramStage() == null )
+        {
+            return null;
+        }
+
         if ( ruleInfo.getRule().isGrouping() && ruleInfo.getDhisDataReferences().isEmpty() )
         {
             return new FhirToDhisDeleteTransformOutcome<>(
@@ -657,7 +662,7 @@ public class FhirToProgramStageTransformer extends AbstractFhirToDhisTransformer
             if ( !Objects.equals( event.getEventDate(), eventDate ) )
             {
                 event.setEventDate( eventDate );
-                event.setModified( true );
+                event.setModified();
                 logger.info( "Updated event date to {}.", eventDate );
             }
         }

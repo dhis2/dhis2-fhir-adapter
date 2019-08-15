@@ -1,4 +1,4 @@
-package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
+package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.enrollment;
 
 /*
  * Copyright (c) 2004-2019, University of Oslo
@@ -30,6 +30,7 @@ package org.dhis2.fhir.adapter.fhir.transform.fhir.impl.program;
 
 import org.dhis2.fhir.adapter.dhis.converter.ValueConverter;
 import org.dhis2.fhir.adapter.dhis.model.Reference;
+import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnit;
 import org.dhis2.fhir.adapter.dhis.orgunit.OrganizationUnitService;
 import org.dhis2.fhir.adapter.dhis.tracker.program.Enrollment;
 import org.dhis2.fhir.adapter.dhis.tracker.program.EnrollmentService;
@@ -50,6 +51,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.ScriptVariable;
 import org.dhis2.fhir.adapter.fhir.metadata.model.TrackedEntityRule;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirResourceMappingRepository;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.TrackedEntityRuleRepository;
+import org.dhis2.fhir.adapter.fhir.model.FhirVersion;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutor;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
@@ -59,21 +61,32 @@ import org.dhis2.fhir.adapter.fhir.transform.fhir.FhirToDhisTransformerContext;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.util.TransformerUtils;
+import org.dhis2.fhir.adapter.model.ValueType;
+import org.dhis2.fhir.adapter.util.DateTimeUtils;
+import org.hl7.fhir.instance.model.api.IAnyResource;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Specific transformer that transforms a FHIR care plan to a DHIS2 enrollment.
- *
+ * @author Charles Chigoriwa (ITINORDIC)
  * @author volsch
  */
-public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends AbstractFhirToEnrollmentTransformer
+@Component
+public class FhirToEnrollmentTransformer extends AbstractFhirToEnrollmentTransformer
 {
-    public AbstractFhirCarePlanToEnrollmentTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
+    private final ZoneId zoneId = ZoneId.systemDefault();
+
+    public FhirToEnrollmentTransformer( @Nonnull ScriptExecutor scriptExecutor, @Nonnull TrackedEntityMetadataService trackedEntityMetadataService, @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull TrackedEntityRuleRepository trackedEntityRuleRepository, @Nonnull OrganizationUnitService organizationUnitService, @Nonnull ProgramMetadataService programMetadataService, @Nonnull EnrollmentService enrollmentService,
         @Nonnull FhirResourceMappingRepository resourceMappingRepository, @Nonnull FhirDhisAssignmentRepository fhirDhisAssignmentRepository, @Nonnull ScriptExecutionContext scriptExecutionContext, @Nonnull ValueConverter valueConverter )
     {
@@ -81,30 +94,59 @@ public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends Abstra
             scriptExecutionContext, valueConverter );
     }
 
+    @Nonnull
     @Override
-    public int getPriority()
+    public Set<FhirVersion> getFhirVersions()
     {
-        return 10;
+        return FhirVersion.ALL;
     }
 
     @Override
     protected boolean isSyncRequired( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        return context.getFhirRequest().isSync();
+        // for currently supported use case no sync is required
+        return false;
     }
 
     @Override
     @Nonnull
     protected Optional<Enrollment> getActiveResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
-        return Optional.empty();
+        final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
+        final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
+
+        return enrollmentService.findLatestActive( program.getId(), Objects.requireNonNull( trackedEntityInstance.getId() ), trackedEntityInstance.isLocal() );
     }
 
     @Override
     protected Enrollment createResource( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, String id, @Nonnull Map<String, Object> scriptVariables, boolean sync, boolean refreshed ) throws TransformerException
     {
+        final FhirResourceType trackedEntityFhirResourceType = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_RESOURCE_TYPE, FhirResourceType.class );
+        final Program program = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.PROGRAM, Program.class );
+        final ScriptedTrackedEntityInstance trackedEntityInstance = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
+        final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo, trackedEntityFhirResourceType );
+
+        final ZonedDateTime enrollmentDate = getEnrollmentDate( context, ruleInfo, resourceMapping, program, scriptVariables );
+
+        if ( enrollmentDate == null )
+        {
+            return null;
+        }
+
+        // without an organization unit no enrollment can be created
+        final Optional<OrganizationUnit> orgUnit = getOrgUnit( context, ruleInfo, resourceMapping.getImpEnrollmentOrgLookupScript(), scriptVariables );
+
+        if ( !orgUnit.isPresent() )
+        {
+            throw new TransformerDataException( "Resource does not include a valid organization unit." );
+        }
+
         final Enrollment enrollment = new Enrollment( true );
         enrollment.setStatus( EnrollmentStatus.ACTIVE );
+        enrollment.setOrgUnitId( orgUnit.get().getId() );
+        enrollment.setProgramId( program.getId() );
+        enrollment.setTrackedEntityInstanceId( Objects.requireNonNull( trackedEntityInstance.getTrackedEntityInstance() ).getId() );
+        enrollment.setEnrollmentDate( enrollmentDate );
 
         return enrollment;
     }
@@ -113,7 +155,7 @@ public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends Abstra
     public FhirToDhisTransformOutcome<Enrollment> transform( @Nonnull FhirClientResource fhirClientResource, @Nonnull FhirToDhisTransformerContext context,
         @Nonnull IBaseResource input, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables ) throws TransformerException
     {
-        if ( ruleInfo.getRule().getFhirResourceType() != FhirResourceType.CARE_PLAN || ruleInfo.getRule().getProgramRefLookupScript() != null )
+        if ( ruleInfo.getRule().getProgramRefLookupScript() == null )
         {
             return null;
         }
@@ -126,13 +168,21 @@ public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends Abstra
             TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class ),
             TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_TYPE, TrackedEntityType.class ) );
         final FhirResourceMapping resourceMapping = getResourceMapping( ruleInfo, trackedEntityRuleInfo.getRule().getFhirResourceType() );
-        final IdentifiedTrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context, trackedEntityRuleInfo, resourceMapping, variables, false )
-            .orElseThrow( () -> new TransformerDataException( "Tracked entity instance could not be found." ) );
+        final IdentifiedTrackedEntityInstance trackedEntityInstance = getTrackedEntityInstance( context, trackedEntityRuleInfo, resourceMapping, variables, false ).orElse( null );
+
+        if ( trackedEntityInstance == null )
+        {
+            return null;
+        }
 
         addScriptVariables( context, variables, ruleInfo, trackedEntityRuleInfo, trackedEntityInstance );
+        final Enrollment enrollment = getResource( fhirClientResource, context, ruleInfo, variables ).orElse( null );
 
-        final Enrollment enrollment = getResource( fhirClientResource, context, ruleInfo, variables )
-            .orElseThrow( () -> new TransformerDataException( "Enrollment could not be determined." ) );
+        if ( enrollment == null )
+        {
+            return null;
+        }
+
         final ScriptedTrackedEntityInstance scriptedTrackedEntityInstance = TransformerUtils.getScriptVariable( variables, ScriptVariable.TRACKED_ENTITY_INSTANCE, ScriptedTrackedEntityInstance.class );
         final Program program = TransformerUtils.getScriptVariable( variables, ScriptVariable.PROGRAM, Program.class );
 
@@ -140,11 +190,9 @@ public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends Abstra
             program, enrollment, scriptedTrackedEntityInstance, scriptExecutionContext, valueConverter );
         variables.put( ScriptVariable.OUTPUT.getVariableName(), scriptedEnrollment );
 
-        transformInternal( context, ruleInfo, scriptVariables, resourceMapping,
-            program, input, scriptedTrackedEntityInstance, scriptedEnrollment );
         if ( !transform( context, ruleInfo, variables ) )
         {
-            throw new TransformerDataException( "Care plan data could not be transformed to enrollment." );
+            return null;
         }
 
         if ( enrollment.isModified() )
@@ -155,12 +203,51 @@ public abstract class AbstractFhirCarePlanToEnrollmentTransformer extends Abstra
         return new FhirToDhisTransformOutcome<>( ruleInfo.getRule(), enrollment, enrollment.isNewResource() );
     }
 
-    protected void transformInternal( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull FhirResourceMapping fhirResourceMapping,
-        @Nonnull Program program, @Nonnull IBaseResource carePlan, @Nonnull ScriptedTrackedEntityInstance scriptedTrackedEntityInstance, @Nonnull WritableScriptedEnrollment scriptedEnrollment ) throws TransformerException
+    @Nullable
+    protected ZonedDateTime getEnrollmentDate( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull FhirResourceMapping resourceMapping, @Nonnull Program program, @Nonnull Map<String, Object> scriptVariables )
     {
-        // method can be overridden
+        ZonedDateTime enrollmentDate = valueConverter.convert( executeScript( context, ruleInfo, resourceMapping.getImpEnrollmentDateLookupScript(),
+            scriptVariables, Object.class ), ValueType.DATETIME, ZonedDateTime.class );
+
+        if ( enrollmentDate == null )
+        {
+            final IAnyResource resource = TransformerUtils.getScriptVariable( scriptVariables, ScriptVariable.INPUT, IAnyResource.class );
+
+            if ( resource.getMeta() != null && resource.getMeta().getLastUpdated() != null )
+            {
+                logger.info( "Enrollment date of program instance \"{}\" has not been returned by "
+                    + "enrollment date script (using last updated timestamp).", program.getName() );
+                enrollmentDate = ZonedDateTime.ofInstant( resource.getMeta().getLastUpdated().toInstant(), zoneId );
+            }
+        }
+
+        if ( enrollmentDate == null )
+        {
+            logger.info( "Enrollment date of program instance \"{}\" has not been returned by "
+                + "enrollment date script (using current timestamp).", program.getName() );
+            enrollmentDate = ZonedDateTime.now();
+        }
+
+        if ( !program.isSelectEnrollmentDatesInFuture() && DateTimeUtils.isFutureDate( enrollmentDate ) )
+        {
+            throw new TransformerDataException( "Enrollment date of of program instance \"" + program.getName()
+                + "\" is in the future and program does not allow dates in the future." );
+        }
+
+        return enrollmentDate;
     }
 
     @Nonnull
-    protected abstract Reference getProgramRef( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull IBaseResource carePlan );
+    @Override
+    protected Reference getProgramRef( @Nonnull FhirToDhisTransformerContext context, @Nonnull RuleInfo<EnrollmentRule> ruleInfo, @Nonnull Map<String, Object> scriptVariables, @Nonnull IBaseResource carePlan )
+    {
+        final Reference programRef = executeScript( context, ruleInfo, ruleInfo.getRule().getProgramRefLookupScript(), scriptVariables, Reference.class );
+
+        if ( programRef == null )
+        {
+            throw new TransformerDataException( "FHIR resource does not contain a a reference to a tracker program." );
+        }
+
+        return programRef;
+    }
 }

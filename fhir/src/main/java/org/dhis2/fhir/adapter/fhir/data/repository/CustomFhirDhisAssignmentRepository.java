@@ -48,7 +48,13 @@ public interface CustomFhirDhisAssignmentRepository
     String findFirstDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
 
     @Nullable
+    String findFirstDhisResourceId( @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId );
+
+    @Nullable
     String findFirstFhirResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId );
+
+    @Nullable
+    String findFirstFhirResourceId( @Nonnull FhirClient fhirClient, @Nonnull DhisResourceId dhisResourceId );
 
     boolean saveDhisResourceId( @Nonnull AbstractRule rule, @Nonnull FhirClient fhirClient, @Nonnull IIdType fhirResourceId, @Nonnull DhisResourceId dhisResourceId );
 

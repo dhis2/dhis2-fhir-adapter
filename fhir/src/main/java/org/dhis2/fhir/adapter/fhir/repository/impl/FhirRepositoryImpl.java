@@ -344,8 +344,9 @@ public class FhirRepositoryImpl implements FhirRepository
         final WritableFhirRequest fhirRequest = new WritableFhirRequest();
         fhirRequest.setResourceType( FhirResourceType.getByResource( resource ) );
         fhirRequest.setLastUpdated( getLastUpdated( resource ) );
-        fhirRequest.setResourceId( (resource.getMeta() == null) ? null : resource.getIdElement().getIdPart() );
-        fhirRequest.setResourceVersionId( (resource.getMeta() == null) ? null : resource.getMeta().getVersionId() );
+        fhirRequest.setResourceId( resource.getMeta() == null ? null : resource.getIdElement().getIdPart() );
+        fhirRequest.setResourceVersionId( resource.getMeta() == null ? null : resource.getMeta().getVersionId() );
+        fhirRequest.setFhirClientId( fhirClientResource.getFhirClient().getId() );
         fhirRequest.setFhirClientResourceId( fhirClientResource.getId() );
         fhirRequest.setVersion( fhirClientResource.getFhirClient().getFhirVersion() );
         fhirRequest.setParameters( ArrayListMultimap.create() );
@@ -365,6 +366,7 @@ public class FhirRepositoryImpl implements FhirRepository
             fhirRequest.setRequestMethod( getRequestMethod( fhirRepositoryOperation ) );
             fhirRequest.setDhisFhirId( true );
             fhirRequest.setFirstRuleOnly( true );
+
             if ( fhirRepositoryOperation.getDhisFhirResourceId() != null )
             {
                 fhirRequest.setDhisResourceType( fhirRepositoryOperation.getDhisFhirResourceId().getType() );

@@ -50,6 +50,12 @@ public abstract class DueDateExtensionUtils
         BaseExtensionUtils.setDateValue( URL, resource, date, typeFactory );
     }
 
+    @Nullable
+    public static Date getValue( @Nonnull IBaseHasExtensions resource )
+    {
+        return BaseExtensionUtils.getDateValue( URL, resource );
+    }
+
     private DueDateExtensionUtils()
     {
         super();

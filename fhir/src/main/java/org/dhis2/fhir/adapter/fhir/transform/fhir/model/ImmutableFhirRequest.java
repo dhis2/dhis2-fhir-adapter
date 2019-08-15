@@ -149,6 +149,13 @@ public class ImmutableFhirRequest implements FhirRequest, Serializable
 
     @Nullable
     @Override
+    public UUID getFhirClientId()
+    {
+        return delegate.getFhirClientId();
+    }
+
+    @Nullable
+    @Override
     public String getFhirClientCode()
     {
         return delegate.getFhirClientCode();

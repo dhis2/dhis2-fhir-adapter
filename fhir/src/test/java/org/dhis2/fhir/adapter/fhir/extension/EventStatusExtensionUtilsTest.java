@@ -50,4 +50,22 @@ public class EventStatusExtensionUtilsTest
         Assert.assertEquals( EventStatusExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertEquals( "OVERDUE", planDefinition.getExtension().get( 0 ).getValue().toString() );
     }
+
+    @Test
+    public void getValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        EventStatusExtensionUtils.setValue( planDefinition, EventStatus.OVERDUE, TypeFactory::createType );
+        Assert.assertEquals( EventStatus.OVERDUE, EventStatusExtensionUtils.getValue( planDefinition ) );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void getValueInvalid()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        BaseExtensionUtils.setStringValue( EventStatusExtensionUtils.URL, planDefinition, "ABC", TypeFactory::createType );
+        EventStatusExtensionUtils.getValue( planDefinition );
+    }
 }
