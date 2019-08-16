@@ -106,6 +106,19 @@ abstract class BaseExtensionUtils
         }
     }
 
+    @Nullable
+    protected static IBaseReference getReferenceValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource )
+    {
+        final IBaseDatatype value = getValue( url, resource );
+
+        if ( value instanceof IBaseReference )
+        {
+            return (IBaseReference) value;
+        }
+
+        return null;
+    }
+
     protected static void setReferenceValue( @Nonnull String url, @Nonnull IBaseHasExtensions resource, @Nullable IBaseReference value )
     {
         resource.getExtension().removeIf( e -> url.equals( e.getUrl() ) );

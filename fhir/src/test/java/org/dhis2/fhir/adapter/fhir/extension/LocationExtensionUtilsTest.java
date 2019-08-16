@@ -28,6 +28,7 @@ package org.dhis2.fhir.adapter.fhir.extension;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.hl7.fhir.instance.model.api.IBaseReference;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,5 +62,16 @@ public class LocationExtensionUtilsTest
         Assert.assertEquals( 1, planDefinition.getExtension().size() );
         Assert.assertEquals( LocationExtensionUtils.URL, planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertEquals( reference, planDefinition.getExtension().get( 0 ).getValue() );
+    }
+
+    @Test
+    public void getValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final IBaseReference reference = new TestReference();
+
+        LocationExtensionUtils.setValue( planDefinition, reference );
+        Assert.assertSame( reference, LocationExtensionUtils.getValue( planDefinition ) );
     }
 }

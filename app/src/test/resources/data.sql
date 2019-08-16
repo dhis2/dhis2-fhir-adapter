@@ -2455,7 +2455,7 @@ VALUES ('41d3bd48578847618274f8327f15fcbe', 0, 'Subject TEI Lookup', 'SUBJECT_TE
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('41d3bd48578847618274f8327f15fcbe', 'CONTEXT');
 INSERT INTO fhir_script_variable (script_id, variable) VALUES ('41d3bd48578847618274f8327f15fcbe', 'INPUT');
 INSERT INTO fhir_script_source (id,version,script_id,source_text,source_type)
-VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 0, '41d3bd48578847618274f8327f15fcbe', 'referenceUtils.getResource(input.subject, ''PATIENT'')', 'JAVASCRIPT');
+VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 0, '41d3bd48578847618274f8327f15fcbe', 'fhirResourceUtils.getIdentifiedResource(input.subject, ''Patient'')', 'JAVASCRIPT');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
 VALUES ('67249e7b4ba7466ca770a78923fbf1c3', 'DSTU3');
 INSERT INTO fhir_script_source_version (script_source_id,fhir_version)
