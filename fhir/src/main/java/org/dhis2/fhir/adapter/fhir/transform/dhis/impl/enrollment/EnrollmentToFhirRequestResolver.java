@@ -118,7 +118,7 @@ public class EnrollmentToFhirRequestResolver extends AbstractDhisToFhirRequestRe
 
     @Nonnull
     @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    public List<RuleInfo<? extends AbstractRule>> filterRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         return rules.stream().map( ri -> new RuleInfo<>( (EnrollmentRule) ri.getRule(), ri.getDhisDataReferences() ) )
             .sorted().collect( Collectors.toList() );

@@ -78,5 +78,10 @@ public abstract class AbstractProgramStageFhirRestAppTest extends AbstractAppTes
                 "program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart,programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType," +
                 "optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D%5D&filter=name:eq:Child%20Programme" ) )
             .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/default-program.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+        systemDhis2Server.expect( ExpectedCount.between( 0, 1 ), method( HttpMethod.GET ) ).andExpect( header( "Authorization", testConfiguration.getDhis2SystemAuthorization() ) )
+            .andExpect( requestTo( dhis2BaseUrl + "/api/" + dhis2ApiVersion + "/programStages/MsWxkiY6tMS.json?fields=id,program%5Bid%5D,lastUpdated,name,description,repeatable,captureCoordinates,generatedByEnrollmentDate,minDaysFromStart," +
+                "programStageDataElements%5Bid,compulsory,allowProvidedElsewhere,dataElement%5Bid,name,code,formName,valueType,optionSetValue,optionSet%5Bid,name,options%5Bcode,name%5D%5D%5D%5D" ) )
+            .andRespond( withSuccess( IOUtils.resourceToString( "/org/dhis2/fhir/adapter/dhis/test/single-program-stage.json", StandardCharsets.UTF_8 ), MediaType.APPLICATION_JSON ) );
+
     }
 }
