@@ -71,6 +71,6 @@ public class R4EnrollmentToFhirDataProvider extends AbstractEnrollmentToFhirData
         searchFilter.addReference( CarePlan.SP_INSTANTIATES_URI, FhirResourceType.PLAN_DEFINITION, DhisResourceType.PROGRAM_METADATA, "program" );
         searchFilter.addReference( CarePlan.SP_PATIENT, FhirResourceType.PATIENT, DhisResourceType.TRACKED_ENTITY, "trackedEntityInstance" );
         searchFilter.addReference( CarePlan.SP_SUBJECT, null, DhisResourceType.TRACKED_ENTITY, "trackedEntityInstance" );
-        searchFilter.addReference( LocationExtensionUtils.LOCATION_SEARCH_PARAM, DhisResourceType.ORGANIZATION_UNIT, FhirResourceType.LOCATION, "ou" );
+        searchFilter.addReference( LocationExtensionUtils.LOCATION_SEARCH_PARAM, FhirResourceType.LOCATION, DhisResourceType.ORGANIZATION_UNIT, "ou" );
     }
 }

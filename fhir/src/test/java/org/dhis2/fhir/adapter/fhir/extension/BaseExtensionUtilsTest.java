@@ -134,4 +134,15 @@ public class BaseExtensionUtilsTest
         Assert.assertEquals( "testUrl", planDefinition.getExtension().get( 0 ).getUrl() );
         Assert.assertSame( reference, planDefinition.getExtension().get( 0 ).getValue() );
     }
+
+    @Test
+    public void getReferenceValue()
+    {
+        TestPlanDefinition planDefinition = new TestPlanDefinition();
+
+        final IBaseReference reference = new TestReference();
+
+        BaseExtensionUtils.setReferenceValue( "testUrl", planDefinition, reference );
+        Assert.assertSame( reference, BaseExtensionUtils.getReferenceValue( "testUrl", planDefinition ) );
+    }
 }

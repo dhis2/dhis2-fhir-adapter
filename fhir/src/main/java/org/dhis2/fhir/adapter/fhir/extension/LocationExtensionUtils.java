@@ -50,6 +50,12 @@ public abstract class LocationExtensionUtils
         BaseExtensionUtils.setReferenceValue( URL, resource, locationReference );
     }
 
+    @Nullable
+    public static IBaseReference getValue( @Nonnull IBaseHasExtensions resource )
+    {
+        return BaseExtensionUtils.getReferenceValue( URL, resource );
+    }
+
     private LocationExtensionUtils()
     {
         super();

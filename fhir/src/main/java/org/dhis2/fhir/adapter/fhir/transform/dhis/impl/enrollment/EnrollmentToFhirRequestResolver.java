@@ -44,7 +44,7 @@ import org.dhis2.fhir.adapter.fhir.metadata.model.AbstractRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.EnrollmentRule;
 import org.dhis2.fhir.adapter.fhir.metadata.model.RuleInfo;
 import org.dhis2.fhir.adapter.fhir.metadata.repository.FhirClientRepository;
-import org.dhis2.fhir.adapter.fhir.metadata.repository.ProgramStageRuleRepository;
+import org.dhis2.fhir.adapter.fhir.metadata.repository.RuleRepository;
 import org.dhis2.fhir.adapter.fhir.script.ScriptExecutionContext;
 import org.dhis2.fhir.adapter.fhir.transform.TransformerDataException;
 import org.dhis2.fhir.adapter.fhir.transform.dhis.impl.AbstractDhisToFhirRequestResolver;
@@ -53,7 +53,6 @@ import org.dhis2.fhir.adapter.fhir.transform.dhis.model.DhisRequest;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ImmutableScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedDhisResource;
-import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedEvent;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.ScriptedTrackedEntityInstance;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedEnrollment;
 import org.dhis2.fhir.adapter.fhir.transform.scripted.WritableScriptedTrackedEntityInstance;
@@ -73,7 +72,7 @@ public class EnrollmentToFhirRequestResolver extends AbstractDhisToFhirRequestRe
 {
     private final ProgramMetadataService programMetadataService;
 
-    private final ProgramStageRuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
     private final TrackedEntityService trackedEntityService;
 
@@ -86,7 +85,7 @@ public class EnrollmentToFhirRequestResolver extends AbstractDhisToFhirRequestRe
     public EnrollmentToFhirRequestResolver(
         @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull ProgramMetadataService programMetadataService,
-        @Nonnull ProgramStageRuleRepository ruleRepository,
+        @Nonnull RuleRepository ruleRepository,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull ScriptExecutionContext scriptExecutionContext,
@@ -113,8 +112,7 @@ public class EnrollmentToFhirRequestResolver extends AbstractDhisToFhirRequestRe
     @Override
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
-        final ScriptedEvent event = (ScriptedEvent) dhisResource;
-        return ruleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null )
+        return ruleRepository.findAllExp( DhisResourceType.ENROLLMENT )
             .stream().sorted().collect( Collectors.toList() );
     }
 
