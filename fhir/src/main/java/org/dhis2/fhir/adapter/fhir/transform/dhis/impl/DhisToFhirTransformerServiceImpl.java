@@ -318,8 +318,8 @@ public class DhisToFhirTransformerServiceImpl implements DhisToFhirTransformerSe
     {
         final DhisToFhirRequestResolver requestResolver = getRequestResolver( dhisRequest.getResourceType() );
 
-        return createTransformerRequest( dhisRequest, rr -> rr.convert( resource, dhisRequest ), requestResolver, ( rr, scriptedResource ) -> rr.resolveRules( scriptedResource, rules ),
-            ri -> true, ( si, rr ) -> fhirClient );
+        return createTransformerRequest( dhisRequest, rr -> rr.convert( resource, dhisRequest ), requestResolver,
+            ( rr, scriptedResource ) -> rr.filterRules( scriptedResource, rules ), ri -> true, ( si, rr ) -> fhirClient );
     }
 
     @Nullable

@@ -58,7 +58,7 @@ public interface DhisToFhirRequestResolver
     List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource );
 
     @Nonnull
-    List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
+    List<RuleInfo<? extends AbstractRule>> filterRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules );
 
     @Nonnull
     Optional<FhirClient> resolveFhirClient( @Nonnull ScriptedDhisResource scriptedDhisResource );

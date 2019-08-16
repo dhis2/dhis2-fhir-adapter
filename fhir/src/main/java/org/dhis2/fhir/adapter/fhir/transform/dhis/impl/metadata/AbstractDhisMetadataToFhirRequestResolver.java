@@ -61,12 +61,13 @@ public abstract class AbstractDhisMetadataToFhirRequestResolver extends Abstract
     @Override
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
-        return ruleRepository.findAllExp( dhisResource.getResourceType() ).stream().sorted().collect( Collectors.toList() );
+        return ruleRepository.findAllExp( dhisResource.getResourceType() ).stream()
+            .sorted().collect( Collectors.toList() );
     }
 
     @Nonnull
     @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    public List<RuleInfo<? extends AbstractRule>> filterRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         return rules.stream().sorted().collect( Collectors.toList() );
     }

@@ -74,7 +74,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
 {
     private final ProgramMetadataService programMetadataService;
 
-    private final ProgramStageRuleRepository ruleRepository;
+    private final ProgramStageRuleRepository programStageRuleRepository;
 
     private final TrackedEntityService trackedEntityService;
 
@@ -87,7 +87,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     public ProgramStageToFhirRequestResolver(
         @Nonnull FhirClientRepository fhirClientRepository,
         @Nonnull ProgramMetadataService programMetadataService,
-        @Nonnull ProgramStageRuleRepository ruleRepository,
+        @Nonnull ProgramStageRuleRepository programStageRuleRepository,
         @Nonnull TrackedEntityService trackedEntityService,
         @Nonnull TrackedEntityMetadataService trackedEntityMetadataService,
         @Nonnull ScriptExecutionContext scriptExecutionContext,
@@ -96,7 +96,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
         super( fhirClientRepository );
 
         this.programMetadataService = programMetadataService;
-        this.ruleRepository = ruleRepository;
+        this.programStageRuleRepository = programStageRuleRepository;
         this.trackedEntityService = trackedEntityService;
         this.trackedEntityMetadataService = trackedEntityMetadataService;
         this.scriptExecutionContext = scriptExecutionContext;
@@ -116,13 +116,13 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     {
         final ScriptedEvent event = (ScriptedEvent) dhisResource;
 
-        return ruleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null )
+        return programStageRuleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null )
             .stream().sorted().collect( Collectors.toList() );
     }
 
     @Nonnull
     @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    public List<RuleInfo<? extends AbstractRule>> filterRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         final ScriptedEvent event = (ScriptedEvent) dhisResource;
         final Program program = event.getProgram();

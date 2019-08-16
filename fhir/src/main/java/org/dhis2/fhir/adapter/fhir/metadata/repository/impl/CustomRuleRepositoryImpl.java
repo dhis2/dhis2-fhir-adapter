@@ -120,6 +120,25 @@ public class CustomRuleRepositoryImpl implements CustomRuleRepository
 
         return rules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );
+
+            return new RuleInfo<>( r, r.getDhisDataReferences() );
+        } ).collect( Collectors.toList() );
+    }
+
+    @RestResource( exported = false )
+    @Nonnull
+    @Cacheable( key = "{#root.methodName, #a0, #a1}", cacheManager = "metadataCacheManager", cacheNames = "rule" )
+    @Transactional( readOnly = true )
+    public Collection<RuleInfo<? extends AbstractRule>> findAllExp( @Nonnull DhisResourceType dhisResourceType, @Nonnull FhirResourceType fhirResourceType )
+    {
+        final List<AbstractRule> rules = entityManager.createQuery( "SELECT r FROM " + dhisResourceType.getRuleType() +
+            " r WHERE r.enabled=true AND r.expEnabled=true AND r.fhirResourceType=:fhirResourceType AND " +
+            "(r.fhirCreateEnabled=true OR r.fhirUpdateEnabled=true)", AbstractRule.class )
+            .setParameter( "fhirResourceType", fhirResourceType ).getResultList();
+
+        return rules.stream().map( r -> {
+            Hibernate.initialize( r.getDhisDataReferences() );
+
             return new RuleInfo<>( r, r.getDhisDataReferences() );
         } ).collect( Collectors.toList() );
     }

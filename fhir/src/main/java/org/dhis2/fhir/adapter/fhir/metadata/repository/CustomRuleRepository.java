@@ -68,5 +68,4 @@ public interface CustomRuleRepository
     @RestResource( exported = false )
     @Nonnull
     Collection<RuleInfo<? extends AbstractRule>> findAllExp( @Nonnull DhisResourceType dhisResourceType );
-
 }
