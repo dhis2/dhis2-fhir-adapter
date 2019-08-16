@@ -87,6 +87,7 @@ public class CustomProgramStageRuleRepositoryImpl implements CustomProgramStageR
                 .setParameter( "programReferences", programReferences )
                 .setParameter( "dataReferences", dataReferences ).getResultList() );
         }
+
         return rules.stream().map( r -> {
             Hibernate.initialize( r.getDhisDataReferences() );
             return new RuleInfo<>( r, r.getDhisDataReferences() );

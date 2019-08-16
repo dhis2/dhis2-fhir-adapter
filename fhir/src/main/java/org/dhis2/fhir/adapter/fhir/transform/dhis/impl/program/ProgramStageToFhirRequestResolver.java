@@ -115,6 +115,7 @@ public class ProgramStageToFhirRequestResolver extends AbstractDhisToFhirRequest
     public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource )
     {
         final ScriptedEvent event = (ScriptedEvent) dhisResource;
+
         return ruleRepository.findAllExp( event.getProgram().getAllReferences(), event.getProgramStage().getAllReferences(), null )
             .stream().sorted().collect( Collectors.toList() );
     }
