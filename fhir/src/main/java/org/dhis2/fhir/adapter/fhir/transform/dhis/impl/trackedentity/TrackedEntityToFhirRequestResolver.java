@@ -108,7 +108,7 @@ public class TrackedEntityToFhirRequestResolver extends AbstractDhisToFhirReques
 
     @Nonnull
     @Override
-    public List<RuleInfo<? extends AbstractRule>> resolveRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
+    public List<RuleInfo<? extends AbstractRule>> filterRules( @Nonnull ScriptedDhisResource dhisResource, @Nonnull List<RuleInfo<? extends AbstractRule>> rules )
     {
         final ScriptedTrackedEntityInstance tei = (ScriptedTrackedEntityInstance) dhisResource;
         final TrackedEntityType type = tei.getType();

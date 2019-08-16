@@ -64,12 +64,12 @@ import java.util.Objects;
         query = "SELECT psr FROM ProgramStageRule psr " +
             "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
             "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
-            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND psr.transformExpScript IS NOT NULL" ),
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true)" ),
     @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY,
         query = "SELECT psr FROM ProgramStageRule psr " +
             "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
             "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
-            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND psr.transformExpScript IS NOT NULL AND " +
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND " +
             "EXISTS (SELECT 1 FROM RuleDhisDataReference edr WHERE edr.rule=psr AND edr.dataReference IN (:dataReferences))" )
 } )
 @Relation( value = "rule", collectionRelation = "rules" )
