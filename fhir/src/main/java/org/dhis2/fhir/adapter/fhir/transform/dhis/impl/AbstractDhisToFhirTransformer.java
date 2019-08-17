@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -634,7 +635,7 @@ public abstract class AbstractDhisToFhirTransformer<R extends ScriptedDhisResour
     {
         @SuppressWarnings( "unchecked" ) final T reference = (T) createAssignedFhirReference( context, ruleInfo, scriptVariables, dhisResourceType, dhisId, fhirResourceType );
 
-        return reference == null ? Collections.emptyList() : Collections.singletonList( reference );
+        return reference == null ? new ArrayList<>() : new ArrayList<>( Collections.singletonList( reference ) );
     }
 
     @Nullable
