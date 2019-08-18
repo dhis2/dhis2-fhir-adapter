@@ -111,7 +111,7 @@ public class R4FhirQuestionnaireResponseToProgramStageTransformer extends Abstra
     {
         final QuestionnaireResponse fhirQuestionnaireResponse = (QuestionnaireResponse) questionnaireResponse;
         final Event event = (Event) scriptedEvent.getDhisResource();
-        final String enrollmentId = getAssignedDhisId( context, ruleInfo, scriptVariables, fhirQuestionnaireResponse.getPartOfFirstRep().getReferenceElement() );
+        final String enrollmentId = getAssignedDhisId( context, ruleInfo, scriptVariables, fhirQuestionnaireResponse.getBasedOnFirstRep().getReferenceElement() );
 
         if ( enrollmentId == null )
         {
