@@ -108,15 +108,9 @@ public class R4FhirCarePlanToEnrollmentTransformer extends AbstractFhirCarePlanT
             .orElseThrow( () -> new TransformerMappingException( "Care plan contains location that cannot be mapped." ) ) );
         enrollment.setTrackedEntityInstanceId( scriptedTrackedEntityInstance.getId() );
 
-        if ( fhirCarePlan.getPeriod().hasStart() )
-        {
-            enrollment.setEnrollmentDate( ZonedDateTime.ofInstant(
-                fhirCarePlan.getPeriod().getStart().toInstant(), zoneId ) );
-        }
-        else
-        {
-            enrollment.setEnrollmentDate( null );
-        }
+        final Date enrollmentDate = fhirCarePlan.getPeriod().getStart();
+        enrollment.setEnrollmentDate( enrollmentDate == null ? null :
+            ZonedDateTime.ofInstant( enrollmentDate.toInstant(), zoneId ) );
 
         final Date incidentDate = IncidentDateExtensionUtils.getValue( fhirCarePlan );
         enrollment.setIncidentDate( incidentDate == null ? null : ZonedDateTime.ofInstant( incidentDate.toInstant(), zoneId ) );
@@ -169,7 +163,7 @@ public class R4FhirCarePlanToEnrollmentTransformer extends AbstractFhirCarePlanT
         final IIdType id;
         try
         {
-            id = FhirUriUtils.createIdFromUri( uri, FhirResourceType.CARE_PLAN );
+            id = FhirUriUtils.createIdFromUri( uri, FhirResourceType.PLAN_DEFINITION );
         }
         catch ( IllegalArgumentException e )
         {

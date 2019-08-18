@@ -73,12 +73,13 @@ public class CustomProgramStageRuleRepositoryImpl implements CustomProgramStageR
     public Collection<RuleInfo<ProgramStageRule>> findAllExp( @Nonnull Collection<Reference> programReferences, @Nonnull Collection<Reference> programStageReferences, @Nullable Collection<Reference> dataReferences )
     {
         final List<ProgramStageRule> rules;
-        if ( (dataReferences == null) || dataReferences.isEmpty() )
+        if ( dataReferences == null || dataReferences.isEmpty() )
         {
             rules = new ArrayList<>(
                 entityManager.createNamedQuery( ProgramStageRule.FIND_ALL_EXP_NAMED_QUERY, ProgramStageRule.class )
                     .setParameter( "programReferences", programReferences )
                     .setParameter( "programStageReferences", programStageReferences ).getResultList() );
+            rules.addAll( entityManager.createNamedQuery( ProgramStageRule.FIND_ALL_EXP_WILDCARD_NAMED_QUERY, ProgramStageRule.class ).getResultList() );
         }
         else
         {
