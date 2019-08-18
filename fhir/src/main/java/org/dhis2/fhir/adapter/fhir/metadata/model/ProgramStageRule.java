@@ -62,13 +62,16 @@ import java.util.Objects;
 @NamedQueries( {
     @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_NAMED_QUERY,
         query = "SELECT psr FROM ProgramStageRule psr " +
-            "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
-            "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
+            "JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
+            "JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
+            "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true)" ),
+    @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_WILDCARD_NAMED_QUERY,
+        query = "SELECT psr FROM ProgramStageRule psr WHERE psr.programStage IS NULL AND " +
             "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true)" ),
     @NamedQuery( name = ProgramStageRule.FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY,
         query = "SELECT psr FROM ProgramStageRule psr " +
-            "LEFT JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
-            "LEFT JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
+            "JOIN psr.programStage ps ON (ps.enabled=true AND ps.expEnabled=true AND (ps.fhirCreateEnabled=true OR ps.fhirUpdateEnabled=true) AND ps.programStageReference IN (:programStageReferences)) " +
+            "JOIN ps.program p ON (p.enabled=true AND p.expEnabled=true AND (p.fhirCreateEnabled=true OR p.fhirUpdateEnabled=true) AND p.programReference IN (:programReferences)) WHERE " +
             "psr.enabled=true AND psr.expEnabled=true AND (psr.fhirCreateEnabled=true OR psr.fhirUpdateEnabled=true) AND " +
             "EXISTS (SELECT 1 FROM RuleDhisDataReference edr WHERE edr.rule=psr AND edr.dataReference IN (:dataReferences))" )
 } )
@@ -79,6 +82,8 @@ public class ProgramStageRule extends AbstractRule
     private static final long serialVersionUID = 3376410603952222321L;
 
     public static final String FIND_ALL_EXP_NAMED_QUERY = "ProgramStageRule.findAllExportedWithoutDataRef";
+
+    public static final String FIND_ALL_EXP_WILDCARD_NAMED_QUERY = "ProgramStageRule.findAllExportedWithoutProgramStageAndDataRef";
 
     public static final String FIND_ALL_EXP_BY_DATA_REF_NAMED_QUERY = "ProgramStageRule.findAllExportedByDataRef";
 
